@@ -3,7 +3,7 @@ export const levels = [
   {
     "id": "intro",
     "name": "Intro Level",
-    "order": 1,
+    "order": 2,
     "gltfUrl": "src/assets/levels/introLevel.gltf",
     "startPosition": [
       0,
@@ -6178,5 +6178,23 @@ onLevelComplete: {
       }
     ]
   },
-  
+  {
+    id: 'level3',
+    name: 'level 3',
+     "order": 1,
+    gltfUrl: "src/assets/levels/Level3/Level3.gltf",
+        startPosition: [-4, 15, 0],
+    
+    // Basic setup
+    ui: ['hud', 'minimap'],
+    
+    enemies: [],
+    
+    // Fallback geometry (always include)
+    fallbackObjects: [
+      { type: 'box', position: [0, 0, 0], size: [20, 1, 20], color: 0x6b8e23 }
+    ]
+  }
+
 ];
+
