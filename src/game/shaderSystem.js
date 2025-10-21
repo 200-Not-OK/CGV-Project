@@ -9,6 +9,8 @@ export class ShaderSystem {
     this.renderer = renderer;
     this.scene = scene;
     this.enhancedMaterials = new Map();
+    this.originalMaterials = new Map(); // Store original materials for toggling
+    this.shadersEnabled = true; // Track shader state
     
     this.setupRenderer();
   }
@@ -39,6 +41,11 @@ export class ShaderSystem {
     if (mesh.userData.isStar || mesh.userData.skipShader) return;
     
     const originalMaterial = mesh.material;
+    
+    // Store original material if not already stored
+    if (!this.originalMaterials.has(mesh.uuid)) {
+      this.originalMaterials.set(mesh.uuid, originalMaterial);
+    }
     
     // Create enhanced material with atmospheric properties
     let enhancedMaterial;
@@ -100,6 +107,11 @@ export class ShaderSystem {
     if (mesh.userData.isStar || mesh.userData.skipShader) return;
     
     const originalMaterial = mesh.material;
+    
+    // Store original material if not already stored
+    if (!this.originalMaterials.has(mesh.uuid)) {
+      this.originalMaterials.set(mesh.uuid, originalMaterial);
+    }
     
     // Character gets enhanced material with better light interaction
     const characterMaterial = new THREE.MeshStandardMaterial({
@@ -300,6 +312,64 @@ export class ShaderSystem {
   update(deltaTime) {
     // Update any dynamic shader properties here
     // For example, animated emissive intensity, etc.
+  }
+
+  /**
+   * Toggle shaders on/off
+   * Returns the new shader state (true = on, false = off)
+   */
+  toggleShaders() {
+    this.shadersEnabled = !this.shadersEnabled;
+    
+    if (this.shadersEnabled) {
+      // Re-enable shaders: restore enhanced materials
+      console.log('🎨 Shaders ENABLED');
+      this.originalMaterials.forEach((originalMat, uuid) => {
+        const enhancedMat = this.enhancedMaterials.get(uuid);
+        if (enhancedMat) {
+          // Find the mesh in the scene and apply enhanced material
+          this.scene.traverse((obj) => {
+            if (obj.uuid === uuid && obj.isMesh) {
+              obj.material = enhancedMat;
+              obj.castShadow = true;
+              obj.receiveShadow = true;
+            }
+          });
+        }
+      });
+      
+      // Re-enable renderer features
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      this.renderer.toneMappingExposure = 0.8;
+    } else {
+      // Disable shaders: restore original materials
+      console.log('🎨 Shaders DISABLED');
+      this.originalMaterials.forEach((originalMat, uuid) => {
+        // Find the mesh in the scene and restore original material
+        this.scene.traverse((obj) => {
+          if (obj.uuid === uuid && obj.isMesh) {
+            obj.material = originalMat;
+            obj.castShadow = false;
+            obj.receiveShadow = false;
+          }
+        });
+      });
+      
+      // Disable renderer features for better performance
+      this.renderer.shadowMap.enabled = false;
+      this.renderer.toneMapping = THREE.NoToneMapping;
+      this.renderer.toneMappingExposure = 1.0;
+    }
+    
+    return this.shadersEnabled;
+  }
+
+  /**
+   * Get current shader state
+   */
+  isEnabled() {
+    return this.shadersEnabled;
   }
 
   /**
