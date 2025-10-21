@@ -1,6 +1,26 @@
 // Data-driven level definitions with GLTF geometry loading
 export const levels = [
   {
+    "id" : "level1",
+    "name": "Level 1: The Forgotten Forest",
+    "gltfUrl": "src/assets/levels/NodeVille/MapFinal.gltf",    
+    "startPosition": [
+      0,
+      10,
+      0
+    ],
+    "lights": ["BasicLights"],
+    "ui": ["hud"],
+"colliders": [
+  {
+    "id": "terrain_collider",
+    "type": "mesh",
+    "meshName": "Plane",
+    "materialType": "ground"
+  }
+],
+  },
+  {
     "id": "intro",
     "name": "Intro Level",
     "order": 1,

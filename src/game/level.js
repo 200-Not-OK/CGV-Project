@@ -128,18 +128,20 @@ export class Level {
     for (const def of this.data.colliders) {
       try {
         console.log(`  🎯 Creating manual collider: ${def.id || '(no-id)'}`);
-        const body = this._createPhysicsBodyFromDefinition(def);
+        const body = this._createPhysicsBodyFromDefinition(def, meshesToProcess);
         if (!body) continue;
         this.physicsBodies.push(body);
 
-        // Associate matching mesh (optional)
-        const match = meshesToProcess.find(m =>
-          m.name === def.meshName ||
-          (def.meshName && m.name?.toLowerCase() === def.meshName.toLowerCase())
-        );
-        if (match) {
-          match.userData.physicsBody = body;
-          match.userData.manualCollider = true;
+        // Associate matching mesh (optional) - only for non-mesh types
+        if (def.type !== 'mesh') {
+          const match = meshesToProcess.find(m =>
+            m.name === def.meshName ||
+            (def.meshName && m.name?.toLowerCase() === def.meshName.toLowerCase())
+          );
+          if (match) {
+            match.userData.physicsBody = body;
+            match.userData.manualCollider = true;
+          }
         }
       } catch (e) {
         console.warn('⚠️ Failed to create manual collider:', def, e);
@@ -156,10 +158,33 @@ export class Level {
     console.log(`📝 Added ${meshesToProcess.length} visual meshes without physics bodies`);
   }
 
-  _createPhysicsBodyFromDefinition(colliderDef) {
-    const { type, position = [0, 0, 0], size = [1, 1, 1], rotation = [0, 0, 0], materialType = 'ground' } = colliderDef;
+  _createPhysicsBodyFromDefinition(colliderDef, meshesToProcess = []) {
+    const { type, position = [0, 0, 0], size = [1, 1, 1], rotation = [0, 0, 0], materialType = 'ground', meshName } = colliderDef;
 
     const pos = new THREE.Vector3(position[0], position[1], position[2]);
+
+    // Support for mesh-based colliders (Trimesh from GLTF)
+    if (type === 'mesh' && meshName) {
+      const match = meshesToProcess.find(m =>
+        m.name === meshName ||
+        (meshName && m.name?.toLowerCase() === meshName.toLowerCase())
+      );
+      
+      if (match && match.geometry) {
+        console.log(`  🌍 Creating Trimesh collider from GLTF mesh: ${meshName}`);
+        const body = this.physicsWorld.addStaticMesh(match, materialType, { 
+          useAccurateCollision: true // Force Trimesh for terrain
+        });
+        if (body) {
+          match.userData.physicsBody = body;
+          match.userData.manualCollider = true;
+        }
+        return body;
+      } else {
+        console.warn(`⚠️ Mesh not found for collider: ${meshName}`);
+        return null;
+      }
+    }
 
     if (type === 'box') {
       const half = new THREE.Vector3(size[0], size[1], size[2]);
