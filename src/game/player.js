@@ -331,7 +331,7 @@ export class Player {
     };
     
     // Use two-sphere collider for Cannon-es Trimesh compatibility
-    // Cannon-es supports Sphere↔Trimesh but NOT Box↔Trimesh
+    // Cannon-es supports Sphere↔Trimesh but NOT Box/Cylinder/Convex↔Trimesh
     const sphereRadius = Math.max(modelSize.x, modelSize.z) * this.colliderScale.width * 0.5;
     const sphereOffset = modelSize.y * 0.35; // Vertical offset for capsule shape
     
@@ -345,7 +345,9 @@ export class Player {
       material: playerMaterial,
       linearDamping: 0.2, // Moderate damping
       angularDamping: 1.0, // Prevent rotation
-      fixedRotation: true // Prevent tipping over
+      fixedRotation: true, // Prevent tipping over
+      sleepSpeedLimit: 1.0,
+      allowSleep: false
     });
     
     // Add two spheres stacked vertically (capsule shape)
@@ -358,7 +360,10 @@ export class Player {
     // Add body to physics world
     this.physicsWorld.world.addBody(this.body);
     
-    console.log(`✅ Player sphere collider created: radius=${sphereRadius.toFixed(2)}, offset=±${sphereOffset.toFixed(2)}`);
+    console.log(`✅ Player two-sphere capsule collider created: radius=${sphereRadius.toFixed(2)}, offset=±${sphereOffset.toFixed(2)}, shapes=${this.body.shapes.length}`);
+    
+    // Create visual debug helper for sphere collider
+    // this._createSphereColliderVisualizer(sphereRadius, sphereOffset);
     
     // Set up collision event listeners for wall sliding
     this.setupCollisionListeners();
@@ -372,6 +377,62 @@ export class Player {
       this.handleCollision(event);
     });
   }
+
+  // _createSphereColliderVisualizer(radius, offset) {
+  //   // Create wireframe visualization of the two-sphere capsule collider
+  //   const group = new THREE.Group();
+  //   group.name = 'ColliderVisualizer';
+  //   
+  //   const wireframeMaterial = new THREE.MeshBasicMaterial({
+  //     color: 0x00ff00,
+  //     wireframe: true,
+  //     transparent: true,
+  //     opacity: 0.6,
+  //     depthTest: false,
+  //     depthWrite: false
+  //   });
+  //   
+  //   // Top sphere
+  //   const topSphereGeometry = new THREE.SphereGeometry(radius, 16, 16);
+  //   const topSphere = new THREE.Mesh(topSphereGeometry, wireframeMaterial);
+  //   topSphere.position.y = offset;
+  //   group.add(topSphere);
+  //   
+  //   // Bottom sphere
+  //   const bottomSphereGeometry = new THREE.SphereGeometry(radius, 16, 16);
+  //   const bottomSphere = new THREE.Mesh(bottomSphereGeometry, wireframeMaterial);
+  //   bottomSphere.position.y = -offset;
+  //   group.add(bottomSphere);
+  //   
+  //   // Connecting cylinder for visual clarity
+  //   const cylinderHeight = offset * 2;
+  //   const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, cylinderHeight, 16, 1, true);
+  //   const cylinder = new THREE.Mesh(cylinderGeometry, wireframeMaterial);
+  //   group.add(cylinder);
+  //   
+  //   group.renderOrder = 999;
+  //   group.frustumCulled = false;
+  //   
+  //   this.colliderVisualizer = group;
+  //   this.mesh.add(this.colliderVisualizer);
+  //   this.colliderVisualizerVisible = true;
+  //   
+  //   console.log('🔍 Two-sphere capsule visualizer created (Press V to toggle)');
+  // }
+
+  // toggleColliderVisualizer() {
+  //   if (!this.colliderVisualizer) {
+  //     console.warn('⚠️ No collider visualizer found!');
+  //     return;
+  //   }
+  //   
+  //   this.colliderVisualizerVisible = !this.colliderVisualizerVisible;
+  //   this.colliderVisualizer.visible = this.colliderVisualizerVisible;
+  //   
+  //   console.log(`🔍 Collider visualizer toggled: ${this.colliderVisualizerVisible ? 'ON' : 'OFF'}`);
+  //   console.log(`🔍 Visualizer object visible property: ${this.colliderVisualizer.visible}`);
+  //   console.log(`🔍 Visualizer in scene: ${this.colliderVisualizer.parent !== null}`);
+  // }
 
   handleCollision(event) {
     const contact = event.contact;
@@ -1004,6 +1065,15 @@ export class Player {
         this.performInteract();
       }
     }
+    
+    // Use 'V' key to toggle collider visualizer
+    // if (input.isKey('KeyV')) {
+    //   const currentTime = Date.now();
+    //   if (currentTime - (this.lastVisualizerToggleTime || 0) > 300) { // 300ms cooldown
+    //     this.lastVisualizerToggleTime = currentTime;
+    //     this.toggleColliderVisualizer();
+    //   }
+    // }
   }
 
   handleStairClimbing(camOrientation, delta) {
