@@ -32,9 +32,10 @@ import { levels as LEVELS } from './levelData.js';
 
 export class Game {
   constructor() {
-    const { scene, renderer } = createSceneAndRenderer();
+    const { scene, renderer, shaderSystem } = createSceneAndRenderer();
     this.scene = scene;
     this.renderer = renderer;
+    this.shaderSystem = shaderSystem;
 
     // Initialize physics world with scene for improved collision detection
     this.physicsWorld = new PhysicsWorld(this.scene, {
@@ -247,6 +248,23 @@ export class Game {
         }
       }
     });
+
+    // Shader toggle button
+    const toggleShadersBtn = document.getElementById('toggleShadersBtn');
+    if (toggleShadersBtn) {
+      toggleShadersBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (this.shaderSystem) {
+          const newState = this.shaderSystem.toggleShaders();
+          const statusText = document.getElementById('shaderStatusText');
+          if (statusText) {
+            statusText.textContent = newState ? 'ON' : 'OFF';
+            toggleShadersBtn.style.background = newState ? '#2196F3' : '#ff6b6b';
+          }
+        }
+      });
+    }
 
     // Setup audio controls
     this._setupAudioControls();
@@ -994,6 +1012,13 @@ export class Game {
       } else if (key === 'menu') {
         this.ui.add('menu', SmallMenu, { 
           onResume: () => this.setPaused(false),
+          onToggleShaders: () => {
+            if (this.shaderSystem) {
+              const newState = this.shaderSystem.toggleShaders();
+              return newState;
+            }
+            return true;
+          },
           ...config 
         });
       } else if (key === 'collectibles') {

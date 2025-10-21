@@ -53,7 +53,7 @@ export function createSceneAndRenderer() {
   renderer.toneMappingExposure = 0.6;
 
   // Initialize shader system
-  const shaderSystem = new ShaderSystem(renderer);
+  const shaderSystem = new ShaderSystem(renderer, scene);
 
   // Load THREE separate HDRI textures for true parallax depth
   const rgbeLoader = new RGBELoader();
