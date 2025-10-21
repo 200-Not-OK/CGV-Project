@@ -17,7 +17,20 @@ export const levels = [
     "type": "mesh",
     "meshName": "Plane",
     "materialType": "ground"
-  }
+  },
+    {
+    "id": "terrain_collider1",
+    "type": "mesh",
+    "meshName": "Plane.002",
+    "materialType": "ground"
+  },
+    {
+    "id": "terrain_collider2",
+    "type": "mesh",
+    "meshName": "Plane.001",
+    "materialType": "ground"
+  },
+
 ],
   },
   {
