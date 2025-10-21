@@ -10,7 +10,7 @@ export class PhysicsWorld {
     
     // Create Cannon.js world
     this.world = new CANNON.World({
-      gravity: new CANNON.Vec3(0, -9.82, 0)
+      gravity: new CANNON.Vec3(0, -20, 0) // Slightly reduced gravity for more platformer feel
     });
     
     // Store reference to Three.js scene for debug rendering
@@ -247,25 +247,28 @@ export class PhysicsWorld {
       const meshName = mesh.name.toLowerCase();
 
       // Determine collision type based on mesh name or options
-      // Be conservative: only use Trimesh for explicitly marked meshes
-      const shouldUseAccurate = useAccurateCollision && 
+      // If useAccurateCollision is explicitly true, use Trimesh regardless of name
+      const shouldUseAccurate = useAccurateCollision || 
                                (meshName.includes('trimesh') || 
+                                meshName.includes('terrain') ||
+                                meshName.includes('collider') ||
                                 meshName.includes('accurate') ||
                                 meshName.includes('complex')) &&
                                !forceBoxCollider &&
                                !meshName.includes('box') && 
-                               !meshName.includes('simple') &&
-                               !meshName.includes('collider'); // collider_ prefix suggests simple collision
+                               !meshName.includes('simple');
 
       if (shouldUseAccurate && !forceBoxCollider) {
         // Use Trimesh for accurate collision detection
         shape = this._createTrimeshShape(geometry, mesh);
+        console.log(`✅ Created Trimesh collision for: ${mesh.name}`);
       } else {
         // Use bounding box collision (faster but less accurate)
         // Calculate the actual scaled bounding box
         const scaledSize = this._getScaledBoundingBoxSize(geometry, mesh);
         
         shape = new CANNON.Box(new CANNON.Vec3(scaledSize.x / 2, scaledSize.y / 2, scaledSize.z / 2));
+        console.log(`📦 Created Box collision for: ${mesh.name} (size: ${scaledSize.x.toFixed(1)}, ${scaledSize.y.toFixed(1)}, ${scaledSize.z.toFixed(1)})`);
       }
 
       const body = new CANNON.Body({
