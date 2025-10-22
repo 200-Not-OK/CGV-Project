@@ -104,17 +104,75 @@ export class Level {
         meshesToProcess.push(child);
       }
     });
-    console.log(`🔍 Found ${meshesToProcess.length} meshes in GLTF`);
+  console.log(`🔍 Found ${meshesToProcess.length} meshes in GLTF`);
 
     const hasManualColliders = Array.isArray(this.data.colliders) && this.data.colliders.length > 0;
 
     if (hasManualColliders) {
+      // Debug dump of mesh names to help diagnose name mismatches
+      const sampleNames = meshesToProcess.slice(0, 80).map(m => {
+        const parent = m.parent && m.parent.name ? ` (parent: ${m.parent.name})` : '';
+        return `${m.name || '(unnamed)'}${parent}`;
+      });
+      console.log('🧩 GLTF mesh names (first up to 80):', sampleNames.join(', '));
       console.log('🎯 Using manual colliders from level data');
       this._loadManualColliders(meshesToProcess);
     } else {
       console.log('🖼️ No manual colliders defined — adding visuals only (no physics from GLTF)');
       this._loadVisualsOnly(meshesToProcess);
     }
+  }
+
+  /**
+   * Resolve a THREE.Mesh from a provided name more robustly.
+   * Handles common GLTF cases where Blender/GLTF adds suffixes like `_0` to mesh primitives
+   * or where the named node is a Group/Object3D with Mesh children.
+   */
+  _resolveMeshFromName(meshesToProcess, meshName) {
+    if (!meshName) return null;
+    const targetLower = meshName.toLowerCase();
+    const targetBase = meshName.split('.')[0].toLowerCase();
+    const normalize = (s) => (s || '').toLowerCase().replace(/[^a-z0-9_\-]+/g, '');
+    const targetNormalized = normalize(meshName);
+
+    // 1) Exact (case-insensitive) match among meshes
+    let match = meshesToProcess.find(m =>
+      m.name === meshName || (m.name && m.name.toLowerCase() === targetLower)
+    );
+    if (match) return match;
+
+    // 2) Prefix match to handle GLTFLoader suffixes like "_0", "_1"
+    match = meshesToProcess.find(m => m.name && m.name.toLowerCase().startsWith(targetLower + '_'));
+    if (match) return match;
+
+    // 2b) Prefix match using base before dot (e.g., Plane.001 -> Plane)
+    match = meshesToProcess.find(m => m.name && m.name.toLowerCase().startsWith(targetBase + '.'));
+    if (match) return match;
+
+    // 2c) Normalized includes (ignore punctuation differences)
+    match = meshesToProcess.find(m => normalize(m.name).includes(targetNormalized));
+    if (match) return match;
+
+    // 3) Parent name match (the node might be named, while the Mesh child has a suffixed name)
+    match = meshesToProcess.find(m => m.parent && (
+      m.parent.name === meshName || (m.parent.name && m.parent.name.toLowerCase() === targetLower)
+    ));
+    if (match) return match;
+
+    // 4) Search the full GLTF scene for an object with the given name; if it's not a Mesh, pick first Mesh descendant
+    if (this.gltfScene && this.gltfScene.getObjectByName) {
+      const obj = this.gltfScene.getObjectByName(meshName);
+      if (obj) {
+        if (obj.isMesh) return obj;
+        let found = null;
+        obj.traverse((child) => {
+          if (!found && child.isMesh) found = child;
+        });
+        if (found) return found;
+      }
+    }
+
+    return null;
   }
 
   _loadManualColliders(meshesToProcess) {
@@ -165,14 +223,11 @@ export class Level {
 
     // Support for mesh-based colliders (Trimesh from GLTF)
     if (type === 'mesh' && meshName) {
-      const match = meshesToProcess.find(m =>
-        m.name === meshName ||
-        (meshName && m.name?.toLowerCase() === meshName.toLowerCase())
-      );
-      
+      const match = this._resolveMeshFromName(meshesToProcess, meshName);
+
       if (match && match.geometry) {
-        console.log(`  🌍 Creating Trimesh collider from GLTF mesh: ${meshName}`);
-        const body = this.physicsWorld.addStaticMesh(match, materialType, { 
+        console.log(`  🌍 Creating Trimesh collider from GLTF mesh: ${match.name} (requested: ${meshName})`);
+        const body = this.physicsWorld.addStaticMesh(match, materialType, {
           useAccurateCollision: true // Force Trimesh for terrain
         });
         if (body) {
@@ -181,7 +236,11 @@ export class Level {
         }
         return body;
       } else {
-        console.warn(`⚠️ Mesh not found for collider: ${meshName}`);
+        // Improve diagnostics: show sample available names (first 20)
+        const candidates = meshesToProcess
+          .map(m => m.name || '(unnamed)')
+          .slice(0, 20);
+        console.warn(`⚠️ Mesh not found for collider: ${meshName}. Sample available names: ${candidates.join(', ')}`);
         return null;
       }
     }
