@@ -70,6 +70,18 @@ export class StandaloneLevelEditor {
     this.colliderTypes = ['box', 'sphere', 'capsule'];
     this.materialTypes = ['ground', 'wall', 'platform'];
     
+    // Store bound event handlers for proper cleanup
+    this.boundEventHandlers = {
+      mousedown: this._onMouseDown.bind(this),
+      mousemove: this._onMouseMove.bind(this),
+      mouseup: this._onMouseUp.bind(this),
+      wheel: this._onMouseWheel.bind(this),
+      contextmenu: (e) => e.preventDefault(),
+      keydown: this._onKeyDown.bind(this),
+      keyup: this._onKeyUp.bind(this),
+      resize: this._onWindowResize.bind(this)
+    };
+    
     // Create UI and bind events
     this._createUI();
     this._bindEvents();
@@ -185,12 +197,15 @@ export class StandaloneLevelEditor {
     // Position camera to look at the level geometry
     this._positionCameraForLevel();
     
+    // Update UI to reflect the new level
+    this._updateUI();
+    
     this._updateStatus();
   }
   
   _clearLevel() {
-    // Unbind events to prevent conflicts during cleanup
-    this._unbindEvents();
+    // Don't unbind canvas/keyboard events - we need them to remain active!
+    // Only clear the level geometry and data
 
     // Clear geometry and dispose of materials/geometries
     while (this.levelGeometry.children.length > 0) {
@@ -555,6 +570,17 @@ export class StandaloneLevelEditor {
     this.colliderMeshes = [];
     
     this.colliders.forEach((collider, index) => {
+      // Skip mesh-type colliders - they don't have position/size, they reference GLTF meshes
+      if (collider.type === 'mesh') {
+        return; // Skip visualization for Trimesh colliders
+      }
+      
+      // Ensure position exists for non-mesh colliders
+      if (!collider.position) {
+        console.warn('Collider missing position:', collider);
+        return;
+      }
+      
       let geometry;
       
       // Create geometry based on collider type
@@ -726,6 +752,8 @@ export class StandaloneLevelEditor {
   _updateUI() {
     if (!this.panel) return;
     
+    console.log('_updateUI called, mode:', this.mode, 'selectedMesh:', this.selectedMesh);
+    
     const levelSelect = this.levels.map((level, index) => 
       `<option value="${index}" ${index === this.currentLevelIndex ? 'selected' : ''}>${level.name}</option>`
     ).join('');
@@ -806,12 +834,17 @@ export class StandaloneLevelEditor {
       
       <div id="mesh-controls" style="display: ${this.mode === 'mesh' ? 'block' : 'none'};">
         <h4>Mesh Selection</h4>
-        <p>Click on level meshes to select them</p>
+        <p style="font-size: 11px; opacity: 0.8; margin-bottom: 10px;">
+          <strong>How to use:</strong><br>
+          1. Click on a mesh in the 3D view or list below<br>
+          2. Choose collider type (Trimesh or Box)<br>
+          3. Click "Create Collider from Mesh"
+        </p>
         
         <div id="mesh-list">
           <h5>Level Meshes (${this.levelMeshes.length})</h5>
           ${this.levelMeshes.map((meshInfo, index) => `
-            <div class="item-row ${this.selectedMesh === meshInfo.mesh ? 'selected' : ''}" 
+            <div class="item-row ${this.selectedMesh === meshInfo ? 'selected' : ''}" 
                  data-type="mesh" data-index="${index}">
               <strong>${meshInfo.name}</strong>
               <button onclick="window.editor._selectMesh(${index})">Select</button>
@@ -820,13 +853,25 @@ export class StandaloneLevelEditor {
         </div>
         
         ${this.selectedMesh ? `
-          <div style="margin-top: 15px; padding: 10px; border: 1px solid #444;">
-            <h5>Selected: ${this.selectedMesh.name}</h5>
-            <button id="create-collider-from-mesh" style="width: 100%; padding: 5px;">
+          <div style="margin-top: 15px; padding: 10px; border: 1px solid #4CAF50; background: #1a1a1a;">
+            <h5 style="color: #4CAF50;">✓ Selected: ${this.selectedMesh.name}</h5>
+            
+            <label>Collider Type:</label><br>
+            <select id="mesh-collider-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+              <option value="mesh">Mesh (Trimesh - Accurate)</option>
+              <option value="box">Box (Bounding Box - Faster)</option>
+            </select>
+            
+            <label>Material Type:</label><br>
+            <select id="mesh-material-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+              ${materialTypeOptions}
+            </select>
+            
+            <button id="create-collider-from-mesh" style="width: 100%; padding: 5px; background: #4CAF50; color: white;">
               Create Collider from Mesh
             </button>
           </div>
-        ` : ''}
+        ` : '<p style="font-size: 14px; color: #ff5555; margin-top: 10px; padding: 10px; border: 1px solid #ff5555;">⚠️ No mesh selected - click Select button above</p>'}
       </div>
       
       <div id="collider-controls" style="display: ${this.mode === 'collider' ? 'block' : 'none'};">
@@ -846,15 +891,21 @@ export class StandaloneLevelEditor {
         
         <div id="collider-list">
           <h5>Colliders (${this.colliders.length})</h5>
-          ${this.colliders.map((collider, index) => `
-            <div class="item-row" data-type="collider" data-index="${index}">
-              <strong>${collider.type}</strong> (${collider.materialType})<br>
-              at [${collider.position.join(', ')}]
-              ${collider.meshName ? `<br><small>For: ${collider.meshName}</small>` : ''}
-              <button onclick="window.editor._deleteCollider(${index})">Delete</button>
-              <button onclick="window.editor._editCollider(${index})">Edit</button>
-            </div>
-          `).join('')}
+          ${this.colliders.map((collider, index) => {
+            // Handle mesh-type colliders differently (they reference GLTF meshes)
+            const positionStr = collider.type === 'mesh' 
+              ? `Mesh: ${collider.meshName}` 
+              : `at [${collider.position.join(', ')}]`;
+            
+            return `
+              <div class="item-row" data-type="collider" data-index="${index}">
+                <strong>${collider.type}</strong> (${collider.materialType})<br>
+                ${positionStr}
+                <button onclick="window.editor._deleteCollider(${index})">Delete</button>
+                ${collider.type !== 'mesh' ? `<button onclick="window.editor._editCollider(${index})">Edit</button>` : ''}
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
       
@@ -1247,24 +1298,24 @@ export class StandaloneLevelEditor {
   _bindEvents() {
     // Prevent duplicate event binding
     if (this.eventsBound) {
-      this._unbindEvents();
+      return; // Already bound, don't rebind
     }
 
     // Mouse events
-    this.renderer.domElement.addEventListener('mousedown', this._onMouseDown.bind(this));
-    this.renderer.domElement.addEventListener('mousemove', this._onMouseMove.bind(this));
-    this.renderer.domElement.addEventListener('mouseup', this._onMouseUp.bind(this));
-    this.renderer.domElement.addEventListener('wheel', this._onMouseWheel.bind(this));
+    this.renderer.domElement.addEventListener('mousedown', this.boundEventHandlers.mousedown);
+    this.renderer.domElement.addEventListener('mousemove', this.boundEventHandlers.mousemove);
+    this.renderer.domElement.addEventListener('mouseup', this.boundEventHandlers.mouseup);
+    this.renderer.domElement.addEventListener('wheel', this.boundEventHandlers.wheel);
 
     // Prevent right-click context menu
-    this.renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
+    this.renderer.domElement.addEventListener('contextmenu', this.boundEventHandlers.contextmenu);
 
     // Keyboard events
-    window.addEventListener('keydown', this._onKeyDown.bind(this));
-    window.addEventListener('keyup', this._onKeyUp.bind(this));
+    window.addEventListener('keydown', this.boundEventHandlers.keydown);
+    window.addEventListener('keyup', this.boundEventHandlers.keyup);
 
     // Window resize
-    window.addEventListener('resize', this._onWindowResize.bind(this));
+    window.addEventListener('resize', this.boundEventHandlers.resize);
 
     // Expose editor to window for button callbacks
     window.editor = this;
@@ -1279,18 +1330,18 @@ export class StandaloneLevelEditor {
     if (!this.eventsBound) return;
 
     // Mouse events
-    this.renderer.domElement.removeEventListener('mousedown', this._onMouseDown.bind(this));
-    this.renderer.domElement.removeEventListener('mousemove', this._onMouseMove.bind(this));
-    this.renderer.domElement.removeEventListener('mouseup', this._onMouseUp.bind(this));
-    this.renderer.domElement.removeEventListener('wheel', this._onMouseWheel.bind(this));
-    this.renderer.domElement.removeEventListener('contextmenu', (e) => e.preventDefault());
+    this.renderer.domElement.removeEventListener('mousedown', this.boundEventHandlers.mousedown);
+    this.renderer.domElement.removeEventListener('mousemove', this.boundEventHandlers.mousemove);
+    this.renderer.domElement.removeEventListener('mouseup', this.boundEventHandlers.mouseup);
+    this.renderer.domElement.removeEventListener('wheel', this.boundEventHandlers.wheel);
+    this.renderer.domElement.removeEventListener('contextmenu', this.boundEventHandlers.contextmenu);
 
     // Keyboard events
-    window.removeEventListener('keydown', this._onKeyDown.bind(this));
-    window.removeEventListener('keyup', this._onKeyUp.bind(this));
+    window.removeEventListener('keydown', this.boundEventHandlers.keydown);
+    window.removeEventListener('keyup', this.boundEventHandlers.keyup);
 
     // Window resize
-    window.removeEventListener('resize', this._onWindowResize.bind(this));
+    window.removeEventListener('resize', this.boundEventHandlers.resize);
 
     this.eventsBound = false;
   }
@@ -1669,9 +1720,13 @@ export class StandaloneLevelEditor {
   _selectMesh(index) {
     if (index >= 0 && index < this.levelMeshes.length) {
       this.selectedMesh = this.levelMeshes[index];
+      console.log('Selected mesh:', this.selectedMesh);
+      console.log('Total meshes:', this.levelMeshes.length);
       this._highlightSelectedMesh(this.selectedMesh.mesh);
       this._updateUI();
       this._updateStatus(`Selected mesh: ${this.selectedMesh.name}`);
+    } else {
+      console.log('Invalid mesh index:', index, 'Total meshes:', this.levelMeshes.length);
     }
   }
   
@@ -1682,28 +1737,51 @@ export class StandaloneLevelEditor {
     }
     
     const mesh = this.selectedMesh.mesh;
-    const boundingBox = new THREE.Box3().setFromObject(mesh);
-    const center = boundingBox.getCenter(new THREE.Vector3());
-    const size = boundingBox.getSize(new THREE.Vector3());
+    const meshName = this.selectedMesh.name;
     
-    const materialSelect = document.getElementById('material-type');
+    // Get user-selected collider type
+    const colliderTypeSelect = document.getElementById('mesh-collider-type');
+    const colliderType = colliderTypeSelect ? colliderTypeSelect.value : 'mesh';
+    
+    // Get user-selected material type
+    const materialSelect = document.getElementById('mesh-material-type');
     const materialType = materialSelect ? materialSelect.value : 'ground';
     
-    const collider = {
-      id: `collider_${this.nextId}`,
-      type: 'box', // Default to box for mesh-based colliders
-      position: [center.x, center.y, center.z],
-      size: [size.x, size.y, size.z],
-      materialType: materialType,
-      meshName: this.selectedMesh.name
-    };
+    let collider;
+    
+    if (colliderType === 'mesh') {
+      // Create Trimesh collider (references the GLTF mesh)
+      collider = {
+        id: `collider_${this.nextId}`,
+        type: 'mesh',
+        meshName: meshName,
+        materialType: materialType
+      };
+      
+      this._updateStatus(`Created Trimesh collider for: ${meshName}`);
+    } else {
+      // Create Box collider (bounding box approximation)
+      const boundingBox = new THREE.Box3().setFromObject(mesh);
+      const center = boundingBox.getCenter(new THREE.Vector3());
+      const size = boundingBox.getSize(new THREE.Vector3());
+      
+      collider = {
+        id: `collider_${this.nextId}`,
+        type: 'box',
+        position: [center.x, center.y, center.z],
+        size: [size.x, size.y, size.z],
+        rotation: [0, 0, 0],
+        materialType: materialType
+      };
+      
+      this._updateStatus(`Created Box collider for: ${meshName} (${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)})`);
+    }
     
     this.colliders.push(collider);
     this.nextId++;
     
     this._createColliderVisuals();
     this._updateUI();
-    this._updateStatus(`Created collider for mesh: ${this.selectedMesh.name}`);
   }
   
   _deleteCollider(index) {
