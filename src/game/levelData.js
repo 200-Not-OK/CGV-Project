@@ -3,7 +3,7 @@ export const levels = [
   {
     "id" : "level1",
     "name": "Level 1: The Forgotten Forest",
-    "gltfUrl": "src/assets/levels/NodeVille/MapFinal.gltf",    
+    "gltfUrl": "src/assets/levels/Level1/MapFinal.gltf",    
     "startPosition": [
       0,
       10,
