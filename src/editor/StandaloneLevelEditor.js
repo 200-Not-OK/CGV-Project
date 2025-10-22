@@ -45,7 +45,7 @@ export class StandaloneLevelEditor {
     // Selection system
     this.selected = null;
     this.selectedType = null;
-    this.selectedMesh = null; // Currently selected GLTF mesh
+    this.selectedMeshes = []; // Array for multiple mesh selection
     
     // Interaction
     this.raycaster = new THREE.Raycaster();
@@ -227,7 +227,7 @@ export class StandaloneLevelEditor {
 
       this.levelGeometry.remove(child);
     }
-
+    this.selectedMeshes = [];
     // Clear visual representations
     this._clearVisualRepresentations();
 
@@ -619,14 +619,16 @@ export class StandaloneLevelEditor {
     });
   }
   
-  _highlightSelectedMesh(mesh) {
-    // Clear existing highlights
-    this.meshOutlines.forEach(outline => this.scene.remove(outline));
-    this.meshOutlines = [];
-    
-    if (!mesh) return;
-    
-    // Create wireframe outline for selected mesh
+_highlightSelectedMeshes() {
+  // Clear existing highlights
+  this.meshOutlines.forEach(outline => this.scene.remove(outline));
+  this.meshOutlines = [];
+  
+  if (this.selectedMeshes.length === 0) return;
+  
+  // Create wireframe outlines for all selected meshes
+  this.selectedMeshes.forEach(meshInfo => {
+    const mesh = meshInfo.mesh;
     const geometry = mesh.geometry.clone();
     const material = new THREE.MeshBasicMaterial({
       color: 0xffff00,
@@ -643,7 +645,8 @@ export class StandaloneLevelEditor {
     
     this.scene.add(outline);
     this.meshOutlines.push(outline);
-  }
+  });
+}
   
   _createPatrolPointVisuals() {
     // Clear existing patrol point visuals first
@@ -844,71 +847,41 @@ export class StandaloneLevelEditor {
         <div id="mesh-list">
           <h5>Level Meshes (${this.levelMeshes.length})</h5>
           ${this.levelMeshes.map((meshInfo, index) => `
-            <div class="item-row ${this.selectedMesh === meshInfo ? 'selected' : ''}" 
-                 data-type="mesh" data-index="${index}">
-              <strong>${meshInfo.name}</strong>
-              <button onclick="window.editor._selectMesh(${index})">Select</button>
-            </div>
-          `).join('')}
+  <div class="item-row ${this.selectedMeshes.includes(meshInfo) ? 'selected' : ''}" 
+       data-type="mesh" data-index="${index}">
+    <strong>${meshInfo.name}</strong>
+    <button onclick="window.editor._selectMesh(${index})">Select</button>
+  </div>
+`).join('')}
         </div>
         
-        ${this.selectedMesh ? `
-          <div style="margin-top: 15px; padding: 10px; border: 1px solid #4CAF50; background: #1a1a1a;">
-            <h5 style="color: #4CAF50;">✓ Selected: ${this.selectedMesh.name}</h5>
-            
-            <label>Collider Type:</label><br>
-            <select id="mesh-collider-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
-              <option value="mesh">Mesh (Trimesh - Accurate)</option>
-              <option value="box">Box (Bounding Box - Faster)</option>
-            </select>
-            
-            <label>Material Type:</label><br>
-            <select id="mesh-material-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
-              ${materialTypeOptions}
-            </select>
-            
-            <button id="create-collider-from-mesh" style="width: 100%; padding: 5px; background: #4CAF50; color: white;">
-              Create Collider from Mesh
-            </button>
-          </div>
-        ` : '<p style="font-size: 14px; color: #ff5555; margin-top: 10px; padding: 10px; border: 1px solid #ff5555;">⚠️ No mesh selected - click Select button above</p>'}
-      </div>
-      
-      <div id="collider-controls" style="display: ${this.mode === 'collider' ? 'block' : 'none'};">
-        <h4>Collider Controls</h4>
-        
-        <label>Type:</label><br>
-        <select id="collider-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
-          ${colliderTypeOptions}
-        </select>
-        
-        <label>Material Type:</label><br>
-        <select id="material-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
-          ${materialTypeOptions}
-        </select>
-        
-        <button id="add-collider" style="width: 100%; padding: 5px;">Add Collider (Click on level)</button>
-        
-        <div id="collider-list">
-          <h5>Colliders (${this.colliders.length})</h5>
-          ${this.colliders.map((collider, index) => {
-            // Handle mesh-type colliders differently (they reference GLTF meshes)
-            const positionStr = collider.type === 'mesh' 
-              ? `Mesh: ${collider.meshName}` 
-              : `at [${collider.position.join(', ')}]`;
-            
-            return `
-              <div class="item-row" data-type="collider" data-index="${index}">
-                <strong>${collider.type}</strong> (${collider.materialType})<br>
-                ${positionStr}
-                <button onclick="window.editor._deleteCollider(${index})">Delete</button>
-                ${collider.type !== 'mesh' ? `<button onclick="window.editor._editCollider(${index})">Edit</button>` : ''}
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-      
+        ${this.selectedMeshes.length > 0 ? `
+  <div style="margin-top: 15px; padding: 10px; border: 1px solid #4CAF50; background: #1a1a1a;">
+    <h5 style="color: #4CAF50;">✓ Selected: ${this.selectedMeshes.length} mesh(es)</h5>
+    <div style="max-height: 100px; overflow-y: auto; margin: 10px 0; font-size: 11px;">
+      ${this.selectedMeshes.map(mesh => `<div>• ${mesh.name}</div>`).join('')}
+    </div>
+    
+    <label>Collider Type:</label><br>
+    <select id="mesh-collider-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+      <option value="mesh">Mesh (Trimesh - Accurate)</option>
+      <option value="box">Box (Bounding Box - Faster)</option>
+    </select>
+    
+    <label>Material Type:</label><br>
+    <select id="mesh-material-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+      ${materialTypeOptions}
+    </select>
+    
+    <button id="create-collider-from-mesh" style="width: 100%; padding: 5px; background: #4CAF50; color: white;">
+      Create Collider${this.selectedMeshes.length > 1 ? 's' : ''} from Mesh${this.selectedMeshes.length > 1 ? 'es' : ''}
+    </button>
+    
+    <button id="clear-mesh-selection" style="width: 100%; padding: 5px; background: #666; color: white; margin-top: 5px;">
+      Clear Selection (${this.selectedMeshes.length})
+    </button>
+  </div>
+` : '<p style="font-size: 14px; color: #ff5555; margin-top: 10px; padding: 10px; border: 1px solid #ff5555;">⚠️ No mesh selected - click Select button above or shift+click in 3D view</p>'}
       <div id="patrol-controls" style="display: ${this.mode === 'patrol' ? 'block' : 'none'};">
         <h4>Patrol Point Controls</h4>
         <p>Select an enemy first, then click to add patrol points</p>
@@ -970,6 +943,10 @@ export class StandaloneLevelEditor {
           background: #444;
           border: 1px solid #4CAF50;
         }
+          .item-row.multi-selected {
+  background: #2a4a2a !important;
+  border: 1px solid #4CAF50 !important;
+}
         .item-row button {
           float: right;
           padding: 2px 6px;
@@ -1285,6 +1262,16 @@ export class StandaloneLevelEditor {
     if (deselectBtn) {
       deselectBtn.addEventListener('click', () => this._selectObject(null));
     }
+
+    const clearSelectionBtn = document.getElementById('clear-mesh-selection');
+if (clearSelectionBtn) {
+  clearSelectionBtn.addEventListener('click', () => {
+    this.selectedMeshes = [];
+    this._highlightSelectedMeshes();
+    this._updateUI();
+    this._updateStatus('Selection cleared');
+  });
+}
     
     // Collider type change - update size inputs
     const colliderTypeSelect = document.getElementById('selected-collider-type');
@@ -1595,27 +1582,49 @@ export class StandaloneLevelEditor {
   }
   
   _handleMeshSelection(event) {
-    const rect = this.renderer.domElement.getBoundingClientRect();
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  const rect = this.renderer.domElement.getBoundingClientRect();
+  this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  
+  this.raycaster.setFromCamera(this.mouse, this.camera);
+  
+  // Only intersect with level meshes
+  const levelMeshes = this.levelMeshes.map(info => info.mesh);
+  const intersects = this.raycaster.intersectObjects(levelMeshes);
+  
+  if (intersects.length > 0) {
+    const clickedMesh = intersects[0].object;
+    const meshInfo = this.levelMeshes.find(info => info.mesh === clickedMesh);
     
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    
-    // Only intersect with level meshes
-    const levelMeshes = this.levelMeshes.map(info => info.mesh);
-    const intersects = this.raycaster.intersectObjects(levelMeshes);
-    
-    if (intersects.length > 0) {
-      const clickedMesh = intersects[0].object;
-      const meshInfo = this.levelMeshes.find(info => info.mesh === clickedMesh);
-      if (meshInfo) {
-        this.selectedMesh = meshInfo;
-        this._highlightSelectedMesh(clickedMesh);
-        this._updateUI();
-        this._updateStatus(`Selected mesh: ${meshInfo.name}`);
+    if (meshInfo) {
+      if (event.shiftKey) {
+        // Shift+click: toggle selection
+        const existingIndex = this.selectedMeshes.findIndex(m => m === meshInfo);
+        if (existingIndex >= 0) {
+          // Remove from selection
+          this.selectedMeshes.splice(existingIndex, 1);
+        } else {
+          // Add to selection
+          this.selectedMeshes.push(meshInfo);
+        }
+      } else {
+        // Regular click: replace selection
+        this.selectedMeshes = [meshInfo];
       }
+      
+      this._highlightSelectedMeshes();
+      this._updateUI();
+      this._updateStatus(`Selected ${this.selectedMeshes.length} mesh(es)`);
     }
+  } else if (!event.shiftKey) {
+    // Clicked empty space without shift: clear selection
+    this.selectedMeshes = [];
+    this._highlightSelectedMeshes();
+    this._updateUI();
+    this._updateStatus('Selection cleared');
   }
+}
+
   
   _addEnemy(position) {
     const enemyTypeSelect = document.getElementById('enemy-type');
@@ -1717,35 +1726,37 @@ export class StandaloneLevelEditor {
     this._updateStatus(`Added ${type} collider at [${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)}]`);
   }
   
-  _selectMesh(index) {
-    if (index >= 0 && index < this.levelMeshes.length) {
-      this.selectedMesh = this.levelMeshes[index];
-      console.log('Selected mesh:', this.selectedMesh);
-      console.log('Total meshes:', this.levelMeshes.length);
-      this._highlightSelectedMesh(this.selectedMesh.mesh);
-      this._updateUI();
-      this._updateStatus(`Selected mesh: ${this.selectedMesh.name}`);
-    } else {
-      console.log('Invalid mesh index:', index, 'Total meshes:', this.levelMeshes.length);
-    }
+ _selectMesh(index) {
+  if (index >= 0 && index < this.levelMeshes.length) {
+    const meshInfo = this.levelMeshes[index];
+    
+    // For UI list, replace selection (not additive)
+    this.selectedMeshes = [meshInfo];
+    this._highlightSelectedMeshes();
+    this._updateUI();
+    this._updateStatus(`Selected mesh: ${meshInfo.name}`);
   }
+}
   
   _createColliderFromSelectedMesh() {
-    if (!this.selectedMesh) {
-      this._updateStatus('No mesh selected');
-      return;
-    }
-    
-    const mesh = this.selectedMesh.mesh;
-    const meshName = this.selectedMesh.name;
-    
-    // Get user-selected collider type
-    const colliderTypeSelect = document.getElementById('mesh-collider-type');
-    const colliderType = colliderTypeSelect ? colliderTypeSelect.value : 'mesh';
-    
-    // Get user-selected material type
-    const materialSelect = document.getElementById('mesh-material-type');
-    const materialType = materialSelect ? materialSelect.value : 'ground';
+  if (this.selectedMeshes.length === 0) {
+    this._updateStatus('No meshes selected');
+    return;
+  }
+  
+  // Get user-selected collider type
+  const colliderTypeSelect = document.getElementById('mesh-collider-type');
+  const colliderType = colliderTypeSelect ? colliderTypeSelect.value : 'mesh';
+  
+  // Get user-selected material type
+  const materialSelect = document.getElementById('mesh-material-type');
+  const materialType = materialSelect ? materialSelect.value : 'ground';
+  
+  let createdCount = 0;
+  
+  this.selectedMeshes.forEach(meshInfo => {
+    const mesh = meshInfo.mesh;
+    const meshName = meshInfo.name;
     
     let collider;
     
@@ -1757,8 +1768,6 @@ export class StandaloneLevelEditor {
         meshName: meshName,
         materialType: materialType
       };
-      
-      this._updateStatus(`Created Trimesh collider for: ${meshName}`);
     } else {
       // Create Box collider (bounding box approximation)
       const boundingBox = new THREE.Box3().setFromObject(mesh);
@@ -1773,16 +1782,17 @@ export class StandaloneLevelEditor {
         rotation: [0, 0, 0],
         materialType: materialType
       };
-      
-      this._updateStatus(`Created Box collider for: ${meshName} (${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)})`);
     }
     
     this.colliders.push(collider);
     this.nextId++;
-    
-    this._createColliderVisuals();
-    this._updateUI();
-  }
+    createdCount++;
+  });
+  
+  this._createColliderVisuals();
+  this._updateUI();
+  this._updateStatus(`Created ${createdCount} collider(s) from ${this.selectedMeshes.length} mesh(es)`);
+}
   
   _deleteCollider(index) {
     if (index >= 0 && index < this.colliders.length) {
