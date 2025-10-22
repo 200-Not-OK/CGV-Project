@@ -6206,8 +6206,8 @@ onLevelComplete: {
         startPosition: [-4, 15, 0],
     
     // Basic setup
-    ui: ['hud', 'minimap'],
-    
+       "lights": ["BasicLights"],
+    "ui": ["hud"],
     enemies: [],
     
     // Fallback geometry (always include)
