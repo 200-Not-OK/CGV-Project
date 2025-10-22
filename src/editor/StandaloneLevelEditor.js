@@ -65,7 +65,7 @@ export class StandaloneLevelEditor {
     this.gltfLoader = new GLTFLoader();
     
     // Enemy and Light types
-    this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer'];
+    this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer', 'snake','crawler'];
     this.lightTypes = ['BasicLights', 'PointPulse', 'HemisphereFill'];
     this.colliderTypes = ['box', 'sphere', 'capsule'];
     this.materialTypes = ['ground', 'wall', 'platform'];
@@ -715,7 +715,9 @@ export class StandaloneLevelEditor {
       walker: 0xff0000,    // Red
       runner: 0x00ff00,    // Green
       jumper: 0x0000ff,    // Blue
-      flyer: 0xffff00      // Yellow
+      flyer: 0xffff00,     // Yellow
+      snake: 0x00ff88,   // Cyan-green
+      crawler: 0xff8800   // Orange
     };
     return colors[type] || 0x888888;
   }
@@ -2186,7 +2188,9 @@ export class StandaloneLevelEditor {
       walker: 'src/assets/low_poly_female/scene.gltf',
       runner: 'src/assets/low_poly_male/scene.gltf',
       jumper: 'src/assets/low_poly_female/scene.gltf',
-      flyer: 'src/assets/futuristic_flying_animated_robot_-_low_poly/scene.gltf'
+      flyer: 'src/assets/futuristic_flying_animated_robot_-_low_poly/scene.gltf',
+      snake: 'src/assets/enemies/snake/scene.gltf',
+      crawler: 'src/assets/enemies/crawler/Crawler.gltf'
     };
     return urls[type] || urls.walker;
   }
@@ -2196,7 +2200,9 @@ export class StandaloneLevelEditor {
       walker: 2.4,
       runner: 4.0,
       jumper: 2.0,
-      flyer: 2.5
+      flyer: 2.5,
+      snake: 1.5,
+      crawler: 1.5
     };
     return speeds[type] || 2.0;
   }
