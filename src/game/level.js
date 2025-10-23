@@ -1,6 +1,7 @@
 // src/game/level.js
 import * as THREE from 'three';
 import { EnemyManager } from './EnemyManager.js';
+import { NpcManager } from './NpcManager.js';
 import { loadGLTFModel } from './gltfLoader.js';
 import { CinematicsManager } from './cinematicsManager.js';
 
@@ -9,7 +10,7 @@ import { CinematicsManager } from './cinematicsManager.js';
  * - Loads GLTF (visuals) and optional manual colliders from levelData
  * - Falls back to procedural geometry if GLTF fails/missing
  * - Always guarantees at least one static ground so player doesn't fall forever
- * - Spawns enemies, exposes getPlatforms() for player collisions
+ * - Spawns enemies and NPCs, exposes getPlatforms() for player collisions
  * - Provides cinematic trigger helpers
  * - Disposes cleanly
  */
@@ -28,6 +29,7 @@ export class Level {
     this.gltfScene = null;
 
     this.enemyManager = new EnemyManager(this.scene, this.physicsWorld);
+    this.npcManager = new NpcManager(this.scene, this.physicsWorld);
 
     // Cinematics
     this.cinematicsManager = new CinematicsManager(this.game);
@@ -75,6 +77,10 @@ export class Level {
     // 4) Enemies
     console.log('👾 Loading enemies...');
     this._loadEnemies();
+
+    // 4.5) NPCs
+    console.log('🤖 Loading NPCs...');
+    this._loadNpcs();
 
     // 5) Cinematics
     if (this.data.cinematics) {
@@ -337,6 +343,20 @@ export class Level {
     console.log(`👾 Loaded ${this.data.enemies.length} enemies`);
   }
 
+  _loadNpcs() {
+    if (!Array.isArray(this.data.npcs) || this.data.npcs.length === 0) return;
+
+    for (const nd of this.data.npcs) {
+      try {
+        const opts = { ...nd, game: this.game };
+        this.npcManager.spawn(nd.type, opts);
+      } catch (e) {
+        console.warn('Failed to spawn NPC', nd, e);
+      }
+    }
+    console.log(`🤖 Loaded ${this.data.npcs.length} NPCs`);
+  }
+
   // ---------------------------------------------------------------------------
   // TICK
   // ---------------------------------------------------------------------------
@@ -344,6 +364,10 @@ export class Level {
     if (this.enemyManager) {
       const plats = platforms && platforms.length ? platforms : this.getPlatforms();
       this.enemyManager.update(delta, player, plats);
+    }
+    if (this.npcManager) {
+      const plats = platforms && platforms.length ? platforms : this.getPlatforms();
+      this.npcManager.update(delta, player, plats);
     }
   }
 
@@ -402,6 +426,7 @@ export class Level {
 
       // Managers
       if (this.enemyManager) { this.enemyManager.dispose?.(); this.enemyManager = null; }
+      if (this.npcManager) { this.npcManager.dispose?.(); this.npcManager = null; }
       if (this.cinematicsManager) { this.cinematicsManager.dispose?.(); this.cinematicsManager = null; }
     } catch (e) {
       console.warn('Level.dispose encountered an issue:', e);

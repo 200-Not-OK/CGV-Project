@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { YellowBot } from '../game/npc/YellowBot.js';
 
 // Standalone Level Editor - Focused on Enemies, Patrol Points, and Lighting
 // Features:
@@ -29,6 +30,7 @@ export class StandaloneLevelEditor {
     
     // Data storage (current level's editable data)
     this.enemies = [];
+    this.npcs = [];
     this.lights = [];
     this.patrolPoints = [];
     this.colliders = []; // Manual colliders
@@ -36,6 +38,7 @@ export class StandaloneLevelEditor {
     
     // Visual representations
     this.enemyMeshes = [];
+    this.npcMeshes = [];
     this.lightMeshes = [];
     this.patrolPointMeshes = [];
     this.patrolConnections = []; // Lines showing patrol routes
@@ -66,6 +69,7 @@ export class StandaloneLevelEditor {
     
     // Enemy and Light types
     this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer', 'snake','crawler'];
+    this.npcTypes = ['yellow_bot']; // NPCs (non-player characters)
     this.lightTypes = ['BasicLights', 'PointPulse', 'HemisphereFill'];
     this.colliderTypes = ['box', 'sphere', 'capsule'];
     this.materialTypes = ['ground', 'wall', 'platform'];
@@ -258,6 +262,20 @@ export class StandaloneLevelEditor {
     });
     this.enemyMeshes = [];
 
+    // Remove and dispose NPC meshes
+    this.npcMeshes.forEach(mesh => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach(material => material.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+      }
+    });
+    this.npcMeshes = [];
+
     // Remove and dispose light meshes
     this.lightMeshes.forEach(mesh => {
       this.scene.remove(mesh);
@@ -323,6 +341,9 @@ export class StandaloneLevelEditor {
       case 'enemy':
         this._createEnemyVisuals();
         break;
+      case 'npc':
+        this._createNpcVisuals();
+        break;
       case 'light':
         this._createLightVisuals();
         break;
@@ -339,6 +360,7 @@ export class StandaloneLevelEditor {
       case 'select':
         // Show all visuals in select mode
         this._createEnemyVisuals();
+        this._createNpcVisuals();
         this._createLightVisuals();
         this._createPatrolPointVisuals();
         this._createPatrolConnections();
@@ -423,6 +445,12 @@ export class StandaloneLevelEditor {
       this._createEnemyVisuals();
     }
     
+    // Load NPCs
+    if (this.currentLevel.npcs) {
+      this.npcs = [...this.currentLevel.npcs];
+      this._createNpcVisuals();
+    }
+    
     // Load lights
     if (this.currentLevel.lights) {
       this.lights = this.currentLevel.lights.map(lightType => ({
@@ -439,7 +467,7 @@ export class StandaloneLevelEditor {
       this._createColliderVisuals();
     }
     
-    // Extract patrol points from enemies
+    // Extract patrol points from enemies and NPCs
     this._extractPatrolPoints();
     this._createPatrolPointVisuals();
     this._createPatrolConnections();
@@ -509,6 +537,22 @@ export class StandaloneLevelEditor {
             waitTime: point[3] || 0.5,
             enemyIndex: enemyIndex,
             pointIndex: pointIndex,
+            entityType: 'enemy',
+            id: this.nextId++
+          });
+        });
+      }
+    });
+
+    this.npcs.forEach((npc, npcIndex) => {
+      if (npc.patrolPoints) {
+        npc.patrolPoints.forEach((point, pointIndex) => {
+          this.patrolPoints.push({
+            position: [point[0], point[1], point[2]],
+            waitTime: point[3] || 0.5,
+            npcIndex: npcIndex,
+            pointIndex: pointIndex,
+            entityType: 'npc',
             id: this.nextId++
           });
         });
@@ -538,6 +582,34 @@ export class StandaloneLevelEditor {
     });
     } catch (error) {
       console.error('Error creating enemy visuals:', error);
+    }
+  }
+
+  _createNpcVisuals() {
+    try {
+      // Clear existing NPC visuals first
+      this.npcMeshes.forEach(mesh => this.scene.remove(mesh));
+      this.npcMeshes = [];
+    
+    this.npcs.forEach((npc, index) => {
+      const geometry = new THREE.SphereGeometry(0.6, 8, 8);
+      const material = new THREE.MeshLambertMaterial({ 
+        color: 0xffff00, // Yellow for NPCs
+        emissive: 0x444400,
+        transparent: true,
+        opacity: 0.85
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      
+      mesh.position.set(npc.position[0], npc.position[1], npc.position[2]);
+      mesh.userData = { type: 'npc', index: index, npcData: npc };
+      mesh.name = `npc_${index}`;
+
+      this.scene.add(mesh);
+      this.npcMeshes.push(mesh);
+    });
+    } catch (error) {
+      console.error('Error creating NPC visuals:', error);
     }
   }
   
@@ -789,6 +861,7 @@ export class StandaloneLevelEditor {
       <div style="margin-bottom: 20px;">
         <label>Edit Mode:</label><br>
         <button id="mode-enemy" class="mode-btn ${this.mode === 'enemy' ? 'active' : ''}">Enemies</button>
+        <button id="mode-npc" class="mode-btn ${this.mode === 'npc' ? 'active' : ''}">NPCs</button>
         <button id="mode-light" class="mode-btn ${this.mode === 'light' ? 'active' : ''}">Lights</button>
         <button id="mode-patrol" class="mode-btn ${this.mode === 'patrol' ? 'active' : ''}">Patrol</button>
         <button id="mode-mesh" class="mode-btn ${this.mode === 'mesh' ? 'active' : ''}">Meshes</button>
@@ -810,6 +883,25 @@ export class StandaloneLevelEditor {
             <div class="item-row" data-type="enemy" data-index="${index}">
               <strong>${enemy.type}</strong> at [${enemy.position.join(', ')}]
               <button onclick="window.editor._deleteEnemy(${index})">Delete</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div id="npc-controls" style="display: ${this.mode === 'npc' ? 'block' : 'none'};">
+        <h4>NPC Controls</h4>
+        <label>Type:</label><br>
+        <select id="npc-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+          ${this.npcTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
+        </select>
+        <button id="add-npc" style="width: 100%; padding: 5px;">Add NPC (Click on level)</button>
+        
+        <div id="npc-list">
+          <h5>NPCs (${this.npcs.length})</h5>
+          ${this.npcs.map((npc, index) => `
+            <div class="item-row" data-type="npc" data-index="${index}">
+              <strong>${npc.type}</strong> at [${npc.position.join(', ')}]
+              <button onclick="window.editor._deleteNpc(${index})">Delete</button>
             </div>
           `).join('')}
         </div>
@@ -1023,6 +1115,34 @@ export class StandaloneLevelEditor {
         <div style="margin-top: 5px;">
           <label style="font-size: 11px;">Chase Range:</label><br>
           <input type="number" id="selected-chase-range" value="${enemyData.chaseRange || 5}" step="0.5" min="0" 
+                 style="width: 100%; padding: 3px; font-size: 11px;" 
+                 onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
+                 oninput="window.editor._onPropertyInputChange()"
+                 onchange="window.editor._onPropertyInputChange()">
+        </div>
+      `;
+    } else if (this.selectedType === 'npc') {
+      const npcData = selectedData.npcData;
+      typeSpecificInputs = `
+        <div style="margin-top: 10px;">
+          <label style="font-size: 11px;">NPC Type:</label><br>
+          <select id="selected-npc-type" style="width: 100%; padding: 3px; font-size: 11px;">
+            ${this.npcTypes.map(type => 
+              `<option value="${type}" ${type === npcData.type ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1)}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div style="margin-top: 5px;">
+          <label style="font-size: 11px;">Speed:</label><br>
+          <input type="number" id="selected-npc-speed" value="${npcData.speed || 2}" step="0.1" min="0" 
+                 style="width: 100%; padding: 3px; font-size: 11px;" 
+                 onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
+                 oninput="window.editor._onPropertyInputChange()"
+                 onchange="window.editor._onPropertyInputChange()">
+        </div>
+        <div style="margin-top: 5px;">
+          <label style="font-size: 11px;">Scale:</label><br>
+          <input type="number" id="selected-npc-scale" value="${npcData.scale || 1.0}" step="0.1" min="0.1" 
                  style="width: 100%; padding: 3px; font-size: 11px;" 
                  onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
                  oninput="window.editor._onPropertyInputChange()"
@@ -1245,6 +1365,14 @@ export class StandaloneLevelEditor {
       addEnemyBtn.addEventListener('click', () => {
         this.mode = 'enemy';
         this._updateStatus('Click on the level to place an enemy');
+      });
+    }
+    
+    const addNpcBtn = document.getElementById('add-npc');
+    if (addNpcBtn) {
+      addNpcBtn.addEventListener('click', () => {
+        this.mode = 'npc';
+        this._updateStatus('Click on the level to place an NPC');
       });
     }
     
@@ -1557,6 +1685,9 @@ export class StandaloneLevelEditor {
         case 'enemy':
           this._addEnemy(point);
           break;
+        case 'npc':
+          this._addNpc(point);
+          break;
         case 'light':
           this._addLight(point);
           break;
@@ -1582,6 +1713,7 @@ export class StandaloneLevelEditor {
 
     const selectableObjects = [
       ...this.enemyMeshes,
+      ...this.npcMeshes,
       ...this.lightMeshes,
       ...this.patrolPointMeshes,
       ...this.colliderMeshes
@@ -1638,6 +1770,27 @@ export class StandaloneLevelEditor {
     this._updateUI();
     this._updateStatus(`Added ${type} enemy at [${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)}]`);
   }
+
+  _addNpc(position) {
+    const npcTypeSelect = document.getElementById('npc-type');
+    const type = npcTypeSelect && npcTypeSelect.value ? npcTypeSelect.value : 'yellow_bot';
+    
+    const npc = {
+      type: type,
+      position: [position.x, position.y, position.z],
+      modelUrl: this._getDefaultModelUrl(type),
+      patrolPoints: [],
+      speed: this._getDefaultSpeed(type),
+      scale: 1.0, // Default scale
+      chaseRange: 0, // NPCs don't chase
+      id: this.nextId++
+    };
+    
+    this.npcs.push(npc);
+    this._createNpcVisuals();
+    this._updateUI();
+    this._updateStatus(`Added ${type} NPC at [${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)}]`);
+  }
   
   _addLight(position) {
     const lightTypeSelect = document.getElementById('light-type');
@@ -1656,30 +1809,54 @@ export class StandaloneLevelEditor {
   }
   
   _addPatrolPoint(position) {
-    if (!this.selected || this.selectedType !== 'enemy') {
-      this._updateStatus('Select an enemy first to add patrol points');
+    if (!this.selected || (this.selectedType !== 'enemy' && this.selectedType !== 'npc')) {
+      this._updateStatus('Select an enemy or NPC first to add patrol points');
       return;
     }
     
-    const enemyIndex = this.selected.userData.index;
-    const enemy = this.enemies[enemyIndex];
-    
-    if (!enemy.patrolPoints) enemy.patrolPoints = [];
-    
-    const pointIndex = enemy.patrolPoints.length;
-    enemy.patrolPoints.push([position.x, position.y, position.z, 0.5]);
-    
-    // Update patrol points and visuals
-    this._extractPatrolPoints();
-    this._clearVisualRepresentations();
-    this._createEnemyVisuals();
-    this._createLightVisuals();
-    this._createColliderVisuals();
-    this._createPatrolPointVisuals();
-    this._createPatrolConnections();
-    
-    this._updateUI();
-    this._updateStatus(`Added patrol point ${pointIndex} for enemy ${enemyIndex}`);
+    if (this.selectedType === 'enemy') {
+      const enemyIndex = this.selected.userData.index;
+      const enemy = this.enemies[enemyIndex];
+      
+      if (!enemy.patrolPoints) enemy.patrolPoints = [];
+      
+      const pointIndex = enemy.patrolPoints.length;
+      enemy.patrolPoints.push([position.x, position.y, position.z, 0.5]);
+      
+      // Update patrol points and visuals
+      this._extractPatrolPoints();
+      this._clearVisualRepresentations();
+      this._createEnemyVisuals();
+      this._createNpcVisuals();
+      this._createLightVisuals();
+      this._createColliderVisuals();
+      this._createPatrolPointVisuals();
+      this._createPatrolConnections();
+      
+      this._updateUI();
+      this._updateStatus(`Added patrol point ${pointIndex} for enemy ${enemyIndex}`);
+    } else if (this.selectedType === 'npc') {
+      const npcIndex = this.selected.userData.index;
+      const npc = this.npcs[npcIndex];
+      
+      if (!npc.patrolPoints) npc.patrolPoints = [];
+      
+      const pointIndex = npc.patrolPoints.length;
+      npc.patrolPoints.push([position.x, position.y, position.z, 0.5]);
+      
+      // Update patrol points and visuals
+      this._extractPatrolPoints();
+      this._clearVisualRepresentations();
+      this._createEnemyVisuals();
+      this._createNpcVisuals();
+      this._createLightVisuals();
+      this._createColliderVisuals();
+      this._createPatrolPointVisuals();
+      this._createPatrolConnections();
+      
+      this._updateUI();
+      this._updateStatus(`Added patrol point ${pointIndex} for NPC ${npcIndex}`);
+    }
   }
   
   _addCollider(position) {
@@ -1861,6 +2038,12 @@ export class StandaloneLevelEditor {
           parseFloat(posY.value),
           parseFloat(posZ.value)
         ];
+      } else if (this.selectedType === 'npc' && this.npcs[index]) {
+        this.npcs[index].position = [
+          parseFloat(posX.value),
+          parseFloat(posY.value),
+          parseFloat(posZ.value)
+        ];
       } else if (this.selectedType === 'light' && this.lights[index]) {
         this.lights[index].position = [
           parseFloat(posX.value),
@@ -1874,13 +2057,22 @@ export class StandaloneLevelEditor {
           parseFloat(posZ.value)
         ];
         
-        // Update the corresponding enemy's patrol point array
+        // Update the corresponding enemy or NPC's patrol point array
         const patrolData = this.patrolPoints[index];
-        const enemy = this.enemies[patrolData.enemyIndex];
-        if (enemy && enemy.patrolPoints && enemy.patrolPoints[patrolData.pointIndex]) {
-          enemy.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
-          enemy.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
-          enemy.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
+        if (patrolData.entityType === 'enemy' && this.enemies[patrolData.enemyIndex]) {
+          const enemy = this.enemies[patrolData.enemyIndex];
+          if (enemy.patrolPoints && enemy.patrolPoints[patrolData.pointIndex]) {
+            enemy.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
+            enemy.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
+            enemy.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
+          }
+        } else if (patrolData.entityType === 'npc' && this.npcs[patrolData.npcIndex]) {
+          const npc = this.npcs[patrolData.npcIndex];
+          if (npc.patrolPoints && npc.patrolPoints[patrolData.pointIndex]) {
+            npc.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
+            npc.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
+            npc.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
+          }
         }
       } else if (this.selectedType === 'collider' && this.colliders[index]) {
         this.colliders[index].position = [
@@ -1922,6 +2114,24 @@ export class StandaloneLevelEditor {
         }
         if (chaseRangeInput) {
           this.enemies[index].chaseRange = parseFloat(chaseRangeInput.value);
+        }
+      }
+    } else if (this.selectedType === 'npc') {
+      const npcTypeSelect = document.getElementById('selected-npc-type');
+      const speedInput = document.getElementById('selected-npc-speed');
+      const scaleInput = document.getElementById('selected-npc-scale');
+      
+      const index = this.selected.userData.index;
+      if (this.npcs[index]) {
+        if (npcTypeSelect) {
+          this.npcs[index].type = npcTypeSelect.value;
+          this.npcs[index].modelUrl = this._getDefaultModelUrl(npcTypeSelect.value);
+        }
+        if (speedInput) {
+          this.npcs[index].speed = parseFloat(speedInput.value);
+        }
+        if (scaleInput) {
+          this.npcs[index].scale = parseFloat(scaleInput.value);
         }
       }
     } else if (this.selectedType === 'light') {
@@ -2151,6 +2361,23 @@ export class StandaloneLevelEditor {
       this.selectedType = null;
     }
   }
+
+  _deleteNpc(index) {
+    if (index >= 0 && index < this.npcs.length) {
+      this.npcs.splice(index, 1);
+      this._extractPatrolPoints(); // Update patrol points
+      this._clearVisualRepresentations();
+      this._createNpcVisuals();
+      this._createEnemyVisuals();
+      this._createLightVisuals();
+      this._createColliderVisuals();
+      this._createPatrolPointVisuals();
+      this._createPatrolConnections();
+      this._updateUI();
+      this.selected = null;
+      this.selectedType = null;
+    }
+  }
   
   _deleteLight(index) {
     if (index >= 0 && index < this.lights.length) {
@@ -2190,7 +2417,8 @@ export class StandaloneLevelEditor {
       jumper: 'src/assets/low_poly_female/scene.gltf',
       flyer: 'src/assets/futuristic_flying_animated_robot_-_low_poly/scene.gltf',
       snake: 'src/assets/enemies/snake/scene.gltf',
-      crawler: 'src/assets/enemies/crawler/Crawler.gltf'
+      crawler: 'src/assets/enemies/crawler/Crawler.gltf',
+      yellow_bot: 'src/assets/npc/yellow_bot/scene.gltf'
     };
     return urls[type] || urls.walker;
   }
@@ -2212,6 +2440,7 @@ export class StandaloneLevelEditor {
     
     // Update current level data
     this.currentLevel.enemies = [...this.enemies];
+    this.currentLevel.npcs = [...this.npcs];
     this.currentLevel.lights = this.lights.map(light => light.type);
     this.currentLevel.colliders = [...this.colliders];
     
@@ -2248,7 +2477,7 @@ export const levels = ${levelsJSON};`;
       <strong>Level Editor</strong><br>
       Level: ${currentLevel}<br>
       Mode: ${mode}<br>
-      Enemies: ${this.enemies.length} | Lights: ${this.lights.length} | Patrol: ${this.patrolPoints.length}<br>
+      Enemies: ${this.enemies.length} | NPCs: ${this.npcs.length} | Lights: ${this.lights.length} | Patrol: ${this.patrolPoints.length}<br>
       ${message}
     `;
   }
