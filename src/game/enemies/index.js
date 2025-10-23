@@ -7,4 +7,5 @@ export { FlyerEnemy } from './FlyerEnemy.js';
 export { JumperEnemy } from './JumperEnemy.js';
 export { SnakeEnemy } from './SnakeEnemy.js';
 export { SnakeBossEnemy } from './SnakeBossEnemy.js';
+export { MechBossEnemy } from './MechBossEnemy.js';
 export { CrawlerEnemy } from './CrawlerEnemy.js';

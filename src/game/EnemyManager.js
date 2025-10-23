@@ -5,6 +5,7 @@ import { JumperEnemy } from './enemies/JumperEnemy.js';
 import { FlyerEnemy } from './enemies/FlyerEnemy.js';
 import { SnakeEnemy } from './enemies/SnakeEnemy.js';
 import { SnakeBossEnemy } from './enemies/SnakeBossEnemy.js';
+import { MechBossEnemy } from './enemies/MechBossEnemy.js';
 import { CrawlerEnemy } from './enemies/CrawlerEnemy.js';
 
 export class EnemyManager {
@@ -19,6 +20,7 @@ export class EnemyManager {
       flyer: FlyerEnemy,
       snake: SnakeEnemy,
       snake_boss: SnakeBossEnemy,
+      mech_boss: MechBossEnemy,
       crawler: CrawlerEnemy,
       // register more types here
     };

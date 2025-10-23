@@ -68,7 +68,7 @@ export class StandaloneLevelEditor {
     this.gltfLoader = new GLTFLoader();
     
     // Enemy and Light types
-    this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer', 'snake','crawler'];
+    this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer', 'snake', 'snake_boss', 'mech_boss', 'crawler'];
     this.npcTypes = ['yellow_bot']; // NPCs (non-player characters)
     this.lightTypes = ['BasicLights', 'PointPulse', 'HemisphereFill'];
     this.colliderTypes = ['box', 'sphere', 'capsule'];
@@ -2417,6 +2417,8 @@ export class StandaloneLevelEditor {
       jumper: 'src/assets/low_poly_female/scene.gltf',
       flyer: 'src/assets/futuristic_flying_animated_robot_-_low_poly/scene.gltf',
       snake: 'src/assets/enemies/snake/scene.gltf',
+      snake_boss: 'src/assets/enemies/snake_boss/Snake_Angry.gltf',
+      mech_boss: 'src/assets/enemies/robot_boss/scene.gltf',
       crawler: 'src/assets/enemies/crawler/Crawler.gltf',
       yellow_bot: 'src/assets/npc/yellow_bot/scene.gltf'
     };
@@ -2430,6 +2432,8 @@ export class StandaloneLevelEditor {
       jumper: 2.0,
       flyer: 2.5,
       snake: 1.5,
+      snake_boss: 2.5,
+      mech_boss: 1.5,
       crawler: 1.5
     };
     return speeds[type] || 2.0;
