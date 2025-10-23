@@ -1407,6 +1407,22 @@ export const levels = [
         "chaseRange": 5,
         "id": 49
       }
+    ],
+    "npcs": [
+      {
+        "type": "yellow_bot",
+        "position": [
+          -75.25,
+          7,
+          84.55
+        ],
+        "modelUrl": "src/assets/npc/yellow_bot/scene.gltf",
+        "patrolPoints": [],
+        "speed": 2,
+        "scale": 5,
+        "chaseRange": 0,
+        "id": 36
+      }
     ]
   },
   {
