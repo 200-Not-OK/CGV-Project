@@ -34,7 +34,7 @@ export class Player {
     this.colliderOffset = {
       x: options.colliderOffsetX ?? 0,     // Sideways offset
       y: options.colliderOffsetY ?? 0,     // Vertical offset  
-      z: options.colliderOffsetZ ?? -0.4   // Forward/backward offset (negative = backward)
+      z: options.colliderOffsetZ ?? -0.8   // Forward/backward offset (negative = backward)
     };
     
     // Visual mesh (Three.js)

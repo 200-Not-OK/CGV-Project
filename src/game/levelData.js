@@ -1406,6 +1406,20 @@ export const levels = [
         "speed": 1.5,
         "chaseRange": 5,
         "id": 49
+      },
+            {
+        "type": "mech_boss",
+        "position": [
+          363.35,
+          2.35,
+          -15.41
+        ],
+        "modelUrl": "src/assets/enemies/robot_boss/scene.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "scale": 15,
+        "chaseRange": 15,
+        "id": 13
       }
     ],
     "npcs": [
