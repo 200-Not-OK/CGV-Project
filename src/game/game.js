@@ -21,7 +21,7 @@ import { LightManager } from './lightManager.js';
 import * as LightModules from './lights/index.js';
 import { PhysicsWorld } from './physics/PhysicsWorld.js';
 import { CombatSystem } from './combatSystem.js';
-import { DoorManager } from '../assets/doors/DoorManager.js';
+import { DoorManager } from '../../public/assets/doors/DoorManager.js';
 import { CollectiblesManager } from './CollectiblesManager.js';
 import { SoundManager } from './soundManager.js';
 import { ProximitySoundManager } from './proximitySoundManager.js';
