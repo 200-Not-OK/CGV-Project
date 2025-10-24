@@ -28,7 +28,7 @@ jobs:
       - name: Build Vite project
         run: npm run build
 
-      # 5. Upload dist/ to LAMP server
+      # 5. Upload dist contents to LAMP
       - name: Upload dist folder
         uses: appleboy/scp-action@master
         with:
@@ -39,18 +39,7 @@ jobs:
           source: "dist/*"
           target: "/home/${{ secrets.LAMP_USER }}/public_html/"
 
-      # 6. Upload public/assets folder
-    #   - name: Upload assets folder
-    #     uses: appleboy/scp-action@master
-    #     with:
-    #       host: lamp.ms.wits.ac.za
-    #       username: ${{ secrets.LAMP_USER }}
-    #       key: ${{ secrets.LAMP_SSH_KEY }}
-    #       port: 22
-    #       source: "public/assets"
-    #       target: "/home/${{ secrets.LAMP_USER }}/public_html/"
-
-      # 7. Fix permissions on LAMP server
+      # 6. Fix permissions on LAMP server
       - name: Fix permissions
         uses: appleboy/ssh-action@v0.1.7
         with:
