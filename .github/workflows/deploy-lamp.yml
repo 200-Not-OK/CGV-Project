@@ -1,0 +1,49 @@
+name: Deploy Vite Game to LAMP
+
+on:
+  push:
+    branches:
+      - main  # deploy when you push to main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build Vite project
+      - name: Build Vite project
+        run: npm run build
+
+      # 5. Deploy to LAMP
+      - name: Deploy via SCP and fix permissions
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: lamp.ms.wits.ac.za
+          username: ${{ secrets.LAMP_USER }}
+          password: ${{ secrets.LAMP_PASS }}
+          script: |
+            # Clear old public_html contents
+            rm -rf ~/public_html/*
+
+            # Upload dist
+            scp -r ./dist/* ${{ secrets.LAMP_USER }}@lamp.ms.wits.ac.za:~/public_html/
+
+            # Fix permissions: directories 755, files 644
+            find ~/public_html -type d -exec chmod 755 {} \;
+            find ~/public_html -type f -exec chmod 644 {} \;
+
+            echo "Deployment complete!"
