@@ -66,7 +66,7 @@ export function createSceneAndRenderer() {
 
   // FAR LAYER - Blue Nebulae (furthest, slowest rotation)
   rgbeLoader.load(
-    '/src/assets/HDR_blue_nebulae-1 (1).hdr',
+    'assets/HDR_blue_nebulae-1 (1).hdr',
     (textureFar) => {
       textureFar.needsUpdate = true;
       textureFar.minFilter = THREE.LinearFilter; // Faster filtering
@@ -102,7 +102,7 @@ export function createSceneAndRenderer() {
 
   // NEAR LAYER - Asteroid Field (closest, faster parallax rotation)
   rgbeLoader.load(
-    '/src/assets/HDR_asteroid_field.hdr',
+    'assets/HDR_asteroid_field.hdr',
     (textureNear) => {
       textureNear.needsUpdate = true;
       textureNear.minFilter = THREE.LinearFilter; // Faster filtering
