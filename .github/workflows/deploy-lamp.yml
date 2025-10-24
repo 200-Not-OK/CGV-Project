@@ -28,13 +28,7 @@ jobs:
       - name: Build Vite project
         run: npm run build
 
-      # 5. Prepare files for upload
-      - name: Prepare deploy folder
-        run: |
-          mkdir -p deploy
-          cp -r dist/* deploy/
-
-      # 6. Upload deploy folder contents to LAMP
+      # 5. Upload dist folder contents directly to LAMP
       - name: Upload site files
         uses: appleboy/scp-action@master
         with:
@@ -42,10 +36,11 @@ jobs:
           username: ${{ secrets.LAMP_USER }}
           key: ${{ secrets.LAMP_SSH_KEY }}
           port: 22
-          source: "deploy/*"
+          source: "dist/*"
           target: "/home/${{ secrets.LAMP_USER }}/public_html/"
+          strip_components: 1
 
-      # 7. Fix permissions on LAMP server
+      # 6. Fix permissions on LAMP server
       - name: Fix permissions
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -56,7 +51,3 @@ jobs:
             find ~/public_html -type d -exec chmod 755 {} \;
             find ~/public_html -type f -exec chmod 644 {} \;
             echo "Permissions fixed and deployment complete!"
-
-      # 8. Cleanup
-      - name: Cleanup deploy folder
-        run: rm -rf deploy
