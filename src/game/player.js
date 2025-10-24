@@ -101,9 +101,9 @@ export class Player {
     
     // Try different path formats for the model
     const modelPaths = [
-      'src/assets/Knight/Knight.gltf',
-      './src/assets/Knight/Knight.gltf',
-      '/src/assets/Knight/Knight.gltf'
+      '/assets/Knight/Knight.gltf',
+      './assets/Knight/Knight.gltf',
+      '/assets/Knight/Knight.gltf'
     ];
     
     let currentPathIndex = 0;
