@@ -3,15 +3,15 @@ name: Deploy Vite Game to LAMP
 on:
   push:
     branches:
-      - main  # deploy when you push to main
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
-      - name: Checkout code
+      # 1. Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       # 2. Setup Node.js
@@ -28,19 +28,36 @@ jobs:
       - name: Build Vite project
         run: npm run build
 
-      # 5. Deploy to LAMP
-      - name: Deploy via SSH
+      # 5. Upload dist/ to LAMP server
+      - name: Upload dist folder
+        uses: appleboy/scp-action@master
+        with:
+          host: lamp.ms.wits.ac.za
+          username: ${{ secrets.LAMP_USER }}
+          key: ${{ secrets.LAMP_SSH_KEY }}
+          port: 22
+          source: "dist/*"
+          target: "/home/${{ secrets.LAMP_USER }}/public_html/"
+
+      # 6. Upload public/assets folder
+    #   - name: Upload assets folder
+    #     uses: appleboy/scp-action@master
+    #     with:
+    #       host: lamp.ms.wits.ac.za
+    #       username: ${{ secrets.LAMP_USER }}
+    #       key: ${{ secrets.LAMP_SSH_KEY }}
+    #       port: 22
+    #       source: "public/assets"
+    #       target: "/home/${{ secrets.LAMP_USER }}/public_html/"
+
+      # 7. Fix permissions on LAMP server
+      - name: Fix permissions
         uses: appleboy/ssh-action@v0.1.7
         with:
-            host: lamp.ms.wits.ac.za
-            username: ${{ secrets.LAMP_USER }}
-            password: ${{ secrets.LAMP_PASS }}
-            script: |
-                rm -rf ~/public_html/*
-                scp -r ./dist/* ${{ secrets.LAMP_USER }}@lamp.ms.wits.ac.za:~/public_html/
-                find ~/public_html -type d -exec chmod 755 {} \;
-                find ~/public_html -type f -exec chmod 644 {} \;
-                echo "Deployment complete!"
-            # Add the host key for verification
-            known_hosts: lamp.ms.wits.ac.za
-
+          host: lamp.ms.wits.ac.za
+          username: ${{ secrets.LAMP_USER }}
+          key: ${{ secrets.LAMP_SSH_KEY }}
+          script: |
+            find ~/public_html -type d -exec chmod 755 {} \;
+            find ~/public_html -type f -exec chmod 644 {} \;
+            echo "Permissions fixed and deployment complete!"
