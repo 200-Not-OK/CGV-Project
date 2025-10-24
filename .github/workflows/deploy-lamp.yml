@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.LAMP_USER }}
           key: ${{ secrets.LAMP_SSH_KEY }}
           port: 22
-          source: "dist/*"
+          source: "dist/"
           target: "/home/${{ secrets.LAMP_USER }}/public_html/"
 
       # 6. Fix permissions on LAMP server
