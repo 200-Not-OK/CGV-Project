@@ -29,21 +29,18 @@ jobs:
         run: npm run build
 
       # 5. Deploy to LAMP
-      - name: Deploy via SCP and fix permissions
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: lamp.ms.wits.ac.za
-          username: ${{ secrets.LAMP_USER }}
-          password: ${{ secrets.LAMP_PASS }}
-          script: |
-            # Clear old public_html contents
-            rm -rf ~/public_html/*
+            host: lamp.ms.wits.ac.za
+            username: ${{ secrets.LAMP_USER }}
+            password: ${{ secrets.LAMP_PASS }}
+            script: |
+                rm -rf ~/public_html/*
+                scp -r ./dist/* ${{ secrets.LAMP_USER }}@lamp.ms.wits.ac.za:~/public_html/
+                find ~/public_html -type d -exec chmod 755 {} \;
+                find ~/public_html -type f -exec chmod 644 {} \;
+                echo "Deployment complete!"
+            # Add the host key for verification
+            known_hosts: lamp.ms.wits.ac.za
 
-            # Upload dist
-            scp -r ./dist/* ${{ secrets.LAMP_USER }}@lamp.ms.wits.ac.za:~/public_html/
-
-            # Fix permissions: directories 755, files 644
-            find ~/public_html -type d -exec chmod 755 {} \;
-            find ~/public_html -type f -exec chmod 644 {} \;
-
-            echo "Deployment complete!"
