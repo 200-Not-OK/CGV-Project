@@ -4,7 +4,7 @@ export const levels = [
     "id": "intro",
     "name": "Intro Level",
     "order": 1,
-    "gltfUrl": "/assets/levels/introLevel.gltf",
+    "gltfUrl": "assets/levels/introLevel.gltf",
     "startPosition": [
       0,
       15,
@@ -50,7 +50,7 @@ export const levels = [
           0.5,
           5
         ],
-        "modelUrl": "/assets/enemies/snake/scene.gltf",
+        "modelUrl": "assets/enemies/snake/scene.gltf",
         "patrolPoints": [
           [
             -5,
@@ -224,33 +224,33 @@ export const levels = [
     sounds: {
       music: {
         'intro-theme': {
-          url: '/assets/audio/music/whispers_beneath_the_canopy.mp3',
+          url: 'assets/audio/music/whispers_beneath_the_canopy.mp3',
           loop: true
         }
       },
       sfx: {
         'sword': {
-          url: '/assets/audio/sfx/sword.mp3',
+          url: 'assets/audio/sfx/sword.mp3',
           loop: false
         },
         'chest': {
-          url: '/public/assets/audio/sfx/chest_open.MP3',
+          url: 'assets/audio/sfx/chest_open.mp3',
           loop: false
         },
         'snake': {
-          url: '/assets/audio/sfx/snake.wav',
+          url: 'assets/audio/sfx/snake.wav',
           loop: false
         },
         'potion': {
-          url: '/assets/audio/sfx/potion.wav',
+          url: 'assets/audio/sfx/potion.wav',
           loop: false
         },
         'walk': {
-          url: '/assets/audio/sfx/walking.mp3',
+          url: 'assets/audio/sfx/walking.mp3',
           loop: false
         },
         'jump': {
-          url: '/assets/audio/sfx/jumping.wav',
+          url: 'assets/audio/sfx/jumping.wav',
           loop: false
         }
       },
@@ -262,7 +262,7 @@ export const levels = [
     "id": "level2",
     "name": "Level 3: The Serpent's Labyrinth",
     "order": 0,
-    "gltfUrl": "/assets/levels/Level2/Level2.gltf",
+    "gltfUrl": "assets/levels/Level2/Level2.gltf",
     "startPosition": [
       195,
       6,
@@ -308,7 +308,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [-12.025823053848388, 15.1245687627273453, 178.1670737408198],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -316,7 +316,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [107.02806399789891, 15.18589604134138948, 162.76484097209587],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -324,7 +324,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [37.3222404385603, 15.1245687627273453, 120.04517725703103],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -332,7 +332,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [130.9762479960251, 15.1245687627273453, 124.34771920664302],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -340,7 +340,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [130.82457819522133, 15.14999273591754103, 131.6524554717438],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -348,7 +348,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [25.759123747308454, 15.16136381577697279, 57.40978236364007],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -356,7 +356,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [113.60075814069711, 15.1245687627273453, 75.45198084352933],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -364,7 +364,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [45.84881244172108, 15.16136380644811155, 18.457558176388886],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -372,7 +372,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [163.83881610949769, 15.22766121260374206, 94.95998318210349],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -380,7 +380,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [240.16020953998367, 15.16136380644809412, 76.45611044544076],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -388,7 +388,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [239.88417501943894, 15.16136380644811155, -0.5912993552164365],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -396,7 +396,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [193.86038360355045, 15.16136380644811155, -34.19794303311772],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -404,7 +404,7 @@ export const levels = [
         key: "StarLight",
         props: {
           position: [40.11368964583366, 17.308840240606493, 17.848062963685287],
-          modelPath: "/assets/cute_little_star.glb",
+          modelPath: "assets/cute_little_star.glb",
           scale: 5
         }
       },
@@ -978,67 +978,67 @@ export const levels = [
     sounds: {
       music: {
         'level2-theme': {
-          url: '/assets/audio/music/whispers_beneath_the_canopy.mp3',
+          url: 'assets/audio/music/whispers_beneath_the_canopy.mp3',
           loop: true
         }
       },
       sfx: {
         'door': {
-          url: '/assets/audio/sfx/door.mp3',
+          url: 'assets/audio/sfx/door.mp3',
           loop: false
         },
         'torch': {
-          url: '/assets/audio/ambient/torch.mp3',
+          url: 'assets/audio/ambient/torch.mp3',
           loop: false
         },
         'chest': {
-          url: '/assets/audio/sfx/chest_open.mp3',
+          url: 'assets/audio/sfx/chest_open.mp3',
           loop: false
         },
         'snake': {
-          url: '/assets/audio/sfx/snake.wav',
+          url: 'assets/audio/sfx/snake.wav',
           loop: false
         },
         'potion': {
-          url: '/assets/audio/sfx/potion.wav',
+          url: 'assets/audio/sfx/potion.wav',
           loop: false
         },
         'low-health': {
-          url: '/assets/audio/sfx/low_health.mp3',
+          url: 'assets/audio/sfx/low_health.mp3',
           loop: false
         },
         'rumbling': {
-          url: '/assets/audio/sfx/rumbling.wav',
+          url: 'assets/audio/sfx/rumbling.wav',
           loop: false
         },
         'vo-levelstart': {
-          url: '/assets/audio/ambient/pravesh_levelstart_vo.mp3',
+          url: 'assets/audio/ambient/pravesh_levelstart_vo.mp3',
           loop: false
         },
         'vo-maze': {
-          url: '/assets/audio/ambient/pravesh_01.mp3',
+          url: 'assets/audio/ambient/pravesh_01.mp3',
           loop: false
         },
         'vo-chest': {
-          url: '/assets/audio/ambient/pravesh_02.mp3',
+          url: 'assets/audio/ambient/pravesh_02.mp3',
           loop: false
         },
         'vo-lastchest': {
-          url: '/assets/audio/ambient/pravesh_05.mp3',
+          url: 'assets/audio/ambient/pravesh_05.mp3',
           loop: false
         },
         'vo-fail': {
-          url: '/assets/audio/ambient/pravesh_fail_vo.mp3',
+          url: 'assets/audio/ambient/pravesh_fail_vo.mp3',
           loop: false
         },
         'vo-success': {
-          url: '/assets/audio/ambient/pravesh_success_vo.mp3',
+          url: 'assets/audio/ambient/pravesh_success_vo.mp3',
           loop: false
         }
       },
       ambient: {
         'torch-ambient': {
-          url: '/assets/audio/ambient/torch.mp3',
+          url: 'assets/audio/ambient/torch.mp3',
           loop: true
         }
       },
@@ -1173,7 +1173,7 @@ onLevelComplete: {
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -1187,7 +1187,7 @@ onLevelComplete: {
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -1201,7 +1201,7 @@ onLevelComplete: {
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -1215,7 +1215,7 @@ onLevelComplete: {
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -1229,7 +1229,7 @@ onLevelComplete: {
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -1243,7 +1243,7 @@ onLevelComplete: {
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -1257,7 +1257,7 @@ onLevelComplete: {
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake_boss",

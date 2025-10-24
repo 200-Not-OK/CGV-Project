@@ -283,7 +283,7 @@ export class CollectiblesManager {
    */
   async createChestMesh() {
     try {
-      const gltf = await loadGLTFModel('/assets/collectables/chest/scene.gltf');
+      const gltf = await loadGLTFModel('assets/collectables/chest/scene.gltf');
       const chest = gltf.scene.clone();
       
       // Calculate the size before scaling
