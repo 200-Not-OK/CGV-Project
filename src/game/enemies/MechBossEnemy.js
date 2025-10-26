@@ -11,7 +11,7 @@ export class MechBossEnemy extends EnemyBase {
       health: options.health ?? 600, // Very high health for mech boss
       size: [2.0, 3.0, 2.0], // Tall mech
       colliderSize: [2.0, 2.0, 2.0], // Tighter sphere collision for accuracy
-      modelUrl: 'src/assets/enemies/robot_boss/scene.gltf',
+      modelUrl: 'assets/enemies/robot_boss/scene.gltf',
       ...options
     };
 

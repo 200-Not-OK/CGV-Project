@@ -11,7 +11,7 @@ export class SnakeBossEnemy extends EnemyBase {
       health: options.health ?? 500, // Boss health - very high
       size: [1.5, 0.8, 3.0], // Larger than regular snake
       colliderSize: [3.0, 3.0, 3.0], // Bigger collision box with increased height
-      modelUrl: 'src/assets/enemies/snake_boss/Snake_Angry.gltf',
+      modelUrl: 'assets/enemies/snake_boss/Snake_Angry.gltf',
       ...options
     };
 
