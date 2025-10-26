@@ -1,6 +1,1445 @@
 // Data-driven level definitions with GLTF geometry loading
 export const levels = [
   {
+    "id": "level1",
+    "name": "Level 1: The Forgotten Forest",
+    "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
+    "startPosition": [
+      0,
+      10,
+      0
+    ],
+    "lights": [
+      "BasicLights"
+    ],
+    "ui": [
+      "hud"
+    ],
+    "colliders": [
+      {
+        "id": "terrain_collider",
+        "type": "mesh",
+        "meshName": "Plane",
+        "materialType": "ground"
+      },
+      {
+        "id": "terrain_collider1",
+        "type": "mesh",
+        "meshName": "Plane.002",
+        "materialType": "ground"
+      },
+      {
+        "id": "terrain_collider2",
+        "type": "mesh",
+        "meshName": "Plane.001",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_2",
+        "type": "box",
+        "position": [
+          74.2805404663086,
+          7.5009472370147705,
+          -56.235137939453125
+        ],
+        "size": [
+          19.902694702148438,
+          5.858898639678955,
+          10.625641107559204
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_3",
+        "type": "mesh",
+        "meshName": "platform_slope_6x6x4_yellow",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_4",
+        "type": "box",
+        "position": [
+          5.5328874588012695,
+          6.560379505157471,
+          -39.361785888671875
+        ],
+        "size": [
+          4,
+          4,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_5",
+        "type": "box",
+        "position": [
+          -0.7773474454879761,
+          7.7403247356414795,
+          -34.49150085449219
+        ],
+        "size": [
+          4,
+          6.359890460968018,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_6",
+        "type": "box",
+        "position": [
+          -7.600991249084473,
+          7.39626932144165,
+          -39.86438751220703
+        ],
+        "size": [
+          4,
+          5.671779632568359,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_7",
+        "type": "box",
+        "position": [
+          -0.9068508148193359,
+          6.942425727844238,
+          -44.346160888671875
+        ],
+        "size": [
+          4,
+          4.764092445373535,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_8",
+        "type": "box",
+        "position": [
+          23.03496217727661,
+          6.138877149025461,
+          -71.54387201368809
+        ],
+        "size": [
+          5.399998188018799,
+          1.5000004855794487,
+          0.6770776808261871
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_9",
+        "type": "box",
+        "position": [
+          -7.70367431640625,
+          6.367399926582834,
+          -71.71390070021152
+        ],
+        "size": [
+          5.399998188018799,
+          1.5000004855794487,
+          0.6770776808261871
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_10",
+        "type": "box",
+        "position": [
+          -104.65445419167133,
+          24.920733763746878,
+          -126.77250456817343
+        ],
+        "size": [
+          24.789909072596956,
+          48.51913720787156,
+          37.77458682674464
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_11",
+        "type": "box",
+        "position": [
+          -104.98836456630886,
+          24.7562984799664,
+          -32.538482326040125
+        ],
+        "size": [
+          40.69060569251519,
+          41.743743810529345,
+          45.635473520354914
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_12",
+        "type": "box",
+        "position": [
+          -29.94930589199066,
+          4.7365807592868805,
+          -102.64478647708893
+        ],
+        "size": [
+          3.2251484394073486,
+          2.2597965598106384,
+          2.9891364574432373
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_13",
+        "type": "box",
+        "position": [
+          -31.322409987449646,
+          5.004567056894302,
+          -36.78919565677643
+        ],
+        "size": [
+          3.2251484394073486,
+          2.2597965598106384,
+          2.9891364574432373
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_15",
+        "type": "mesh",
+        "meshName": "Vert006",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_16",
+        "type": "mesh",
+        "meshName": "Vert002",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_17",
+        "type": "box",
+        "position": [
+          -46.52409362792969,
+          4.0269834995269775,
+          84.87931823730469
+        ],
+        "size": [
+          8.94277798516788,
+          3.9855432510375977,
+          7.869289272857088
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_18",
+        "type": "box",
+        "position": [
+          -34.94508361816406,
+          4.02698391581069,
+          86.84906005859375
+        ],
+        "size": [
+          14.279910634361954,
+          3.9855440836050224,
+          3.9855454667441563
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_19",
+        "type": "box",
+        "position": [
+          -36.979637145996094,
+          4.02698391581069,
+          82.81128692626953
+        ],
+        "size": [
+          9.923266372250481,
+          3.9855440836050224,
+          3.9855448813904957
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_20",
+        "type": "box",
+        "position": [
+          -29.958999633789062,
+          4.0269834995269775,
+          82.75906372070312
+        ],
+        "size": [
+          3.9855433485751703,
+          3.9855432510375977,
+          3.9855433485751632
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_21",
+        "type": "box",
+        "position": [
+          -26.888111114501953,
+          4.0269834995269775,
+          83.69717407226562
+        ],
+        "size": [
+          2.2308865622320866,
+          3.9855432510375977,
+          2.083818300131867
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_22",
+        "type": "box",
+        "position": [
+          -25.770734786987305,
+          4.0269834995269775,
+          86.76978302001953
+        ],
+        "size": [
+          3.9855433485751703,
+          3.9855432510375977,
+          3.9855433485751632
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_23",
+        "type": "mesh",
+        "meshName": "platform_slope_4x2x2_blue",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_24",
+        "type": "box",
+        "position": [
+          -46.73193359375,
+          6.001815557479858,
+          101.48796844482422
+        ],
+        "size": [
+          8.94277798516788,
+          7.935207366943359,
+          7.869289272857088
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_25",
+        "type": "mesh",
+        "meshName": "platform_slope_4x2x2_blue001",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_26",
+        "type": "box",
+        "position": [
+          -30.733980178833008,
+          9.859891414642334,
+          101.45291137695312
+        ],
+        "size": [
+          5.322484835175285,
+          7.696027755737305,
+          7.869288786438716
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_27",
+        "type": "box",
+        "position": [
+          -31.817974090576172,
+          4.02698391581069,
+          101.37708282470703
+        ],
+        "size": [
+          20.877674104116707,
+          3.9855440836050224,
+          7.52411413326098
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_28",
+        "type": "box",
+        "position": [
+          -25.74932098388672,
+          15.232730125813676,
+          103.28273010253906
+        ],
+        "size": [
+          4.685793632511647,
+          3.3673119056800864,
+          4.144108051304386
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_29",
+        "type": "box",
+        "position": [
+          -30.733980178833008,
+          15.23272979259491,
+          101.45291137695312
+        ],
+        "size": [
+          5.322484835175285,
+          3.3673112392425537,
+          7.869288786438716
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_30",
+        "type": "box",
+        "position": [
+          -30.44427483276489,
+          15.312430476219935,
+          108.27524431529348
+        ],
+        "size": [
+          3.9855449380184496,
+          5.978316695494772,
+          5.978315656982744
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_31",
+        "type": "box",
+        "position": [
+          -14.110549926757812,
+          4.0269834995269775,
+          102.84857177734375
+        ],
+        "size": [
+          3.9855433485751686,
+          3.9855432510375977,
+          3.9855433485751632
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_32",
+        "type": "box",
+        "position": [
+          -14.122164726257324,
+          13.009011200694431,
+          102.91752624511719
+        ],
+        "size": [
+          3.188434726371515,
+          14.585986273232718,
+          3.1884347263715256
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_33",
+        "type": "box",
+        "position": [
+          -14.146226882934577,
+          20.500306248664856,
+          102.99749016675611
+        ],
+        "size": [
+          3.9855433485751686,
+          0.9963858127593994,
+          3.9855433485751632
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_34",
+        "type": "box",
+        "position": [
+          -8.02215766906739,
+          19.11698067188263,
+          97.57085442456861
+        ],
+        "size": [
+          3.9855433485751686,
+          0.9963858127593994,
+          3.9855433485751632
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_35",
+        "type": "box",
+        "position": [
+          -7.86309814453125,
+          12.353586613062383,
+          97.64027404785156
+        ],
+        "size": [
+          3.188434726371514,
+          13.029683234446525,
+          3.1884347263715256
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_36",
+        "type": "box",
+        "position": [
+          -7.850957870483398,
+          4.0269834995269775,
+          97.57080841064453
+        ],
+        "size": [
+          3.9855433485751677,
+          3.9855432510375977,
+          3.9855433485751632
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_37",
+        "type": "box",
+        "position": [
+          -4.458431243896492,
+          16.670228123664856,
+          89.85930657300611
+        ],
+        "size": [
+          3.985543348575168,
+          0.9963858127593994,
+          3.9855433485751632
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_38",
+        "type": "box",
+        "position": [
+          -4.6721954345703125,
+          11.069489429206854,
+          89.7857437133789
+        ],
+        "size": [
+          3.188434726371513,
+          10.706942658004747,
+          3.1884347263715256
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_39",
+        "type": "box",
+        "position": [
+          -4.536918640136719,
+          4.0269834995269775,
+          89.83826446533203
+        ],
+        "size": [
+          3.9855433485751686,
+          3.9855432510375977,
+          3.9855433485751632
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_40",
+        "type": "box",
+        "position": [
+          -8.270793318748474,
+          5.457823187112808,
+          69.70811879634857
+        ],
+        "size": [
+          3.2251484394073486,
+          2.2597965598106384,
+          2.9891364574432373
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_41",
+        "type": "mesh",
+        "meshName": "arch_red",
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_45",
+        "type": "box",
+        "position": [
+          -37.33783027153335,
+          7.128245829674199,
+          88.32971954345712
+        ],
+        "size": [
+          9.14948403796651,
+          1.9927721006325783,
+          1.6169295394491172
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_46",
+        "type": "box",
+        "position": [
+          -50.46330261230469,
+          10.865873812767461,
+          101.33258013597683
+        ],
+        "size": [
+          1.6169284505147061,
+          1.9927721006325783,
+          5.777126351934001
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_47",
+        "type": "box",
+        "position": [
+          -46.748661722949365,
+          10.865873812767461,
+          104.68184661865243
+        ],
+        "size": [
+          9.14948403796651,
+          1.9927721006325783,
+          1.6169295394491172
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_48",
+        "type": "box",
+        "position": [
+          -53.93143733102229,
+          7.372822283836797,
+          100.68596672925611
+        ],
+        "size": [
+          5.978314722415874,
+          5.978315351670176,
+          3.985543726151377
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_49",
+        "type": "box",
+        "position": [
+          -61.97539269924164,
+          5.164033800363541,
+          115.84091603755951
+        ],
+        "size": [
+          3.2251484394073486,
+          2.2597965598106384,
+          2.9891364574432373
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_50",
+        "type": "box",
+        "position": [
+          -60.21644723415375,
+          4.969306379556656,
+          54.171818137168884
+        ],
+        "size": [
+          3.2251484394073486,
+          2.2597965598106384,
+          2.9891364574432373
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_51",
+        "type": "box",
+        "position": [
+          -118.84523320315787,
+          6.904409887319858,
+          108.39310228749616
+        ],
+        "size": [
+          7.995287512733512,
+          4.980007726219667,
+          6.501294838309377
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_52",
+        "type": "box",
+        "position": [
+          -29.05535888671873,
+          15.842398285865784,
+          96.3176957509998
+        ],
+        "size": [
+          2.2368062784832468,
+          0.5592014789581299,
+          2.236806278483243
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_53",
+        "type": "box",
+        "position": [
+          -29.126226425170877,
+          10.25213873386383,
+          96.34265150051152
+        ],
+        "size": [
+          2.2368062784832468,
+          0.5592014789581299,
+          2.236806278483243
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_54",
+        "type": "box",
+        "position": [
+          -32.469535827636705,
+          7.317672371864319,
+          96.38854993801152
+        ],
+        "size": [
+          2.2368062784832503,
+          0.5592014789581299,
+          2.236806278483243
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_55",
+        "type": "box",
+        "position": [
+          -28.985286712646463,
+          4.876017212867737,
+          96.39340986232793
+        ],
+        "size": [
+          2.2368062784832468,
+          0.5592014789581299,
+          2.236806278483243
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_56",
+        "type": "box",
+        "position": [
+          -32.509208679199205,
+          12.825354218482971,
+          96.48574842433965
+        ],
+        "size": [
+          2.2368062784832503,
+          0.5592014789581299,
+          2.236806278483243
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_57",
+        "type": "box",
+        "position": [
+          10.841623902320862,
+          5.492876440286636,
+          20.445183157920837
+        ],
+        "size": [
+          3.2251484394073486,
+          2.2597965598106384,
+          2.9891364574432373
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_58",
+        "type": "box",
+        "position": [
+          43.22808914460377,
+          4.574681367888839,
+          40.76490444226124
+        ],
+        "size": [
+          9.462042692949481,
+          10.03342146480464,
+          8.647213375922696
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_59",
+        "type": "box",
+        "position": [
+          87.89673101902008,
+          5.614331632852554,
+          0.5184520483016968
+        ],
+        "size": [
+          3.2251484394073486,
+          2.2597965598106384,
+          2.9891364574432373
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_60",
+        "type": "box",
+        "position": [
+          95.23290503025055,
+          6.082692056894302,
+          14.52939260005951
+        ],
+        "size": [
+          3.2251484394073486,
+          2.2597965598106384,
+          2.9891364574432373
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_61",
+        "type": "box",
+        "position": [
+          71.97465586662292,
+          4.970793237909675,
+          -97.68993711471558
+        ],
+        "size": [
+          3.048760414123535,
+          1.8989749141037464,
+          2.479071617126465
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_62",
+        "type": "box",
+        "position": [
+          52.1449259519577,
+          5.038195177912712,
+          -108.86051398515701
+        ],
+        "size": [
+          3.4200847148895264,
+          2.3162826597690582,
+          3.476110100746155
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_63",
+        "type": "box",
+        "position": [
+          30.897358090377182,
+          8.231673354068612,
+          -85.75586883817252
+        ],
+        "size": [
+          3.4334573554441334,
+          3.011497134284019,
+          3.8811477836965054
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_64",
+        "type": "box",
+        "position": [
+          31.1728857755661,
+          12.895193926748135,
+          -95.57546734809875
+        ],
+        "size": [
+          2.000000238418579,
+          4.705846676925772,
+          10.714676141738892
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_65",
+        "type": "box",
+        "position": [
+          22.67157733440399,
+          12.040248847937999,
+          -95.22147369384766
+        ],
+        "size": [
+          2.000000238418579,
+          3.0000000458232208,
+          6
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_66",
+        "type": "box",
+        "position": [
+          -6.446720242500305,
+          12.040248847937999,
+          -95.43769836425781
+        ],
+        "size": [
+          2.000000238418579,
+          3.0000000458232208,
+          6
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_67",
+        "type": "box",
+        "position": [
+          -14.597328305244446,
+          12.895193926748135,
+          -94.67270398139954
+        ],
+        "size": [
+          2.000000238418579,
+          4.705846676925772,
+          10.714676141738892
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_15",
+        "type": "box",
+        "position": [
+          163.84441902652236,
+          -5.599573676390628,
+          -15.908546461952653
+        ],
+        "size": [
+          31.95752552951376,
+          21.4844456117798,
+          28.08303990475713
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_16",
+        "type": "box",
+        "position": [
+          237.98524773482995,
+          4.03463422337159,
+          -15.84718638467433
+        ],
+        "size": [
+          120.63033909266687,
+          1.44874830361303,
+          27.92981286864176
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_19",
+        "type": "mesh",
+        "meshName": "Material2",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_20",
+        "type": "mesh",
+        "meshName": "Material2001",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_21",
+        "type": "mesh",
+        "meshName": "Material2002",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_22",
+        "type": "mesh",
+        "meshName": "Material2003",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_23",
+        "type": "mesh",
+        "meshName": "Material2004",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_24",
+        "type": "mesh",
+        "meshName": "Material2005",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_25",
+        "type": "mesh",
+        "meshName": "Material2006",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_26",
+        "type": "mesh",
+        "meshName": "Material2007",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_27",
+        "type": "mesh",
+        "meshName": "Material3",
+        "materialType": "ground"
+      }
+    ],
+    "enemies": [
+      {
+        "type": "crawler",
+        "position": [
+          -96.52538399754636,
+          10,
+          -66.5118688899278
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [
+          [
+            -107.03309455185763,
+            4.371583282947537,
+            -67.97596895595322,
+            0.5
+          ],
+          [
+            -82.16833714242087,
+            4.386999247278588,
+            -66.9916161216205,
+            0.5
+          ],
+          [
+            -98.36404482919352,
+            4.371583282947537,
+            -65.93389918910225,
+            0.5
+          ]
+        ],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 2
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -96.04560059974065,
+          10,
+          -96.07712864231434
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [
+          [
+            -105.52633809591835,
+            4.371583282947544,
+            -93.40976258902069,
+            0.5
+          ],
+          [
+            -80.96319521289452,
+            4.507312030957806,
+            -86.03458170509346,
+            0.5
+          ],
+          [
+            -96.20946062269489,
+            4.371583282947537,
+            -96.56738218113016,
+            0.5
+          ]
+        ],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 4
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -41.75171970853199,
+          10,
+          75.7019740103841
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [
+          [
+            -43.386436268055405,
+            4.37158328294754,
+            52.65581130349482,
+            0.5
+          ],
+          [
+            -22.817437931819036,
+            4.601603791947017,
+            56.131916203753406,
+            0.5
+          ],
+          [
+            -23.802498135540265,
+            4.37158328294754,
+            75.51055759506065,
+            0.5
+          ],
+          [
+            -41.828625873911164,
+            4.371583282947537,
+            75.91666284156452,
+            0.5
+          ],
+          [
+            -43.36306198881633,
+            4.37158328294754,
+            53.17200729420725,
+            0.5
+          ]
+        ],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 15
+      },
+      {
+        "type": "crawler",
+        "position": [
+          99.71090027287109,
+          10,
+          78.4959829838058
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 49
+      },
+            {
+        "type": "mech_boss",
+        "position": [
+          363.35,
+          2.35,
+          -15.41
+        ],
+        "modelUrl": "assets/enemies/robot_boss/scene.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "scale": 15,
+        "chaseRange": 15,
+        "id": 13
+      }
+    ],
+    "npcs": [
+      {
+        "type": "yellow_bot",
+        "position": [
+          -75.25,
+          7,
+          84.55
+        ],
+        "modelUrl": "assets/npc/yellow_bot/scene.gltf",
+        "patrolPoints": [],
+        "speed": 2,
+        "scale": 5,
+        "chaseRange": 0,
+        "id": 36
+      }
+    ]
+  },
+  {
     "id": "intro",
     "name": "Intro Level",
     "order": 1,
@@ -254,7 +1693,6 @@ export const levels = [
           loop: false
         }
       },
-      // Auto-play on level start
       playMusic: 'intro-theme'
     }
   },
@@ -302,8 +1740,7 @@ export const levels = [
         }
       }
     ],
-   lights: [
-      // Stars replacing BasicLights at specified coordinates (Y + 15 for elevation)
+    "lights": [
       {
         key: "StarLight",
         props: {
@@ -409,569 +1846,902 @@ export const levels = [
         }
       },
       {
-        key: "PointPulse",
-        props: {
-          position: [25.9, 8, -4.5],
-          color: 0xff6600,
-          intensity: 2.0,
-          distance: 15,
-          speed: 3.0
-        }
-      },
-      {
-        key: "PointPulse", 
-        props: {
-          position: [56.5, 8, -9.4],
-          color: 0xff6600,
-          intensity: 2.0,
-          distance: 15,
-          speed: 2.8
-        }
+        "key": "PointPulse",
+        "props": {
+          "position": [
+            25.9,
+            8,
+            -4.5
+          ],
+          "color": 16737792,
+          "intensity": 2,
+          "distance": 15,
+          "speed": 3
+        }
+      },
+      {
+        "key": "PointPulse",
+        "props": {
+          "position": [
+            56.5,
+            8,
+            -9.4
+          ],
+          "color": 16737792,
+          "intensity": 2,
+          "distance": 15,
+          "speed": 2.8
+        }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [145.374145581186, 5.804794296862261, 11.882736073091916],
-          particleCount: 10
-          // DirectionalLight handles shadows - flame provides illumination
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            145.374145581186,
+            5.804794296862261,
+            11.882736073091916
+          ],
+          "particleCount": 10
         }
       },
-      // {
-      //   key: "EtherealCoreRing",
-      //   props: {
-      //     position: [141.374145581186, 5.0, 13.882736073091916],
-      //     particleCount: 10
-      //     // No shadows - illumination only
-      //   }
-      // },
       {
-        key: "FlameParticles",
-        props: {
-          position: [134.718151932843, 5.78268465742263, 11.873464661495646],
-          particleCount: 10
-          // No shadows - illumination only
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            134.718151932843,
+            5.78268465742263,
+            11.873464661495646
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [122.78516775876871, 5.8474919952326525, -25.81796271767555],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            122.78516775876871,
+            5.8474919952326525,
+            -25.81796271767555
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [122.75289002363303, 5.824311796058366, -36.01769063926521],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            122.75289002363303,
+            5.824311796058366,
+            -36.01769063926521
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [134.79668037901118, 5.831041284225208, -10.272701839548002],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            134.79668037901118,
+            5.831041284225208,
+            -10.272701839548002
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [145.54804548665086, 5.8339097924993535, -10.276329057023784],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            145.54804548665086,
+            5.8339097924993535,
+            -10.276329057023784
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [159.64732128633787, 5.9357392145356025, -25.767635617352212],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            159.64732128633787,
+            5.9357392145356025,
+            -25.767635617352212
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [159.64663134792835, 5.930372938679281, -36.04501493705355],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            159.64663134792835,
+            5.930372938679281,
+            -36.04501493705355
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [187.78189640126286, 5.035426533687112, -67.44935354436615],
-          particleCount: 10
-          // No shadows - illumination only
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            187.78189640126286,
+            5.035426533687112,
+            -67.44935354436615
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [203.18593802560247, 5.048047534339984, -67.47103610381599],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            203.18593802560247,
+            5.048047534339984,
+            -67.47103610381599
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [54.70471656341971, 5.8849883912178385, -38.4618296114502],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            54.70471656341971,
+            5.8849883912178385,
+            -38.4618296114502
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [54.88480904996993, 5.6559444764186875, -30.103860185871703],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            54.88480904996993,
+            5.6559444764186875,
+            -30.103860185871703
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [54.83320893498765, 5.721480316701198, -21.880698367170048],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            54.83320893498765,
+            5.721480316701198,
+            -21.880698367170048
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [43.38295419129252, 5.7420850327988315, -6.875723878004884],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            43.38295419129252,
+            5.7420850327988315,
+            -6.875723878004884
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [35.086182852268365, 5.6551266296830685, -6.808340860162892],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            35.086182852268365,
+            5.6551266296830685,
+            -6.808340860162892
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [16.001505350542764, 5.613292466314125, -6.759154512626444],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            16.001505350542764,
+            5.613292466314125,
+            -6.759154512626444
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [7.0153821498284445, 5.669436370044735, -6.841128185313431],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            7.0153821498284445,
+            5.669436370044735,
+            -6.841128185313431
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [0.11166590370448343, 5.7438761097532876, -13.588768247718344],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            0.11166590370448343,
+            5.7438761097532876,
+            -13.588768247718344
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [0.04525689946449157, 5.599711198663363, -21.77999583757773],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            0.04525689946449157,
+            5.599711198663363,
+            -21.77999583757773
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [0.09954785225139173, 5.7058433319904465, -30.075894906304015],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            0.09954785225139173,
+            5.7058433319904465,
+            -30.075894906304015
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [0.0996039348799318, 5.618667104333225, -38.20669516180944],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            0.0996039348799318,
+            5.618667104333225,
+            -38.20669516180944
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [91.9121400525824, 5.5043045497272765, 69.33307068033353],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            91.9121400525824,
+            5.5043045497272765,
+            69.33307068033353
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [91.51432073396393, 5.562602432290042, 83.21989440009406],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            91.51432073396393,
+            5.562602432290042,
+            83.21989440009406
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [92.90541521601358, 5.506758574108859, 114.40778822379639],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            92.90541521601358,
+            5.506758574108859,
+            114.40778822379639
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [82.56781117153821, 5.440672710092432, 114.15160209205409],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            82.56781117153821,
+            5.440672710092432,
+            114.15160209205409
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [19.853359171024938, 5.473284686564114, 174.6788413619447],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            19.853359171024938,
+            5.473284686564114,
+            174.6788413619447
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [46.18353898830183, 5.520312449833668, 165.2070604462412],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            46.18353898830183,
+            5.520312449833668,
+            165.2070604462412
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [73.35210557060873, 5.447575131243129, 163.71518970921977],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            73.35210557060873,
+            5.447575131243129,
+            163.71518970921977
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [31.061820073507484, 5.508550899910855, 165.3792369084329],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            31.061820073507484,
+            5.508550899910855,
+            165.3792369084329
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [166.53481479466527, 5.57478373643869, 32.45325588393239],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            166.53481479466527,
+            5.57478373643869,
+            32.45325588393239
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "FlameParticles",
-        props: {
-          position: [166.49003849952368, 5.607541597099899, 42.969325896],
-          particleCount: 10
+        "key": "FlameParticles",
+        "props": {
+          "position": [
+            166.49003849952368,
+            5.607541597099899,
+            42.969325896
+          ],
+          "particleCount": 10
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [83.43254766317186, 1.2057601587692057, 111.77327652375475]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            83.43254766317186,
+            1.2057601587692057,
+            111.77327652375475
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [83.36469817213991, 1.2837301509369499, 105.26460041098828]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            83.36469817213991,
+            1.2837301509369499,
+            105.26460041098828
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [91.93749187886783, 1.3245305189437893, 105.4131052066785]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            91.93749187886783,
+            1.3245305189437893,
+            105.4131052066785
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [92.01687998314709, 1.2738924665817104, 103.8530075210911]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            92.01687998314709,
+            1.2738924665817104,
+            103.8530075210911
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [91.93445268528446, 1.1468793128405508, 99.84808244835246]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            91.93445268528446,
+            1.1468793128405508,
+            99.84808244835246
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [76.8348612416366, 1.1690747691887304, 136.6856170131267]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            76.8348612416366,
+            1.1690747691887304,
+            136.6856170131267
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [86.72046111617131, 1.1568386427489756, 136.6394145696907]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            86.72046111617131,
+            1.1568386427489756,
+            136.6394145696907
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [43.16081674167087, 1.2209428415269354, 173.82469978882676]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            43.16081674167087,
+            1.2209428415269354,
+            173.82469978882676
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [47.248717558787604, 1.215091691338967, 173.9365686334229]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            47.248717558787604,
+            1.215091691338967,
+            173.9365686334229
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [33.54359217925317, 1.2684842742320261, 173.86320290989576]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            33.54359217925317,
+            1.2684842742320261,
+            173.86320290989576
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [27.962142718073412, 1.2475184889173712, 173.7379627763736]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            27.962142718073412,
+            1.2475184889173712,
+            173.7379627763736
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [27.901049520849455, 1.2410534857407918, 165.32341602390284]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            27.901049520849455,
+            1.2410534857407918,
+            165.32341602390284
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [29.50983264071492, 1.0855084875448937, 173.79064853608793]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            29.50983264071492,
+            1.0855084875448937,
+            173.79064853608793
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [21.653955461457368, 1.335990593395947, 173.83289340256317]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            21.653955461457368,
+            1.335990593395947,
+            173.83289340256317
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [21.432948856916415, 1.2901892043725935, 165.29445978090334]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            21.432948856916415,
+            1.2901892043725935,
+            165.29445978090334
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [21.589232408805948, 1.1198598939653714, 47.73786196842747]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            21.589232408805948,
+            1.1198598939653714,
+            47.73786196842747
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [21.706710753144954, 1.210215805905272, 43.60889604601839]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            21.706710753144954,
+            1.210215805905272,
+            43.60889604601839
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [21.660677775299362, 1.1023718397493927, 34.31194906619159]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            21.660677775299362,
+            1.1023718397493927,
+            34.31194906619159
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [21.63143393707036, 1.1242937196725413, 30.207751318766427]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            21.63143393707036,
+            1.1242937196725413,
+            30.207751318766427
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [21.597538914819626, 1.239614254889096, 3.8544445540238788]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            21.597538914819626,
+            1.239614254889096,
+            3.8544445540238788
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [30.165402325457187, 1.2733517314603309, 4.028640010477144]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            30.165402325457187,
+            1.2733517314603309,
+            4.028640010477144
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [82.74369785979741, 1.2034744995497018, -20.95165217270131]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            82.74369785979741,
+            1.2034744995497018,
+            -20.95165217270131
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [91.34355557777239, 1.1615141852497464, -20.85240575533394]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            91.34355557777239,
+            1.1615141852497464,
+            -20.85240575533394
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [193.3777859516799, 1.114140558774249, 14.772258208550278]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            193.3777859516799,
+            1.114140558774249,
+            14.772258208550278
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [197.36108239718956, 1.1770794874358907, 14.81711214854276]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            197.36108239718956,
+            1.1770794874358907,
+            14.81711214854276
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [206.88521202137773, 1.1240535256298756, 14.802388272582611]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            206.88521202137773,
+            1.1240535256298756,
+            14.802388272582611
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [210.98731822288883, 1.1948395727054164, 14.761609953261308]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            210.98731822288883,
+            1.1948395727054164,
+            14.761609953261308
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [206.4715987963806, 1.1822178903789826, 29.04207923290771]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            206.4715987963806,
+            1.1822178903789826,
+            29.04207923290771
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [206.46850876190013, 1.2181301539013119, 32.94598130834198]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            206.46850876190013,
+            1.2181301539013119,
+            32.94598130834198
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [206.42559485440637, 1.1891704632705762, 42.42033989301887]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            206.42559485440637,
+            1.1891704632705762,
+            42.42033989301887
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [206.4907449690739, 1.1519639880645105, 46.7048155345102]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            206.4907449690739,
+            1.1519639880645105,
+            46.7048155345102
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [210.8989220530201, 1.311559575994403, 60.86318304106383]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            210.8989220530201,
+            1.311559575994403,
+            60.86318304106383
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [206.69803220092484, 1.1479738139653146, 60.69789116499635]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            206.69803220092484,
+            1.1479738139653146,
+            60.69789116499635
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [197.50778540340613, 1.2654254234350866, 60.92830557604289]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            197.50778540340613,
+            1.2654254234350866,
+            60.92830557604289
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [191.78947455535467, 1.2749757215178599, 60.87365108168619]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            191.78947455535467,
+            1.2749757215178599,
+            60.87365108168619
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [193.33186633788972, 1.2245386546324122, 60.8548883958861]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            193.33186633788972,
+            1.2245386546324122,
+            60.8548883958861
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [191.9705364266468, 1.1724918117894392, 52.32504686468006]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            191.9705364266468,
+            1.1724918117894392,
+            52.32504686468006
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [185.3635425903781, 1.2253986693052052, 60.87219511164419]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            185.3635425903781,
+            1.2253986693052052,
+            60.87219511164419
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [211.95444995536872, 1.2066072460699182, 79.18318396149154]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            211.95444995536872,
+            1.2066072460699182,
+            79.18318396149154
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [215.96929948212698, 1.1057289410892723, 79.2154750209055]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            215.96929948212698,
+            1.1057289410892723,
+            79.2154750209055
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [225.31042463564654, 1.2774561341042998, 79.34945366129405]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            225.31042463564654,
+            1.2774561341042998,
+            79.34945366129405
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [229.50486855612542, 1.1408690237743233, 79.1650620371092]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            229.50486855612542,
+            1.1408690237743233,
+            79.1650620371092
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [234.96679274350097, 1.3025838129933796, 59.961916586274874]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            234.96679274350097,
+            1.3025838129933796,
+            59.961916586274874
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [234.99701732370139, 1.3603076492769484, 65.11817820324278]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            234.99701732370139,
+            1.3603076492769484,
+            65.11817820324278
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [243.43501109998562, 1.1988560885186335, 64.98130416169266]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            243.43501109998562,
+            1.1988560885186335,
+            64.98130416169266
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [243.3879196285108, 1.3115789654224153, 59.929574626867]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            243.3879196285108,
+            1.3115789654224153,
+            59.929574626867
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [48.97170953818862, 1.1609243582644542, 30.345325977895833]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            48.97170953818862,
+            1.1609243582644542,
+            30.345325977895833
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [48.84173408543633, 1.0301794412424936, 34.43992916530665]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            48.84173408543633,
+            1.0301794412424936,
+            34.43992916530665
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [49.02306292406539, 1.2221312128210777, 43.76446997096573]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            49.02306292406539,
+            1.2221312128210777,
+            43.76446997096573
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [48.98097966483144, 1.336698357713803, 47.87445208866004]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            48.98097966483144,
+            1.336698357713803,
+            47.87445208866004
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [193.2713699522292, 1.1566013820618113, 14.821601434415163]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            193.2713699522292,
+            1.1566013820618113,
+            14.821601434415163
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [196.12370846579444, 2.676754784929564, 14.570970839037999]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            196.12370846579444,
+            2.676754784929564,
+            14.570970839037999
+          ]
         }
       },
       {
-        key: "CastleBioluminescentPlant",
-        props: {
-          position: [197.3569011448118, 1.1710099136056555, 14.834863149356453]
+        "key": "CastleBioluminescentPlant",
+        "props": {
+          "position": [
+            197.3569011448118,
+            1.1710099136056555,
+            14.834863149356453
+          ]
         }
       }
     ],
@@ -1045,130 +2815,350 @@ export const levels = [
       playMusic: 'level2-theme',
       playVoiceover: null
     },
-cinematics: {
-  onLevelStart: {
-    sequence: [
-      { type: 'takeCamera' },
-      { type: 'fadeOut', ms: 300 },
-
-      // Tighter establishing on the knight (closer + slightly narrower FOV)
-      { type: 'cut', position: [196.2, 6.9, -82.2], lookAt: [195, 5.8, -83], fov: 48 },
-      { type: 'fadeIn', ms: 600 },
-
-      // === 35s VO with timed captions ===
-      {
-        type: 'playVO',
-        vo: 'vo-levelstart',
-        block: true, // hold the sequence until VO is done
-
-        // Your locked caption timings
-        segments: [
-          { at:     0,  ms: 2000, text: "Hey everybody, welcome to the Serpent’s Labyrinth." },
-          { at:  2400,  ms: 2700, text: "You’re a knight now, in a world of stone walls and lurking dangers." },
-          { at:  5500,  ms: 2500, text: "Inside, you’ll find apples hidden in chests." },
-          { at:  8500,  ms: 1500, text: "They’re your key to escape." },
-          { at: 10000,  ms: 3500, text: "But beware—the snakes that guard them are not ordinary creatures;" },
-          { at: 14000,  ms: 6000, text: "each one slithers with its own cunning, and if they catch you—well, let’s just say you won’t be making it out alive." },
-          { at: 21000,  ms: 6000, text: "And there’s talk of something far worse: a great beast, a serpent older than the labyrinth itself." },
-          { at: 27500,  ms: 3500, text: "If you hear the ground tremble, don’t stick around to find out why." },
-          { at: 31500,  ms: 3500, text: "Gather the apples, find the exit, and escape before it finds you." }
-        ],
-
-        // Camera timeline aligned to those beats (computed waits include prior step durations)
-        concurrent: [
-          // 0.0s → 13.0s: slow hero orbit (starts 1s in)
-          { type: 'wait', ms: 1000 },
-          { type: 'orbit', center: 'player', radius: 7.5, startDeg: 30, endDeg: 50, height: 4.8, duration: 12000 },
-
-          // // ~14.0s: "each one slithers..." → CUT to a snake and showcase it
-          { type: 'wait', ms: 1000 },                   // brings us to ~14.0s
-          // { type: 'fadeOut', ms: 140 },
-          // // // snake at [140, 1.4, -30]
-          { type: 'cut', position: [137.00079992092608, 0.1245687627273453, -39.95321271964637], lookAt:  [135.5589805717232, 0.1245687627273453, -23.224077180845633], fov: 52 },
-          { type: 'fadeIn', ms: 140 },
-          { type: 'orbit', center: [132.98057775780848, 0.1245687627273453, -20.09886231664358], radius: 7, startDeg: 75, endDeg: 65, height: 3.0, duration: 5200 },
-
-          // ~21.0s: "something far worse..." → BOSS DOOR tease + ominous zoom/rumble
-          { type: 'wait', ms: 1220 },                   // lands ~21.0s
-          // { type: 'fadeIn', ms: 1460 },
-          { type: 'cut', position:[72, 4, -6], lookAt:[68.89083005033424, 3, -8.], fov: 100 },
-                    { type: 'orbit', center: [70.20661523837512, 3.5, -7], radius: 2, startDeg: 230, endDeg: 180, height: 3.0, duration: 5200 },
-          // { type: 'fadeIn', ms: 160 },
-          { type: 'rumble', sfx: 'rumbling', seconds: 1.2, magnitude: 0.18, volume: 0.7 },
-          // // { type: 'zoom', fov: 39, duration: 3000 },
-
-          // // ~27.5s: "hear the ground tremble" → second rumble hit
-          // { type: 'wait', ms: 5180 },                   // lands ~27.5s
-          { type: 'rumble', sfx: 'rumbling', seconds: 1.1, magnitude: 0.15, volume: 0.6 },
-
-          // // ~31.5s: "Gather the apples..." → CUT to a chest and push in
-          { type: 'wait', ms: 4000 },                   // lands ~31.5s
-          // { type: 'fadeOut', ms: 120 },
-          // chest_1 at [145, 0.5, -46]
-          { type: 'cut', position:  [138,4,120], lookAt: [135,4,116], fov: 100 },
-           { type: 'orbit', center:  [138,4,120], radius: 2, startDeg: 230, endDeg: 180, height: 1.0, duration: 200 },
-          { type: 'fadeIn', ms: 120 },
-          // { type: 'zoom', fov: 70, duration: 900 }
-          // (we let the shot hold on the chest until VO completes)
+    "cinematics": {
+      "onLevelStart": {
+        "sequence": [
+          {
+            "type": "takeCamera"
+          },
+          {
+            "type": "fadeOut",
+            "ms": 300
+          },
+          {
+            "type": "cut",
+            "position": [
+              196.2,
+              6.9,
+              -82.2
+            ],
+            "lookAt": [
+              195,
+              5.8,
+              -83
+            ],
+            "fov": 48
+          },
+          {
+            "type": "fadeIn",
+            "ms": 600
+          },
+          {
+            "type": "playVO",
+            "vo": "vo-levelstart",
+            "block": true,
+            "segments": [
+              {
+                "at": 0,
+                "ms": 2000,
+                "text": "Hey everybody, welcome to the Serpent’s Labyrinth."
+              },
+              {
+                "at": 2400,
+                "ms": 2700,
+                "text": "You’re a knight now, in a world of stone walls and lurking dangers."
+              },
+              {
+                "at": 5500,
+                "ms": 2500,
+                "text": "Inside, you’ll find apples hidden in chests."
+              },
+              {
+                "at": 8500,
+                "ms": 1500,
+                "text": "They’re your key to escape."
+              },
+              {
+                "at": 10000,
+                "ms": 3500,
+                "text": "But beware—the snakes that guard them are not ordinary creatures;"
+              },
+              {
+                "at": 14000,
+                "ms": 6000,
+                "text": "each one slithers with its own cunning, and if they catch you—well, let’s just say you won’t be making it out alive."
+              },
+              {
+                "at": 21000,
+                "ms": 6000,
+                "text": "And there’s talk of something far worse: a great beast, a serpent older than the labyrinth itself."
+              },
+              {
+                "at": 27500,
+                "ms": 3500,
+                "text": "If you hear the ground tremble, don’t stick around to find out why."
+              },
+              {
+                "at": 31500,
+                "ms": 3500,
+                "text": "Gather the apples, find the exit, and escape before it finds you."
+              }
+            ],
+            "concurrent": [
+              {
+                "type": "wait",
+                "ms": 1000
+              },
+              {
+                "type": "orbit",
+                "center": "player",
+                "radius": 7.5,
+                "startDeg": 30,
+                "endDeg": 50,
+                "height": 4.8,
+                "duration": 12000
+              },
+              {
+                "type": "wait",
+                "ms": 1000
+              },
+              {
+                "type": "cut",
+                "position": [
+                  137.00079992092608,
+                  0.1245687627273453,
+                  -39.95321271964637
+                ],
+                "lookAt": [
+                  135.5589805717232,
+                  0.1245687627273453,
+                  -23.224077180845633
+                ],
+                "fov": 52
+              },
+              {
+                "type": "fadeIn",
+                "ms": 140
+              },
+              {
+                "type": "orbit",
+                "center": [
+                  132.98057775780848,
+                  0.1245687627273453,
+                  -20.09886231664358
+                ],
+                "radius": 7,
+                "startDeg": 75,
+                "endDeg": 65,
+                "height": 3,
+                "duration": 5200
+              },
+              {
+                "type": "wait",
+                "ms": 1220
+              },
+              {
+                "type": "cut",
+                "position": [
+                  72,
+                  4,
+                  -6
+                ],
+                "lookAt": [
+                  68.89083005033424,
+                  3,
+                  -8
+                ],
+                "fov": 100
+              },
+              {
+                "type": "orbit",
+                "center": [
+                  70.20661523837512,
+                  3.5,
+                  -7
+                ],
+                "radius": 2,
+                "startDeg": 230,
+                "endDeg": 180,
+                "height": 3,
+                "duration": 5200
+              },
+              {
+                "type": "rumble",
+                "sfx": "rumbling",
+                "seconds": 1.2,
+                "magnitude": 0.18,
+                "volume": 0.7
+              },
+              {
+                "type": "rumble",
+                "sfx": "rumbling",
+                "seconds": 1.1,
+                "magnitude": 0.15,
+                "volume": 0.6
+              },
+              {
+                "type": "wait",
+                "ms": 4000
+              },
+              {
+                "type": "cut",
+                "position": [
+                  138,
+                  4,
+                  120
+                ],
+                "lookAt": [
+                  135,
+                  4,
+                  116
+                ],
+                "fov": 100
+              },
+              {
+                "type": "orbit",
+                "center": [
+                  138,
+                  4,
+                  120
+                ],
+                "radius": 2,
+                "startDeg": 230,
+                "endDeg": 180,
+                "height": 1,
+                "duration": 200
+              },
+              {
+                "type": "fadeIn",
+                "ms": 120
+              }
+            ]
+          },
+          {
+            "type": "fadeOut",
+            "ms": 250
+          },
+          {
+            "type": "releaseCamera"
+          },
+          {
+            "type": "fadeIn",
+            "ms": 250
+          }
         ]
       },
-
-      // Hand back control
-      { type: 'fadeOut', ms: 250 },
-      { type: 'releaseCamera' },
-      { type: 'fadeIn', ms: 250 }
-    ]
-  },
-onLevelComplete: {
-  sequence: [
-    { type: 'takeCamera' },
-    { type: 'fadeOut', ms: 200 },
-    { type: 'cut', position: [32, 6, -24], lookAt: [30, 2, -25], fov: 60 },
-    { type: 'fadeIn', ms: 300 },
-    // { type: 'playVO', vo: 'vo-success', block: false },
-    { type: 'orbit', center: 'player', radius: 6, startDeg: 10, endDeg: 70, height: 3.2, duration: 2500 },
-    { type: 'fadeOut', ms: 250 },
-    { type: 'releaseCamera' },
-    { type: 'fadeIn', ms: 250 }
-  ]
-}
-,
-},
-    proximitySounds: [
+      "onLevelComplete": {
+        "sequence": [
+          {
+            "type": "takeCamera"
+          },
+          {
+            "type": "fadeOut",
+            "ms": 200
+          },
+          {
+            "type": "cut",
+            "position": [
+              32,
+              6,
+              -24
+            ],
+            "lookAt": [
+              30,
+              2,
+              -25
+            ],
+            "fov": 60
+          },
+          {
+            "type": "fadeIn",
+            "ms": 300
+          },
+          {
+            "type": "orbit",
+            "center": "player",
+            "radius": 6,
+            "startDeg": 10,
+            "endDeg": 70,
+            "height": 3.2,
+            "duration": 2500
+          },
+          {
+            "type": "fadeOut",
+            "ms": 250
+          },
+          {
+            "type": "releaseCamera"
+          },
+          {
+            "type": "fadeIn",
+            "ms": 250
+          }
+        ]
+      }
+    },
+    "proximitySounds": [
       {
-        position: [203, 3.7, -66.7],
-        sound: 'torch-ambient',
-        radius: 10,
-        volume: 0.7
+        "position": [
+          203,
+          3.7,
+          -66.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
       },
       {
-        position: [187.9, 3.7, -66.7],
-        sound: 'torch-ambient',
-        radius: 10,
-        volume: 0.7
+        "position": [
+          187.9,
+          3.7,
+          -66.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
       },
       {
-        position: [160.3, 4.6, -36.1],
-        sound: 'torch-ambient',
-        radius: 10,
-        volume: 0.7
+        "position": [
+          160.3,
+          4.6,
+          -36.1
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
       },
       {
-        position: [160.3, 4.6, -25.7],
-        sound: 'torch-ambient',
-        radius: 10,
-        volume: 0.7
+        "position": [
+          160.3,
+          4.6,
+          -25.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
       }
     ],
     "enemies": [
       {
         "type": "snake",
-        "position": [140, 1.4, -30],
+        "position": [
+          140,
+          1.4,
+          -30
+        ],
         "patrolPoints": [
-          [140, 1.4, -30],
-          [130, 1.4, -20],
-          [150, 1.4, -20],
-          [145, 1.4, -35]
+          [
+            140,
+            1.4,
+            -30
+          ],
+          [
+            130,
+            1.4,
+            -20
+          ],
+          [
+            150,
+            1.4,
+            -20
+          ],
+          [
+            145,
+            1.4,
+            -35
+          ]
         ],
         "health": 35,
         "speed": 8,
@@ -1177,12 +3167,32 @@ onLevelComplete: {
       },
       {
         "type": "snake",
-        "position": [151.97, 1.4, 28.12],
+        "position": [
+          151.97,
+          1.4,
+          28.12
+        ],
         "patrolPoints": [
-          [151.97, 1.4, 28.12],
-          [141.97, 1.4, 38.12],
-          [161.97, 1.4, 38.12],
-          [156.97, 1.4, 23.12]
+          [
+            151.97,
+            1.4,
+            28.12
+          ],
+          [
+            141.97,
+            1.4,
+            38.12
+          ],
+          [
+            161.97,
+            1.4,
+            38.12
+          ],
+          [
+            156.97,
+            1.4,
+            23.12
+          ]
         ],
         "health": 35,
         "speed": 8,
@@ -1191,12 +3201,32 @@ onLevelComplete: {
       },
       {
         "type": "snake",
-        "position": [122.02, 1.4, 126.51],
+        "position": [
+          122.02,
+          1.4,
+          126.51
+        ],
         "patrolPoints": [
-          [122.02, 1.4, 126.51],
-          [112.02, 1.4, 136.51],
-          [132.02, 1.4, 136.51],
-          [127.02, 1.4, 121.51]
+          [
+            122.02,
+            1.4,
+            126.51
+          ],
+          [
+            112.02,
+            1.4,
+            136.51
+          ],
+          [
+            132.02,
+            1.4,
+            136.51
+          ],
+          [
+            127.02,
+            1.4,
+            121.51
+          ]
         ],
         "health": 35,
         "speed": 8,
@@ -1205,12 +3235,32 @@ onLevelComplete: {
       },
       {
         "type": "snake",
-        "position": [88.65, 1.4, 165.63],
+        "position": [
+          88.65,
+          1.4,
+          165.63
+        ],
         "patrolPoints": [
-          [88.65, 1.4, 165.63],
-          [78.65, 1.4, 175.63],
-          [98.65, 1.4, 175.63],
-          [93.65, 1.4, 160.63]
+          [
+            88.65,
+            1.4,
+            165.63
+          ],
+          [
+            78.65,
+            1.4,
+            175.63
+          ],
+          [
+            98.65,
+            1.4,
+            175.63
+          ],
+          [
+            93.65,
+            1.4,
+            160.63
+          ]
         ],
         "health": 35,
         "speed": 8,
@@ -1219,12 +3269,32 @@ onLevelComplete: {
       },
       {
         "type": "snake",
-        "position": [220.46, 1.4, 69.91],
+        "position": [
+          220.46,
+          1.4,
+          69.91
+        ],
         "patrolPoints": [
-          [220.46, 1.4, 69.91],
-          [210.46, 1.4, 79.91],
-          [230.46, 1.4, 79.91],
-          [225.46, 1.4, 64.91]
+          [
+            220.46,
+            1.4,
+            69.91
+          ],
+          [
+            210.46,
+            1.4,
+            79.91
+          ],
+          [
+            230.46,
+            1.4,
+            79.91
+          ],
+          [
+            225.46,
+            1.4,
+            64.91
+          ]
         ],
         "health": 35,
         "speed": 8,
@@ -1233,12 +3303,32 @@ onLevelComplete: {
       },
       {
         "type": "snake",
-        "position": [-4.63, 1.4, 179.30],
+        "position": [
+          -4.63,
+          1.4,
+          179.3
+        ],
         "patrolPoints": [
-          [-4.63, 1.4, 179.30],
-          [-14.63, 1.4, 189.30],
-          [5.37, 1.4, 189.30],
-          [0.37, 1.4, 174.30]
+          [
+            -4.63,
+            1.4,
+            179.3
+          ],
+          [
+            -14.63,
+            1.4,
+            189.3
+          ],
+          [
+            5.37,
+            1.4,
+            189.3
+          ],
+          [
+            0.37,
+            1.4,
+            174.3
+          ]
         ],
         "health": 35,
         "speed": 8,
@@ -1247,12 +3337,32 @@ onLevelComplete: {
       },
       {
         "type": "snake",
-        "position": [75.63, 1.4, -7.35],
+        "position": [
+          75.63,
+          1.4,
+          -7.35
+        ],
         "patrolPoints": [
-          [75.63, 1.4, -7.35],
-          [65.63, 1.4, 2.65],
-          [85.63, 1.4, 2.65],
-          [80.63, 1.4, -12.35]
+          [
+            75.63,
+            1.4,
+            -7.35
+          ],
+          [
+            65.63,
+            1.4,
+            2.65
+          ],
+          [
+            85.63,
+            1.4,
+            2.65
+          ],
+          [
+            80.63,
+            1.4,
+            -12.35
+          ]
         ],
         "health": 35,
         "speed": 8,
@@ -6177,6 +8287,5 @@ onLevelComplete: {
         "color": 7048739
       }
     ]
-  },
-  
+  }
 ];

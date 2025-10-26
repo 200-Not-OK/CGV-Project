@@ -15,7 +15,7 @@ export class StarLight extends LightComponent {
         console.log('StarLight mounting with props:', this.props);
         const pos = this.props.position || [0, 50, 0];
         const color = 0xffdd99;
-        const modelPath = this.props.modelPath || 'src/assets/cute_little_star.glb';
+        const modelPath = this.props.modelPath || 'assets/cute_little_star.glb';
         const createLight = this.props.createLight !== false;
 
         try {

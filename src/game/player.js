@@ -9,9 +9,19 @@ export class Player {
     
     // Player settings
     this.speed = options.speed ?? 8;
-    this.jumpStrength = options.jumpStrength ?? 15;
+  this.jumpStrength = options.jumpStrength ?? 24; // Increased further for higher platformer-style jumps
+    this.shortJumpStrength = options.shortJumpStrength ?? 12; // For tap jumps
     this.sprintMultiplier = options.sprintMultiplier ?? 1.6;
     this.health = options.health ?? 100;
+    
+    // Stair climbing settings
+    this.maxStepHeight = options.maxStepHeight ?? 2.5; // Maximum height to auto-climb (units) - reduced to avoid climbing minor slopes
+    this.stepCheckDistance = options.stepCheckDistance ?? 1.8; // How far ahead to check for steps (world units)
+    this.stepClimbSpeed = 25; // Speed of step climbing (increased for faster response)
+    this.debugStepClimb = true; // Enable debug logging for stair detection
+    this.lastStepClimbTime = 0; // Track when we last climbed a step
+    this.stepClimbCooldown = 0.1; // Cooldown between step climbs (seconds) - increased to prevent excessive climbing
+    this.isClimbingStep = false; // Flag to indicate we're currently in a step climb
     
     // Collider sizing options
     this.colliderScale = {
@@ -24,7 +34,7 @@ export class Player {
     this.colliderOffset = {
       x: options.colliderOffsetX ?? 0,     // Sideways offset
       y: options.colliderOffsetY ?? 0,     // Vertical offset  
-      z: options.colliderOffsetZ ?? -0.4   // Forward/backward offset (negative = backward)
+      z: options.colliderOffsetZ ?? -0.8   // Forward/backward offset (negative = backward)
     };
     
     // Visual mesh (Three.js)
@@ -47,6 +57,11 @@ export class Player {
       death: null 
     };
     this.currentAction = null;
+    this.lastAnimationState = null; // Track animation state to avoid constant restarts
+    
+    // Mesh syncing smoothing (reduces jitter when moving)
+    this.meshSyncStrength = 0.15;      // Position lerp blending (0-1, lower = smoother)
+    this.rotationSyncStrength = 0.1;   // Rotation slerp blending (0-1, lower = smoother)
     
     // Combat system
     this.maxHealth = 100;
@@ -68,6 +83,8 @@ export class Player {
     this.isOnSlope = false; // Track if player is on a sloped surface
     this.isSprinting = false;
     this.isJumping = false;
+    this.jumpHoldTime = 0; // Track how long jump button is held
+    this.maxJumpHoldTime = 0.3; // Maximum time to apply upward force (300ms)
     this.isMoving = false;
 
     // Sound state for footsteps
@@ -76,7 +93,7 @@ export class Player {
     
     // Ground detection
     this.groundCheckDistance = 0.1;
-    this.groundNormalThreshold = 0.5;
+    this.groundNormalThreshold = 0.2;
     
     // Wall sliding system
     this.enableWallSliding = true;
@@ -84,6 +101,12 @@ export class Player {
     this.wallSlideSpeed = 3.0; // Speed when sliding down walls
     this.collisionContacts = []; // Store current collision contacts
     this.wallNormals = []; // Store wall normal vectors for sliding
+    
+    // Anti-stuck system - detects when player is wedged in geometry
+    this.stuckDetectionTime = 0;
+    this.stuckThreshold = 0.005; // Time (seconds) before considering player stuck
+    this.lastPosition = new THREE.Vector3();
+    this.stuckEscapeForce = 150; // Force to apply when escaping stuck state
     
     // Character-only lighting (illuminates only the player model)
     this.characterLight = new THREE.PointLight(0xFFFFFF, 50, 15); // Very bright white light, large range
@@ -316,23 +339,45 @@ export class Player {
       z: modelSize.z
     };
     
-    // Create a capsule-like shape using configurable scaling
-    const width = Math.max(modelSize.x, modelSize.z) * this.colliderScale.width;
-    const height = modelSize.y * this.colliderScale.height;
-    const depth = Math.max(modelSize.x, modelSize.z) * this.colliderScale.depth;
+    // Use two-sphere collider for Cannon-es Trimesh compatibility
+    // Cannon-es supports Sphere↔Trimesh but NOT Box/Cylinder/Convex↔Trimesh
+    // Reduce radius slightly to prevent wedging in tight spaces
+    const sphereRadius = Math.max(modelSize.x, modelSize.z) * this.colliderScale.width * 0.45;
     
-    // Create physics body using our PhysicsWorld
-    this.body = this.physicsWorld.createDynamicBody({
-      mass: 5, // Increased from 1 to 5 for faster falling
-      shape: 'box',
-      size: [width, height, depth],
-      position: [0, 10, 0], // Start high to test gravity
-      material: 'player'
+    // Calculate sphere offset - smaller offset brings bottom sphere closer to center
+    // This creates a more compact capsule around the player's torso
+    const sphereOffset = modelSize.y * 0.25; // Brings bottom sphere higher (was 0.5)
+    
+    // Get player material from physics world
+    const playerMaterial = this.physicsWorld.materials.player;
+    
+    // Create body with two spheres for capsule-like collision
+    this.body = new CANNON.Body({
+      mass: 80, // Realistic human mass
+      position: new CANNON.Vec3(0, 10, 0),
+      material: playerMaterial,
+      linearDamping: 0.05, // Reduced damping to prevent sticking in valleys
+      angularDamping: 1.0, // Prevent rotation
+      fixedRotation: true, // Prevent tipping over
+      sleepSpeedLimit: 1.0,
+      allowSleep: false
     });
     
-    // Configure body for character movement
-    this.body.fixedRotation = true; // Prevent tipping over
-    this.body.updateMassProperties();
+    // Add two spheres stacked vertically (capsule shape)
+    const topSphere = new CANNON.Sphere(sphereRadius);
+    const bottomSphere = new CANNON.Sphere(sphereRadius);
+    
+    // Top sphere at +offset, bottom sphere at -offset (both closer to center now)
+    this.body.addShape(topSphere, new CANNON.Vec3(0, sphereOffset, 0));
+    this.body.addShape(bottomSphere, new CANNON.Vec3(0, -sphereOffset, 0));
+    
+    // Add body to physics world
+    this.physicsWorld.world.addBody(this.body);
+    
+    console.log(`✅ Player two-sphere capsule collider created: radius=${sphereRadius.toFixed(2)}, offset=±${sphereOffset.toFixed(2)} (bottom sphere center ${(-sphereOffset).toFixed(2)}, bottom edge ${(-sphereOffset - sphereRadius).toFixed(2)}), shapes=${this.body.shapes.length}`);
+    
+    // Create visual debug helper for sphere collider
+    // this._createSphereColliderVisualizer(sphereRadius, sphereOffset);
     
     // Set up collision event listeners for wall sliding
     this.setupCollisionListeners();
@@ -347,6 +392,62 @@ export class Player {
     });
   }
 
+  // _createSphereColliderVisualizer(radius, offset) {
+  //   // Create wireframe visualization of the two-sphere capsule collider
+  //   const group = new THREE.Group();
+  //   group.name = 'ColliderVisualizer';
+  //   
+  //   const wireframeMaterial = new THREE.MeshBasicMaterial({
+  //     color: 0x00ff00,
+  //     wireframe: true,
+  //     transparent: true,
+  //     opacity: 0.6,
+  //     depthTest: false,
+  //     depthWrite: false
+  //   });
+  //   
+  //   // Top sphere
+  //   const topSphereGeometry = new THREE.SphereGeometry(radius, 16, 16);
+  //   const topSphere = new THREE.Mesh(topSphereGeometry, wireframeMaterial);
+  //   topSphere.position.y = offset;
+  //   group.add(topSphere);
+  //   
+  //   // Bottom sphere
+  //   const bottomSphereGeometry = new THREE.SphereGeometry(radius, 16, 16);
+  //   const bottomSphere = new THREE.Mesh(bottomSphereGeometry, wireframeMaterial);
+  //   bottomSphere.position.y = -offset;
+  //   group.add(bottomSphere);
+  //   
+  //   // Connecting cylinder for visual clarity
+  //   const cylinderHeight = offset * 2;
+  //   const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, cylinderHeight, 16, 1, true);
+  //   const cylinder = new THREE.Mesh(cylinderGeometry, wireframeMaterial);
+  //   group.add(cylinder);
+  //   
+  //   group.renderOrder = 999;
+  //   group.frustumCulled = false;
+  //   
+  //   this.colliderVisualizer = group;
+  //   this.mesh.add(this.colliderVisualizer);
+  //   this.colliderVisualizerVisible = true;
+  //   
+  //   console.log('🔍 Two-sphere capsule visualizer created (Press V to toggle)');
+  // }
+
+  // toggleColliderVisualizer() {
+  //   if (!this.colliderVisualizer) {
+  //     console.warn('⚠️ No collider visualizer found!');
+  //     return;
+  //   }
+  //   
+  //   this.colliderVisualizerVisible = !this.colliderVisualizerVisible;
+  //   this.colliderVisualizer.visible = this.colliderVisualizerVisible;
+  //   
+  //   console.log(`🔍 Collider visualizer toggled: ${this.colliderVisualizerVisible ? 'ON' : 'OFF'}`);
+  //   console.log(`🔍 Visualizer object visible property: ${this.colliderVisualizer.visible}`);
+  //   console.log(`🔍 Visualizer in scene: ${this.colliderVisualizer.parent !== null}`);
+  // }
+
   handleCollision(event) {
     const contact = event.contact;
     const otherBody = event.target === this.body ? event.body : event.target;
@@ -359,10 +460,10 @@ export class Player {
       normal.negate(); // Flip normal to point away from wall toward player
     }
     
-    // Skip pure ground/ceiling collisions (handled separately by ground detection)
-    // Only reject if normal is very close to vertical
-    if (Math.abs(normal.y) > 0.8) {
-      return;
+    // Skip ground/ceiling/stair collisions - only handle WALLS
+    // Ground and stairs have significant Y component (> 0.3), walls are more horizontal
+    if (Math.abs(normal.y) > 0.3) {
+      return; // This is ground, stairs, or ceiling - not a wall
     }
     
     // Check if this is a wall or enemy collision
@@ -426,8 +527,9 @@ export class Player {
   }
 
   addWallNormal(normal) {
-    // Store wall normals for sliding (including slightly angled walls)
-    // Reject only pure horizontal normals (floors/ceilings)
+    // Store wall normals for sliding - only true WALLS (horizontal surfaces)
+    // Reject ground, stairs, and ceiling surfaces (those with significant Y component)
+    // Use stricter threshold to avoid treating valley slopes as walls
     if (Math.abs(normal.y) < 0.8) {
       // Convert CANNON.Vec3 to THREE.Vector3 for consistency
       const threeVector = new THREE.Vector3(normal.x, normal.y, normal.z);
@@ -649,6 +751,11 @@ export class Player {
     // Update ground detection
     this.updateGroundDetection();
     
+    // Update jump hold timer
+    if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
+      this.jumpHoldTime += delta;
+    }
+    
     // Apply additional downward force when airborne for faster falling
     if (!this.isGrounded) {
       const extraGravityForce = -25; // Additional downward force (negative Y)
@@ -660,6 +767,14 @@ export class Player {
       this.handleMovementInput(input, camOrientation, delta);
       this.handleJumpInput(input);
       this.handleInteractionInput(input);
+      
+      // Check for stair climbing when grounded and moving
+      if (this.isGrounded && this.isMoving) {
+        this.handleStairClimbing(camOrientation, delta);
+      }
+      
+      // Anti-stuck detection - check if player is trying to move but stuck
+      this.detectAndEscapeStuck(input, delta);
     }
     
     // Apply wall sliding physics (works even without input)
@@ -822,21 +937,24 @@ export class Player {
         }
         
         if (this.isOnSlope) {
-          // On slopes, use force-based movement to work better with contact resolution
-          const forceMultiplier = 75; // Increased force for better responsiveness
-          const maxSpeed = targetSpeed * 1.1; // Slightly faster on slopes to compensate for force-based movement
+          // On slopes, use hybrid approach for smooth hill traversal
+          // Maintain horizontal velocity while letting physics handle vertical component
+          const forceMultiplier = 75; // Reduced for smoother movement
+          const maxSpeed = targetSpeed * 1.1; // Slightly faster to compensate
           
-          // Apply forces instead of direct velocity to let physics handle slope interaction
+          // Calculate current horizontal speed
           const currentSpeed = Math.sqrt(this.body.velocity.x * this.body.velocity.x + this.body.velocity.z * this.body.velocity.z);
+          
           if (currentSpeed < maxSpeed) {
+            // Apply force to maintain speed on slopes
             this.body.applyForce(
               new CANNON.Vec3(targetVelX * forceMultiplier, 0, targetVelZ * forceMultiplier),
               this.body.position
             );
           }
           
-          // Apply gentle damping to prevent excessive speed buildup
-          this.body.velocity.x *= 0.95; // Reduced damping for better speed retention
+          // Very gentle damping to prevent excessive speed without killing momentum
+          this.body.velocity.x *= 0.95;
           this.body.velocity.z *= 0.95;
         } else {
           // On flat ground, use direct velocity for stable movement
@@ -881,25 +999,111 @@ export class Player {
     }
   }
 
+  detectAndEscapeStuck(input, delta) {
+    if (!input || !input.isKey) return;
+    
+    // Check if player is trying to move
+    const tryingToMove = input.isKey('KeyW') || input.isKey('KeyS') || 
+                        input.isKey('KeyA') || input.isKey('KeyD');
+    
+    if (!tryingToMove) {
+      // Reset stuck detection when not moving
+      this.stuckDetectionTime = 0;
+      this.lastPosition.copy(this.body.position);
+      return;
+    }
+    
+    // Check if player position has barely changed despite input
+    const currentPos = new THREE.Vector3(
+      this.body.position.x,
+      this.body.position.y,
+      this.body.position.z
+    );
+    const movementDistance = currentPos.distanceTo(this.lastPosition);
+    const minMovementThreshold = 0.02; // Very small movement threshold
+    
+    if (movementDistance < minMovementThreshold && this.isGrounded) {
+      // Player is stuck - increment timer
+      this.stuckDetectionTime += delta;
+      
+      if (this.stuckDetectionTime > this.stuckThreshold) {
+        // Player has been stuck for too long - apply escape force
+        this.applyStuckEscapeForce();
+        this.stuckDetectionTime = 0; // Reset timer after escape attempt
+      }
+    } else {
+      // Player is moving normally
+      this.stuckDetectionTime = 0;
+    }
+    
+    // Update last position
+    this.lastPosition.copy(currentPos);
+  }
+  
+  applyStuckEscapeForce() {
+    console.log('🚨 Player stuck detected - applying escape force');
+    
+    // Strategy: Apply upward force and push away from wall normals
+    
+    // 1. Apply upward force to help escape valleys/crevices
+    const upwardForce = new CANNON.Vec3(0, this.stuckEscapeForce * 1.5, 0);
+    this.body.applyImpulse(upwardForce, this.body.position);
+    
+    // 2. If we have wall normals, push away from them
+    if (this.wallNormals.length > 0) {
+      // Average all wall normals to find the "escape" direction
+      const escapeDir = new THREE.Vector3(0, 0, 0);
+      for (const normal of this.wallNormals) {
+        escapeDir.add(normal);
+      }
+      escapeDir.normalize();
+      escapeDir.y = 0; // Keep horizontal
+      
+      // Apply horizontal escape force
+      const horizontalEscape = new CANNON.Vec3(
+        escapeDir.x * this.stuckEscapeForce,
+        0,
+        escapeDir.z * this.stuckEscapeForce
+      );
+      this.body.applyImpulse(horizontalEscape, this.body.position);
+    }
+    
+    // 3. Wake up the body to ensure physics processes the impulse
+    this.body.wakeUp();
+  }
+
   applyWallSlidingPhysics(delta) {
-    // Only apply wall sliding physics when grounded
-    // When airborne, let the physics engine handle collisions naturally
-    if (!this.enableWallSliding || this.wallNormals.length === 0 || !this.isGrounded) {
+    // Don't apply wall sliding if we just climbed a step
+    if (this.isClimbingStep) {
+      return;
+    }
+    
+    // Apply wall sliding physics when touching walls (both grounded and airborne)
+    if (!this.enableWallSliding || this.wallNormals.length === 0) {
       return;
     }
 
     // Get current velocity
     const currentVel = this.body.velocity.clone();
     
-    // When grounded, apply full wall sliding for smooth movement along walls
+    // Calculate sliding velocity (only affect horizontal movement, preserve Y velocity)
     const slidingVelocity = this.calculateSlidingVelocity(
       new THREE.Vector3(currentVel.x, 0, currentVel.z),
       this.wallNormals
     );
     
-    const slidingStrength = 0.8;
+    // Apply sliding with different strength based on grounded state
+    const slidingStrength = this.isGrounded ? 0.8 : 0.6; // Slightly weaker when airborne for more natural feel
     this.body.velocity.x = THREE.MathUtils.lerp(this.body.velocity.x, slidingVelocity.x, slidingStrength * delta * 60);
     this.body.velocity.z = THREE.MathUtils.lerp(this.body.velocity.z, slidingVelocity.z, slidingStrength * delta * 60);
+    
+    // When airborne and hitting a wall, apply slight downward slide for more natural wall collision
+    if (!this.isGrounded && this.wallNormals.length > 0) {
+      // Let gravity handle downward movement, but prevent sticking by ensuring minimum downward velocity
+      if (this.body.velocity.y > -1) {
+        this.body.velocity.y = Math.min(this.body.velocity.y, -1);
+      }
+    }
   }
 
   handleJumpInput(input) {
@@ -913,15 +1117,33 @@ export class Player {
     
     if (input.isKey('Space')) {
       if (this.isGrounded && !this.isJumping) {
-        // Apply upward impulse for jumping
+        // Initial jump impulse
         this.body.velocity.y = this.jumpStrength;
         this.isJumping = true;
+        this.jumpHoldTime = 0; // Reset hold timer
 
         // Play jump sound
         if (this.game && this.game.soundManager) {
           this.game.soundManager.playSFX('jump', 0.5);
         }
+      } else if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
+        // Continue applying upward force while space is held (variable jump height)
+        // This gives the player more control over jump height
+        const jumpBoostForce = 25; // Additional upward force per frame
+        this.body.applyForce(
+          new CANNON.Vec3(0, jumpBoostForce, 0),
+          this.body.position
+        );
       }
+    } else {
+      // Space key released - stop boosting jump
+      if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
+        // Cut upward velocity for short hop if released early
+        if (this.body.velocity.y > 0) {
+          this.body.velocity.y *= 0.5; // Reduce upward velocity by half
+        }
+      }
+      this.jumpHoldTime = this.maxJumpHoldTime; // Mark jump as no longer boostable
     }
   }
 
@@ -936,6 +1158,172 @@ export class Player {
         this.lastInteractionTime = currentTime;
         this.performInteract();
       }
+    }
+    
+    // Use 'V' key to toggle collider visualizer
+    // if (input.isKey('KeyV')) {
+    //   const currentTime = Date.now();
+    //   if (currentTime - (this.lastVisualizerToggleTime || 0) > 300) { // 300ms cooldown
+    //     this.lastVisualizerToggleTime = currentTime;
+    //     this.toggleColliderVisualizer();
+    //   }
+    // }
+  }
+
+  handleStairClimbing(camOrientation, delta) {
+    if (!this.body || !this.isGrounded) return;
+    
+    // Check cooldown - don't climb too frequently
+    const currentTime = performance.now() / 1000; // Convert to seconds
+    if (currentTime - this.lastStepClimbTime < this.stepClimbCooldown) {
+      return; // Still in cooldown
+    }
+
+    // Compute movement direction from horizontal velocity
+    const moveDir = new THREE.Vector3(this.body.velocity.x, 0, this.body.velocity.z);
+    if (moveDir.length() < 0.1) return; // not moving enough
+    moveDir.normalize();
+
+    // Get player's collider half extents
+    const halfExt = (this.body.shapes && this.body.shapes[0] && this.body.shapes[0].halfExtents)
+      ? this.body.shapes[0].halfExtents
+      : { x: 0.5, y: 1, z: 0.5 };
+
+    // Get current ground Y under player's feet (not center)
+    const playerFootY = this.body.position.y - halfExt.y;
+    const footRayStart = new CANNON.Vec3(this.body.position.x, playerFootY + 0.5, this.body.position.z);
+    const footRayEnd = new CANNON.Vec3(this.body.position.x, playerFootY - 2.0, this.body.position.z);
+    const footRay = new CANNON.Ray(footRayStart, footRayEnd);
+    footRay.mode = CANNON.Ray.CLOSEST;
+    const footResult = new CANNON.RaycastResult();
+    footRay.intersectWorld(this.physicsWorld.world, { skipBackfaces: false, result: footResult });
+    if (!footResult.hasHit) return; // no ground under player
+    const groundY = footResult.hitPointWorld.y;
+
+    // Sample multiple points ahead at different distances to find the step
+    // Cast from way above down to way below to ensure we catch the step
+    const sampleDistances = [0.3, 0.6, 0.9, 1.2, 1.5]; // Try many distances
+    let bestForwardY = null;
+    let bestDeltaY = 0;
+    let debugInfo = [];
+
+    // Try each sample distance to find a step
+    for (const dist of sampleDistances) {
+      const sampleX = this.body.position.x + moveDir.x * dist;
+      const sampleZ = this.body.position.z + moveDir.z * dist;
+
+      // Cast multiple rays at different heights to find the highest surface
+      // This handles overlapping colliders (steps on top of ground plane)
+      const heightSamples = [
+        groundY + 0.2,  // Just above current ground
+        groundY + 0.5,
+        groundY + 1.0,
+        groundY + 1.5,
+        groundY + 2.0,
+        groundY + 3.0,
+        groundY + 4.0,
+        groundY + 5.0
+      ];
+
+      let highestSurfaceY = groundY; // Start with current ground level
+
+      for (const testHeight of heightSamples) {
+        if (testHeight > groundY + this.maxStepHeight) break; // Don't test above max step height
+        
+        // Short downward ray from test height
+        const testRayStart = new CANNON.Vec3(sampleX, testHeight + 0.1, sampleZ);
+        const testRayEnd = new CANNON.Vec3(sampleX, testHeight - 0.2, sampleZ);
+        const testRay = new CANNON.Ray(testRayStart, testRayEnd);
+        testRay.mode = CANNON.Ray.CLOSEST;
+        const testResult = new CANNON.RaycastResult();
+        testRay.intersectWorld(this.physicsWorld.world, { skipBackfaces: false, result: testResult });
+
+        if (testResult.hasHit && testResult.body !== this.body) {
+          const hitY = testResult.hitPointWorld.y;
+          // If we found a surface higher than what we've seen, update
+          if (hitY > highestSurfaceY && hitY > groundY + 0.05) {
+            highestSurfaceY = hitY;
+          }
+        }
+      }
+
+      const forwardY = highestSurfaceY;
+      const deltaY = forwardY - groundY;
+      
+      if (deltaY > 0.05) {
+        debugInfo.push(`dist=${dist.toFixed(1)}:fwdY=${forwardY.toFixed(2)}:delta=${deltaY.toFixed(2)}`);
+        
+        // Keep track of the best (highest) step found that's actually elevated
+        if (deltaY > bestDeltaY && deltaY <= this.maxStepHeight) {
+          bestDeltaY = deltaY;
+          bestForwardY = forwardY;
+        }
+      } else {
+        debugInfo.push(`dist=${dist.toFixed(1)}:same`);
+      }
+    }
+
+    // Always log for debugging with more detail
+    if (Math.random() < 0.15) { // Log 15% of the time
+      console.log(`🪜 [step-debug] groundY=${groundY.toFixed(2)} bestFwdY=${bestForwardY ? bestForwardY.toFixed(2) : 'none'} deltaY=${bestDeltaY.toFixed(2)} playerY=${this.body.position.y.toFixed(2)} footY=${playerFootY.toFixed(2)}`);
+      console.log(`   samples: ${debugInfo.join(' | ')}`);
+    }
+    
+    // Only climb if:
+    // 1. We found an elevated surface ahead
+    // 2. Player is grounded (using physics ground detection, not manual check)
+    // 3. The step height is within range (ignore tiny variations)
+    // Note: We use this.isGrounded instead of checking footY vs groundY because the player
+    // might be standing on a step already, and groundY might detect the base ground plane below
+    
+    if (bestForwardY !== null && bestDeltaY > 0.20 && bestDeltaY <= this.maxStepHeight && this.isGrounded) {
+      // Set climbing flag to prevent wall sliding interference
+      this.isClimbingStep = true;
+      
+      // Use a more aggressive lift - climb the full step height instantly if small enough
+      const instantClimbThreshold = 0.8; // Steps smaller than this are climbed instantly
+      let lift;
+      
+      if (bestDeltaY <= instantClimbThreshold) {
+        // Small steps: teleport up instantly to avoid physics conflicts
+        lift = bestDeltaY * 1.5; // Extra lift to clear the step edge
+      } else {
+        // Larger steps: climb quickly but smoothly
+        lift = Math.min(bestDeltaY, this.stepClimbSpeed * delta);
+      }
+      
+      // Teleport the body up (this bypasses collision detection temporarily)
+      const newY = this.body.position.y + lift;
+      this.body.position.set(this.body.position.x, newY, this.body.position.z);
+      
+      // Also move slightly forward to ensure we're past the step edge
+      const forwardPush = 0.15; // Small forward teleport to clear the edge
+      this.body.position.x += moveDir.x * forwardPush;
+      this.body.position.z += moveDir.z * forwardPush;
+      
+      // Reset velocities completely to avoid any conflicts
+      this.body.velocity.set(
+        moveDir.x * this.speed,
+        0, // Zero Y velocity to prevent bouncing
+        moveDir.z * this.speed
+      );
+      
+      // Wake up the body to ensure physics updates
+      this.body.wakeUp();
+      
+      // Update cooldown timer
+      this.lastStepClimbTime = currentTime;
+      
+      // Clear the climbing flag after a short delay (next frame)
+      setTimeout(() => {
+        this.isClimbingStep = false;
+      }, 16); // ~1 frame at 60fps
+      
+      // Debug logging
+      console.log(`🪜 [CLIMB] groundY=${groundY.toFixed(2)} forwardY=${bestForwardY.toFixed(2)} deltaY=${bestDeltaY.toFixed(2)} lift=${lift.toFixed(2)} newY=${newY.toFixed(2)}`);
+    } else {
+      // Not climbing, clear the flag
+      this.isClimbingStep = false;
     }
   }
 
@@ -957,10 +1345,17 @@ export class Player {
     // Rotate offset by mesh rotation to get world space offset
     offset.applyEuler(new THREE.Euler(0, meshRotationY, 0));
     
-    // Position mesh relative to physics body with offset
-    // Mesh position = Physics body position - offset (so physics body is offset from mesh)
-    this.mesh.position.copy(this.body.position);
-    this.mesh.position.sub(offset);
+    // SMOOTH position sync using lerp to reduce jitter
+    // Convert CANNON.Vec3 to THREE.Vector3 first (body.position is CANNON.Vec3, not THREE.Vector3)
+    const targetPosition = new THREE.Vector3(
+      this.body.position.x,
+      this.body.position.y,
+      this.body.position.z
+    );
+    targetPosition.sub(offset);
+    
+    // Lerp position for smooth blending (reduces jitter from physics corrections)
+    this.mesh.position.lerp(targetPosition, this.meshSyncStrength);
   }
 
   updateAnimations(delta) {
@@ -972,35 +1367,62 @@ export class Player {
     // Skip animation changes during attack or interaction
     if (this.isAttacking || this.isInteracting) return;
     
-    // Determine which animation to play
+    // Determine which animation to play based on current state
     const velocity = this.body.velocity;
     const horizontalSpeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
     const isMoving = horizontalSpeed > 0.1;
     
-    let targetAction = null;
+    // Determine target animation state (as string to prevent constant restarts)
+    let targetState = 'idle';
     
-    // Priority order: jump -> sprint -> walk -> idle
     if (!this.isGrounded && this.actions.jump) {
-      targetAction = this.actions.jump;
+      targetState = 'jump';
     } else if (isMoving && this.isSprinting && this.actions.sprint) {
-      targetAction = this.actions.sprint;
+      targetState = 'sprint';
     } else if (isMoving && this.actions.walk) {
-      targetAction = this.actions.walk;
-    } else if (this.actions.idle) {
-      targetAction = this.actions.idle;
+      targetState = 'walk';
     }
     
-    // Switch animation if needed
-    if (targetAction !== this.currentAction) {
-      if (this.currentAction) {
-        this.currentAction.fadeOut(0.2);
-      }
-      if (targetAction) {
-        targetAction.reset().fadeIn(0.2).play();
-        this.currentAction = targetAction;
-      } else {
-        this.currentAction = null;
-      }
+    // Only transition if animation state actually changed (reduces jitter from constant resets)
+    if (targetState !== this.lastAnimationState) {
+      this._transitionToAnimationState(targetState);
+      this.lastAnimationState = targetState;
+    }
+  }
+
+  _transitionToAnimationState(stateName) {
+    let targetAction = null;
+    
+    switch (stateName) {
+      case 'jump':
+        targetAction = this.actions.jump;
+        break;
+      case 'sprint':
+        targetAction = this.actions.sprint;
+        break;
+      case 'walk':
+        targetAction = this.actions.walk;
+        break;
+      case 'idle':
+      default:
+        targetAction = this.actions.idle;
+        break;
+    }
+    
+    if (!targetAction) return;
+    
+    // Smooth crossfade transition instead of hard cut
+    const fadeDuration = 0.3; // 300ms fade for smooth transitions
+    
+    if (this.currentAction && this.currentAction !== targetAction) {
+      this.currentAction.fadeOut(fadeDuration);
+    }
+    
+    if (targetAction) {
+      targetAction.reset();
+      targetAction.fadeIn(fadeDuration);
+      targetAction.play();
+      this.currentAction = targetAction;
     }
   }
 
