@@ -3,7 +3,7 @@ export const levels = [
   {
     "id": "level1",
     "name": "Level 1: The Forgotten Forest",
-    "gltfUrl": "src/assets/levels/Level1/MapFinal.gltf",
+    "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
     "startPosition": [
       0,
       10,
@@ -1293,7 +1293,7 @@ export const levels = [
           10,
           -66.5118688899278
         ],
-        "modelUrl": "src/assets/enemies/crawler/Crawler.gltf",
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [
           [
             -107.03309455185763,
@@ -1325,7 +1325,7 @@ export const levels = [
           10,
           -96.07712864231434
         ],
-        "modelUrl": "src/assets/enemies/crawler/Crawler.gltf",
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [
           [
             -105.52633809591835,
@@ -1357,7 +1357,7 @@ export const levels = [
           10,
           75.7019740103841
         ],
-        "modelUrl": "src/assets/enemies/crawler/Crawler.gltf",
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [
           [
             -43.386436268055405,
@@ -1401,7 +1401,7 @@ export const levels = [
           10,
           78.4959829838058
         ],
-        "modelUrl": "src/assets/enemies/crawler/Crawler.gltf",
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
         "speed": 1.5,
         "chaseRange": 5,
@@ -1414,7 +1414,7 @@ export const levels = [
           2.35,
           -15.41
         ],
-        "modelUrl": "src/assets/enemies/robot_boss/scene.gltf",
+        "modelUrl": "assets/enemies/robot_boss/scene.gltf",
         "patrolPoints": [],
         "speed": 1.5,
         "scale": 15,
@@ -1430,7 +1430,7 @@ export const levels = [
           7,
           84.55
         ],
-        "modelUrl": "src/assets/npc/yellow_bot/scene.gltf",
+        "modelUrl": "assets/npc/yellow_bot/scene.gltf",
         "patrolPoints": [],
         "speed": 2,
         "scale": 5,
@@ -1443,7 +1443,7 @@ export const levels = [
     "id": "intro",
     "name": "Intro Level",
     "order": 1,
-    "gltfUrl": "src/assets/levels/introLevel.gltf",
+    "gltfUrl": "assets/levels/introLevel.gltf",
     "startPosition": [
       0,
       15,
@@ -1489,7 +1489,7 @@ export const levels = [
           0.5,
           5
         ],
-        "modelUrl": "src/assets/enemies/snake/scene.gltf",
+        "modelUrl": "assets/enemies/snake/scene.gltf",
         "patrolPoints": [
           [
             -5,
@@ -1659,47 +1659,48 @@ export const levels = [
         ]
       }
     },
-    "sounds": {
-      "music": {
-        "intro-theme": {
-          "url": "src/assets/audio/music/whispers_beneath_the_canopy.mp3",
-          "loop": true
+    // Example sound configuration (add your audio files to use)
+    sounds: {
+      music: {
+        'intro-theme': {
+          url: 'assets/audio/music/whispers_beneath_the_canopy.mp3',
+          loop: true
         }
       },
-      "sfx": {
-        "sword": {
-          "url": "src/assets/audio/sfx/sword.mp3",
-          "loop": false
+      sfx: {
+        'sword': {
+          url: 'assets/audio/sfx/sword.mp3',
+          loop: false
         },
-        "chest": {
-          "url": "src/assets/audio/sfx/chest_open.MP3",
-          "loop": false
+        'chest': {
+          url: 'assets/audio/sfx/chest_open.mp3',
+          loop: false
         },
-        "snake": {
-          "url": "src/assets/audio/sfx/snake.wav",
-          "loop": false
+        'snake': {
+          url: 'assets/audio/sfx/snake.wav',
+          loop: false
         },
-        "potion": {
-          "url": "src/assets/audio/sfx/potion.wav",
-          "loop": false
+        'potion': {
+          url: 'assets/audio/sfx/potion.wav',
+          loop: false
         },
-        "walk": {
-          "url": "src/assets/audio/sfx/walking.mp3",
-          "loop": false
+        'walk': {
+          url: 'assets/audio/sfx/walking.mp3',
+          loop: false
         },
-        "jump": {
-          "url": "src/assets/audio/sfx/jumping.wav",
-          "loop": false
+        'jump': {
+          url: 'assets/audio/sfx/jumping.wav',
+          loop: false
         }
       },
-      "playMusic": "intro-theme"
+      playMusic: 'intro-theme'
     }
   },
   {
     "id": "level2",
     "name": "Level 3: The Serpent's Labyrinth",
     "order": 0,
-    "gltfUrl": "src/assets/levels/Level2/Level2.gltf",
+    "gltfUrl": "assets/levels/Level2/Level2.gltf",
     "startPosition": [
       195,
       6,
@@ -1741,159 +1742,107 @@ export const levels = [
     ],
     "lights": [
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            -12.025823053848388,
-            15.124568762727346,
-            178.1670737408198
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [-12.025823053848388, 15.1245687627273453, 178.1670737408198],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            107.02806399789891,
-            15.185896041341389,
-            162.76484097209587
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [107.02806399789891, 15.18589604134138948, 162.76484097209587],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            37.3222404385603,
-            15.124568762727346,
-            120.04517725703103
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [37.3222404385603, 15.1245687627273453, 120.04517725703103],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            130.9762479960251,
-            15.124568762727346,
-            124.34771920664302
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [130.9762479960251, 15.1245687627273453, 124.34771920664302],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            130.82457819522133,
-            15.149992735917541,
-            131.6524554717438
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [130.82457819522133, 15.14999273591754103, 131.6524554717438],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            25.759123747308454,
-            15.161363815776973,
-            57.40978236364007
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [25.759123747308454, 15.16136381577697279, 57.40978236364007],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            113.60075814069711,
-            15.124568762727346,
-            75.45198084352933
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [113.60075814069711, 15.1245687627273453, 75.45198084352933],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            45.84881244172108,
-            15.161363806448112,
-            18.457558176388886
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [45.84881244172108, 15.16136380644811155, 18.457558176388886],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            163.83881610949769,
-            15.227661212603742,
-            94.95998318210349
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [163.83881610949769, 15.22766121260374206, 94.95998318210349],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            240.16020953998367,
-            15.161363806448094,
-            76.45611044544076
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [240.16020953998367, 15.16136380644809412, 76.45611044544076],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            239.88417501943894,
-            15.161363806448112,
-            -0.5912993552164365
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [239.88417501943894, 15.16136380644811155, -0.5912993552164365],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            193.86038360355045,
-            15.161363806448112,
-            -34.19794303311772
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [193.86038360355045, 15.16136380644811155, -34.19794303311772],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
-        "key": "StarLight",
-        "props": {
-          "position": [
-            40.11368964583366,
-            17.308840240606493,
-            17.848062963685287
-          ],
-          "modelPath": "src/assets/cute_little_star.glb",
-          "scale": 5
+        key: "StarLight",
+        props: {
+          position: [40.11368964583366, 17.308840240606493, 17.848062963685287],
+          modelPath: "assets/cute_little_star.glb",
+          scale: 5
         }
       },
       {
@@ -2796,75 +2745,75 @@ export const levels = [
         }
       }
     ],
-    "sounds": {
-      "music": {
-        "level2-theme": {
-          "url": "src/assets/audio/music/whispers_beneath_the_canopy.mp3",
-          "loop": true
+    sounds: {
+      music: {
+        'level2-theme': {
+          url: 'assets/audio/music/whispers_beneath_the_canopy.mp3',
+          loop: true
         }
       },
-      "sfx": {
-        "door": {
-          "url": "src/assets/audio/sfx/door.mp3",
-          "loop": false
+      sfx: {
+        'door': {
+          url: 'assets/audio/sfx/door.mp3',
+          loop: false
         },
-        "torch": {
-          "url": "src/assets/audio/ambient/torch.mp3",
-          "loop": false
+        'torch': {
+          url: 'assets/audio/ambient/torch.mp3',
+          loop: false
         },
-        "chest": {
-          "url": "src/assets/audio/sfx/chest_open.mp3",
-          "loop": false
+        'chest': {
+          url: 'assets/audio/sfx/chest_open.mp3',
+          loop: false
         },
-        "snake": {
-          "url": "src/assets/audio/sfx/snake.wav",
-          "loop": false
+        'snake': {
+          url: 'assets/audio/sfx/snake.wav',
+          loop: false
         },
-        "potion": {
-          "url": "src/assets/audio/sfx/potion.wav",
-          "loop": false
+        'potion': {
+          url: 'assets/audio/sfx/potion.wav',
+          loop: false
         },
-        "low-health": {
-          "url": "src/assets/audio/sfx/low_health.mp3",
-          "loop": false
+        'low-health': {
+          url: 'assets/audio/sfx/low_health.mp3',
+          loop: false
         },
-        "rumbling": {
-          "url": "src/assets/audio/sfx/rumbling.wav",
-          "loop": false
+        'rumbling': {
+          url: 'assets/audio/sfx/rumbling.wav',
+          loop: false
         },
-        "vo-levelstart": {
-          "url": "src/assets/audio/ambient/pravesh_levelstart_vo.mp3",
-          "loop": false
+        'vo-levelstart': {
+          url: 'assets/audio/ambient/pravesh_levelstart_vo.mp3',
+          loop: false
         },
-        "vo-maze": {
-          "url": "src/assets/audio/ambient/pravesh_01.mp3",
-          "loop": false
+        'vo-maze': {
+          url: 'assets/audio/ambient/pravesh_01.mp3',
+          loop: false
         },
-        "vo-chest": {
-          "url": "src/assets/audio/ambient/pravesh_02.mp3",
-          "loop": false
+        'vo-chest': {
+          url: 'assets/audio/ambient/pravesh_02.mp3',
+          loop: false
         },
-        "vo-lastchest": {
-          "url": "src/assets/audio/ambient/pravesh_05.mp3",
-          "loop": false
+        'vo-lastchest': {
+          url: 'assets/audio/ambient/pravesh_05.mp3',
+          loop: false
         },
-        "vo-fail": {
-          "url": "src/assets/audio/ambient/pravesh_fail_vo.mp3",
-          "loop": false
+        'vo-fail': {
+          url: 'assets/audio/ambient/pravesh_fail_vo.mp3',
+          loop: false
         },
-        "vo-success": {
-          "url": "src/assets/audio/ambient/pravesh_success_vo.mp3",
-          "loop": false
+        'vo-success': {
+          url: 'assets/audio/ambient/pravesh_success_vo.mp3',
+          loop: false
         }
       },
-      "ambient": {
-        "torch-ambient": {
-          "url": "src/assets/audio/ambient/torch.mp3",
-          "loop": true
+      ambient: {
+        'torch-ambient': {
+          url: 'assets/audio/ambient/torch.mp3',
+          loop: true
         }
       },
-      "playMusic": "level2-theme",
-      "playVoiceover": null
+      playMusic: 'level2-theme',
+      playVoiceover: null
     },
     "cinematics": {
       "onLevelStart": {
@@ -3214,7 +3163,7 @@ export const levels = [
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "src/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -3248,7 +3197,7 @@ export const levels = [
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "src/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -3282,7 +3231,7 @@ export const levels = [
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "src/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -3316,7 +3265,7 @@ export const levels = [
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "src/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -3350,7 +3299,7 @@ export const levels = [
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "src/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -3384,7 +3333,7 @@ export const levels = [
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "src/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake",
@@ -3418,7 +3367,7 @@ export const levels = [
         "health": 35,
         "speed": 8,
         "chaseRange": 10,
-        "modelUrl": "src/assets/enemies/snake/scene.gltf"
+        "modelUrl": "assets/enemies/snake/scene.gltf"
       },
       {
         "type": "snake_boss",
