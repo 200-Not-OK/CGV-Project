@@ -140,13 +140,13 @@ export class DoorBase {
     // Return default model path based on preset
     switch (this.preset) {
       case 'wooden':
-        return 'src/assets/models/door.glb'; // Default wooden door model
+        return 'assets/models/door.glb'; // Default wooden door model
       case 'metal':
-        return 'src/assets/models/ani.glb'; // Metal door model (if exists)
+        return 'assets/models/ani.glb'; // Metal door model (if exists)
       case 'futuristic':
-        return 'src/assets/models/futuristic_door.glb'; // Futuristic door model (if exists)
+        return 'assets/models/futuristic_door.glb'; // Futuristic door model (if exists)
       default:
-        return 'src/assets/models/door.glb';
+        return 'assets/models/door.glb';
     }
   }
 
