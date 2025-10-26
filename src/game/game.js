@@ -25,6 +25,7 @@ import { DoorManager } from '../../public/assets/doors/DoorManager.js';
 import { CollectiblesManager } from './CollectiblesManager.js';
 import { SoundManager } from './soundManager.js';
 import { ProximitySoundManager } from './proximitySoundManager.js';
+import { PerformanceMonitor } from './performanceMonitor.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -49,6 +50,9 @@ export class Game {
     // Level system
     this.levelManager = new LevelManager(this.scene, this.physicsWorld, this);
     this.level = null;
+
+    // Performance monitoring
+    this.performanceMonitor = new PerformanceMonitor();
 
     // Player
     this.player = new Player(this.scene, this.physicsWorld, {
@@ -341,6 +345,9 @@ export class Game {
       } else if (code === 'KeyM') {
         // toggle physics debug visualization
         this.physicsWorld.enableDebugRenderer(!this.physicsWorld.isDebugEnabled());
+      } else if (code === 'KeyP') {
+        // toggle performance stats display
+        this.performanceMonitor.toggleStatsDisplay();
       } else if (code === 'KeyH') {
         // toggle door collision helpers (green boxes around doors)
         if (this.doorManager) {
@@ -606,14 +613,25 @@ export class Game {
     // clamp delta
     delta = Math.min(delta, 1 / 20);
 
+    // Start frame timing
+    this.performanceMonitor.startFrame();
+
     // If paused: skip updates but still render the current frame.
     if (this.paused) {
       this.renderer.render(this.scene, this.activeCamera);
+      this.performanceMonitor.endFrame(this.renderer);
       return;
     }
 
+    // Start physics timing
+    this.performanceMonitor.startPhysics();
     // Step physics simulation
     this.physicsWorld.step(delta);
+    // End physics timing
+    this.performanceMonitor.endPhysics();
+
+    // Start update timing
+    this.performanceMonitor.startUpdate();
 
     // update level (updates colliders/helpers and enemies) - only if level is loaded
     if (this.level && this.level.update) {
@@ -704,8 +722,18 @@ export class Game {
     // update lights (allow dynamic lights to animate)
     if (this.lights) this.lights.update(delta);
 
+    // End update timing
+    this.performanceMonitor.endUpdate();
+
+    // Start render timing
+    this.performanceMonitor.startRender();
     // render
     this.renderer.render(this.scene, this.activeCamera);
+    // End render timing
+    this.performanceMonitor.endRender();
+
+    // End frame timing and collect stats
+    this.performanceMonitor.endFrame(this.renderer);
   }
 
   // Load level by index and swap UI based on level metadata
