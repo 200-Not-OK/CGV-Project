@@ -10,6 +10,12 @@ window.addEventListener('load', () => {
   window.togglePhysicsDebug = () =>
     game.physicsWorld.enableDebugRenderer(!game.physicsWorld.isDebugEnabled());
   window.toggleCombatDebug = () => game.combatSystem?.toggleDebug?.();
+  
+  // Performance monitoring debug commands
+  window.showPerformance = () => game.performanceMonitor?.logStats();
+  window.showDetailedPerformance = () => game.performanceMonitor?.logDetailedStats();
+  window.togglePerformanceDisplay = () => game.performanceMonitor?.toggleStatsDisplay();
+  window.performanceReport = () => game.performanceMonitor?.printOptimizationReport();
 
   // Build overlay with only the two levels requested
   const LVLS = Array.isArray(LEVELS) ? LEVELS : (LEVELS?.levels ?? []);
