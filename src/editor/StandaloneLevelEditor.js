@@ -2412,15 +2412,15 @@ export class StandaloneLevelEditor {
   
   _getDefaultModelUrl(type) {
     const urls = {
-      walker: 'src/assets/low_poly_female/scene.gltf',
-      runner: 'src/assets/low_poly_male/scene.gltf',
-      jumper: 'src/assets/low_poly_female/scene.gltf',
-      flyer: 'src/assets/futuristic_flying_animated_robot_-_low_poly/scene.gltf',
-      snake: 'src/assets/enemies/snake/scene.gltf',
-      snake_boss: 'src/assets/enemies/snake_boss/Snake_Angry.gltf',
-      mech_boss: 'src/assets/enemies/robot_boss/scene.gltf',
-      crawler: 'src/assets/enemies/crawler/Crawler.gltf',
-      yellow_bot: 'src/assets/npc/yellow_bot/scene.gltf'
+      walker: 'assets/low_poly_female/scene.gltf',
+      runner: 'assets/low_poly_male/scene.gltf',
+      jumper: 'assets/low_poly_female/scene.gltf',
+      flyer: 'assets/futuristic_flying_animated_robot_-_low_poly/scene.gltf',
+      snake: 'assets/enemies/snake/scene.gltf',
+      snake_boss: 'assets/enemies/snake_boss/Snake_Angry.gltf',
+      mech_boss: 'assets/enemies/robot_boss/scene.gltf',
+      crawler: 'assets/enemies/crawler/Crawler.gltf',
+      yellow_bot: 'assets/npc/yellow_bot/scene.gltf'
     };
     return urls[type] || urls.walker;
   }

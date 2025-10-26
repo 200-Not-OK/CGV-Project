@@ -11,7 +11,7 @@ export class YellowBot extends NpcBase {
       health: options.health ?? 45, // Moderate health
       size: [1.5, 0.8, 1.5], // Low profile Yellow_Bot
       colliderSize: [1.8, 0.9, 1.8], // Slightly larger than visual size
-      modelUrl: options.modelUrl || 'src/assets/npc/yellow_bot/scene.gltf',
+      modelUrl: options.modelUrl || 'assets/npc/yellow_bot/scene.gltf',
       ...options
     };
 

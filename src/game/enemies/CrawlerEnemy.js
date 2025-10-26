@@ -11,7 +11,7 @@ export class CrawlerEnemy extends EnemyBase {
       health: options.health ?? 45, // Moderate health
       size: [1.5, 0.8, 1.5], // Low profile crawler
       colliderSize: [1.8, 0.9, 1.8], // Slightly larger than visual size
-      modelUrl: options.modelUrl || 'src/assets/enemies/crawler/Enemy_Crawler.gltf',
+      modelUrl: options.modelUrl || 'assets/enemies/crawler/Enemy_Crawler.gltf',
       ...options
     };
 
