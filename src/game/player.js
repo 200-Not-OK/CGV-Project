@@ -124,9 +124,7 @@ export class Player {
     
     // Try different path formats for the model
     const modelPaths = [
-      'src/assets/Knight/Knight.gltf',
-      './src/assets/Knight/Knight.gltf',
-      '/src/assets/Knight/Knight.gltf'
+      'assets/Knight/Knight.gltf'
     ];
     
     let currentPathIndex = 0;
@@ -198,7 +196,7 @@ export class Player {
           if (gltf.animations && gltf.animations.length > 0) {
             this.mixer = new THREE.AnimationMixer(gltf.scene);
 
-            console.log(`Available animations: ${gltf.animations.map(a => a.name).join(', ')}`);
+            console.log(`Available animations : ${gltf.animations.map(a => a.name).join(', ')}`);
             
             // Find animation clips with exact names from your model
             const findClip = (names) => {

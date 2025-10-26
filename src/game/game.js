@@ -21,7 +21,7 @@ import { LightManager } from './lightManager.js';
 import * as LightModules from './lights/index.js';
 import { PhysicsWorld } from './physics/PhysicsWorld.js';
 import { CombatSystem } from './combatSystem.js';
-import { DoorManager } from '../assets/doors/DoorManager.js';
+import { DoorManager } from '../../public/assets/doors/DoorManager.js';
 import { CollectiblesManager } from './CollectiblesManager.js';
 import { SoundManager } from './soundManager.js';
 import { ProximitySoundManager } from './proximitySoundManager.js';
@@ -769,7 +769,7 @@ export class Game {
         height: 6.5,
         depth: 0.5,
         type: 'model',
-        modelUrl: 'src/assets/doors/level2_boss_door.glb',
+        modelUrl: 'assets/doors/level2_boss_door.glb',
         swingDirection: 'forward left',
         interactionDistance: 10,
         autoOpenOnApproach: false,
@@ -783,7 +783,7 @@ export class Game {
         height: 6.5,
         depth: 0.5,
         type: 'model',
-        modelUrl: 'src/assets/doors/level2_boss_door.glb',
+        modelUrl: 'assets/doors/level2_boss_door.glb',
         swingDirection: 'forward left',
         initialRotation: 90,
         interactionDistance: 10,
