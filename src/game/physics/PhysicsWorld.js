@@ -10,7 +10,7 @@ export class PhysicsWorld {
     
     // Create Cannon.js world
     this.world = new CANNON.World({
-      gravity: new CANNON.Vec3(0, -9.82, 0)
+      gravity: new CANNON.Vec3(0, -20, 0) // Slightly reduced gravity for more platformer feel
     });
     
     // Store reference to Three.js scene for debug rendering
@@ -19,8 +19,10 @@ export class PhysicsWorld {
     this.debugEnabled = false;
     
     // Configure solver for better stability
-    this.world.solver.iterations = 20;
-    this.world.solver.tolerance = 0.0001;
+    const sub = new CANNON.GSSolver();
+    sub.iterations = 12;      // bump to 12–15 if you still see jitter
+    sub.tolerance  = 1e-7;    // 1e-4 is good balance between accuracy and perf
+    this.world.solver = new CANNON.SplitSolver(sub); // smoother on many contacts
     
     // Use Sweep and Prune broadphase for better performance
     this.world.broadphase = new CANNON.SAPBroadphase(this.world);
@@ -59,33 +61,34 @@ export class PhysicsWorld {
   }
   
   setupContactMaterials() {
-    // Player-Ground contact: Lower friction for smooth movement, no bounce
-    // Reduced stiffness for better slope handling
+    // Player-Ground contact: Tuned for smooth movement on uneven terrain
+    // Lower stiffness = softer collisions = less jitter on triangle mesh edges
+    // Higher relaxation = more forgiving contact solving
     const playerGroundContact = new CANNON.ContactMaterial(
       this.materials.player,
       this.materials.ground,
       {
-        friction: 0.1,
-        restitution: 0.0,
-        contactEquationStiffness: 1e6, // Reduced from 1e8 for smoother slope interaction
-        contactEquationRelaxation: 4,  // Increased for more relaxed contact resolution
-        frictionEquationStiffness: 1e6, // Reduced from 1e8
-        frictionEquationRelaxation: 4   // Increased for smoother sliding
+        friction: 0.35,           // 0.3-0.5: reduce if micro-sticking, increase for traction
+        restitution: 0.0,         // No bounce
+        contactEquationStiffness: 5e5,   // Reduced for soft, forgiving contacts
+        contactEquationRelaxation: 6,    // Higher = more relaxed solving
+        frictionEquationStiffness: 1e5,  // Soft friction forces
+        frictionEquationRelaxation: 6    // Relaxed friction
       }
     );
     this.world.addContactMaterial(playerGroundContact);
     
-    // Player-Platform contact: Same as ground
+    // Player-Platform contact: Same as ground for consistency
     const playerPlatformContact = new CANNON.ContactMaterial(
       this.materials.player,
       this.materials.platform,
       {
-        friction: 0.1,
+        friction: 0.35,
         restitution: 0.0,
-        contactEquationStiffness: 1e6, // Reduced from 1e8 for smoother slope interaction
-        contactEquationRelaxation: 4,  // Increased for more relaxed contact resolution
-        frictionEquationStiffness: 1e6, // Reduced from 1e8
-        frictionEquationRelaxation: 4   // Increased for smoother sliding
+        contactEquationStiffness: 5e5,
+        contactEquationRelaxation: 6,
+        frictionEquationStiffness: 1e5,
+        frictionEquationRelaxation: 6
       }
     );
     this.world.addContactMaterial(playerPlatformContact);
@@ -169,9 +172,13 @@ export class PhysicsWorld {
   }
 
   step(deltaTime) {
-    // Clamp delta time to prevent physics explosions
-    const maxDelta = 1/30;
-    const clampedDelta = Math.min(deltaTime, maxDelta);
+    // Use fixed timestep with substeps for stable, deterministic physics
+    // This ensures collisions are resolved consistently regardless of frame rate
+    const fixedTimeStep = 1 / 60; // 60 Hz physics tick
+    const maxSubSteps = 3;        // Allow up to 3 substeps per frame
+    
+    // Clamp delta time to prevent physics explosions from large frame stalls
+    const clampedDelta = Math.min(deltaTime, 1 / 10); // Cap at 100ms = 1/10s
     
     try {
       // Validate physics world state before stepping
@@ -197,8 +204,10 @@ export class PhysicsWorld {
         }
       });
       
-      // Step physics simulation
-      this.world.step(clampedDelta);
+      // Step physics simulation with fixed timestep and substeps
+      // world.step(fixedTimeStep, deltaTime, maxSubSteps) advances by fixedTimeStep
+      // internally substeps up to maxSubSteps times to catch up with deltaTime
+      this.world.step(fixedTimeStep, clampedDelta, maxSubSteps);
     } catch (error) {
       console.error('Physics step error:', error);
       // Try to recover by clearing corrupted state
@@ -247,25 +256,28 @@ export class PhysicsWorld {
       const meshName = mesh.name.toLowerCase();
 
       // Determine collision type based on mesh name or options
-      // Be conservative: only use Trimesh for explicitly marked meshes
-      const shouldUseAccurate = useAccurateCollision && 
+      // If useAccurateCollision is explicitly true, use Trimesh regardless of name
+      const shouldUseAccurate = useAccurateCollision || 
                                (meshName.includes('trimesh') || 
+                                meshName.includes('terrain') ||
+                                meshName.includes('collider') ||
                                 meshName.includes('accurate') ||
                                 meshName.includes('complex')) &&
                                !forceBoxCollider &&
                                !meshName.includes('box') && 
-                               !meshName.includes('simple') &&
-                               !meshName.includes('collider'); // collider_ prefix suggests simple collision
+                               !meshName.includes('simple');
 
       if (shouldUseAccurate && !forceBoxCollider) {
         // Use Trimesh for accurate collision detection
         shape = this._createTrimeshShape(geometry, mesh);
+        console.log(`✅ Created Trimesh collision for: ${mesh.name}`);
       } else {
         // Use bounding box collision (faster but less accurate)
         // Calculate the actual scaled bounding box
         const scaledSize = this._getScaledBoundingBoxSize(geometry, mesh);
         
         shape = new CANNON.Box(new CANNON.Vec3(scaledSize.x / 2, scaledSize.y / 2, scaledSize.z / 2));
+        console.log(`📦 Created Box collision for: ${mesh.name} (size: ${scaledSize.x.toFixed(1)}, ${scaledSize.y.toFixed(1)}, ${scaledSize.z.toFixed(1)})`);
       }
 
       const body = new CANNON.Body({

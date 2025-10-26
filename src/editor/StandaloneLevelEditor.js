@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { YellowBot } from '../game/npc/YellowBot.js';
 
 // Standalone Level Editor - Focused on Enemies, Patrol Points, and Lighting
 // Features:
@@ -29,6 +30,7 @@ export class StandaloneLevelEditor {
     
     // Data storage (current level's editable data)
     this.enemies = [];
+    this.npcs = [];
     this.lights = [];
     this.patrolPoints = [];
     this.colliders = []; // Manual colliders
@@ -36,6 +38,7 @@ export class StandaloneLevelEditor {
     
     // Visual representations
     this.enemyMeshes = [];
+    this.npcMeshes = [];
     this.lightMeshes = [];
     this.patrolPointMeshes = [];
     this.patrolConnections = []; // Lines showing patrol routes
@@ -65,10 +68,23 @@ export class StandaloneLevelEditor {
     this.gltfLoader = new GLTFLoader();
     
     // Enemy and Light types
-    this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer'];
+    this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer', 'snake', 'snake_boss', 'mech_boss', 'crawler'];
+    this.npcTypes = ['yellow_bot']; // NPCs (non-player characters)
     this.lightTypes = ['BasicLights', 'PointPulse', 'HemisphereFill'];
     this.colliderTypes = ['box', 'sphere', 'capsule'];
     this.materialTypes = ['ground', 'wall', 'platform'];
+    
+    // Store bound event handlers for proper cleanup
+    this.boundEventHandlers = {
+      mousedown: this._onMouseDown.bind(this),
+      mousemove: this._onMouseMove.bind(this),
+      mouseup: this._onMouseUp.bind(this),
+      wheel: this._onMouseWheel.bind(this),
+      contextmenu: (e) => e.preventDefault(),
+      keydown: this._onKeyDown.bind(this),
+      keyup: this._onKeyUp.bind(this),
+      resize: this._onWindowResize.bind(this)
+    };
     
     // Create UI and bind events
     this._createUI();
@@ -185,12 +201,15 @@ export class StandaloneLevelEditor {
     // Position camera to look at the level geometry
     this._positionCameraForLevel();
     
+    // Update UI to reflect the new level
+    this._updateUI();
+    
     this._updateStatus();
   }
   
   _clearLevel() {
-    // Unbind events to prevent conflicts during cleanup
-    this._unbindEvents();
+    // Don't unbind canvas/keyboard events - we need them to remain active!
+    // Only clear the level geometry and data
 
     // Clear geometry and dispose of materials/geometries
     while (this.levelGeometry.children.length > 0) {
@@ -242,6 +261,20 @@ export class StandaloneLevelEditor {
       }
     });
     this.enemyMeshes = [];
+
+    // Remove and dispose NPC meshes
+    this.npcMeshes.forEach(mesh => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach(material => material.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+      }
+    });
+    this.npcMeshes = [];
 
     // Remove and dispose light meshes
     this.lightMeshes.forEach(mesh => {
@@ -308,6 +341,9 @@ export class StandaloneLevelEditor {
       case 'enemy':
         this._createEnemyVisuals();
         break;
+      case 'npc':
+        this._createNpcVisuals();
+        break;
       case 'light':
         this._createLightVisuals();
         break;
@@ -324,6 +360,7 @@ export class StandaloneLevelEditor {
       case 'select':
         // Show all visuals in select mode
         this._createEnemyVisuals();
+        this._createNpcVisuals();
         this._createLightVisuals();
         this._createPatrolPointVisuals();
         this._createPatrolConnections();
@@ -408,6 +445,12 @@ export class StandaloneLevelEditor {
       this._createEnemyVisuals();
     }
     
+    // Load NPCs
+    if (this.currentLevel.npcs) {
+      this.npcs = [...this.currentLevel.npcs];
+      this._createNpcVisuals();
+    }
+    
     // Load lights
     if (this.currentLevel.lights) {
       this.lights = this.currentLevel.lights.map(lightType => ({
@@ -424,7 +467,7 @@ export class StandaloneLevelEditor {
       this._createColliderVisuals();
     }
     
-    // Extract patrol points from enemies
+    // Extract patrol points from enemies and NPCs
     this._extractPatrolPoints();
     this._createPatrolPointVisuals();
     this._createPatrolConnections();
@@ -494,6 +537,22 @@ export class StandaloneLevelEditor {
             waitTime: point[3] || 0.5,
             enemyIndex: enemyIndex,
             pointIndex: pointIndex,
+            entityType: 'enemy',
+            id: this.nextId++
+          });
+        });
+      }
+    });
+
+    this.npcs.forEach((npc, npcIndex) => {
+      if (npc.patrolPoints) {
+        npc.patrolPoints.forEach((point, pointIndex) => {
+          this.patrolPoints.push({
+            position: [point[0], point[1], point[2]],
+            waitTime: point[3] || 0.5,
+            npcIndex: npcIndex,
+            pointIndex: pointIndex,
+            entityType: 'npc',
             id: this.nextId++
           });
         });
@@ -523,6 +582,34 @@ export class StandaloneLevelEditor {
     });
     } catch (error) {
       console.error('Error creating enemy visuals:', error);
+    }
+  }
+
+  _createNpcVisuals() {
+    try {
+      // Clear existing NPC visuals first
+      this.npcMeshes.forEach(mesh => this.scene.remove(mesh));
+      this.npcMeshes = [];
+    
+    this.npcs.forEach((npc, index) => {
+      const geometry = new THREE.SphereGeometry(0.6, 8, 8);
+      const material = new THREE.MeshLambertMaterial({ 
+        color: 0xffff00, // Yellow for NPCs
+        emissive: 0x444400,
+        transparent: true,
+        opacity: 0.85
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      
+      mesh.position.set(npc.position[0], npc.position[1], npc.position[2]);
+      mesh.userData = { type: 'npc', index: index, npcData: npc };
+      mesh.name = `npc_${index}`;
+
+      this.scene.add(mesh);
+      this.npcMeshes.push(mesh);
+    });
+    } catch (error) {
+      console.error('Error creating NPC visuals:', error);
     }
   }
   
@@ -555,6 +642,17 @@ export class StandaloneLevelEditor {
     this.colliderMeshes = [];
     
     this.colliders.forEach((collider, index) => {
+      // Skip mesh-type colliders - they don't have position/size, they reference GLTF meshes
+      if (collider.type === 'mesh') {
+        return; // Skip visualization for Trimesh colliders
+      }
+      
+      // Ensure position exists for non-mesh colliders
+      if (!collider.position) {
+        console.warn('Collider missing position:', collider);
+        return;
+      }
+      
       let geometry;
       
       // Create geometry based on collider type
@@ -689,7 +787,9 @@ export class StandaloneLevelEditor {
       walker: 0xff0000,    // Red
       runner: 0x00ff00,    // Green
       jumper: 0x0000ff,    // Blue
-      flyer: 0xffff00      // Yellow
+      flyer: 0xffff00,     // Yellow
+      snake: 0x00ff88,   // Cyan-green
+      crawler: 0xff8800   // Orange
     };
     return colors[type] || 0x888888;
   }
@@ -726,6 +826,8 @@ export class StandaloneLevelEditor {
   _updateUI() {
     if (!this.panel) return;
     
+    console.log('_updateUI called, mode:', this.mode, 'selectedMesh:', this.selectedMesh);
+    
     const levelSelect = this.levels.map((level, index) => 
       `<option value="${index}" ${index === this.currentLevelIndex ? 'selected' : ''}>${level.name}</option>`
     ).join('');
@@ -759,6 +861,7 @@ export class StandaloneLevelEditor {
       <div style="margin-bottom: 20px;">
         <label>Edit Mode:</label><br>
         <button id="mode-enemy" class="mode-btn ${this.mode === 'enemy' ? 'active' : ''}">Enemies</button>
+        <button id="mode-npc" class="mode-btn ${this.mode === 'npc' ? 'active' : ''}">NPCs</button>
         <button id="mode-light" class="mode-btn ${this.mode === 'light' ? 'active' : ''}">Lights</button>
         <button id="mode-patrol" class="mode-btn ${this.mode === 'patrol' ? 'active' : ''}">Patrol</button>
         <button id="mode-mesh" class="mode-btn ${this.mode === 'mesh' ? 'active' : ''}">Meshes</button>
@@ -785,6 +888,25 @@ export class StandaloneLevelEditor {
         </div>
       </div>
       
+      <div id="npc-controls" style="display: ${this.mode === 'npc' ? 'block' : 'none'};">
+        <h4>NPC Controls</h4>
+        <label>Type:</label><br>
+        <select id="npc-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+          ${this.npcTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
+        </select>
+        <button id="add-npc" style="width: 100%; padding: 5px;">Add NPC (Click on level)</button>
+        
+        <div id="npc-list">
+          <h5>NPCs (${this.npcs.length})</h5>
+          ${this.npcs.map((npc, index) => `
+            <div class="item-row" data-type="npc" data-index="${index}">
+              <strong>${npc.type}</strong> at [${npc.position.join(', ')}]
+              <button onclick="window.editor._deleteNpc(${index})">Delete</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
       <div id="light-controls" style="display: ${this.mode === 'light' ? 'block' : 'none'};">
         <h4>Light Controls</h4>
         <label>Type:</label><br>
@@ -806,12 +928,17 @@ export class StandaloneLevelEditor {
       
       <div id="mesh-controls" style="display: ${this.mode === 'mesh' ? 'block' : 'none'};">
         <h4>Mesh Selection</h4>
-        <p>Click on level meshes to select them</p>
+        <p style="font-size: 11px; opacity: 0.8; margin-bottom: 10px;">
+          <strong>How to use:</strong><br>
+          1. Click on a mesh in the 3D view or list below<br>
+          2. Choose collider type (Trimesh or Box)<br>
+          3. Click "Create Collider from Mesh"
+        </p>
         
         <div id="mesh-list">
           <h5>Level Meshes (${this.levelMeshes.length})</h5>
           ${this.levelMeshes.map((meshInfo, index) => `
-            <div class="item-row ${this.selectedMesh === meshInfo.mesh ? 'selected' : ''}" 
+            <div class="item-row ${this.selectedMesh === meshInfo ? 'selected' : ''}" 
                  data-type="mesh" data-index="${index}">
               <strong>${meshInfo.name}</strong>
               <button onclick="window.editor._selectMesh(${index})">Select</button>
@@ -820,13 +947,25 @@ export class StandaloneLevelEditor {
         </div>
         
         ${this.selectedMesh ? `
-          <div style="margin-top: 15px; padding: 10px; border: 1px solid #444;">
-            <h5>Selected: ${this.selectedMesh.name}</h5>
-            <button id="create-collider-from-mesh" style="width: 100%; padding: 5px;">
+          <div style="margin-top: 15px; padding: 10px; border: 1px solid #4CAF50; background: #1a1a1a;">
+            <h5 style="color: #4CAF50;">✓ Selected: ${this.selectedMesh.name}</h5>
+            
+            <label>Collider Type:</label><br>
+            <select id="mesh-collider-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+              <option value="mesh">Mesh (Trimesh - Accurate)</option>
+              <option value="box">Box (Bounding Box - Faster)</option>
+            </select>
+            
+            <label>Material Type:</label><br>
+            <select id="mesh-material-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+              ${materialTypeOptions}
+            </select>
+            
+            <button id="create-collider-from-mesh" style="width: 100%; padding: 5px; background: #4CAF50; color: white;">
               Create Collider from Mesh
             </button>
           </div>
-        ` : ''}
+        ` : '<p style="font-size: 14px; color: #ff5555; margin-top: 10px; padding: 10px; border: 1px solid #ff5555;">⚠️ No mesh selected - click Select button above</p>'}
       </div>
       
       <div id="collider-controls" style="display: ${this.mode === 'collider' ? 'block' : 'none'};">
@@ -846,15 +985,21 @@ export class StandaloneLevelEditor {
         
         <div id="collider-list">
           <h5>Colliders (${this.colliders.length})</h5>
-          ${this.colliders.map((collider, index) => `
-            <div class="item-row" data-type="collider" data-index="${index}">
-              <strong>${collider.type}</strong> (${collider.materialType})<br>
-              at [${collider.position.join(', ')}]
-              ${collider.meshName ? `<br><small>For: ${collider.meshName}</small>` : ''}
-              <button onclick="window.editor._deleteCollider(${index})">Delete</button>
-              <button onclick="window.editor._editCollider(${index})">Edit</button>
-            </div>
-          `).join('')}
+          ${this.colliders.map((collider, index) => {
+            // Handle mesh-type colliders differently (they reference GLTF meshes)
+            const positionStr = collider.type === 'mesh' 
+              ? `Mesh: ${collider.meshName}` 
+              : `at [${collider.position.join(', ')}]`;
+            
+            return `
+              <div class="item-row" data-type="collider" data-index="${index}">
+                <strong>${collider.type}</strong> (${collider.materialType})<br>
+                ${positionStr}
+                <button onclick="window.editor._deleteCollider(${index})">Delete</button>
+                ${collider.type !== 'mesh' ? `<button onclick="window.editor._editCollider(${index})">Edit</button>` : ''}
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
       
@@ -970,6 +1115,34 @@ export class StandaloneLevelEditor {
         <div style="margin-top: 5px;">
           <label style="font-size: 11px;">Chase Range:</label><br>
           <input type="number" id="selected-chase-range" value="${enemyData.chaseRange || 5}" step="0.5" min="0" 
+                 style="width: 100%; padding: 3px; font-size: 11px;" 
+                 onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
+                 oninput="window.editor._onPropertyInputChange()"
+                 onchange="window.editor._onPropertyInputChange()">
+        </div>
+      `;
+    } else if (this.selectedType === 'npc') {
+      const npcData = selectedData.npcData;
+      typeSpecificInputs = `
+        <div style="margin-top: 10px;">
+          <label style="font-size: 11px;">NPC Type:</label><br>
+          <select id="selected-npc-type" style="width: 100%; padding: 3px; font-size: 11px;">
+            ${this.npcTypes.map(type => 
+              `<option value="${type}" ${type === npcData.type ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1)}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div style="margin-top: 5px;">
+          <label style="font-size: 11px;">Speed:</label><br>
+          <input type="number" id="selected-npc-speed" value="${npcData.speed || 2}" step="0.1" min="0" 
+                 style="width: 100%; padding: 3px; font-size: 11px;" 
+                 onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
+                 oninput="window.editor._onPropertyInputChange()"
+                 onchange="window.editor._onPropertyInputChange()">
+        </div>
+        <div style="margin-top: 5px;">
+          <label style="font-size: 11px;">Scale:</label><br>
+          <input type="number" id="selected-npc-scale" value="${npcData.scale || 1.0}" step="0.1" min="0.1" 
                  style="width: 100%; padding: 3px; font-size: 11px;" 
                  onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
                  oninput="window.editor._onPropertyInputChange()"
@@ -1195,6 +1368,14 @@ export class StandaloneLevelEditor {
       });
     }
     
+    const addNpcBtn = document.getElementById('add-npc');
+    if (addNpcBtn) {
+      addNpcBtn.addEventListener('click', () => {
+        this.mode = 'npc';
+        this._updateStatus('Click on the level to place an NPC');
+      });
+    }
+    
     const addLightBtn = document.getElementById('add-light');
     if (addLightBtn) {
       addLightBtn.addEventListener('click', () => {
@@ -1247,24 +1428,24 @@ export class StandaloneLevelEditor {
   _bindEvents() {
     // Prevent duplicate event binding
     if (this.eventsBound) {
-      this._unbindEvents();
+      return; // Already bound, don't rebind
     }
 
     // Mouse events
-    this.renderer.domElement.addEventListener('mousedown', this._onMouseDown.bind(this));
-    this.renderer.domElement.addEventListener('mousemove', this._onMouseMove.bind(this));
-    this.renderer.domElement.addEventListener('mouseup', this._onMouseUp.bind(this));
-    this.renderer.domElement.addEventListener('wheel', this._onMouseWheel.bind(this));
+    this.renderer.domElement.addEventListener('mousedown', this.boundEventHandlers.mousedown);
+    this.renderer.domElement.addEventListener('mousemove', this.boundEventHandlers.mousemove);
+    this.renderer.domElement.addEventListener('mouseup', this.boundEventHandlers.mouseup);
+    this.renderer.domElement.addEventListener('wheel', this.boundEventHandlers.wheel);
 
     // Prevent right-click context menu
-    this.renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
+    this.renderer.domElement.addEventListener('contextmenu', this.boundEventHandlers.contextmenu);
 
     // Keyboard events
-    window.addEventListener('keydown', this._onKeyDown.bind(this));
-    window.addEventListener('keyup', this._onKeyUp.bind(this));
+    window.addEventListener('keydown', this.boundEventHandlers.keydown);
+    window.addEventListener('keyup', this.boundEventHandlers.keyup);
 
     // Window resize
-    window.addEventListener('resize', this._onWindowResize.bind(this));
+    window.addEventListener('resize', this.boundEventHandlers.resize);
 
     // Expose editor to window for button callbacks
     window.editor = this;
@@ -1279,18 +1460,18 @@ export class StandaloneLevelEditor {
     if (!this.eventsBound) return;
 
     // Mouse events
-    this.renderer.domElement.removeEventListener('mousedown', this._onMouseDown.bind(this));
-    this.renderer.domElement.removeEventListener('mousemove', this._onMouseMove.bind(this));
-    this.renderer.domElement.removeEventListener('mouseup', this._onMouseUp.bind(this));
-    this.renderer.domElement.removeEventListener('wheel', this._onMouseWheel.bind(this));
-    this.renderer.domElement.removeEventListener('contextmenu', (e) => e.preventDefault());
+    this.renderer.domElement.removeEventListener('mousedown', this.boundEventHandlers.mousedown);
+    this.renderer.domElement.removeEventListener('mousemove', this.boundEventHandlers.mousemove);
+    this.renderer.domElement.removeEventListener('mouseup', this.boundEventHandlers.mouseup);
+    this.renderer.domElement.removeEventListener('wheel', this.boundEventHandlers.wheel);
+    this.renderer.domElement.removeEventListener('contextmenu', this.boundEventHandlers.contextmenu);
 
     // Keyboard events
-    window.removeEventListener('keydown', this._onKeyDown.bind(this));
-    window.removeEventListener('keyup', this._onKeyUp.bind(this));
+    window.removeEventListener('keydown', this.boundEventHandlers.keydown);
+    window.removeEventListener('keyup', this.boundEventHandlers.keyup);
 
     // Window resize
-    window.removeEventListener('resize', this._onWindowResize.bind(this));
+    window.removeEventListener('resize', this.boundEventHandlers.resize);
 
     this.eventsBound = false;
   }
@@ -1504,6 +1685,9 @@ export class StandaloneLevelEditor {
         case 'enemy':
           this._addEnemy(point);
           break;
+        case 'npc':
+          this._addNpc(point);
+          break;
         case 'light':
           this._addLight(point);
           break;
@@ -1529,6 +1713,7 @@ export class StandaloneLevelEditor {
 
     const selectableObjects = [
       ...this.enemyMeshes,
+      ...this.npcMeshes,
       ...this.lightMeshes,
       ...this.patrolPointMeshes,
       ...this.colliderMeshes
@@ -1585,6 +1770,27 @@ export class StandaloneLevelEditor {
     this._updateUI();
     this._updateStatus(`Added ${type} enemy at [${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)}]`);
   }
+
+  _addNpc(position) {
+    const npcTypeSelect = document.getElementById('npc-type');
+    const type = npcTypeSelect && npcTypeSelect.value ? npcTypeSelect.value : 'yellow_bot';
+    
+    const npc = {
+      type: type,
+      position: [position.x, position.y, position.z],
+      modelUrl: this._getDefaultModelUrl(type),
+      patrolPoints: [],
+      speed: this._getDefaultSpeed(type),
+      scale: 1.0, // Default scale
+      chaseRange: 0, // NPCs don't chase
+      id: this.nextId++
+    };
+    
+    this.npcs.push(npc);
+    this._createNpcVisuals();
+    this._updateUI();
+    this._updateStatus(`Added ${type} NPC at [${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)}]`);
+  }
   
   _addLight(position) {
     const lightTypeSelect = document.getElementById('light-type');
@@ -1603,30 +1809,54 @@ export class StandaloneLevelEditor {
   }
   
   _addPatrolPoint(position) {
-    if (!this.selected || this.selectedType !== 'enemy') {
-      this._updateStatus('Select an enemy first to add patrol points');
+    if (!this.selected || (this.selectedType !== 'enemy' && this.selectedType !== 'npc')) {
+      this._updateStatus('Select an enemy or NPC first to add patrol points');
       return;
     }
     
-    const enemyIndex = this.selected.userData.index;
-    const enemy = this.enemies[enemyIndex];
-    
-    if (!enemy.patrolPoints) enemy.patrolPoints = [];
-    
-    const pointIndex = enemy.patrolPoints.length;
-    enemy.patrolPoints.push([position.x, position.y, position.z, 0.5]);
-    
-    // Update patrol points and visuals
-    this._extractPatrolPoints();
-    this._clearVisualRepresentations();
-    this._createEnemyVisuals();
-    this._createLightVisuals();
-    this._createColliderVisuals();
-    this._createPatrolPointVisuals();
-    this._createPatrolConnections();
-    
-    this._updateUI();
-    this._updateStatus(`Added patrol point ${pointIndex} for enemy ${enemyIndex}`);
+    if (this.selectedType === 'enemy') {
+      const enemyIndex = this.selected.userData.index;
+      const enemy = this.enemies[enemyIndex];
+      
+      if (!enemy.patrolPoints) enemy.patrolPoints = [];
+      
+      const pointIndex = enemy.patrolPoints.length;
+      enemy.patrolPoints.push([position.x, position.y, position.z, 0.5]);
+      
+      // Update patrol points and visuals
+      this._extractPatrolPoints();
+      this._clearVisualRepresentations();
+      this._createEnemyVisuals();
+      this._createNpcVisuals();
+      this._createLightVisuals();
+      this._createColliderVisuals();
+      this._createPatrolPointVisuals();
+      this._createPatrolConnections();
+      
+      this._updateUI();
+      this._updateStatus(`Added patrol point ${pointIndex} for enemy ${enemyIndex}`);
+    } else if (this.selectedType === 'npc') {
+      const npcIndex = this.selected.userData.index;
+      const npc = this.npcs[npcIndex];
+      
+      if (!npc.patrolPoints) npc.patrolPoints = [];
+      
+      const pointIndex = npc.patrolPoints.length;
+      npc.patrolPoints.push([position.x, position.y, position.z, 0.5]);
+      
+      // Update patrol points and visuals
+      this._extractPatrolPoints();
+      this._clearVisualRepresentations();
+      this._createEnemyVisuals();
+      this._createNpcVisuals();
+      this._createLightVisuals();
+      this._createColliderVisuals();
+      this._createPatrolPointVisuals();
+      this._createPatrolConnections();
+      
+      this._updateUI();
+      this._updateStatus(`Added patrol point ${pointIndex} for NPC ${npcIndex}`);
+    }
   }
   
   _addCollider(position) {
@@ -1669,9 +1899,13 @@ export class StandaloneLevelEditor {
   _selectMesh(index) {
     if (index >= 0 && index < this.levelMeshes.length) {
       this.selectedMesh = this.levelMeshes[index];
+      console.log('Selected mesh:', this.selectedMesh);
+      console.log('Total meshes:', this.levelMeshes.length);
       this._highlightSelectedMesh(this.selectedMesh.mesh);
       this._updateUI();
       this._updateStatus(`Selected mesh: ${this.selectedMesh.name}`);
+    } else {
+      console.log('Invalid mesh index:', index, 'Total meshes:', this.levelMeshes.length);
     }
   }
   
@@ -1682,28 +1916,51 @@ export class StandaloneLevelEditor {
     }
     
     const mesh = this.selectedMesh.mesh;
-    const boundingBox = new THREE.Box3().setFromObject(mesh);
-    const center = boundingBox.getCenter(new THREE.Vector3());
-    const size = boundingBox.getSize(new THREE.Vector3());
+    const meshName = this.selectedMesh.name;
     
-    const materialSelect = document.getElementById('material-type');
+    // Get user-selected collider type
+    const colliderTypeSelect = document.getElementById('mesh-collider-type');
+    const colliderType = colliderTypeSelect ? colliderTypeSelect.value : 'mesh';
+    
+    // Get user-selected material type
+    const materialSelect = document.getElementById('mesh-material-type');
     const materialType = materialSelect ? materialSelect.value : 'ground';
     
-    const collider = {
-      id: `collider_${this.nextId}`,
-      type: 'box', // Default to box for mesh-based colliders
-      position: [center.x, center.y, center.z],
-      size: [size.x, size.y, size.z],
-      materialType: materialType,
-      meshName: this.selectedMesh.name
-    };
+    let collider;
+    
+    if (colliderType === 'mesh') {
+      // Create Trimesh collider (references the GLTF mesh)
+      collider = {
+        id: `collider_${this.nextId}`,
+        type: 'mesh',
+        meshName: meshName,
+        materialType: materialType
+      };
+      
+      this._updateStatus(`Created Trimesh collider for: ${meshName}`);
+    } else {
+      // Create Box collider (bounding box approximation)
+      const boundingBox = new THREE.Box3().setFromObject(mesh);
+      const center = boundingBox.getCenter(new THREE.Vector3());
+      const size = boundingBox.getSize(new THREE.Vector3());
+      
+      collider = {
+        id: `collider_${this.nextId}`,
+        type: 'box',
+        position: [center.x, center.y, center.z],
+        size: [size.x, size.y, size.z],
+        rotation: [0, 0, 0],
+        materialType: materialType
+      };
+      
+      this._updateStatus(`Created Box collider for: ${meshName} (${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)})`);
+    }
     
     this.colliders.push(collider);
     this.nextId++;
     
     this._createColliderVisuals();
     this._updateUI();
-    this._updateStatus(`Created collider for mesh: ${this.selectedMesh.name}`);
   }
   
   _deleteCollider(index) {
@@ -1781,6 +2038,12 @@ export class StandaloneLevelEditor {
           parseFloat(posY.value),
           parseFloat(posZ.value)
         ];
+      } else if (this.selectedType === 'npc' && this.npcs[index]) {
+        this.npcs[index].position = [
+          parseFloat(posX.value),
+          parseFloat(posY.value),
+          parseFloat(posZ.value)
+        ];
       } else if (this.selectedType === 'light' && this.lights[index]) {
         this.lights[index].position = [
           parseFloat(posX.value),
@@ -1794,13 +2057,22 @@ export class StandaloneLevelEditor {
           parseFloat(posZ.value)
         ];
         
-        // Update the corresponding enemy's patrol point array
+        // Update the corresponding enemy or NPC's patrol point array
         const patrolData = this.patrolPoints[index];
-        const enemy = this.enemies[patrolData.enemyIndex];
-        if (enemy && enemy.patrolPoints && enemy.patrolPoints[patrolData.pointIndex]) {
-          enemy.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
-          enemy.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
-          enemy.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
+        if (patrolData.entityType === 'enemy' && this.enemies[patrolData.enemyIndex]) {
+          const enemy = this.enemies[patrolData.enemyIndex];
+          if (enemy.patrolPoints && enemy.patrolPoints[patrolData.pointIndex]) {
+            enemy.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
+            enemy.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
+            enemy.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
+          }
+        } else if (patrolData.entityType === 'npc' && this.npcs[patrolData.npcIndex]) {
+          const npc = this.npcs[patrolData.npcIndex];
+          if (npc.patrolPoints && npc.patrolPoints[patrolData.pointIndex]) {
+            npc.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
+            npc.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
+            npc.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
+          }
         }
       } else if (this.selectedType === 'collider' && this.colliders[index]) {
         this.colliders[index].position = [
@@ -1842,6 +2114,24 @@ export class StandaloneLevelEditor {
         }
         if (chaseRangeInput) {
           this.enemies[index].chaseRange = parseFloat(chaseRangeInput.value);
+        }
+      }
+    } else if (this.selectedType === 'npc') {
+      const npcTypeSelect = document.getElementById('selected-npc-type');
+      const speedInput = document.getElementById('selected-npc-speed');
+      const scaleInput = document.getElementById('selected-npc-scale');
+      
+      const index = this.selected.userData.index;
+      if (this.npcs[index]) {
+        if (npcTypeSelect) {
+          this.npcs[index].type = npcTypeSelect.value;
+          this.npcs[index].modelUrl = this._getDefaultModelUrl(npcTypeSelect.value);
+        }
+        if (speedInput) {
+          this.npcs[index].speed = parseFloat(speedInput.value);
+        }
+        if (scaleInput) {
+          this.npcs[index].scale = parseFloat(scaleInput.value);
         }
       }
     } else if (this.selectedType === 'light') {
@@ -2071,6 +2361,23 @@ export class StandaloneLevelEditor {
       this.selectedType = null;
     }
   }
+
+  _deleteNpc(index) {
+    if (index >= 0 && index < this.npcs.length) {
+      this.npcs.splice(index, 1);
+      this._extractPatrolPoints(); // Update patrol points
+      this._clearVisualRepresentations();
+      this._createNpcVisuals();
+      this._createEnemyVisuals();
+      this._createLightVisuals();
+      this._createColliderVisuals();
+      this._createPatrolPointVisuals();
+      this._createPatrolConnections();
+      this._updateUI();
+      this.selected = null;
+      this.selectedType = null;
+    }
+  }
   
   _deleteLight(index) {
     if (index >= 0 && index < this.lights.length) {
@@ -2105,10 +2412,15 @@ export class StandaloneLevelEditor {
   
   _getDefaultModelUrl(type) {
     const urls = {
-      walker: 'src/assets/low_poly_female/scene.gltf',
-      runner: 'src/assets/low_poly_male/scene.gltf',
-      jumper: 'src/assets/low_poly_female/scene.gltf',
-      flyer: 'src/assets/futuristic_flying_animated_robot_-_low_poly/scene.gltf'
+      walker: 'assets/low_poly_female/scene.gltf',
+      runner: 'assets/low_poly_male/scene.gltf',
+      jumper: 'assets/low_poly_female/scene.gltf',
+      flyer: 'assets/futuristic_flying_animated_robot_-_low_poly/scene.gltf',
+      snake: 'assets/enemies/snake/scene.gltf',
+      snake_boss: 'assets/enemies/snake_boss/Snake_Angry.gltf',
+      mech_boss: 'assets/enemies/robot_boss/scene.gltf',
+      crawler: 'assets/enemies/crawler/Crawler.gltf',
+      yellow_bot: 'assets/npc/yellow_bot/scene.gltf'
     };
     return urls[type] || urls.walker;
   }
@@ -2118,7 +2430,11 @@ export class StandaloneLevelEditor {
       walker: 2.4,
       runner: 4.0,
       jumper: 2.0,
-      flyer: 2.5
+      flyer: 2.5,
+      snake: 1.5,
+      snake_boss: 2.5,
+      mech_boss: 1.5,
+      crawler: 1.5
     };
     return speeds[type] || 2.0;
   }
@@ -2128,6 +2444,7 @@ export class StandaloneLevelEditor {
     
     // Update current level data
     this.currentLevel.enemies = [...this.enemies];
+    this.currentLevel.npcs = [...this.npcs];
     this.currentLevel.lights = this.lights.map(light => light.type);
     this.currentLevel.colliders = [...this.colliders];
     
@@ -2164,7 +2481,7 @@ export const levels = ${levelsJSON};`;
       <strong>Level Editor</strong><br>
       Level: ${currentLevel}<br>
       Mode: ${mode}<br>
-      Enemies: ${this.enemies.length} | Lights: ${this.lights.length} | Patrol: ${this.patrolPoints.length}<br>
+      Enemies: ${this.enemies.length} | NPCs: ${this.npcs.length} | Lights: ${this.lights.length} | Patrol: ${this.patrolPoints.length}<br>
       ${message}
     `;
   }
