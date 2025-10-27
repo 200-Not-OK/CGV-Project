@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { StackWeapon } from './weapons/StackWeapon.js';
 
 export class Player {
   constructor(scene, physicsWorld, options = {}) {
@@ -87,6 +88,13 @@ export class Player {
     this.maxJumpHoldTime = 0.3; // Maximum time to apply upward force (300ms)
     this.isMoving = false;
 
+    // Double jump system
+    this.enableDoubleJump = true;           // Feature flag
+    this.jumpCount = 0;                     // Track number of jumps performed
+    this.maxJumps = 2;                      // Maximum jumps allowed (1 = normal, 2 = double jump)
+    this.doubleJumpStrength = 20;           // Slightly weaker than first jump
+    this.canDoubleJump = true;              // Reset when landing
+
     // Sound state for footsteps
     this.footstepTimer = 0;
     this.footstepInterval = 0.4; // Time between footsteps (seconds)
@@ -114,6 +122,10 @@ export class Player {
     this.characterLight.castShadow = false; // No shadows, just illumination
     this.mesh.add(this.characterLight); // Attach to player so it follows
     console.log('💡 Character self-illumination light added');
+    
+    // Initialize weapon system
+    this.weapon = new StackWeapon(this, scene, physicsWorld);
+    this.weapon.mount();
     
     // Load 3D model first, then create physics body
     this.loadModel();
@@ -768,6 +780,9 @@ export class Player {
       this.handleJumpInput(input);
       this.handleInteractionInput(input);
       
+      // Handle weapon input
+      this.weapon.handleInput(input);
+      
       // Check for stair climbing when grounded and moving
       if (this.isGrounded && this.isMoving) {
         this.handleStairClimbing(camOrientation, delta);
@@ -791,6 +806,9 @@ export class Player {
         this.body.velocity.y = Math.max(this.body.velocity.y, -5.0);
       }
     }
+    
+    // Update weapon system
+    this.weapon.update(delta);
     
     // Sync visual mesh with physics body
     this.syncMeshWithBody();
@@ -837,9 +855,11 @@ export class Player {
     // Check if we're on a slope (for better physics handling)
     this.isOnSlope = this.checkIfOnSlope();
     
-    // Reset jumping flag when player lands
+    // Reset jumping flag AND jump count when player lands
     if (this.isGrounded && this.isJumping && this.body.velocity.y <= 0.1) {
       this.isJumping = false;
+      this.jumpCount = 0;              // ✅ Reset jump count on landing
+      this.canDoubleJump = true;       // ✅ Allow double jump again
     }
   }
 
@@ -1108,7 +1128,6 @@ export class Player {
 
   handleJumpInput(input) {
     if (!input || !input.isKey) return;
-
     
     // Check if movement is locked (prevent jumping during animations)
     if (this.movementLocked) {
@@ -1116,34 +1135,51 @@ export class Player {
     }
     
     if (input.isKey('Space')) {
-      if (this.isGrounded && !this.isJumping) {
-        // Initial jump impulse
+      // First jump (grounded)
+      if (this.isGrounded && this.jumpCount === 0) {
         this.body.velocity.y = this.jumpStrength;
         this.isJumping = true;
-        this.jumpHoldTime = 0; // Reset hold timer
+        this.jumpCount = 1;
+        this.jumpHoldTime = 0;
 
         // Play jump sound
         if (this.game && this.game.soundManager) {
           this.game.soundManager.playSFX('jump', 0.5);
         }
-      } else if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
-        // Continue applying upward force while space is held (variable jump height)
-        // This gives the player more control over jump height
-        const jumpBoostForce = 25; // Additional upward force per frame
+        
+        console.log('🦘 First jump');
+      }
+      // Double jump (airborne, haven't used double jump yet)
+      else if (this.enableDoubleJump && !this.isGrounded && this.jumpCount === 1 && this.canDoubleJump) {
+        // Reset Y velocity before applying double jump (feels more responsive)
+        this.body.velocity.y = this.doubleJumpStrength;
+        this.jumpCount = 2;
+        this.canDoubleJump = false; // Prevent triple jump
+        this.jumpHoldTime = 0;
+
+        // Play different sound for double jump (if available)
+        if (this.game && this.game.soundManager) {
+          this.game.soundManager.playSFX('jump', 0.7); // Slightly louder
+        }
+        
+        console.log('🦘🦘 Double jump!');
+      }
+      // Variable jump height (hold space for higher jump)
+      else if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
+        const jumpBoostForce = 25;
         this.body.applyForce(
           new CANNON.Vec3(0, jumpBoostForce, 0),
           this.body.position
         );
       }
     } else {
-      // Space key released - stop boosting jump
+      // Space key released - cut upward velocity for short hop
       if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
-        // Cut upward velocity for short hop if released early
         if (this.body.velocity.y > 0) {
-          this.body.velocity.y *= 0.5; // Reduce upward velocity by half
+          this.body.velocity.y *= 0.5;
         }
       }
-      this.jumpHoldTime = this.maxJumpHoldTime; // Mark jump as no longer boostable
+      this.jumpHoldTime = this.maxJumpHoldTime;
     }
   }
 
@@ -1531,6 +1567,9 @@ export class Player {
   }
 
   dispose() {
+    
+    // Unmount weapon system
+    this.weapon.unmount();
     
     // Remove physics body
     if (this.body) {

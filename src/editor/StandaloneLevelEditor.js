@@ -35,6 +35,10 @@ export class StandaloneLevelEditor {
     this.patrolPoints = [];
     this.colliders = []; // Manual colliders
     this.levelMeshes = []; // Individual meshes from GLTF for selection
+    this.platforms = []; // Platform objects
+    this.interactiveObjects = []; // Interactive objects (pressure plates, etc.)
+    this.triggers = []; // Trigger connections between interactive objects
+    this.meshAnimations = []; // Animations for GLTF meshes
     
     // Visual representations
     this.enemyMeshes = [];
@@ -44,6 +48,11 @@ export class StandaloneLevelEditor {
     this.patrolConnections = []; // Lines showing patrol routes
     this.colliderMeshes = []; // Visual representations of colliders
     this.meshOutlines = []; // Outline materials for mesh selection
+    this.platformMeshes = []; // Visual representations of platforms
+    this.platformPathLines = []; // Lines showing platform movement paths
+    this.platformTextures = {}; // Cache for loaded textures
+    this.interactiveObjectMeshes = []; // Visual representations of interactive objects
+    this.triggerConnectionLines = []; // Visual lines showing trigger connections
     
     // Selection system
     this.selected = null;
@@ -61,6 +70,10 @@ export class StandaloneLevelEditor {
     this.mouseDelta = { x: 0, y: 0 };
     this.lastMousePos = { x: 0, y: 0 };
     
+    // Waypoint and mesh animation modes
+    this.addingWaypoint = false;
+    this.addingMeshWaypoint = false;
+    
     // ID counter
     this.nextId = 1;
     
@@ -73,6 +86,21 @@ export class StandaloneLevelEditor {
     this.lightTypes = ['BasicLights', 'PointPulse', 'HemisphereFill'];
     this.colliderTypes = ['box', 'sphere', 'capsule'];
     this.materialTypes = ['ground', 'wall', 'platform'];
+    
+    // Platform types
+    this.platformTypes = ['static', 'moving', 'rotating', 'disappearing'];
+    this.textureTypes = ['wood', 'metal', 'stone', 'ice', 'custom'];
+    this.textureUrls = {
+      wood: 'assets/textures/wood.jpg',
+      metal: 'assets/textures/metal.jpg',
+      stone: 'assets/textures/stone.jpg',
+      ice: 'assets/textures/ice.jpg'
+    };
+    
+    // Interactive object types
+    this.interactiveObjectTypes = ['pressurePlate', 'gltfPlatform'];
+    this.physicsTypes = ['box', 'trimesh', 'convex'];
+    this.triggerTypes = ['activate', 'deactivate', 'toggle', 'custom'];
     
     // Store bound event handlers for proper cleanup
     this.boundEventHandlers = {
@@ -237,10 +265,14 @@ export class StandaloneLevelEditor {
 
     // Clear data arrays
     this.enemies = [];
+    this.npcs = [];
     this.lights = [];
     this.patrolPoints = [];
     this.colliders = [];
     this.levelMeshes = [];
+    this.platforms = [];
+    this.interactiveObjects = [];
+    this.triggers = [];
 
     this.selected = null;
     this.selectedType = null;
@@ -333,6 +365,58 @@ export class StandaloneLevelEditor {
       if (outline.material) outline.material.dispose();
     });
     this.meshOutlines = [];
+    
+    // Remove and dispose platform meshes
+    this.platformMeshes.forEach(mesh => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach(m => m.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+      }
+    });
+    this.platformMeshes = [];
+    
+    // Remove and dispose platform path lines
+    this.platformPathLines.forEach(line => {
+      this.scene.remove(line);
+      if (line.geometry) line.geometry.dispose();
+      if (line.material) line.material.dispose();
+    });
+    this.platformPathLines = [];
+    
+    // Remove and dispose interactive object meshes
+    this.interactiveObjectMeshes.forEach(mesh => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach(m => m.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+      }
+    });
+    this.interactiveObjectMeshes = [];
+    
+    // Remove and dispose placeable block meshes
+    this.placeableBlockMeshes.forEach(mesh => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) mesh.material.dispose();
+    });
+    this.placeableBlockMeshes = [];
+    
+    // Remove and dispose trigger connection lines
+    this.triggerConnectionLines.forEach(line => {
+      this.scene.remove(line);
+      if (line.geometry) line.geometry.dispose();
+      if (line.material) line.material.dispose();
+    });
+    this.triggerConnectionLines = [];
   }
 
   _createVisualRepresentations() {
@@ -354,6 +438,16 @@ export class StandaloneLevelEditor {
       case 'collider':
         this._createColliderVisuals();
         break;
+      case 'platform':
+        this._createPlatformVisuals();
+        break;
+      case 'interactive':
+        this._createInteractiveObjectVisuals();
+        this._createTriggerConnectionVisuals();
+        break;
+      case 'block':
+        this._createPlaceableBlockVisuals();
+        break;
       case 'mesh':
         // Mesh selection doesn't need visuals, just highlighting
         break;
@@ -365,6 +459,10 @@ export class StandaloneLevelEditor {
         this._createPatrolPointVisuals();
         this._createPatrolConnections();
         this._createColliderVisuals();
+        this._createPlatformVisuals();
+        this._createInteractiveObjectVisuals();
+        this._createTriggerConnectionVisuals();
+        this._createPlaceableBlockVisuals();
         break;
     }
   }
@@ -465,6 +563,36 @@ export class StandaloneLevelEditor {
     if (this.currentLevel.colliders) {
       this.colliders = [...this.currentLevel.colliders];
       this._createColliderVisuals();
+    }
+    
+    // Load platforms
+    if (this.currentLevel.platforms) {
+      this.platforms = [...this.currentLevel.platforms];
+      this._createPlatformVisuals();
+    }
+    
+    // Load interactive objects
+    if (this.currentLevel.interactiveObjects) {
+      this.interactiveObjects = [...this.currentLevel.interactiveObjects];
+      this._createInteractiveObjectVisuals();
+    }
+    
+    // Load triggers
+    if (this.currentLevel.triggers) {
+      this.triggers = [...this.currentLevel.triggers];
+      this._createTriggerConnectionVisuals();
+    }
+    
+    // Load mesh animations
+    if (this.currentLevel.meshAnimations) {
+      this.meshAnimations = [...this.currentLevel.meshAnimations];
+      console.log('Loaded mesh animations:', this.meshAnimations);
+    }
+    
+    // Load placeable blocks
+    if (this.currentLevel.placeableBlocks) {
+      this.placeableBlocks = [...this.currentLevel.placeableBlocks];
+      this._createPlaceableBlockVisuals();
     }
     
     // Extract patrol points from enemies and NPCs
@@ -794,6 +922,108 @@ export class StandaloneLevelEditor {
     return colors[type] || 0x888888;
   }
   
+  _createPlatformVisuals() {
+    // Clear existing platform visuals first
+    this.platformMeshes.forEach(mesh => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach(m => m.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+      }
+    });
+    this.platformMeshes = [];
+    
+    // Clear existing platform path lines
+    this.platformPathLines.forEach(line => {
+      this.scene.remove(line);
+      if (line.geometry) line.geometry.dispose();
+      if (line.material) line.material.dispose();
+    });
+    this.platformPathLines = [];
+    
+    this.platforms.forEach((platform, index) => {
+      const geometry = new THREE.BoxGeometry(
+        platform.size[0],
+        platform.size[1],
+        platform.size[2]
+      );
+      
+      // Load or create material with texture
+      const material = this._createPlatformMaterial(platform);
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(...platform.position);
+      mesh.rotation.set(...platform.rotation);
+      
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.userData = { type: 'platform', index, platformData: platform };
+      mesh.name = `platform_${index}`;
+      
+      // Add wireframe outline for visibility in editor
+      const edges = new THREE.EdgesGeometry(geometry);
+      const line = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 })
+      );
+      mesh.add(line);
+      
+      // Show animation path for moving platforms
+      if (platform.type === 'moving' && platform.animation?.path && platform.animation.path.length > 1) {
+        this._createPathVisualization(platform.animation.path);
+      }
+      
+      this.scene.add(mesh);
+      this.platformMeshes.push(mesh);
+    });
+  }
+  
+  _createPlatformMaterial(platform) {
+    const textureLoader = new THREE.TextureLoader();
+    
+    const textureUrl = platform.texture === 'custom' 
+      ? platform.textureUrl 
+      : this.textureUrls[platform.texture];
+    
+    if (textureUrl) {
+      // Use cached texture or load new
+      if (!this.platformTextures[textureUrl]) {
+        const texture = textureLoader.load(textureUrl);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(platform.textureRepeat[0], platform.textureRepeat[1]);
+        this.platformTextures[textureUrl] = texture;
+      }
+      
+      return new THREE.MeshStandardMaterial({
+        map: this.platformTextures[textureUrl],
+        roughness: 0.8,
+        metalness: platform.texture === 'metal' ? 0.6 : 0.2
+      });
+    }
+    
+    // Fallback to color
+    return new THREE.MeshLambertMaterial({ color: platform.color || 0x888888 });
+  }
+  
+  _createPathVisualization(path) {
+    const points = path.map(p => new THREE.Vector3(p[0], p[1], p[2]));
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineDashedMaterial({
+      color: 0xff00ff,
+      dashSize: 0.5,
+      gapSize: 0.3
+    });
+    const line = new THREE.Line(geometry, material);
+    line.computeLineDistances();
+    this.scene.add(line);
+    this.platformPathLines.push(line);
+  }
+  
   _createUI() {
     // Create side panel
     const panel = document.createElement('div');
@@ -864,6 +1094,9 @@ export class StandaloneLevelEditor {
         <button id="mode-npc" class="mode-btn ${this.mode === 'npc' ? 'active' : ''}">NPCs</button>
         <button id="mode-light" class="mode-btn ${this.mode === 'light' ? 'active' : ''}">Lights</button>
         <button id="mode-patrol" class="mode-btn ${this.mode === 'patrol' ? 'active' : ''}">Patrol</button>
+        <button id="mode-platform" class="mode-btn ${this.mode === 'platform' ? 'active' : ''}">Platforms</button>
+        <button id="mode-interactive" class="mode-btn ${this.mode === 'interactive' ? 'active' : ''}">Interactive</button>
+        <button id="mode-block" class="mode-btn ${this.mode === 'block' ? 'active' : ''}">Blocks</button>
         <button id="mode-mesh" class="mode-btn ${this.mode === 'mesh' ? 'active' : ''}">Meshes</button>
         <button id="mode-collider" class="mode-btn ${this.mode === 'collider' ? 'active' : ''}">Colliders</button>
         <button id="mode-select" class="mode-btn ${this.mode === 'select' ? 'active' : ''}">Select</button>
@@ -926,13 +1159,61 @@ export class StandaloneLevelEditor {
         </div>
       </div>
       
+      <div id="block-controls" style="display: ${this.mode === 'block' ? 'block' : 'none'};">
+        <h4>Placeable Block Controls</h4>
+        <p style="font-size: 10px; color: #aaa; margin: 5px 0;">
+          💡 These blocks can be picked up, moved, and placed by the player
+        </p>
+        
+        <label>Block Color:</label><br>
+        <select id="block-color" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+          ${Object.keys(this.blockColors).map(color => 
+            `<option value="${color}">${color.charAt(0).toUpperCase() + color.slice(1)}</option>`
+          ).join('')}
+        </select>
+        
+        <h5>Size</h5>
+        <label>Width:</label>
+        <input type="number" id="block-width" value="1" step="0.1" min="0.1" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+        <label>Height:</label>
+        <input type="number" id="block-height" value="1" step="0.1" min="0.1" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+        <label>Depth:</label>
+        <input type="number" id="block-depth" value="1" step="0.1" min="0.1" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+        
+        <label>Mass (kg):</label>
+        <input type="number" id="block-mass" value="50" step="10" min="1" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+        
+        <label style="display: flex; align-items: center; margin-bottom: 10px;">
+          <input type="checkbox" id="block-respawn" checked style="margin-right: 5px;">
+          <span style="font-size: 11px;">Auto-respawn if thrown off level</span>
+        </label>
+        
+        <label>Respawn Time (seconds):</label>
+        <input type="number" id="block-respawn-time" value="3" step="0.5" min="0.5" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+        
+        <button id="add-block" style="width: 100%; padding: 5px;">Add Block (Click on level)</button>
+        
+        <div id="block-list">
+          <h5>Placeable Blocks (${this.placeableBlocks.length})</h5>
+          ${this.placeableBlocks.map((block, index) => `
+            <div class="item-row" data-type="block" data-index="${index}">
+              <strong style="color: #${block.color.toString(16).padStart(6, '0')};">■</strong> 
+              ${block.id}<br>
+              at [${block.position.map(v => v.toFixed(1)).join(', ')}]<br>
+              Mass: ${block.mass}kg
+              <button onclick="window.editor._deletePlaceableBlock(${index})">Delete</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
       <div id="mesh-controls" style="display: ${this.mode === 'mesh' ? 'block' : 'none'};">
-        <h4>Mesh Selection</h4>
+        <h4>Mesh Selection & Animation</h4>
         <p style="font-size: 11px; opacity: 0.8; margin-bottom: 10px;">
           <strong>How to use:</strong><br>
           1. Click on a mesh in the 3D view or list below<br>
-          2. Choose collider type (Trimesh or Box)<br>
-          3. Click "Create Collider from Mesh"
+          2. Create collider OR add animations<br>
+          3. Configure settings and apply
         </p>
         
         <div id="mesh-list">
@@ -950,6 +1231,7 @@ export class StandaloneLevelEditor {
           <div style="margin-top: 15px; padding: 10px; border: 1px solid #4CAF50; background: #1a1a1a;">
             <h5 style="color: #4CAF50;">✓ Selected: ${this.selectedMesh.name}</h5>
             
+            <h6 style="margin: 10px 0 5px 0;">Collider Settings</h6>
             <label>Collider Type:</label><br>
             <select id="mesh-collider-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
               <option value="mesh">Mesh (Trimesh - Accurate)</option>
@@ -961,9 +1243,101 @@ export class StandaloneLevelEditor {
               ${materialTypeOptions}
             </select>
             
-            <button id="create-collider-from-mesh" style="width: 100%; padding: 5px; background: #4CAF50; color: white;">
+            <button id="create-collider-from-mesh" style="width: 100%; padding: 5px; background: #4CAF50; color: white; margin-bottom: 15px;">
               Create Collider from Mesh
             </button>
+            
+            <h6 style="margin: 10px 0 5px 0;">Animation Settings</h6>
+            <label>Animation Type:</label><br>
+            <select id="mesh-animation-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+              <option value="none">None</option>
+              <option value="moving">Moving (Waypoint Path)</option>
+              <option value="rotating">Rotating</option>
+              <option value="disappearing">Disappearing</option>
+            </select>
+            
+            <div id="mesh-moving-settings" style="display: none; margin-top: 10px; padding: 8px; background: #222; border: 1px solid #2196F3; border-radius: 3px;">
+              <h6 style="margin: 0 0 8px 0; color: #2196F3;">Moving Platform Settings</h6>
+              
+              <div style="font-size: 10px; background: #1a1a1a; padding: 5px; border-radius: 2px; margin-bottom: 8px;">
+                <strong>📍 Start Position (Current Mesh):</strong><br>
+                <span id="mesh-start-position" style="color: #4CAF50;">Click "Initialize Path" to set</span>
+              </div>
+              
+              <button id="mesh-initialize-path" style="width: 100%; padding: 5px; font-size: 11px; margin-bottom: 8px; background: #4CAF50; color: white; border: none; border-radius: 2px; cursor: pointer;">
+                Initialize Path from Current Position
+              </button>
+              
+              <label style="font-size: 11px;">Speed (units/sec):</label><br>
+              <input type="number" id="mesh-anim-speed" value="2" step="0.1" min="0.1" 
+                     style="width: 100%; padding: 5px; margin-bottom: 8px; font-size: 11px;">
+              
+              <button id="mesh-add-waypoint-btn" style="width: 100%; padding: 5px; font-size: 11px; margin-bottom: 8px;" disabled>
+                Add Waypoint (Click on level)
+              </button>
+              
+              <div style="margin-bottom: 8px;">
+                <label style="font-size: 11px;">Loop Behavior:</label><br>
+                <select id="mesh-loop-behavior" style="width: 100%; padding: 5px; font-size: 11px;">
+                  <option value="loop">Loop (Return to start)</option>
+                  <option value="pingpong">Ping-Pong (Reverse direction)</option>
+                  <option value="once">Once (Stop at end)</option>
+                </select>
+              </div>
+              
+              <label style="font-size: 11px;">Waypoints:</label>
+              <div id="mesh-waypoint-list" style="font-size: 10px; max-height: 120px; overflow-y: auto; background: #111; padding: 5px; border-radius: 2px;">
+                No waypoints yet - Initialize path first
+              </div>
+            </div>
+            
+            <div id="mesh-rotating-settings" style="display: none; margin-top: 10px; padding: 8px; background: #222; border: 1px solid #2196F3; border-radius: 3px;">
+              <h6 style="margin: 0 0 8px 0; color: #2196F3;">Rotating Platform Settings</h6>
+              <label style="font-size: 11px;">Rotation Axis:</label><br>
+              <select id="mesh-rotation-axis" style="width: 100%; padding: 5px; margin-bottom: 8px; font-size: 11px;">
+                <option value="0,1,0">Y (Horizontal Spin)</option>
+                <option value="1,0,0">X (Flip Forward/Back)</option>
+                <option value="0,0,1">Z (Roll Side to Side)</option>
+              </select>
+              
+              <label style="font-size: 11px;">Speed (rad/sec):</label><br>
+              <input type="number" id="mesh-rotation-speed" value="1" step="0.1" min="0.1"
+                     style="width: 100%; padding: 5px; font-size: 11px;">
+            </div>
+            
+            <div id="mesh-disappearing-settings" style="display: none; margin-top: 10px; padding: 8px; background: #222; border: 1px solid #2196F3; border-radius: 3px;">
+              <h6 style="margin: 0 0 8px 0; color: #2196F3;">Disappearing Platform Settings</h6>
+              <label style="font-size: 11px;">Visible Duration (s):</label><br>
+              <input type="number" id="mesh-disappear-interval" value="3" step="0.5" min="0.1"
+                     style="width: 100%; padding: 5px; margin-bottom: 8px; font-size: 11px;">
+              
+              <label style="font-size: 11px;">Invisible Duration (s):</label><br>
+              <input type="number" id="mesh-disappear-duration" value="2" step="0.5" min="0.1"
+                     style="width: 100%; padding: 5px; font-size: 11px;">
+            </div>
+            
+            <button id="apply-mesh-animation" style="width: 100%; padding: 8px; background: #2196F3; color: white; margin-top: 15px; border-radius: 3px; font-size: 11px;">
+              Apply Animation to Mesh
+            </button>
+            
+            ${this.meshAnimations.length > 0 ? `
+              <div style="margin-top: 15px; padding: 10px; border: 1px solid #FF9800; background: #1a1a1a; border-radius: 3px;">
+                <h6 style="margin: 0 0 8px 0; color: #FF9800;">📋 Mesh Animations (${this.meshAnimations.length})</h6>
+                ${this.meshAnimations.map((anim, index) => `
+                  <div style="font-size: 10px; margin: 5px 0; padding: 5px; background: #222; border-radius: 2px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <strong>${anim.meshName}</strong><br>
+                      Type: ${anim.animationType}
+                      ${anim.animationType === 'moving' ? `<br>Waypoints: ${anim.data.path?.length || 0}` : ''}
+                    </div>
+                    <button onclick="window.editor._deleteMeshAnimation('${anim.meshName}')" 
+                            style="font-size: 9px; padding: 3px 6px; background: #f44336; color: white; border: none; border-radius: 2px; cursor: pointer;">
+                      Delete
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
         ` : '<p style="font-size: 14px; color: #ff5555; margin-top: 10px; padding: 10px; border: 1px solid #ff5555;">⚠️ No mesh selected - click Select button above</p>'}
       </div>
@@ -1000,6 +1374,163 @@ export class StandaloneLevelEditor {
               </div>
             `;
           }).join('')}
+        </div>
+      </div>
+      
+      <div id="platform-controls" style="display: ${this.mode === 'platform' ? 'block' : 'none'};">
+        <h4>Platform Controls</h4>
+        
+        <p style="font-size: 10px; color: #aaa; margin: 5px 0;">
+          💡 Tip: After placing, switch to <strong>Select</strong> mode and click the platform to add waypoints/edit animations.
+        </p>
+        
+        <label>Type:</label><br>
+        <select id="platform-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+          <option value="static">Static</option>
+          <option value="moving">Moving (needs waypoints)</option>
+          <option value="rotating">Rotating</option>
+          <option value="disappearing">Disappearing</option>
+        </select>
+        
+        <h5>Size</h5>
+        <label>Width:</label>
+        <input type="number" id="platform-width" value="4" step="0.5" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+        <label>Height:</label>
+        <input type="number" id="platform-height" value="0.5" step="0.1" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+        <label>Depth:</label>
+        <input type="number" id="platform-depth" value="4" step="0.5" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+        
+        <h5>Appearance</h5>
+        <label>Texture:</label><br>
+        <select id="platform-texture" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+          <option value="wood">Wood</option>
+          <option value="metal">Metal</option>
+          <option value="stone">Stone</option>
+          <option value="ice">Ice (Low Friction)</option>
+          <option value="custom">Custom URL...</option>
+        </select>
+        <input type="text" id="platform-texture-url" placeholder="Texture URL" style="width: 100%; padding: 5px; margin-bottom: 5px; display: none;">
+        
+        <label>Texture Repeat (U, V):</label><br>
+        <input type="number" id="texture-repeat-u" value="1" step="0.5" min="0.1" style="width: 48%; padding: 5px; margin-right: 4%;">
+        <input type="number" id="texture-repeat-v" value="1" step="0.5" min="0.1" style="width: 48%; padding: 5px; margin-bottom: 5px;">
+        
+        <label>Color (Fallback):</label><br>
+        <input type="color" id="platform-color" value="#888888" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+        
+        <button id="add-platform" style="width: 100%; padding: 5px;">Add Platform (Click on level)</button>
+        
+        <div id="platform-list">
+          <h5>Platforms (${this.platforms.length})</h5>
+          ${this.platforms.map((platform, index) => `
+            <div class="item-row" data-type="platform" data-index="${index}">
+              <strong>${platform.type}</strong> ${platform.size[0]}x${platform.size[1]}x${platform.size[2]}<br>
+              at [${platform.position.map(v => v.toFixed(1)).join(', ')}]
+              <button onclick="window.editor._deletePlatform(${index})">Delete</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div id="interactive-controls" style="display: ${this.mode === 'interactive' ? 'block' : 'none'};">
+        <h4>Interactive Objects</h4>
+        
+        <label>Object Type:</label><br>
+        <select id="interactive-type" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+          <option value="pressurePlate">Pressure Plate</option>
+          <option value="gltfPlatform">GLTF Platform</option>
+        </select>
+        
+        <div id="pressure-plate-settings" style="display: none;">
+          <h5>Pressure Plate Settings</h5>
+          <label>Size:</label>
+          <input type="number" id="pp-size" value="2" step="0.5" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+          <label>Activation Weight (kg):</label>
+          <input type="number" id="pp-weight" value="50" step="10" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+          <label>Pressed Height:</label>
+          <input type="number" id="pp-pressed-height" value="-0.1" step="0.05" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+          <label>Color (Active):</label>
+          <input type="color" id="pp-color" value="#00ff00" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+        </div>
+        
+        <div id="gltf-platform-settings" style="display: none;">
+          <h5>GLTF Platform Settings</h5>
+          <label>GLTF URL:</label>
+          <input type="text" id="gp-url" placeholder="public/assets/platforms/..." style="width: 100%; padding: 5px; margin-bottom: 5px;">
+          <label>Platform Type:</label>
+          <select id="gp-type" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+            <option value="static">Static</option>
+            <option value="moving">Moving</option>
+            <option value="rotating">Rotating</option>
+            <option value="disappearing">Disappearing</option>
+          </select>
+          <label>Physics Type:</label>
+          <select id="gp-physics" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+            <option value="box">Box Collider</option>
+            <option value="trimesh">Mesh Collider (static only)</option>
+            <option value="convex">Convex Hull</option>
+          </select>
+          <label>Scale:</label>
+          <input type="number" id="gp-scale" value="1" step="0.1" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+        </div>
+        
+        <button id="add-interactive" style="width: 100%; padding: 5px; margin-bottom: 10px;">Add Object (Click on level)</button>
+        
+        <div id="interactive-list">
+          <h5>Interactive Objects (${this.interactiveObjects ? this.interactiveObjects.length : 0})</h5>
+          ${this.interactiveObjects ? this.interactiveObjects.map((obj, index) => `
+            <div class="item-row" data-type="interactive" data-index="${index}">
+              <strong>${obj.objectType}</strong> ${obj.id}<br>
+              at [${obj.position.map(v => v.toFixed(1)).join(', ')}]
+              <button onclick="window.editor._deleteInteractiveObject(${index})">Delete</button>
+            </div>
+          `).join('') : ''}
+        </div>
+        
+        <h5 style="margin-top: 15px;">Trigger Connections</h5>
+        <p style="font-size: 10px; color: #aaa; margin: 5px 0;">
+          Connect interactive objects to create cause-and-effect relationships
+        </p>
+        
+        <label>Source Object:</label><br>
+        <select id="trigger-source" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+          <option value="">-- Select Source --</option>
+          ${this.interactiveObjects ? this.interactiveObjects.map(obj => `
+            <option value="${obj.id}">${obj.id} (${obj.objectType})</option>
+          `).join('') : ''}
+        </select>
+        
+        <label>Target Object:</label><br>
+        <select id="trigger-target" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+          <option value="">-- Select Target --</option>
+          ${this.interactiveObjects ? this.interactiveObjects.map(obj => `
+            <option value="${obj.id}">${obj.id} (${obj.objectType})</option>
+          `).join('') : ''}
+        </select>
+        
+        <label>Trigger Type:</label><br>
+        <select id="trigger-type" style="width: 100%; padding: 5px; margin-bottom: 5px;">
+          <option value="activate">Activate (turn on target)</option>
+          <option value="deactivate">Deactivate (turn off target)</option>
+          <option value="toggle">Toggle (flip target state)</option>
+          <option value="custom">Custom Logic...</option>
+        </select>
+        
+        <textarea id="trigger-custom-logic" placeholder="Custom JavaScript code (e.g., target.activate(); console.log('triggered'))" 
+                  style="width: 100%; padding: 5px; margin-bottom: 5px; display: none; font-family: monospace; font-size: 10px;" 
+                  rows="3"></textarea>
+        
+        <button id="add-trigger" style="width: 100%; padding: 5px; margin-bottom: 10px;">Add Trigger Connection</button>
+        
+        <div id="trigger-list">
+          <h6 style="margin: 5px 0;">Triggers (${this.triggers ? this.triggers.length : 0})</h6>
+          ${this.triggers ? this.triggers.map((trigger, index) => `
+            <div class="item-row" style="font-size: 10px; padding: 3px 5px;" data-type="trigger" data-index="${index}">
+              <strong>${trigger.sourceId}</strong> → ${trigger.targetId}<br>
+              Type: ${trigger.type}
+              <button onclick="window.editor._deleteTrigger(${index})" style="font-size: 9px; padding: 1px 3px;">Delete</button>
+            </div>
+          `).join('') : ''}
         </div>
       </div>
       
@@ -1188,6 +1719,92 @@ export class StandaloneLevelEditor {
           <div style="margin-top: 5px;">
             <label style="font-size: 11px;">Associated Mesh:</label><br>
             <span style="font-size: 10px; color: #888;">${colliderData.meshName}</span>
+          </div>
+        ` : ''}
+      `;
+    } else if (this.selectedType === 'platform') {
+      const platformData = selectedData.platformData;
+      const index = selectedData.index;
+      typeSpecificInputs = `
+        <div style="margin-top: 10px;">
+          <label style="font-size: 11px;">Platform Type:</label><br>
+          <select id="selected-platform-type" style="width: 100%; padding: 3px; font-size: 11px;">
+            ${this.platformTypes.map(type => 
+              `<option value="${type}" ${type === platformData.type ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1)}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div style="margin-top: 5px;">
+          <label style="font-size: 11px;">Size:</label><br>
+          <div style="display: flex; gap: 5px;">
+            <input type="number" id="selected-platform-width" value="${platformData.size[0]}" step="0.5" min="0.1" placeholder="W"
+                   style="width: 33%; padding: 3px; font-size: 11px;" 
+                   onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
+                   oninput="window.editor._onPropertyInputChange()"
+                   onchange="window.editor._onPropertyInputChange()">
+            <input type="number" id="selected-platform-height" value="${platformData.size[1]}" step="0.1" min="0.1" placeholder="H"
+                   style="width: 33%; padding: 3px; font-size: 11px;" 
+                   onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
+                   oninput="window.editor._onPropertyInputChange()"
+                   onchange="window.editor._onPropertyInputChange()">
+            <input type="number" id="selected-platform-depth" value="${platformData.size[2]}" step="0.5" min="0.1" placeholder="D"
+                   style="width: 33%; padding: 3px; font-size: 11px;" 
+                   onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
+                   oninput="window.editor._onPropertyInputChange()"
+                   onchange="window.editor._onPropertyInputChange()">
+          </div>
+        </div>
+        <div style="margin-top: 5px;">
+          <label style="font-size: 11px;">Texture:</label><br>
+          <select id="selected-platform-texture" style="width: 100%; padding: 3px; font-size: 11px;">
+            ${this.textureTypes.map(type => 
+              `<option value="${type}" ${type === platformData.texture ? 'selected' : ''}>${type.charAt(0).toUpperCase() + type.slice(1)}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div style="margin-top: 5px;">
+          <label style="font-size: 11px;">Color (Fallback):</label><br>
+          <input type="color" id="selected-platform-color" value="#${platformData.color.toString(16).padStart(6, '0')}" 
+                 style="width: 100%; padding: 3px; font-size: 11px;">
+        </div>
+        ${platformData.type !== 'static' ? `
+          <div style="margin-top: 10px; padding: 10px; border: 1px solid #2196F3; border-radius: 3px;">
+            <h5 style="margin: 0 0 5px 0; color: #2196F3;">Animation Settings</h5>
+            ${platformData.type === 'moving' ? `
+              <label style="font-size: 11px;">Speed:</label><br>
+              <input type="number" id="anim-speed" value="${platformData.animation?.speed || 2}" step="0.1" min="0.1"
+                     style="width: 100%; padding: 3px; font-size: 11px; margin-bottom: 5px;">
+              <button id="add-waypoint-btn" style="width: 100%; padding: 3px; font-size: 11px; margin-bottom: 5px;">
+                Add Waypoint (Click on level)
+              </button>
+              <label style="font-size: 11px;">Waypoints:</label>
+              <div id="waypoint-list" style="font-size: 10px; max-height: 100px; overflow-y: auto;">
+                ${(platformData.animation?.path || []).map((wp, i) => `
+                  <div style="margin: 2px 0; padding: 2px; background: #222;">[${wp.map(v => v.toFixed(1)).join(', ')}] 
+                    <button onclick="window.editor._deleteWaypoint(${index}, ${i})" style="font-size: 9px; padding: 1px 3px;">X</button>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+            ${platformData.type === 'rotating' ? `
+              <label style="font-size: 11px;">Rotation Axis:</label><br>
+              <select id="rotation-axis" style="width: 100%; padding: 3px; font-size: 11px; margin-bottom: 5px;">
+                <option value="0,1,0" ${platformData.animation?.rotationAxis?.join(',') === '0,1,0' ? 'selected' : ''}>Y (Horizontal Spin)</option>
+                <option value="1,0,0" ${platformData.animation?.rotationAxis?.join(',') === '1,0,0' ? 'selected' : ''}>X (Flip Forward/Back)</option>
+                <option value="0,0,1" ${platformData.animation?.rotationAxis?.join(',') === '0,0,1' ? 'selected' : ''}>Z (Roll Side to Side)</option>
+              </select>
+              <label style="font-size: 11px;">Speed (rad/s):</label><br>
+              <input type="number" id="rotation-speed" value="${platformData.animation?.rotationSpeed || 1}" step="0.1" min="0.1"
+                     style="width: 100%; padding: 3px; font-size: 11px;">
+            ` : ''}
+            ${platformData.type === 'disappearing' ? `
+              <label style="font-size: 11px;">Visible Duration (s):</label><br>
+              <input type="number" id="disappear-interval" value="${platformData.animation?.disappearInterval || 3}" step="0.5" min="0.1"
+                     style="width: 100%; padding: 3px; font-size: 11px; margin-bottom: 5px;">
+              <label style="font-size: 11px;">Invisible Duration (s):</label><br>
+              <input type="number" id="disappear-duration" value="${platformData.animation?.disappearDuration || 2}" step="0.5" min="0.1"
+                     style="width: 100%; padding: 3px; font-size: 11px;">
+            ` : ''}
           </div>
         ` : ''}
       `;
@@ -1392,6 +2009,62 @@ export class StandaloneLevelEditor {
       });
     }
     
+    const addPlatformBtn = document.getElementById('add-platform');
+    if (addPlatformBtn) {
+      addPlatformBtn.addEventListener('click', () => {
+        this.mode = 'platform';
+        this._updateStatus('Click on the level to place a platform');
+      });
+    }
+    
+    const addInteractiveBtn = document.getElementById('add-interactive');
+    if (addInteractiveBtn) {
+      addInteractiveBtn.addEventListener('click', () => {
+        this.mode = 'interactive';
+        this._updateStatus('Click on the level to place an interactive object');
+      });
+    }
+    
+    const addBlockBtn = document.getElementById('add-block');
+    if (addBlockBtn) {
+      addBlockBtn.addEventListener('click', () => {
+        this.mode = 'block';
+        this._updateStatus('Click on the level to place a block');
+      });
+    }
+    
+    // Interactive object type change - show/hide settings
+    const interactiveTypeSelect = document.getElementById('interactive-type');
+    if (interactiveTypeSelect) {
+      interactiveTypeSelect.addEventListener('change', (e) => {
+        const ppSettings = document.getElementById('pressure-plate-settings');
+        const gpSettings = document.getElementById('gltf-platform-settings');
+        if (ppSettings && gpSettings) {
+          ppSettings.style.display = e.target.value === 'pressurePlate' ? 'block' : 'none';
+          gpSettings.style.display = e.target.value === 'gltfPlatform' ? 'block' : 'none';
+        }
+      });
+      // Trigger initial change
+      interactiveTypeSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // Trigger type change - show/hide custom logic textarea
+    const triggerTypeSelect = document.getElementById('trigger-type');
+    if (triggerTypeSelect) {
+      triggerTypeSelect.addEventListener('change', (e) => {
+        const customLogicArea = document.getElementById('trigger-custom-logic');
+        if (customLogicArea) {
+          customLogicArea.style.display = e.target.value === 'custom' ? 'block' : 'none';
+        }
+      });
+    }
+    
+    // Add trigger button
+    const addTriggerBtn = document.getElementById('add-trigger');
+    if (addTriggerBtn) {
+      addTriggerBtn.addEventListener('click', () => this._addTrigger());
+    }
+    
     const createColliderFromMeshBtn = document.getElementById('create-collider-from-mesh');
     if (createColliderFromMeshBtn) {
       createColliderFromMeshBtn.addEventListener('click', () => {
@@ -1421,6 +2094,77 @@ export class StandaloneLevelEditor {
     if (colliderTypeSelect) {
       colliderTypeSelect.addEventListener('change', () => {
         this._updateUI(); // Refresh UI to show correct size inputs
+      });
+    }
+    
+    // Platform texture change - show/hide custom URL input
+    const platformTextureSelect = document.getElementById('platform-texture');
+    if (platformTextureSelect) {
+      platformTextureSelect.addEventListener('change', (e) => {
+        const urlInput = document.getElementById('platform-texture-url');
+        if (urlInput) {
+          urlInput.style.display = e.target.value === 'custom' ? 'block' : 'none';
+        }
+      });
+    }
+    
+    // Add waypoint button for moving platforms
+    const addWaypointBtn = document.getElementById('add-waypoint-btn');
+    if (addWaypointBtn) {
+      addWaypointBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.addingWaypoint = true;
+        console.log('Waypoint mode activated. Click on the level to add waypoint.');
+        this._updateStatus('👆 Click on the level to add a waypoint to the selected platform');
+      });
+    }
+    
+    // Mesh animation type change - show/hide animation settings
+    const meshAnimationTypeSelect = document.getElementById('mesh-animation-type');
+    if (meshAnimationTypeSelect) {
+      meshAnimationTypeSelect.addEventListener('change', (e) => {
+        const movingSettings = document.getElementById('mesh-moving-settings');
+        const rotatingSettings = document.getElementById('mesh-rotating-settings');
+        const disappearingSettings = document.getElementById('mesh-disappearing-settings');
+        
+        if (movingSettings && rotatingSettings && disappearingSettings) {
+          movingSettings.style.display = e.target.value === 'moving' ? 'block' : 'none';
+          rotatingSettings.style.display = e.target.value === 'rotating' ? 'block' : 'none';
+          disappearingSettings.style.display = e.target.value === 'disappearing' ? 'block' : 'none';
+        }
+      });
+      // Trigger initial change
+      meshAnimationTypeSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // Initialize path button for mesh animations
+    const meshInitializePathBtn = document.getElementById('mesh-initialize-path');
+    if (meshInitializePathBtn) {
+      meshInitializePathBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this._initializeMeshPath();
+      });
+    }
+    
+    // Add mesh waypoint button
+    const meshAddWaypointBtn = document.getElementById('mesh-add-waypoint-btn');
+    if (meshAddWaypointBtn) {
+      meshAddWaypointBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.addingMeshWaypoint = true;
+        console.log('Mesh waypoint mode activated. Click on the level to add waypoint.');
+        this._updateStatus('👆 Click on the level to add a waypoint to the mesh animation');
+      });
+    }
+    
+    // Apply mesh animation button
+    const applyMeshAnimationBtn = document.getElementById('apply-mesh-animation');
+    if (applyMeshAnimationBtn) {
+      applyMeshAnimationBtn.addEventListener('click', () => {
+        this._applyMeshAnimation();
       });
     }
   }
@@ -1667,8 +2411,23 @@ export class StandaloneLevelEditor {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     if (this.mode === 'mesh') {
-      // In mesh mode, handle mesh selection separately
-      this._handleMeshSelection(event);
+      // In mesh mode, handle mesh waypoint placement
+      if (this.addingMeshWaypoint) {
+        const allObjects = [
+          ...this.levelMeshes.map(info => info.mesh),
+          ...this.platformMeshes,
+          ...this.enemyMeshes,
+          ...this.colliderMeshes
+        ];
+        const intersects = this.raycaster.intersectObjects(allObjects, true);
+        
+        if (intersects.length > 0) {
+          this._addMeshWaypoint(intersects[0].point.toArray());
+          this.addingMeshWaypoint = false;
+        }
+      } else {
+        this._handleMeshSelection(event);
+      }
       return;
     }
 
@@ -1697,11 +2456,55 @@ export class StandaloneLevelEditor {
         case 'collider':
           this._addCollider(point);
           break;
+        case 'platform':
+          if (this.addingWaypoint) {
+            this._addWaypointToSelectedPlatform(point);
+          } else {
+            this._addPlatform(point);
+          }
+          break;
+        case 'interactive':
+          this._addInteractiveObject(point);
+          break;
+        case 'block':
+          this._addPlaceableBlock(point);
+          break;
       }
     }
   }
   
   _handleSelection(event) {
+    // If adding waypoint, handle that instead of selection
+    if (this.addingWaypoint && this.mode === 'select') {
+      console.log('Waypoint mode active, raycasting for waypoint position...');
+      // Get click position on level geometry
+      const rect = this.renderer.domElement.getBoundingClientRect();
+      this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      
+      // Raycast against ALL visible objects (level, platforms, etc.)
+      const allObjects = [
+        ...this.levelMeshes.map(info => info.mesh),
+        ...this.platformMeshes,
+        ...this.enemyMeshes,
+        ...this.colliderMeshes
+      ];
+      const intersects = this.raycaster.intersectObjects(allObjects, true);
+      
+      console.log('Object intersects:', intersects.length);
+      
+      if (intersects.length > 0) {
+        console.log('Found intersection at:', intersects[0].point);
+        this._addWaypointToSelectedPlatform(intersects[0].point);
+      } else {
+        console.warn('No intersection found');
+        this._updateStatus('⚠️ Click on any visible geometry (level, platform, etc.) to add waypoint');
+      }
+      return;
+    }
+    
     // Only handle selection in select mode
     if (this.mode !== 'select') return;
 
@@ -1716,7 +2519,9 @@ export class StandaloneLevelEditor {
       ...this.npcMeshes,
       ...this.lightMeshes,
       ...this.patrolPointMeshes,
-      ...this.colliderMeshes
+      ...this.colliderMeshes,
+      ...this.platformMeshes,
+      ...this.placeableBlockMeshes
     ];
 
     const intersects = this.raycaster.intersectObjects(selectableObjects, false);
@@ -1992,6 +2797,490 @@ export class StandaloneLevelEditor {
     }
   }
   
+  _addPlatform(position) {
+    const widthInput = document.getElementById('platform-width');
+    const heightInput = document.getElementById('platform-height');
+    const depthInput = document.getElementById('platform-depth');
+    const typeSelect = document.getElementById('platform-type');
+    const textureSelect = document.getElementById('platform-texture');
+    const textureUrlInput = document.getElementById('platform-texture-url');
+    const colorInput = document.getElementById('platform-color');
+    const repeatU = document.getElementById('texture-repeat-u');
+    const repeatV = document.getElementById('texture-repeat-v');
+    
+    const platform = {
+      id: `platform_${this.nextId++}`,
+      type: typeSelect?.value || 'static',
+      position: [position.x, position.y, position.z],
+      size: [
+        parseFloat(widthInput?.value || 4),
+        parseFloat(heightInput?.value || 0.5),
+        parseFloat(depthInput?.value || 4)
+      ],
+      rotation: [0, 0, 0],
+      texture: textureSelect?.value || 'wood',
+      textureUrl: textureUrlInput?.value || '',
+      textureRepeat: [
+        parseFloat(repeatU?.value || 1),
+        parseFloat(repeatV?.value || 1)
+      ],
+      color: parseInt((colorInput?.value || '#888888').replace('#', '0x')),
+      materialType: 'platform',
+      friction: 0.5,
+      restitution: 0.3
+    };
+    
+    // Add animation config for non-static platforms
+    if (platform.type !== 'static') {
+      platform.animation = {
+        type: platform.type === 'moving' ? 'path' : platform.type,
+        speed: 2.0,
+        path: platform.type === 'moving' ? [] : undefined,
+        rotationAxis: platform.type === 'rotating' ? [0, 1, 0] : undefined,
+        rotationSpeed: platform.type === 'rotating' ? 1.0 : undefined,
+        disappearInterval: platform.type === 'disappearing' ? 3.0 : undefined,
+        disappearDuration: platform.type === 'disappearing' ? 2.0 : undefined
+      };
+    }
+    
+    this.platforms.push(platform);
+    this._createPlatformVisuals();
+    this._updateUI();
+    this._updateStatus(`Added ${platform.type} platform`);
+  }
+  
+  _deletePlatform(index) {
+    if (index >= 0 && index < this.platforms.length) {
+      // Clear selection if we're deleting the selected platform
+      if (this.selected && this.selectedType === 'platform' && this.selected.userData.index === index) {
+        this.selected = null;
+        this.selectedType = null;
+      }
+      
+      this.platforms.splice(index, 1);
+      this._createPlatformVisuals();
+      this._updateUI();
+      this._updateStatus('Platform deleted');
+    }
+  }
+  
+  _addWaypointToSelectedPlatform(position) {
+    console.log('_addWaypointToSelectedPlatform called', {
+      selected: this.selected,
+      selectedType: this.selectedType,
+      addingWaypoint: this.addingWaypoint,
+      position
+    });
+    
+    if (!this.selected || this.selectedType !== 'platform') {
+      this._updateStatus('⚠️ Please select a moving platform first');
+      this.addingWaypoint = false;
+      return;
+    }
+    
+    const platformData = this.selected.userData.platformData;
+    const index = this.selected.userData.index;
+    
+    if (platformData.type !== 'moving') {
+      this._updateStatus('⚠️ Waypoints can only be added to moving platforms');
+      this.addingWaypoint = false;
+      return;
+    }
+    
+    if (!platformData.animation) {
+      platformData.animation = { type: 'path', speed: 2.0, path: [] };
+    }
+    
+    if (!platformData.animation.path) {
+      platformData.animation.path = [];
+    }
+    
+    platformData.animation.path.push([position.x, position.y, position.z]);
+    
+    // Update the platform in the array
+    this.platforms[index] = platformData;
+    
+    console.log('Waypoint added successfully:', platformData.animation.path);
+    
+    this._createPlatformVisuals();
+    this._updateUI();
+    this._updateStatus(`✅ Added waypoint ${platformData.animation.path.length} to platform`);
+    this.addingWaypoint = false;
+  }
+  
+  _deleteWaypoint(platformIndex, waypointIndex) {
+    if (platformIndex >= 0 && platformIndex < this.platforms.length) {
+      const platform = this.platforms[platformIndex];
+      if (platform.animation && platform.animation.path) {
+        platform.animation.path.splice(waypointIndex, 1);
+        this._createPlatformVisuals();
+        this._updateUI();
+        this._updateStatus('Waypoint deleted');
+      }
+    }
+  }
+  
+  // ========================================================================
+  // INTERACTIVE OBJECT METHODS
+  // ========================================================================
+  
+  _createInteractiveObjectVisuals() {
+    // Clear existing visuals
+    this.interactiveObjectMeshes.forEach(mesh => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) mesh.material.dispose();
+    });
+    this.interactiveObjectMeshes = [];
+    
+    this.interactiveObjects.forEach((objData, index) => {
+      let mesh;
+      
+      if (objData.objectType === 'pressurePlate') {
+        // Create visual for pressure plate
+        const size = objData.size || 2;
+        const geometry = new THREE.BoxGeometry(size, 0.2, size);
+        const material = new THREE.MeshStandardMaterial({
+          color: objData.color || 0x00ff00,
+          emissive: objData.color || 0x00ff00,
+          emissiveIntensity: 0.3,
+          metalness: 0.7,
+          roughness: 0.3
+        });
+        mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(...objData.position);
+      } else if (objData.objectType === 'gltfPlatform') {
+        // Create placeholder visual for GLTF platform (actual GLTF loaded in game)
+        const geometry = new THREE.BoxGeometry(2, 1, 2);
+        const material = new THREE.MeshStandardMaterial({
+          color: 0x8888ff,
+          emissive: 0x4444ff,
+          emissiveIntensity: 0.3,
+          metalness: 0.5,
+          roughness: 0.5,
+          wireframe: true
+        });
+        mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(...objData.position);
+        if (objData.scale) {
+          const scale = Array.isArray(objData.scale) ? objData.scale[0] : objData.scale;
+          mesh.scale.setScalar(scale);
+        }
+      }
+      
+      if (mesh) {
+        mesh.userData.type = 'interactive';
+        mesh.userData.index = index;
+        mesh.userData.objectData = objData;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
+        this.scene.add(mesh);
+        this.interactiveObjectMeshes.push(mesh);
+      }
+    });
+  }
+  
+  _addInteractiveObject(position) {
+    const typeSelect = document.getElementById('interactive-type');
+    const objectType = typeSelect ? typeSelect.value : 'pressurePlate';
+    
+    const objData = {
+      id: `interactive_${this.nextId++}`,
+      objectType: objectType,
+      position: [position.x, position.y, position.z]
+    };
+    
+    if (objectType === 'pressurePlate') {
+      const sizeInput = document.getElementById('pp-size');
+      const weightInput = document.getElementById('pp-weight');
+      const pressedHeightInput = document.getElementById('pp-pressed-height');
+      const colorInput = document.getElementById('pp-color');
+      
+      objData.size = sizeInput ? parseFloat(sizeInput.value) : 2;
+      objData.activationWeight = weightInput ? parseFloat(weightInput.value) : 50;
+      objData.pressedHeight = pressedHeightInput ? parseFloat(pressedHeightInput.value) : -0.1;
+      objData.color = colorInput ? parseInt(colorInput.value.replace('#', '0x')) : 0x00ff00;
+    } else if (objectType === 'gltfPlatform') {
+      const urlInput = document.getElementById('gp-url');
+      const typeInput = document.getElementById('gp-type');
+      const physicsInput = document.getElementById('gp-physics');
+      const scaleInput = document.getElementById('gp-scale');
+      
+      objData.gltfUrl = urlInput ? urlInput.value : '';
+      objData.type = typeInput ? typeInput.value : 'static';
+      objData.physicsType = physicsInput ? physicsInput.value : 'box';
+      objData.scale = scaleInput ? [parseFloat(scaleInput.value), parseFloat(scaleInput.value), parseFloat(scaleInput.value)] : [1, 1, 1];
+      
+      if (!objData.gltfUrl) {
+        this._updateStatus('⚠️ Please enter a GLTF URL');
+        return;
+      }
+      
+      // Add animation data for moving/rotating/disappearing types
+      if (objData.type === 'moving') {
+        objData.animation = {
+          path: [[position.x, position.y, position.z]],
+          speed: 2.0
+        };
+      } else if (objData.type === 'rotating') {
+        objData.animation = {
+          rotationAxis: [0, 1, 0],
+          rotationSpeed: 1.0
+        };
+      } else if (objData.type === 'disappearing') {
+        objData.animation = {
+          disappearInterval: 3.0,
+          disappearDuration: 2.0
+        };
+      }
+    }
+    
+    this.interactiveObjects.push(objData);
+    this._createInteractiveObjectVisuals();
+    this._updateUI();
+    this._updateStatus(`Added ${objectType}: ${objData.id}`);
+  }
+  
+  _deleteInteractiveObject(index) {
+    if (index >= 0 && index < this.interactiveObjects.length) {
+      // Clear selection if we're deleting the selected object
+      if (this.selected && this.selectedType === 'interactive' && this.selected.userData.index === index) {
+        this.selected = null;
+        this.selectedType = null;
+      }
+      
+      const obj = this.interactiveObjects[index];
+      
+      // Remove any triggers connected to this object
+      this.triggers = this.triggers.filter(t => 
+        t.sourceId !== obj.id && t.targetId !== obj.id
+      );
+      
+      this.interactiveObjects.splice(index, 1);
+      this._createInteractiveObjectVisuals();
+      this._createTriggerConnectionVisuals();
+      this._updateUI();
+      this._updateStatus(`Deleted interactive object: ${obj.id}`);
+    }
+  }
+  
+  _createPlaceableBlockVisuals() {
+    // Clear existing block visuals
+    this.placeableBlockMeshes.forEach(mesh => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) mesh.material.dispose();
+    });
+    this.placeableBlockMeshes = [];
+    
+    this.placeableBlocks.forEach((block, index) => {
+      const geometry = new THREE.BoxGeometry(
+        block.size[0],
+        block.size[1],
+        block.size[2]
+      );
+      
+      const material = new THREE.MeshStandardMaterial({
+        color: block.color,
+        emissive: block.color,
+        emissiveIntensity: 0.2,
+        metalness: 0.3,
+        roughness: 0.7
+      });
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(...block.position);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      
+      // Add outline for visibility
+      const edges = new THREE.EdgesGeometry(geometry);
+      const line = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
+      );
+      mesh.add(line);
+      
+      mesh.userData = { type: 'block', index, blockData: block };
+      mesh.name = `block_${index}`;
+      
+      this.scene.add(mesh);
+      this.placeableBlockMeshes.push(mesh);
+    });
+  }
+  
+  _addPlaceableBlock(position) {
+    const colorSelect = document.getElementById('block-color');
+    const widthInput = document.getElementById('block-width');
+    const heightInput = document.getElementById('block-height');
+    const depthInput = document.getElementById('block-depth');
+    const massInput = document.getElementById('block-mass');
+    const respawnCheck = document.getElementById('block-respawn');
+    const respawnTimeInput = document.getElementById('block-respawn-time');
+    
+    const colorName = colorSelect?.value || 'red';
+    const color = this.blockColors[colorName];
+    
+    const width = parseFloat(widthInput?.value || 1);
+    const height = parseFloat(heightInput?.value || 1);
+    const depth = parseFloat(depthInput?.value || 1);
+    
+    const block = {
+      id: `block_${this.nextId++}`,
+      type: 'placeableBlock',
+      color: color,
+      colorName: colorName,
+      position: [position.x, position.y, position.z],
+      size: [width, height, depth],
+      mass: parseFloat(massInput?.value || 50),
+      respawn: respawnCheck?.checked !== false,
+      respawnTime: parseFloat(respawnTimeInput?.value || 3),
+      spawnPosition: [position.x, position.y, position.z], // Original spawn position
+      collider: {
+        type: 'box',
+        size: [width, height, depth],
+        materialType: 'ground'
+      }
+    };
+    
+    this.placeableBlocks.push(block);
+    this._createPlaceableBlockVisuals();
+    this._updateUI();
+    this._updateStatus(`✅ Added ${colorName} block at [${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)}]`);
+  }
+  
+  _deletePlaceableBlock(index) {
+    if (index >= 0 && index < this.placeableBlocks.length) {
+      if (this.selected && this.selectedType === 'block' && this.selected.userData.index === index) {
+        this.selected = null;
+        this.selectedType = null;
+      }
+      
+      const block = this.placeableBlocks[index];
+      this.placeableBlocks.splice(index, 1);
+      this._createPlaceableBlockVisuals();
+      this._updateUI();
+      this._updateStatus(`✅ Deleted block: ${block.id}`);
+    }
+  }
+  
+  // ========================================================================
+  // TRIGGER CONNECTION METHODS
+  // ========================================================================
+  
+  _createTriggerConnectionVisuals() {
+    // Clear existing trigger lines
+    this.triggerConnectionLines.forEach(line => {
+      this.scene.remove(line);
+      if (line.geometry) line.geometry.dispose();
+      if (line.material) line.material.dispose();
+    });
+    this.triggerConnectionLines = [];
+    
+    // Create visual lines for each trigger connection
+    this.triggers.forEach(trigger => {
+      const sourceObj = this.interactiveObjects.find(o => o.id === trigger.sourceId);
+      const targetObj = this.interactiveObjects.find(o => o.id === trigger.targetId);
+      
+      if (!sourceObj || !targetObj) return;
+      
+      // Create line from source to target
+      const points = [
+        new THREE.Vector3(...sourceObj.position),
+        new THREE.Vector3(...targetObj.position)
+      ];
+      
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      
+      // Color based on trigger type
+      let color;
+      switch (trigger.type) {
+        case 'activate': color = 0x00ff00; break;  // Green
+        case 'deactivate': color = 0xff0000; break; // Red
+        case 'toggle': color = 0xffff00; break;    // Yellow
+        case 'custom': color = 0xff00ff; break;    // Magenta
+        default: color = 0xffffff;
+      }
+      
+      const material = new THREE.LineBasicMaterial({ 
+        color: color,
+        opacity: 0.6,
+        transparent: true,
+        linewidth: 2
+      });
+      
+      const line = new THREE.Line(geometry, material);
+      line.userData.type = 'trigger-connection';
+      line.userData.trigger = trigger;
+      
+      this.scene.add(line);
+      this.triggerConnectionLines.push(line);
+    });
+  }
+  
+  _addTrigger() {
+    const sourceSelect = document.getElementById('trigger-source');
+    const targetSelect = document.getElementById('trigger-target');
+    const typeSelect = document.getElementById('trigger-type');
+    const customLogicArea = document.getElementById('trigger-custom-logic');
+    
+    if (!sourceSelect || !targetSelect || !typeSelect) {
+      this._updateStatus('⚠️ Trigger UI elements not found');
+      return;
+    }
+    
+    const sourceId = sourceSelect.value;
+    const targetId = targetSelect.value;
+    const type = typeSelect.value;
+    
+    if (!sourceId || !targetId) {
+      this._updateStatus('⚠️ Please select both source and target objects');
+      return;
+    }
+    
+    if (sourceId === targetId) {
+      this._updateStatus('⚠️ Source and target must be different objects');
+      return;
+    }
+    
+    // Check if trigger already exists
+    const exists = this.triggers.some(t => 
+      t.sourceId === sourceId && t.targetId === targetId
+    );
+    
+    if (exists) {
+      this._updateStatus('⚠️ Trigger connection already exists');
+      return;
+    }
+    
+    const triggerData = {
+      sourceId: sourceId,
+      targetId: targetId,
+      type: type
+    };
+    
+    // Add custom logic if type is custom
+    if (type === 'custom' && customLogicArea && customLogicArea.value.trim()) {
+      triggerData.customLogic = customLogicArea.value.trim();
+    }
+    
+    this.triggers.push(triggerData);
+    this._createTriggerConnectionVisuals();
+    this._updateUI();
+    this._updateStatus(`Added trigger: ${sourceId} → ${targetId} (${type})`);
+  }
+  
+  _deleteTrigger(index) {
+    if (index >= 0 && index < this.triggers.length) {
+      const trigger = this.triggers[index];
+      this.triggers.splice(index, 1);
+      this._createTriggerConnectionVisuals();
+      this._updateUI();
+      this._updateStatus(`Deleted trigger: ${trigger.sourceId} → ${trigger.targetId}`);
+    }
+  }
+  
   _selectObject(object) {
     // Clear previous selection
     if (this.selected && this.selected.material && this.selected.material.emissive) {
@@ -2203,6 +3492,82 @@ export class StandaloneLevelEditor {
           if (updatedMesh) {
             this._selectObject(updatedMesh);
           }
+        }
+      }
+    } else if (this.selectedType === 'platform') {
+      const platformTypeSelect = document.getElementById('selected-platform-type');
+      const widthInput = document.getElementById('selected-platform-width');
+      const heightInput = document.getElementById('selected-platform-height');
+      const depthInput = document.getElementById('selected-platform-depth');
+      const textureSelect = document.getElementById('selected-platform-texture');
+      const colorInput = document.getElementById('selected-platform-color');
+      
+      const index = this.selected.userData.index;
+      const platform = this.platforms[index];
+      
+      if (platform) {
+        // Update platform type
+        if (platformTypeSelect && platformTypeSelect.value !== platform.type) {
+          platform.type = platformTypeSelect.value;
+          
+          // Add/update animation config when changing type
+          if (platform.type !== 'static' && !platform.animation) {
+            platform.animation = {
+              type: platform.type === 'moving' ? 'path' : platform.type,
+              speed: 2.0,
+              path: platform.type === 'moving' ? [] : undefined,
+              rotationAxis: platform.type === 'rotating' ? [0, 1, 0] : undefined,
+              rotationSpeed: platform.type === 'rotating' ? 1.0 : undefined,
+              disappearInterval: platform.type === 'disappearing' ? 3.0 : undefined,
+              disappearDuration: platform.type === 'disappearing' ? 2.0 : undefined
+            };
+          } else if (platform.type === 'static') {
+            delete platform.animation;
+          }
+        }
+        
+        // Update size
+        if (widthInput) platform.size[0] = parseFloat(widthInput.value);
+        if (heightInput) platform.size[1] = parseFloat(heightInput.value);
+        if (depthInput) platform.size[2] = parseFloat(depthInput.value);
+        
+        // Update texture
+        if (textureSelect) platform.texture = textureSelect.value;
+        
+        // Update color
+        if (colorInput) {
+          platform.color = parseInt(colorInput.value.replace('#', '0x'));
+        }
+        
+        // Update animation settings if platform type supports it
+        if (platform.animation) {
+          if (platform.type === 'moving') {
+            const speedInput = document.getElementById('anim-speed');
+            if (speedInput) platform.animation.speed = parseFloat(speedInput.value);
+          } else if (platform.type === 'rotating') {
+            const axisSelect = document.getElementById('rotation-axis');
+            const rotSpeedInput = document.getElementById('rotation-speed');
+            if (axisSelect) {
+              platform.animation.rotationAxis = axisSelect.value.split(',').map(parseFloat);
+            }
+            if (rotSpeedInput) {
+              platform.animation.rotationSpeed = parseFloat(rotSpeedInput.value);
+            }
+          } else if (platform.type === 'disappearing') {
+            const intervalInput = document.getElementById('disappear-interval');
+            const durationInput = document.getElementById('disappear-duration');
+            if (intervalInput) platform.animation.disappearInterval = parseFloat(intervalInput.value);
+            if (durationInput) platform.animation.disappearDuration = parseFloat(durationInput.value);
+          }
+        }
+        
+        // Recreate platform visuals
+        this._createPlatformVisuals();
+        
+        // Re-select the updated platform mesh
+        const updatedMesh = this.platformMeshes[index];
+        if (updatedMesh) {
+          this._selectObject(updatedMesh);
         }
       }
     }
@@ -2447,6 +3812,11 @@ export class StandaloneLevelEditor {
     this.currentLevel.npcs = [...this.npcs];
     this.currentLevel.lights = this.lights.map(light => light.type);
     this.currentLevel.colliders = [...this.colliders];
+    this.currentLevel.platforms = [...this.platforms];
+    this.currentLevel.interactiveObjects = [...this.interactiveObjects];
+    this.currentLevel.triggers = [...this.triggers];
+    this.currentLevel.meshAnimations = [...this.meshAnimations];
+    this.currentLevel.placeableBlocks = [...this.placeableBlocks];
     
     // Generate levelData.js content
     const levelDataContent = this._generateLevelDataJS();
@@ -2482,10 +3852,251 @@ export const levels = ${levelsJSON};`;
       Level: ${currentLevel}<br>
       Mode: ${mode}<br>
       Enemies: ${this.enemies.length} | NPCs: ${this.npcs.length} | Lights: ${this.lights.length} | Patrol: ${this.patrolPoints.length}<br>
+      Platforms: ${this.platforms.length} | Interactive: ${this.interactiveObjects.length} | Triggers: ${this.triggers.length} | Blocks: ${this.placeableBlocks.length}<br>
       ${message}
     `;
   }
   
+  _applyMeshAnimation() {
+    if (!this.selectedMesh) {
+      alert('⚠️ Please select a mesh first');
+      return;
+    }
+    
+    const animationType = document.getElementById('mesh-animation-type')?.value || 'none';
+    
+    if (animationType === 'none') {
+      alert('⚠️ Please select an animation type');
+      return;
+    }
+    
+    // Find existing animation for this mesh or create new one
+    let animData = this.meshAnimations.find(a => a.meshName === this.selectedMesh.name);
+    if (!animData) {
+      animData = {
+        meshName: this.selectedMesh.name,
+        animationType: animationType,
+        data: {}
+      };
+      this.meshAnimations.push(animData);
+    }
+    
+    // Update animation type and data based on type
+    animData.animationType = animationType;
+    
+    switch (animationType) {
+      case 'moving':
+        const speed = parseFloat(document.getElementById('mesh-anim-speed')?.value || '2');
+        const loopBehavior = document.getElementById('mesh-loop-behavior')?.value || 'loop';
+        
+        // Check if path was initialized
+        if (!animData.data.path || animData.data.path.length === 0) {
+          alert('⚠️ Please initialize the path first (click "Initialize Path" button)');
+          return;
+        }
+        
+        animData.data = {
+          speed: speed,
+          path: animData.data.path, // Keep existing path
+          loopBehavior: loopBehavior
+        };
+        break;
+        
+      case 'rotating':
+        const axisStr = document.getElementById('mesh-rotation-axis')?.value || '0,1,0';
+        const [ax, ay, az] = axisStr.split(',').map(Number);
+        const rotSpeed = parseFloat(document.getElementById('mesh-rotation-speed')?.value || '1');
+        animData.data = {
+          axis: [ax, ay, az],
+          speed: rotSpeed
+        };
+        break;
+        
+      case 'disappearing':
+        const interval = parseFloat(document.getElementById('mesh-disappear-interval')?.value || '3');
+        const duration = parseFloat(document.getElementById('mesh-disappear-duration')?.value || '2');
+        animData.data = {
+          visibleInterval: interval,
+          invisibleDuration: duration
+        };
+        break;
+    }
+    
+    this._updateUI();
+    this._updateStatus(`✅ Animation "${animationType}" applied to mesh "${this.selectedMesh.name}"`);
+    console.log('Mesh animation applied:', animData);
+  }
+  
+  _addMeshWaypoint(position) {
+    if (!this.selectedMesh) {
+      this._updateStatus('⚠️ No mesh selected for waypoint');
+      this.addingMeshWaypoint = false;
+      return;
+    }
+    
+    // Find the mesh animation
+    let animData = this.meshAnimations.find(a => a.meshName === this.selectedMesh.name);
+    if (!animData || animData.animationType !== 'moving') {
+      this._updateStatus('⚠️ Please initialize the path first (click "Initialize Path" button)');
+      this.addingMeshWaypoint = false;
+      return;
+    }
+    
+    if (!animData.data.path || animData.data.path.length === 0) {
+      this._updateStatus('⚠️ Path not initialized - click "Initialize Path" button first');
+      this.addingMeshWaypoint = false;
+      return;
+    }
+    
+    // Add waypoint
+    const waypoint = [
+      parseFloat(position[0].toFixed(2)),
+      parseFloat(position[1].toFixed(2)),
+      parseFloat(position[2].toFixed(2))
+    ];
+    
+    animData.data.path.push(waypoint);
+    
+    // Update waypoint list display
+    this._updateMeshWaypointList(animData);
+    
+    this._updateStatus(`✅ Waypoint ${animData.data.path.length} added (${animData.data.path.length - 1} points after start)`);
+    this.addingMeshWaypoint = false;
+    console.log('Waypoint added to mesh:', waypoint, 'Total points:', animData.data.path.length);
+  }
+  
+  _initializeMeshPath() {
+    if (!this.selectedMesh) {
+      this._updateStatus('⚠️ No mesh selected');
+      return;
+    }
+    
+    const mesh = this.selectedMesh.mesh;
+    const startPosition = [
+      parseFloat(mesh.position.x.toFixed(2)),
+      parseFloat(mesh.position.y.toFixed(2)),
+      parseFloat(mesh.position.z.toFixed(2))
+    ];
+    
+    // Find or create animation data for this mesh
+    let animData = this.meshAnimations.find(a => a.meshName === this.selectedMesh.name);
+    if (!animData) {
+      animData = {
+        meshName: this.selectedMesh.name,
+        animationType: 'moving',
+        data: {
+          speed: 2.0,
+          path: [startPosition],
+          loopBehavior: 'loop'
+        }
+      };
+      this.meshAnimations.push(animData);
+    } else {
+      // Reset path with current position
+      animData.data.path = [startPosition];
+      if (!animData.data.loopBehavior) {
+        animData.data.loopBehavior = 'loop';
+      }
+    }
+    
+    // Update UI to show start position
+    const startPosDisplay = document.getElementById('mesh-start-position');
+    if (startPosDisplay) {
+      startPosDisplay.innerHTML = `[${startPosition.join(', ')}]`;
+      startPosDisplay.style.color = '#4CAF50';
+    }
+    
+    // Enable waypoint button
+    const waypointBtn = document.getElementById('mesh-add-waypoint-btn');
+    if (waypointBtn) {
+      waypointBtn.disabled = false;
+      waypointBtn.style.opacity = '1';
+      waypointBtn.style.cursor = 'pointer';
+    }
+    
+    this._updateMeshWaypointList(animData);
+    this._updateStatus(`✅ Path initialized for "${this.selectedMesh.name}" from position [${startPosition.join(', ')}]`);
+    console.log('Mesh path initialized:', animData);
+  }
+  
+  _updateMeshWaypointList(animData) {
+    const waypointList = document.getElementById('mesh-waypoint-list');
+    if (!waypointList) return;
+    
+    if (!animData || !animData.data.path || animData.data.path.length === 0) {
+      waypointList.innerHTML = 'No waypoints yet - Initialize path first';
+      return;
+    }
+    
+    waypointList.innerHTML = animData.data.path.map((wp, index) => {
+      const isStart = index === 0;
+      const label = isStart ? '🏁 Start' : `${index}`;
+      const bgColor = isStart ? '#1a4d1a' : '#1a1a1a';
+      const canDelete = !isStart; // Can't delete start position
+      
+      return `
+        <div style="margin: 3px 0; padding: 4px; background: ${bgColor}; border-left: 3px solid ${isStart ? '#4CAF50' : '#2196F3'}; border-radius: 2px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 10px;"><strong>${label}:</strong> [${wp.map(v => v.toFixed(1)).join(', ')}]</span>
+          ${canDelete ? `
+            <button onclick="window.editor._deleteMeshWaypoint('${animData.meshName}', ${index})" 
+                    style="font-size: 9px; padding: 2px 5px; background: #f44336; color: white; border: none; border-radius: 2px; cursor: pointer;">
+              Remove
+            </button>
+          ` : '<span style="font-size: 9px; color: #888;">Fixed</span>'}
+        </div>
+      `;
+    }).join('');
+    
+    // Update loop behavior info
+    const loopBehavior = animData.data.loopBehavior || 'loop';
+    const loopInfo = document.createElement('div');
+    loopInfo.style.cssText = 'margin-top: 5px; padding: 4px; background: #2a2a2a; border-radius: 2px; font-size: 9px; color: #aaa;';
+    
+    const loopDescriptions = {
+      loop: '🔁 Will return to start position',
+      pingpong: '↔️ Will reverse direction at endpoints',
+      once: '⏹️ Will stop at final waypoint'
+    };
+    
+    loopInfo.innerHTML = `<strong>Path:</strong> ${loopDescriptions[loopBehavior]}`;
+    waypointList.appendChild(loopInfo);
+  }
+  
+  _deleteMeshWaypoint(meshName, waypointIndex) {
+    const animData = this.meshAnimations.find(a => a.meshName === meshName);
+    if (!animData || !animData.data.path) return;
+    
+    // Don't allow deleting the start position (index 0)
+    if (waypointIndex === 0) {
+      this._updateStatus('⚠️ Cannot delete start position - use "Initialize Path" to reset');
+      return;
+    }
+    
+    animData.data.path.splice(waypointIndex, 1);
+    this._updateMeshWaypointList(animData);
+    this._updateUI();
+    this._updateStatus(`✅ Waypoint ${waypointIndex} removed from "${meshName}"`);
+  }
+  
+  _deleteMeshAnimation(meshName) {
+    const index = this.meshAnimations.findIndex(a => a.meshName === meshName);
+    if (index >= 0) {
+      this.meshAnimations.splice(index, 1);
+      this._updateUI();
+      this._updateStatus(`✅ Animation removed from mesh "${meshName}"`);
+      console.log('Mesh animation deleted:', meshName);
+    }
+  }
+  
+  _selectMesh(index) {
+    if (index >= 0 && index < this.levelMeshes.length) {
+      this.selectedMesh = this.levelMeshes[index];
+      console.log('Selected mesh:', this.selectedMesh);
+      this._updateUI();
+      this._updateStatus(`Mesh selected: ${this.selectedMesh.name}`);
+    }
+  }
+
   _animate() {
     requestAnimationFrame(this._animate.bind(this));
 
