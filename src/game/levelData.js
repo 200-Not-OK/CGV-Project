@@ -1,6 +1,282 @@
 // Data-driven level definitions with GLTF geometry loading
 export const levels = [
   {
+    "id": "level0",
+    "name": "Level 0: The Training Grounds",
+    "gltfUrl": "assets/levels/revamped/ControlRoom.gltf",
+    "startPosition": [
+      0,
+      13,
+      0
+    ],
+    "lights": [
+      "BasicLights"
+    ],
+    "ui": [
+      "hud"
+    ],
+    "enemies": [],
+    "npcs": [],
+    "platforms": [],
+    "interactiveObjects": [
+      {
+        "id": "interactive_3",
+        "objectType": "pressurePlate",
+        "position": [
+          -493.6651629419319,
+          10.113008499145508,
+          292.94097499910407
+        ],
+        "size": 10,
+        "activationWeight": 40,
+        "pressedHeight": -0.1,
+        "color": 65280
+      },
+      {
+        "id": "interactive_4",
+        "objectType": "pressurePlate",
+        "position": [
+          -494.145160650115,
+          10.113008499145508,
+          267.5963964375436
+        ],
+        "size": 10,
+        "activationWeight": 10,
+        "pressedHeight": -0.1,
+        "color": 65280
+      },
+      {
+        "id": "interactive_5",
+        "objectType": "pressurePlate",
+        "position": [
+          -493.6658502474449,
+          10.113008499145508,
+          247.13187696380177
+        ],
+        "size": 10,
+        "activationWeight": 40,
+        "pressedHeight": -0.1,
+        "color": 65280
+      }
+    ],
+    "triggers": [],
+    "meshAnimations": [
+      {
+        "meshName": "Lift2",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -225.86,
+              10.11,
+              124.18
+            ],
+            [
+              -229.68,
+              9.65,
+              254.86
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -259.41,
+              10.11,
+              110.38
+            ],
+            [
+              -387.15,
+              10.11,
+              184.13
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -496.88,
+              11.9,
+              195.35
+            ],
+            [
+              -506.55,
+              48.81,
+              192.95
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      }
+    ],
+    "colliders": [
+      {
+        "id": "collider_2",
+        "type": "box",
+        "position": [
+          0,
+          9.439203262329102,
+          -10.976917266845703
+        ],
+        "size": [
+          74.21695709228516,
+          2.000000033833089,
+          74.21695709228516
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_3",
+        "type": "box",
+        "position": [
+          0,
+          23.242176055908203,
+          -1.9201059341430664
+        ],
+        "size": [
+          2,
+          10.32878589630127,
+          2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_4",
+        "type": "box",
+        "position": [
+          0,
+          27.362017565243946,
+          -2.9135963916778564
+        ],
+        "size": [
+          20.964557647705078,
+          35.83751362866792,
+          10.630075931549072
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_5",
+        "type": "mesh",
+        "meshName": "Walls",
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_6",
+        "type": "mesh",
+        "meshName": "Platform",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_7",
+        "type": "mesh",
+        "meshName": "Platform1",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_8",
+        "type": "mesh",
+        "meshName": "Platform1",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_9",
+        "type": "mesh",
+        "meshName": "Platform2",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_10",
+        "type": "mesh",
+        "meshName": "Platform3",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_11",
+        "type": "mesh",
+        "meshName": "Platform8",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_12",
+        "type": "mesh",
+        "meshName": "Platform4",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_13",
+        "type": "mesh",
+        "meshName": "Lift2",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_14",
+        "type": "mesh",
+        "meshName": "Lift3",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_15",
+        "type": "mesh",
+        "meshName": "Platform5",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_16",
+        "type": "mesh",
+        "meshName": "Leaf",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_17",
+        "type": "mesh",
+        "meshName": "Lift",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_18",
+        "type": "mesh",
+        "meshName": "Platform7",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_19",
+        "type": "mesh",
+        "meshName": "Elevated_Ground",
+        "materialType": "ground"
+      }
+    ]
+  },
+  
+  {
     "id": "level1",
     "name": "Level 1: The Forgotten Forest",
     "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
@@ -1407,7 +1683,7 @@ export const levels = [
         "chaseRange": 5,
         "id": 49
       },
-            {
+      {
         "type": "mech_boss",
         "position": [
           363.35,
@@ -1437,7 +1713,126 @@ export const levels = [
         "chaseRange": 0,
         "id": 36
       }
-    ]
+    ],
+    "platforms": [
+      {
+        "id": "platform_13",
+        "type": "static",
+        "position": [
+          21.07535583490078,
+          4.4287377595901525,
+          -8.95893954894854
+        ],
+        "size": [
+          4,
+          0.5,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "texture": "wood",
+        "textureUrl": "",
+        "textureRepeat": [
+          1,
+          1
+        ],
+        "color": 8947848,
+        "materialType": "platform",
+        "friction": 0.5,
+        "restitution": 0.3
+      },
+      {
+        "id": "platform_14",
+        "type": "moving",
+        "position": [
+          9.614665414399102,
+          4.38558800580747,
+          -8.547226379114415
+        ],
+        "size": [
+          4,
+          0.5,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "texture": "wood",
+        "textureUrl": "",
+        "textureRepeat": [
+          1,
+          1
+        ],
+        "color": 8947848,
+        "materialType": "platform",
+        "friction": 0.5,
+        "restitution": 0.3,
+        "animation": {
+          "type": "path",
+          "speed": 2,
+          "path": [
+            [
+              0.13021153593746249,
+              10.215773048324966,
+              -32.49150085449219
+            ],
+            [
+              11.931070299297707,
+              4.40864848246839,
+              -3.7256459306666265
+            ]
+          ]
+        }
+      }
+    ],
+    "interactiveObjects": [
+      {
+        "id": "interactive_13",
+        "objectType": "pressurePlate",
+        "position": [
+          1.935534115424172,
+          4.371583282947544,
+          -10.736291961935553
+        ],
+        "size": 2,
+        "activationWeight": 50,
+        "pressedHeight": -0.1,
+        "color": 65280
+      },
+      {
+        "id": "interactive_14",
+        "objectType": "pressurePlate",
+        "position": [
+          2.4052795458538547,
+          4.37158328294754,
+          -11.206037392365129
+        ],
+        "size": 2,
+        "activationWeight": 20,
+        "pressedHeight": -0.1,
+        "color": 65280
+      },
+      {
+        "id": "interactive_15",
+        "objectType": "pressurePlate",
+        "position": [
+          12.751076332347527,
+          4.406622984193202,
+          -16.61739216882129
+        ],
+        "size": 2,
+        "activationWeight": 10,
+        "pressedHeight": -0.1,
+        "color": 65280
+      }
+    ],
+    "triggers": [],
+    "meshAnimations": []
   },
   {
     "id": "intro",
@@ -1659,41 +2054,40 @@ export const levels = [
         ]
       }
     },
-    // Example sound configuration (add your audio files to use)
-    sounds: {
-      music: {
-        'intro-theme': {
-          url: 'assets/audio/music/whispers_beneath_the_canopy.mp3',
-          loop: true
+    "sounds": {
+      "music": {
+        "intro-theme": {
+          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
+          "loop": true
         }
       },
-      sfx: {
-        'sword': {
-          url: 'assets/audio/sfx/sword.mp3',
-          loop: false
+      "sfx": {
+        "sword": {
+          "url": "assets/audio/sfx/sword.mp3",
+          "loop": false
         },
-        'chest': {
-          url: 'assets/audio/sfx/chest_open.mp3',
-          loop: false
+        "chest": {
+          "url": "assets/audio/sfx/chest_open.mp3",
+          "loop": false
         },
-        'snake': {
-          url: 'assets/audio/sfx/snake.wav',
-          loop: false
+        "snake": {
+          "url": "assets/audio/sfx/snake.wav",
+          "loop": false
         },
-        'potion': {
-          url: 'assets/audio/sfx/potion.wav',
-          loop: false
+        "potion": {
+          "url": "assets/audio/sfx/potion.wav",
+          "loop": false
         },
-        'walk': {
-          url: 'assets/audio/sfx/walking.mp3',
-          loop: false
+        "walk": {
+          "url": "assets/audio/sfx/walking.mp3",
+          "loop": false
         },
-        'jump': {
-          url: 'assets/audio/sfx/jumping.wav',
-          loop: false
+        "jump": {
+          "url": "assets/audio/sfx/jumping.wav",
+          "loop": false
         }
       },
-      playMusic: 'intro-theme'
+      "playMusic": "intro-theme"
     }
   },
   {
@@ -1742,107 +2136,159 @@ export const levels = [
     ],
     "lights": [
       {
-        key: "StarLight",
-        props: {
-          position: [-12.025823053848388, 15.1245687627273453, 178.1670737408198],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            -12.025823053848388,
+            15.124568762727346,
+            178.1670737408198
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [107.02806399789891, 15.18589604134138948, 162.76484097209587],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            107.02806399789891,
+            15.185896041341389,
+            162.76484097209587
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [37.3222404385603, 15.1245687627273453, 120.04517725703103],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            37.3222404385603,
+            15.124568762727346,
+            120.04517725703103
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [130.9762479960251, 15.1245687627273453, 124.34771920664302],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            130.9762479960251,
+            15.124568762727346,
+            124.34771920664302
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [130.82457819522133, 15.14999273591754103, 131.6524554717438],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            130.82457819522133,
+            15.149992735917541,
+            131.6524554717438
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [25.759123747308454, 15.16136381577697279, 57.40978236364007],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            25.759123747308454,
+            15.161363815776973,
+            57.40978236364007
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [113.60075814069711, 15.1245687627273453, 75.45198084352933],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            113.60075814069711,
+            15.124568762727346,
+            75.45198084352933
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [45.84881244172108, 15.16136380644811155, 18.457558176388886],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            45.84881244172108,
+            15.161363806448112,
+            18.457558176388886
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [163.83881610949769, 15.22766121260374206, 94.95998318210349],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            163.83881610949769,
+            15.227661212603742,
+            94.95998318210349
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [240.16020953998367, 15.16136380644809412, 76.45611044544076],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            240.16020953998367,
+            15.161363806448094,
+            76.45611044544076
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [239.88417501943894, 15.16136380644811155, -0.5912993552164365],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            239.88417501943894,
+            15.161363806448112,
+            -0.5912993552164365
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [193.86038360355045, 15.16136380644811155, -34.19794303311772],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            193.86038360355045,
+            15.161363806448112,
+            -34.19794303311772
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
-        key: "StarLight",
-        props: {
-          position: [40.11368964583366, 17.308840240606493, 17.848062963685287],
-          modelPath: "assets/cute_little_star.glb",
-          scale: 5
+        "key": "StarLight",
+        "props": {
+          "position": [
+            40.11368964583366,
+            17.308840240606493,
+            17.848062963685287
+          ],
+          "modelPath": "assets/cute_little_star.glb",
+          "scale": 5
         }
       },
       {
@@ -2745,75 +3191,75 @@ export const levels = [
         }
       }
     ],
-    sounds: {
-      music: {
-        'level2-theme': {
-          url: 'assets/audio/music/whispers_beneath_the_canopy.mp3',
-          loop: true
+    "sounds": {
+      "music": {
+        "level2-theme": {
+          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
+          "loop": true
         }
       },
-      sfx: {
-        'door': {
-          url: 'assets/audio/sfx/door.mp3',
-          loop: false
+      "sfx": {
+        "door": {
+          "url": "assets/audio/sfx/door.mp3",
+          "loop": false
         },
-        'torch': {
-          url: 'assets/audio/ambient/torch.mp3',
-          loop: false
+        "torch": {
+          "url": "assets/audio/ambient/torch.mp3",
+          "loop": false
         },
-        'chest': {
-          url: 'assets/audio/sfx/chest_open.mp3',
-          loop: false
+        "chest": {
+          "url": "assets/audio/sfx/chest_open.mp3",
+          "loop": false
         },
-        'snake': {
-          url: 'assets/audio/sfx/snake.wav',
-          loop: false
+        "snake": {
+          "url": "assets/audio/sfx/snake.wav",
+          "loop": false
         },
-        'potion': {
-          url: 'assets/audio/sfx/potion.wav',
-          loop: false
+        "potion": {
+          "url": "assets/audio/sfx/potion.wav",
+          "loop": false
         },
-        'low-health': {
-          url: 'assets/audio/sfx/low_health.mp3',
-          loop: false
+        "low-health": {
+          "url": "assets/audio/sfx/low_health.mp3",
+          "loop": false
         },
-        'rumbling': {
-          url: 'assets/audio/sfx/rumbling.wav',
-          loop: false
+        "rumbling": {
+          "url": "assets/audio/sfx/rumbling.wav",
+          "loop": false
         },
-        'vo-levelstart': {
-          url: 'assets/audio/ambient/pravesh_levelstart_vo.mp3',
-          loop: false
+        "vo-levelstart": {
+          "url": "assets/audio/ambient/pravesh_levelstart_vo.mp3",
+          "loop": false
         },
-        'vo-maze': {
-          url: 'assets/audio/ambient/pravesh_01.mp3',
-          loop: false
+        "vo-maze": {
+          "url": "assets/audio/ambient/pravesh_01.mp3",
+          "loop": false
         },
-        'vo-chest': {
-          url: 'assets/audio/ambient/pravesh_02.mp3',
-          loop: false
+        "vo-chest": {
+          "url": "assets/audio/ambient/pravesh_02.mp3",
+          "loop": false
         },
-        'vo-lastchest': {
-          url: 'assets/audio/ambient/pravesh_05.mp3',
-          loop: false
+        "vo-lastchest": {
+          "url": "assets/audio/ambient/pravesh_05.mp3",
+          "loop": false
         },
-        'vo-fail': {
-          url: 'assets/audio/ambient/pravesh_fail_vo.mp3',
-          loop: false
+        "vo-fail": {
+          "url": "assets/audio/ambient/pravesh_fail_vo.mp3",
+          "loop": false
         },
-        'vo-success': {
-          url: 'assets/audio/ambient/pravesh_success_vo.mp3',
-          loop: false
+        "vo-success": {
+          "url": "assets/audio/ambient/pravesh_success_vo.mp3",
+          "loop": false
         }
       },
-      ambient: {
-        'torch-ambient': {
-          url: 'assets/audio/ambient/torch.mp3',
-          loop: true
+      "ambient": {
+        "torch-ambient": {
+          "url": "assets/audio/ambient/torch.mp3",
+          "loop": true
         }
       },
-      playMusic: 'level2-theme',
-      playVoiceover: null
+      "playMusic": "level2-theme",
+      "playVoiceover": null
     },
     "cinematics": {
       "onLevelStart": {
