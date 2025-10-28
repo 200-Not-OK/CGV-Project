@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { StackWeapon } from './weapons/StackWeapon.js';
 
 export class Player {
-  constructor(scene, physicsWorld, options = {}) {
+  constructor(scene, physicsWorld, options = {}, game = null) {
     this.scene = scene;
     this.physicsWorld = physicsWorld;
+    this.game = game;
     
     // Player settings
     this.speed = options.speed ?? 8;
@@ -87,6 +89,13 @@ export class Player {
     this.maxJumpHoldTime = 0.3; // Maximum time to apply upward force (300ms)
     this.isMoving = false;
 
+    // Double jump system
+    this.enableDoubleJump = true;           // Feature flag
+    this.jumpCount = 0;                     // Track number of jumps performed
+    this.maxJumps = 2;                      // Maximum jumps allowed (1 = normal, 2 = double jump)
+    this.doubleJumpStrength = 20;           // Slightly weaker than first jump
+    this.canDoubleJump = true;              // Reset when landing
+
     // Sound state for footsteps
     this.footstepTimer = 0;
     this.footstepInterval = 0.4; // Time between footsteps (seconds)
@@ -114,6 +123,16 @@ export class Player {
     this.characterLight.castShadow = false; // No shadows, just illumination
     this.mesh.add(this.characterLight); // Attach to player so it follows
     console.log('💡 Character self-illumination light added');
+    
+    // Initialize weapon system
+    this.weapon = new StackWeapon(this, scene, physicsWorld);
+    this.weapon.mount();
+    
+    // Block pickup system
+    this.heldBlock = null; // Reference to block currently being held
+    this.pickupRange = 20.0; // Maximum detection distance (dynamic angle-based pickup)
+    this.lastPickupTime = 0; // Cooldown to prevent rapid pickup/drop
+    this.pickupCooldown = 0.3; // 300ms cooldown between pickup attempts
     
     // Load 3D model first, then create physics body
     this.loadModel();
@@ -768,6 +787,9 @@ export class Player {
       this.handleJumpInput(input);
       this.handleInteractionInput(input);
       
+      // Handle weapon input
+      this.weapon.handleInput(input);
+      
       // Check for stair climbing when grounded and moving
       if (this.isGrounded && this.isMoving) {
         this.handleStairClimbing(camOrientation, delta);
@@ -791,6 +813,9 @@ export class Player {
         this.body.velocity.y = Math.max(this.body.velocity.y, -5.0);
       }
     }
+    
+    // Update weapon system
+    this.weapon.update(delta);
     
     // Sync visual mesh with physics body
     this.syncMeshWithBody();
@@ -837,9 +862,11 @@ export class Player {
     // Check if we're on a slope (for better physics handling)
     this.isOnSlope = this.checkIfOnSlope();
     
-    // Reset jumping flag when player lands
+    // Reset jumping flag AND jump count when player lands
     if (this.isGrounded && this.isJumping && this.body.velocity.y <= 0.1) {
       this.isJumping = false;
+      this.jumpCount = 0;              // ✅ Reset jump count on landing
+      this.canDoubleJump = true;       // ✅ Allow double jump again
     }
   }
 
@@ -1108,7 +1135,6 @@ export class Player {
 
   handleJumpInput(input) {
     if (!input || !input.isKey) return;
-
     
     // Check if movement is locked (prevent jumping during animations)
     if (this.movementLocked) {
@@ -1116,43 +1142,199 @@ export class Player {
     }
     
     if (input.isKey('Space')) {
-      if (this.isGrounded && !this.isJumping) {
-        // Initial jump impulse
+      // First jump (grounded)
+      if (this.isGrounded && this.jumpCount === 0) {
         this.body.velocity.y = this.jumpStrength;
         this.isJumping = true;
-        this.jumpHoldTime = 0; // Reset hold timer
+        this.jumpCount = 1;
+        this.jumpHoldTime = 0;
 
         // Play jump sound
         if (this.game && this.game.soundManager) {
           this.game.soundManager.playSFX('jump', 0.5);
         }
-      } else if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
-        // Continue applying upward force while space is held (variable jump height)
-        // This gives the player more control over jump height
-        const jumpBoostForce = 25; // Additional upward force per frame
+        
+        console.log('🦘 First jump');
+      }
+      // Double jump (airborne, haven't used double jump yet)
+      else if (this.enableDoubleJump && !this.isGrounded && this.jumpCount === 1 && this.canDoubleJump) {
+        // Reset Y velocity before applying double jump (feels more responsive)
+        this.body.velocity.y = this.doubleJumpStrength;
+        this.jumpCount = 2;
+        this.canDoubleJump = false; // Prevent triple jump
+        this.jumpHoldTime = 0;
+
+        // Play different sound for double jump (if available)
+        if (this.game && this.game.soundManager) {
+          this.game.soundManager.playSFX('jump', 0.7); // Slightly louder
+        }
+        
+        console.log('🦘🦘 Double jump!');
+      }
+      // Variable jump height (hold space for higher jump)
+      else if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
+        const jumpBoostForce = 25;
         this.body.applyForce(
           new CANNON.Vec3(0, jumpBoostForce, 0),
           this.body.position
         );
       }
     } else {
-      // Space key released - stop boosting jump
+      // Space key released - cut upward velocity for short hop
       if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
-        // Cut upward velocity for short hop if released early
         if (this.body.velocity.y > 0) {
-          this.body.velocity.y *= 0.5; // Reduce upward velocity by half
+          this.body.velocity.y *= 0.5;
         }
       }
-      this.jumpHoldTime = this.maxJumpHoldTime; // Mark jump as no longer boostable
+      this.jumpHoldTime = this.maxJumpHoldTime;
     }
   }
 
+  /**
+   * Handle picking up a block
+   */
+  handlePickupBlock() {
+    console.log('🔍 Attempting block pickup...');
+    
+    if (!this.game) {
+      console.log('❌ No game reference');
+      return false;
+    }
+    
+    if (!this.game.level) {
+      console.log('❌ No level reference');
+      return false;
+    }
+    
+    const blockManager = this.game.level.placeableBlockManager;
+    if (!blockManager) {
+      console.log('❌ No block manager');
+      return false;
+    }
+    
+    console.log('✅ Block manager found, has blocks:', blockManager.getAllBlocks().length);
+    
+    // Cooldown check
+    const now = Date.now() / 1000;
+    if (now - this.lastPickupTime < this.pickupCooldown) {
+      return false;
+    }
+    
+    // Get camera for raycast
+    const camera = this.game.activeCamera;
+    if (!camera) return false;
+    
+    // Raycast forward to find blocks
+    const origin = camera.position;
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    
+    console.log('🎯 Raycast from:', origin, 'direction:', direction, 'range:', this.pickupRange);
+    
+    const block = blockManager.getBlockFromRaycast(origin, direction, this.pickupRange);
+    
+    if (block) {
+      console.log('✅ Block found:', block.id);
+      // Calculate offset position (1.5 units forward, 0.5 down from camera)
+      const offset = new THREE.Vector3(0, 0, -2); // 2 units in front, floating
+      
+      this.heldBlock = block;
+      block.pickUp(this, offset);
+      this.lastPickupTime = now;
+      
+      console.log('🎯 Picked up block:', block.id);
+      return true;
+    } else {
+      console.log('❌ No block found in raycast');
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Handle dropping a held block
+   */
+  handleDropBlock() {
+    if (!this.heldBlock) return false;
+    
+    const now = Date.now() / 1000;
+    if (now - this.lastPickupTime < this.pickupCooldown) {
+      return false;
+    }
+    
+    // Get drop position (where block currently is)
+    const dropPosition = new THREE.Vector3(
+      this.heldBlock.body.position.x,
+      this.heldBlock.body.position.y,
+      this.heldBlock.body.position.z
+    );
+    
+    // Check for nearby pressure plates to snap to (larger radius to cover entire plate)
+    const nearestPlate = this._findNearestPressurePlate(dropPosition, 4.0, 1.5);
+    
+    // Drop at current held position
+    this.heldBlock.drop(dropPosition);
+    
+    // After drop, snap to plate if nearby
+    if (nearestPlate) {
+      const blockRadius = this.heldBlock.getSphereRadius();
+      const snapPoint = nearestPlate.getSnapPoint(blockRadius);
+      this.heldBlock.attachToPlate(nearestPlate.body, snapPoint);
+      console.log('🧲 Block snapped to pressure plate!');
+    }
+    
+    this.heldBlock = null;
+    this.lastPickupTime = now;
+    return true;
+  }
+  
+  /**
+   * Find the nearest pressure plate within snap range
+   */
+  _findNearestPressurePlate(position, horizontalRadius = 2.0, verticalRange = 1.0) {
+    let nearestPlate = null;
+    let nearestDistance = Infinity;
+    
+    if (!this.game || !this.game.level) return null;
+    
+    // Get all interactive objects from the level
+    const interactiveObjects = this.game.level.interactiveObjectManager?.objects || [];
+    
+    for (const obj of interactiveObjects) {
+      if (obj.userData?.type === 'pressurePlate' && obj.userData?.plateInstance) {
+        const plate = obj.userData.plateInstance;
+        
+        if (plate.isWithinSnapZone(position, horizontalRadius, verticalRange)) {
+          const distance = position.distanceTo(plate.body.position);
+          
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestPlate = plate;
+          }
+        }
+      }
+    }
+    
+    return nearestPlate;
+  }
   handleInteractionInput(input) {
     if (!input || !input.isKey) return;
     
-    // Use 'E' key for interaction
+    // Use 'E' key for interaction and block pickup/drop
     if (input.isKey('KeyE')) {
-      // Add a small delay to prevent rapid triggering
+      // Block pickup/drop takes priority over general interaction
+      if (this.heldBlock) {
+        // Currently holding a block - try to drop it
+        this.handleDropBlock();
+        return;
+      }
+      
+      // Check for block pickup first, then interaction
+      if (this.handlePickupBlock()) {
+        return; // Block was picked up
+      }
+      
+      // No block picked up, try general interaction
       const currentTime = Date.now();
       if (currentTime - (this.lastInteractionTime || 0) > 500) { // 500ms cooldown
         this.lastInteractionTime = currentTime;
@@ -1531,6 +1713,9 @@ export class Player {
   }
 
   dispose() {
+    
+    // Unmount weapon system
+    this.weapon.unmount();
     
     // Remove physics body
     if (this.body) {
