@@ -4,9 +4,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { StackWeapon } from './weapons/StackWeapon.js';
 
 export class Player {
-  constructor(scene, physicsWorld, options = {}) {
+  constructor(scene, physicsWorld, options = {}, game = null) {
     this.scene = scene;
     this.physicsWorld = physicsWorld;
+    this.game = game;
     
     // Player settings
     this.speed = options.speed ?? 8;
@@ -126,6 +127,12 @@ export class Player {
     // Initialize weapon system
     this.weapon = new StackWeapon(this, scene, physicsWorld);
     this.weapon.mount();
+    
+    // Block pickup system
+    this.heldBlock = null; // Reference to block currently being held
+    this.pickupRange = 20.0; // Maximum detection distance (dynamic angle-based pickup)
+    this.lastPickupTime = 0; // Cooldown to prevent rapid pickup/drop
+    this.pickupCooldown = 0.3; // 300ms cooldown between pickup attempts
     
     // Load 3D model first, then create physics body
     this.loadModel();
@@ -1183,12 +1190,151 @@ export class Player {
     }
   }
 
+  /**
+   * Handle picking up a block
+   */
+  handlePickupBlock() {
+    console.log('🔍 Attempting block pickup...');
+    
+    if (!this.game) {
+      console.log('❌ No game reference');
+      return false;
+    }
+    
+    if (!this.game.level) {
+      console.log('❌ No level reference');
+      return false;
+    }
+    
+    const blockManager = this.game.level.placeableBlockManager;
+    if (!blockManager) {
+      console.log('❌ No block manager');
+      return false;
+    }
+    
+    console.log('✅ Block manager found, has blocks:', blockManager.getAllBlocks().length);
+    
+    // Cooldown check
+    const now = Date.now() / 1000;
+    if (now - this.lastPickupTime < this.pickupCooldown) {
+      return false;
+    }
+    
+    // Get camera for raycast
+    const camera = this.game.activeCamera;
+    if (!camera) return false;
+    
+    // Raycast forward to find blocks
+    const origin = camera.position;
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    
+    console.log('🎯 Raycast from:', origin, 'direction:', direction, 'range:', this.pickupRange);
+    
+    const block = blockManager.getBlockFromRaycast(origin, direction, this.pickupRange);
+    
+    if (block) {
+      console.log('✅ Block found:', block.id);
+      // Calculate offset position (1.5 units forward, 0.5 down from camera)
+      const offset = new THREE.Vector3(0, 0, -2); // 2 units in front, floating
+      
+      this.heldBlock = block;
+      block.pickUp(this, offset);
+      this.lastPickupTime = now;
+      
+      console.log('🎯 Picked up block:', block.id);
+      return true;
+    } else {
+      console.log('❌ No block found in raycast');
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Handle dropping a held block
+   */
+  handleDropBlock() {
+    if (!this.heldBlock) return false;
+    
+    const now = Date.now() / 1000;
+    if (now - this.lastPickupTime < this.pickupCooldown) {
+      return false;
+    }
+    
+    // Get drop position (where block currently is)
+    const dropPosition = new THREE.Vector3(
+      this.heldBlock.body.position.x,
+      this.heldBlock.body.position.y,
+      this.heldBlock.body.position.z
+    );
+    
+    // Check for nearby pressure plates to snap to (larger radius to cover entire plate)
+    const nearestPlate = this._findNearestPressurePlate(dropPosition, 4.0, 1.5);
+    
+    // Drop at current held position
+    this.heldBlock.drop(dropPosition);
+    
+    // After drop, snap to plate if nearby
+    if (nearestPlate) {
+      const blockRadius = this.heldBlock.getSphereRadius();
+      const snapPoint = nearestPlate.getSnapPoint(blockRadius);
+      this.heldBlock.attachToPlate(nearestPlate.body, snapPoint);
+      console.log('🧲 Block snapped to pressure plate!');
+    }
+    
+    this.heldBlock = null;
+    this.lastPickupTime = now;
+    return true;
+  }
+  
+  /**
+   * Find the nearest pressure plate within snap range
+   */
+  _findNearestPressurePlate(position, horizontalRadius = 2.0, verticalRange = 1.0) {
+    let nearestPlate = null;
+    let nearestDistance = Infinity;
+    
+    if (!this.game || !this.game.level) return null;
+    
+    // Get all interactive objects from the level
+    const interactiveObjects = this.game.level.interactiveObjectManager?.objects || [];
+    
+    for (const obj of interactiveObjects) {
+      if (obj.userData?.type === 'pressurePlate' && obj.userData?.plateInstance) {
+        const plate = obj.userData.plateInstance;
+        
+        if (plate.isWithinSnapZone(position, horizontalRadius, verticalRange)) {
+          const distance = position.distanceTo(plate.body.position);
+          
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestPlate = plate;
+          }
+        }
+      }
+    }
+    
+    return nearestPlate;
+  }
   handleInteractionInput(input) {
     if (!input || !input.isKey) return;
     
-    // Use 'E' key for interaction
+    // Use 'E' key for interaction and block pickup/drop
     if (input.isKey('KeyE')) {
-      // Add a small delay to prevent rapid triggering
+      // Block pickup/drop takes priority over general interaction
+      if (this.heldBlock) {
+        // Currently holding a block - try to drop it
+        this.handleDropBlock();
+        return;
+      }
+      
+      // Check for block pickup first, then interaction
+      if (this.handlePickupBlock()) {
+        return; // Block was picked up
+      }
+      
+      // No block picked up, try general interaction
       const currentTime = Date.now();
       if (currentTime - (this.lastInteractionTime || 0) > 500) { // 500ms cooldown
         this.lastInteractionTime = currentTime;

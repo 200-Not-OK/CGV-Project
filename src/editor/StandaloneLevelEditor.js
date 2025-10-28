@@ -39,6 +39,7 @@ export class StandaloneLevelEditor {
     this.interactiveObjects = []; // Interactive objects (pressure plates, etc.)
     this.triggers = []; // Trigger connections between interactive objects
     this.meshAnimations = []; // Animations for GLTF meshes
+    this.placeableBlocks = []; // Placeable blocks that players can interact with
     
     // Visual representations
     this.enemyMeshes = [];
@@ -53,6 +54,7 @@ export class StandaloneLevelEditor {
     this.platformTextures = {}; // Cache for loaded textures
     this.interactiveObjectMeshes = []; // Visual representations of interactive objects
     this.triggerConnectionLines = []; // Visual lines showing trigger connections
+    this.placeableBlockMeshes = []; // Visual representations of placeable blocks
     
     // Selection system
     this.selected = null;
@@ -82,7 +84,7 @@ export class StandaloneLevelEditor {
     
     // Enemy and Light types
     this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer', 'snake', 'snake_boss', 'mech_boss', 'crawler'];
-    this.npcTypes = ['yellow_bot']; // NPCs (non-player characters)
+    this.npcTypes = ['yellow_bot', 'other_bot']; // NPCs (non-player characters)
     this.lightTypes = ['BasicLights', 'PointPulse', 'HemisphereFill'];
     this.colliderTypes = ['box', 'sphere', 'capsule'];
     this.materialTypes = ['ground', 'wall', 'platform'];
@@ -95,6 +97,17 @@ export class StandaloneLevelEditor {
       metal: 'assets/textures/metal.jpg',
       stone: 'assets/textures/stone.jpg',
       ice: 'assets/textures/ice.jpg'
+    };
+    
+    // Block colors for placeable blocks
+    this.blockColors = {
+      red: 0xff4444,
+      blue: 0x4444ff,
+      green: 0x44ff44,
+      yellow: 0xffff44,
+      purple: 0xff44ff,
+      orange: 0xff8844,
+      cyan: 0x44ffff
     };
     
     // Interactive object types
@@ -273,6 +286,7 @@ export class StandaloneLevelEditor {
     this.platforms = [];
     this.interactiveObjects = [];
     this.triggers = [];
+    this.placeableBlocks = [];
 
     this.selected = null;
     this.selectedType = null;
@@ -3785,7 +3799,8 @@ export class StandaloneLevelEditor {
       snake_boss: 'assets/enemies/snake_boss/Snake_Angry.gltf',
       mech_boss: 'assets/enemies/robot_boss/scene.gltf',
       crawler: 'assets/enemies/crawler/Crawler.gltf',
-      yellow_bot: 'assets/npc/yellow_bot/scene.gltf'
+      yellow_bot: 'assets/npc/yellow_bot/scene.gltf',
+      other_bot: 'assets/npc/other_bot/Mike.gltf'
     };
     return urls[type] || urls.walker;
   }

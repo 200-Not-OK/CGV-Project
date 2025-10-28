@@ -7,6 +7,7 @@ import { loadGLTFModel } from './gltfLoader.js';
 import { CinematicsManager } from './cinematicsManager.js';
 import { Platform } from './components/Platform.js';
 import { InteractiveObjectManager } from './InteractiveObjectManager.js';
+import { PlaceableBlockManager } from './PlaceableBlockManager.js';
 
 /**
  * Level
@@ -36,6 +37,7 @@ export class Level {
     this.enemyManager = new EnemyManager(this.scene, this.physicsWorld);
     this.npcManager = new NpcManager(this.scene, this.physicsWorld);
     this.interactiveObjectManager = new InteractiveObjectManager(this.scene, this.physicsWorld, null);
+    this.placeableBlockManager = new PlaceableBlockManager(this.scene, this.physicsWorld);
 
     // Cinematics
     this.cinematicsManager = new CinematicsManager(this.game);
@@ -99,6 +101,10 @@ export class Level {
     // 4.9) Mesh Animations
     console.log('🎞️ Loading mesh animations...');
     await this._loadMeshAnimations();
+    
+    // 4.95) Placeable Blocks
+    console.log('📦 Loading placeable blocks...');
+    await this._loadPlaceableBlocks();
 
     // 5) Cinematics
     if (this.data.cinematics) {
@@ -474,6 +480,19 @@ export class Level {
                   physicsBody ? '(with physics body)' : '(no physics body)');
     }
   }
+  
+  async _loadPlaceableBlocks() {
+    if (!this.data.placeableBlocks || this.data.placeableBlocks.length === 0) {
+      console.log('No placeable blocks defined in level data');
+      return;
+    }
+    
+    try {
+      await this.placeableBlockManager.loadBlocks(this.data);
+    } catch (e) {
+      console.warn('Failed to load placeable blocks', e);
+    }
+  }
 
   _findMeshByName(meshName) {
     let foundMesh = null;
@@ -758,6 +777,7 @@ export class Level {
       if (this.npcManager) { this.npcManager.dispose?.(); this.npcManager = null; }
       if (this.cinematicsManager) { this.cinematicsManager.dispose?.(); this.cinematicsManager = null; }
       if (this.interactiveObjectManager) { this.interactiveObjectManager.dispose?.(); this.interactiveObjectManager = null; }
+      if (this.placeableBlockManager) { this.placeableBlockManager.dispose?.(); this.placeableBlockManager = null; }
       
       // Platforms
       if (this.platforms && this.platforms.length > 0) {

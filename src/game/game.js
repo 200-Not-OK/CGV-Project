@@ -64,7 +64,7 @@ export class Game {
       colliderHeightScale: 1,  // 90% of model height (default: 0.9)
       colliderDepthScale: 0.5,    // 40% of model depth (default: 0.4)
       game: this // Pass game reference for death handling and boss win event
-    });
+    }, this);
     // Player position will be set by loadLevel() call
 
     // Cameras
@@ -703,6 +703,11 @@ export class Game {
 
     // Update collectibles system
     this.collectiblesManager.update(delta);
+    
+    // Update placeable blocks
+    if (this.level && this.level.placeableBlockManager) {
+      this.level.placeableBlockManager.update(delta);
+    }
 
     // Update proximity sounds
     if (this.proximitySoundManager) {

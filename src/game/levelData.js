@@ -6,7 +6,7 @@ export const levels = [
     "gltfUrl": "assets/levels/revamped/ControlRoom.gltf",
     "startPosition": [
       0,
-      13,
+      12,
       0
     ],
     "lights": [
@@ -120,6 +120,66 @@ export const levels = [
           ],
           "loopBehavior": "loop"
         }
+      },
+      {
+        "meshName": "Lift3001",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              344.83,
+              10.11,
+              -36.05
+            ],
+            [
+              544.8,
+              22.52,
+              -33.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3002",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              557.24,
+              10.11,
+              99.12
+            ],
+            [
+              558.04,
+              9.65,
+              405.84
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3003",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              525.43,
+              10.11,
+              419.27
+            ],
+            [
+              334.2,
+              9.69,
+              432.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
       }
     ],
     "colliders": [
@@ -128,7 +188,7 @@ export const levels = [
         "type": "box",
         "position": [
           0,
-          9.439203262329102,
+          8.439203262329102,
           -10.976917266845703
         ],
         "size": [
@@ -272,10 +332,206 @@ export const levels = [
         "type": "mesh",
         "meshName": "Elevated_Ground",
         "materialType": "ground"
+      },
+      {
+        "id": "collider_2",
+        "type": "mesh",
+        "meshName": "Platform001",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_3",
+        "type": "mesh",
+        "meshName": "Platform002",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_4",
+        "type": "mesh",
+        "meshName": "Platform3002",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_5",
+        "type": "mesh",
+        "meshName": "Cube",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_6",
+        "type": "mesh",
+        "meshName": "Lift3001",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_7",
+        "type": "mesh",
+        "meshName": "Platform4001",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_8",
+        "type": "mesh",
+        "meshName": "Platform3003",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_9",
+        "type": "mesh",
+        "meshName": "Lift3002",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_10",
+        "type": "mesh",
+        "meshName": "Platform3004",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_11",
+        "type": "mesh",
+        "meshName": "Lift3003",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_12",
+        "type": "mesh",
+        "meshName": "Platform3006",
+        "materialType": "ground"
       }
-    ]
+    ],
+    "placeableBlocks": [
+      {
+        "id": "block_2",
+        "type": "placeableBlock",
+        "color": 16729156,
+        "colorName": "red",
+        "position": [
+          -452.98549867511366,
+          31,
+          278.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -452.98549867511366,
+          40,
+          278.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      },
+      {
+        "id": "block_3",
+        "type": "placeableBlock",
+        "color": 6448255,
+        "colorName": "blue",
+        "position": [
+          -438.98549867511366,
+          31,
+          252.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -438.98549867511366,
+          40,
+          252.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      },
+      {
+        "id": "block_4",
+        "type": "placeableBlock",
+        "color": 43520,
+        "colorName": "green",
+        "position": [
+          -456.98549867511366,
+          31,
+          265.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -456.98549867511366,
+          40,
+          265.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      }
+    ],
+    "cinematics": {
+      "onLevelStart": {
+        "sequence": [
+          {
+            "type": "takeCamera"
+          },
+          {
+            "type": "cut",
+            "position": [
+              -36.130299264016,
+              39.32663426672091,
+              -46.145177904798445
+            ],
+            "lookAt": [
+              -22.757220085318835,
+              29.03025736732181,
+              -35.41459655867294
+            ],
+            "fov": 60
+          },
+          {
+            "type": "wait",
+            "ms": 3000
+          },
+          {
+            "type": "releaseCamera"
+          }
+        ]
+      }
+    }
   },
-  
   {
     "id": "level1",
     "name": "Level 1: The Forgotten Forest",
