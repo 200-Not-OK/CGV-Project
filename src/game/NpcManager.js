@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { YellowBot } from './npc/YellowBot.js';
+import { OtherBot } from './npc/OtherBot.js';
 
 
 export class NpcManager {
@@ -9,6 +10,7 @@ export class NpcManager {
     this.npcs = [];
     this.typeRegistry = {
         yellow_bot: YellowBot,
+        other_bot: OtherBot,
       // register more types here
     };
   }

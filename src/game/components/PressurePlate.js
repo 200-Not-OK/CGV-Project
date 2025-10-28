@@ -142,8 +142,19 @@ export class PressurePlate extends InteractiveObject {
     
     // Check if contact is from above (player/object landing on plate)
     const isFromAbove = otherBody.position.y > this.body.position.y;
+
+    // Debug details to help tune thresholds
+    try {
+      console.log('🔍 Pressure plate contact:', {
+        mass: otherBody.mass,
+        required: this.activationWeight,
+        isFromAbove,
+        bodyType: otherBody.userData?.type
+      });
+    } catch (e) {}
     
-    if (isFromAbove && otherBody.mass >= this.activationWeight) {
+    // More lenient weight check: allow activation at 90% of configured weight
+    if (isFromAbove && otherBody.mass >= this.activationWeight * 0.9) {
       console.log('Pressure plate contact detected! Mass:', otherBody.mass);
       this._addObjectOnPlate(otherBody);
     }
@@ -202,6 +213,19 @@ export class PressurePlate extends InteractiveObject {
     this.state = 'activated';
     this._updateVisualFeedback(true);
     this.activate(); // Call base class activation (triggers connected objects)
+
+    // Lock any placeable blocks currently tracked to this plate and apply visuals
+    for (const body of this.contactBodies) {
+      try {
+        const block = body.userData && body.userData.blockInstance ? body.userData.blockInstance : null;
+        if (block && !block.isLockedToPlate) {
+          const radius = block.getSphereRadius ? block.getSphereRadius() : 0.5;
+          const snapPoint = this.getSnapPoint(radius);
+          block.attachToPlate(this.body, snapPoint);
+          // Do not modify block color; only the plate changes visuals on activation
+        }
+      } catch (e) {}
+    }
   }
   
   _releaseUp() {
@@ -250,19 +274,120 @@ export class PressurePlate extends InteractiveObject {
     
     // Verify contacts are still valid (in case physics world missed endContact)
     this._verifyContacts();
+    
+    // Use proximity detection as backup for objects that stopped generating contact events
+    this._checkProximity();
   }
   
   _verifyContacts() {
     // Check if objects are still actually in contact
     for (const body of this.contactBodies) {
       const distance = this.body.position.distanceTo(body.position);
-      const combinedRadius = 2; // Rough estimate
+      const combinedRadius = 3; // Slightly more lenient to account for sphere colliders
       
       if (distance > combinedRadius) {
         // Object moved away without triggering endContact
         this._removeObjectFromPlate(body);
       }
     }
+  }
+
+  _checkProximity() {
+    // Proximity-based backup detection for objects that stop generating contacts
+    const platePos = this.body.position;
+    const detectionRadius = 2.5; // Check objects within this horizontal distance
+    const detectionHeight = 1.5; // Only check objects slightly above plate
+    
+    // Check all bodies in the physics world
+    for (const body of this.physicsWorld.world.bodies) {
+      if (body === this.body || !body.mass) continue;
+      
+      const dx = body.position.x - platePos.x;
+      const dy = body.position.y - platePos.y;
+      const dz = body.position.z - platePos.z;
+      const horizontalDistance = Math.sqrt(dx*dx + dz*dz); // Horizontal distance only
+      
+      // If object is close horizontally and resting on/near the plate
+      if (horizontalDistance < detectionRadius && dy > -0.5 && dy < detectionHeight) {
+        // Only add if it has enough weight and not already tracked
+        if (body.mass >= this.activationWeight * 0.9 && !this.objectsOnPlate.has(body.id)) {
+          console.log('📍 Proximity detected object:', body.userData?.type, 'mass:', body.mass);
+          this._addObjectOnPlate(body);
+        }
+      }
+    }
+  }
+
+  /**
+   * Manually add a block (for snapped blocks that use constraints)
+   */
+  _manuallyAddBlock(blockBody) {
+    // Directly add to plate without checking contact events
+    const wasEmpty = this.objectsOnPlate.size === 0;
+    this.objectsOnPlate.add(blockBody.id);
+    this.contactBodies.add(blockBody);
+    this.currentWeight += blockBody.mass;
+    
+    console.log('✅ Block manually added to plate. Total weight:', this.currentWeight);
+    
+    if (wasEmpty && this.currentWeight >= this.activationWeight) {
+      console.log('✅ Pressure plate activated!');
+      this._pressDown();
+    }
+  }
+  
+  /**
+   * Manually remove a block (for snapped blocks that use constraints)
+   */
+  _manuallyRemoveBlock(blockBody) {
+    if (this.objectsOnPlate.has(blockBody.id)) {
+      const hadObjects = this.objectsOnPlate.size > 0;
+      this.objectsOnPlate.delete(blockBody.id);
+      this.contactBodies.delete(blockBody);
+      this.currentWeight -= blockBody.mass;
+      
+      console.log('✅ Block manually removed from plate. Remaining weight:', this.currentWeight);
+      
+      // Only deactivate if it was the only object and plate requires continuous weight
+      if (this.requiresContinuousWeight && hadObjects && this.objectsOnPlate.size === 0) {
+        console.log('⬆️ Pressure plate deactivated!');
+        this._releaseUp();
+      }
+    }
+  }
+  
+  /**
+   * Get the snap point on top of this pressure plate
+   */
+  getSnapPoint(blockRadius = 0.5) {
+    const plateHalfHeight = 0.15; // Half of plate thickness
+    // Position the sphere so its bottom touches the plate top
+    // sphere center Y = plate top Y + sphere radius
+    const y = this.body.position.y + plateHalfHeight + blockRadius + 0.01; // +0.01 tiny gap to avoid penetration
+    return new THREE.Vector3(
+      this.body.position.x,
+      y,
+      this.body.position.z
+    );
+  }
+  
+  /**
+   * Check if a position is within the snap zone
+   */
+  isWithinSnapZone(position, horizontalRadius = 2.0, verticalRange = 1.0) {
+    const platePos = this.body.position;
+    const dx = position.x - platePos.x;
+    const dz = position.z - platePos.z;
+    const horizontalDistance = Math.sqrt(dx*dx + dz*dz);
+    const verticalDistance = position.y - platePos.y;
+    
+    // Use plate's actual size plus a small buffer for edge detection
+    const plateSize = this.data.size || 2;
+    const effectiveRadius = horizontalRadius + plateSize * 0.5; // Account for plate size
+    
+    return horizontalDistance < effectiveRadius && 
+           verticalDistance > -0.5 && 
+           verticalDistance < verticalRange;
   }
   
   destroy() {

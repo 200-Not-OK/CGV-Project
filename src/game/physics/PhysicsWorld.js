@@ -120,6 +120,21 @@ export class PhysicsWorld {
       }
     );
     this.world.addContactMaterial(enemyGroundContact);
+    
+    // Ground-Ground contact: For placeable blocks colliding with level geometry
+    const groundGroundContact = new CANNON.ContactMaterial(
+      this.materials.ground,
+      this.materials.ground,
+      {
+        friction: 0.4,            // Good friction for stable stacking
+        restitution: 0.1,         // Slight bounce
+        contactEquationStiffness: 1e8,
+        contactEquationRelaxation: 3,
+        frictionEquationStiffness: 1e8,
+        frictionEquationRelaxation: 3
+      }
+    );
+    this.world.addContactMaterial(groundGroundContact);
   }
   
   initDebugRenderer() {
