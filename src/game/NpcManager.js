@@ -29,10 +29,14 @@ export class NpcManager {
   }
 
   dispose() {
+    console.log(`🧹 Disposing ${this.npcs.length} NPCs`);
     for (const npc of this.npcs) {
-      if (npc.dispose) npc.dispose();
+      if (npc.dispose) {
+        npc.dispose();
+      }
     }
     this.npcs = [];
+    console.log('🧹 NPC manager cleared');
   }
 
 }

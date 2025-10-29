@@ -52,6 +52,7 @@ export class OtherBot extends NpcBase {
       );
       radius = diagonal / 2;
     }
+    radius = radius * 2;
 
     // Create OtherBot physics body with SPHERE collider
     this.body = this.physicsWorld.createDynamicBody({
@@ -153,28 +154,28 @@ _mapBotAnimations(gltfAnimations) {
     console.log(`🤖   [${index}] "${clip.name}": ${clip.duration}s, ${clip.tracks.length} tracks`);
   });
 
-  // Map standing animation - search for "Take 001" (with space)
-  const standingClip = gltfAnimations.find(a => {
+  // Map idle animation - search for "Idle"
+  const idleClip = gltfAnimations.find(a => {
     const name = a.name.toLowerCase();
-    return name === 'take 001' || name === 'take.001' || name === 'take001';
+    return name === 'idle';
   });
   
-  if (standingClip) {
-    this.botAnimations.take001 = this.mixer.clipAction(standingClip);
-    console.log(`🤖 ✓ Mapped take001 to "${standingClip.name}" (${standingClip.duration}s)`);
+  if (idleClip) {
+    this.botAnimations.take001 = this.mixer.clipAction(idleClip);
+    console.log(`🤖 ✓ Mapped take001 to "${idleClip.name}" (${idleClip.duration}s)`);
   } else {
-    console.log(`🤖 ✗ No standing animation found, using first available animation`);
+    console.log(`🤖 ✗ No idle animation found, using first available animation`);
     if (gltfAnimations.length > 0) {
       this.botAnimations.take001 = this.mixer.clipAction(gltfAnimations[0]);
       console.log(`🤖 Using "${gltfAnimations[0].name}" as fallback`);
     }
   }
 
-  // Start with standing animation
+  // Start with idle animation
   if (this.botAnimations.take001) {
     this.botAnimations.take001.reset().play();
     this.currentAction = this.botAnimations.take001;
-    console.log('🤖 Started standing animation');
+    console.log('🤖 Started idle animation');
   }
 }
 
