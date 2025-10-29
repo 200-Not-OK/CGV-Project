@@ -7,3 +7,4 @@ export { Crosshair } from '../components/crosshair.js';
 export { Collectibles } from '../components/collectibles.js';
 export { InteractionPrompt } from '../components/interactionPrompt.js';
 export { DeathMenu } from '../components/deathMenu.js';
+export { Coordinates } from '../components/coordinates.js';
