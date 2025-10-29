@@ -45,30 +45,69 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.clock = new THREE.Clock();
         this.interactionStrength = 0.0;
 
-        this.animationState = 'IDLE';
-        this.animationProgress = 0.0;
-        this.stateClock = new THREE.Clock();
-        this.stateClock.stop();
+        // Continuous blooming animation
+        this.bloomProgress = 0.0;
+        this.bloomDirection = 1;
+        this.bloomSpeed = 0.3;
+        
+        // AGGRESSIVE update throttling - quality-based
+        this.updateCounter = 0;
+        this.updateThrottle = 3; // Will be overridden by quality settings
+        
+        // Quality settings - can be overridden by props
+        this.quality = props.quality || {
+            plantInstanceCounts: {
+                roots: 8,
+                petals: 16,
+                leaves: 24,
+                fireflies: 35
+            },
+            plantFireflySize: 35.0,
+            enableComplexShaders: true,
+            updateThrottle: 3
+        };
+        
+        // Apply quality-based update throttle
+        this.updateThrottle = this.quality.updateThrottle || 3;
     }
 
     mount(scene) {
         this.plantGroup = new THREE.Group();
         this.plantGroup.position.copy(this.position);
 
+        // Debug: Log what quality settings this plant is using
+        console.log(`🌿 Creating Bioluminescent Plant at [${this.position.x}, ${this.position.y}, ${this.position.z}] with:`, {
+            roots: this.quality.plantInstanceCounts.roots,
+            petals: this.quality.plantInstanceCounts.petals,
+            leaves: this.quality.plantInstanceCounts.leaves,
+            fireflies: this.quality.plantInstanceCounts.fireflies,
+            fireflySize: this.quality.plantFireflySize
+        });
+
+        // Taller, more elegant curve for fairytale plant
         const plantCurve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 0.1, 0), new THREE.Vector3(-0.2, 0.5, 0),
-            new THREE.Vector3(0.15, 1.0, 0), new THREE.Vector3(-0.1, 1.6, 0),
-            new THREE.Vector3(0.05, 2.0, 0)
+            new THREE.Vector3(0, 0, 0),           // Ground level
+            new THREE.Vector3(-0.15, 0.4, 0),     // Gentle curve
+            new THREE.Vector3(0.1, 0.9, 0.05),    // Middle arc
+            new THREE.Vector3(-0.05, 1.5, 0),     // Upper curve
+            new THREE.Vector3(0, 2.2, 0)          // Top - taller for better flower placement
         ]);
-        const topPosition = plantCurve.getPoint(1);
+        
+        // Flower attaches at the very top of the stem
+        const topPosition = plantCurve.getPoint(1.0); // Exactly at the end of curve
 
         this._createBioluminescentRoots();
         this._createEnergyVeinBranch(plantCurve);
+        this._createFlowerBase(topPosition);
         this._createCrystallineBloom(topPosition);
-        this._createCrystalOrb(topPosition.clone().add(new THREE.Vector3(0, 0.05, 0)));
+        this._createStamen(topPosition);
+        // REMOVED: Crystal orb (too expensive!)
+        // REMOVED: Pollen particles (too expensive!)
+        // REMOVED: Aura rings (too expensive!)
         this._createInstancedLeaves(plantCurve);
-        this._createInstancedMoss(plantCurve);
-        this._createFireflies(plantCurve);
+        // REMOVED: Moss (not essential)
+        this._createFireflies(plantCurve); // Minimal count
+        // REMOVED: Magical dust (too expensive!)
         this._createAmbientLight();
 
         scene.add(this.plantGroup);
@@ -76,8 +115,8 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createBioluminescentRoots() {
-        const rootCount = 8;
-        const rootGeometry = new THREE.IcosahedronGeometry(0.1, 1);
+        const rootCount = this.quality.plantInstanceCounts.roots;
+        const rootGeometry = new THREE.IcosahedronGeometry(0.1, 0); // Simpler geometry
         this.roots = new THREE.InstancedMesh(rootGeometry, null, rootCount);
         this.roots.frustumCulled = false;
         const rootData = new Float32Array(rootCount * 4);
@@ -93,19 +132,16 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.roots.material = new THREE.ShaderMaterial({
             uniforms: { uTime: { value: 0 } },
             vertexShader: `
-                uniform float uTime; attribute vec4 aRootData; varying float vRandom;
+                attribute vec4 aRootData;
                 void main() {
-                    vRandom = aRootData.w;
-                    float scale = 0.6 + sin(uTime * 1.5 + vRandom * 6.28) * 0.3;
-                    vec3 pos = position * scale;
+                    vec3 pos = position * 0.8;
                     pos += aRootData.xyz;
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
                 }`,
             fragmentShader: `
-                uniform float uTime; varying float vRandom; ${HSL_FUNC}
+                ${HSL_FUNC}
                 void main() {
-                    float hue = 0.75 + sin(uTime * 0.2 + vRandom) * 0.08;
-                    vec3 color = hsl2rgb(vec3(hue, 1.0, 0.6));
+                    vec3 color = hsl2rgb(vec3(0.82, 0.9, 0.6));
                     gl_FragColor = vec4(color, 0.8);
                 }`,
             transparent: true, blending: THREE.AdditiveBlending
@@ -114,29 +150,94 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createEnergyVeinBranch(curve) {
-        const tubeGeometry = new THREE.TubeGeometry(curve, 64, 0.04, 8, false);
+        // Optimized: Lower segment count
+        const tubeGeometry = new THREE.TubeGeometry(curve, 32, 0.05, 6, false); // 64→32 segments, 8→6 radial
         this.branchMesh = new THREE.Mesh(tubeGeometry, new THREE.ShaderMaterial({
             uniforms: { uTime: { value: 0 } },
-            vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+            vertexShader: `
+                uniform float uTime; varying vec2 vUv; varying vec3 vPosition;
+                void main() { 
+                    vUv = uv; 
+                    vPosition = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); 
+                }`,
             fragmentShader: `
-                uniform float uTime; varying vec2 vUv; ${HSL_FUNC}
+                uniform float uTime; varying vec2 vUv; varying vec3 vPosition;
+                ${HSL_FUNC}
                 void main() {
-                    vec3 baseColor = hsl2rgb(vec3(0.7, 0.5, 0.1));
-                    float pulse = pow(sin(vUv.y * 15.0 - uTime * 3.0) * 0.5 + 0.5, 10.0);
-                    float veins = smoothstep(0.0, 0.1, pulse);
-                    float hue = 0.6 + sin(uTime * 0.5) * 0.1;
-                    vec3 veinColor = hsl2rgb(vec3(hue, 1.0, 0.7));
-                    vec3 finalColor = mix(baseColor, veinColor, veins);
+                    // GORGEOUS stem gradient: green → purple-pink
+                    float gradient = vUv.y;
+                    float hue = mix(0.3, 0.85, gradient); // Green base to pink top
+                    float saturation = 0.7 + gradient * 0.2;
+                    float lightness = 0.25 + gradient * 0.15;
+                    
+                    vec3 baseColor = hsl2rgb(vec3(hue, saturation, lightness));
+                    
+                    // Simple energy pulse (no expensive noise!)
+                    float pulse = sin(vUv.y * 8.0 - uTime * 2.0) * 0.5 + 0.5;
+                    pulse = pow(pulse, 6.0);
+                    
+                    // Bright vein glow
+                    vec3 glowColor = hsl2rgb(vec3(hue + 0.1, 1.0, 0.6));
+                    vec3 finalColor = baseColor + glowColor * pulse * 0.4;
+                    
+                    // Subtle rim glow
+                    float rim = abs(sin(vUv.x * 3.14159));
+                    finalColor += glowColor * rim * 0.15;
+                    
                     gl_FragColor = vec4(finalColor, 1.0);
                 }`
         }));
         this.plantGroup.add(this.branchMesh);
     }
 
+    _createFlowerBase(position) {
+        // Create a beautiful bulb-like base where flower meets stem
+        const baseGeometry = new THREE.SphereGeometry(0.12, 16, 12);
+        baseGeometry.scale(1, 0.8, 1); // Slightly squashed sphere
+        this.flowerBase = new THREE.Mesh(baseGeometry, new THREE.ShaderMaterial({
+            uniforms: { uTime: { value: 0 } },
+            vertexShader: `
+                uniform float uTime; varying vec3 vNormal; varying vec3 vPosition;
+                void main() {
+                    vPosition = position;
+                    vNormal = normalize(normalMatrix * normal);
+                    vec3 pos = position;
+                    // Gentle pulsing
+                    pos += normal * sin(uTime * 2.0) * 0.02;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                }`,
+            fragmentShader: `
+                uniform float uTime; varying vec3 vNormal; varying vec3 vPosition;
+                ${HSL_FUNC}
+                ${SHADER_NOISE}
+                void main() {
+                    // Purple-pink gradient from bottom to top
+                    float gradient = (vPosition.y + 0.1) / 0.2;
+                    float hue = 0.77 + gradient * 0.08; // Purple to pink gradient
+                    float noise = snoise(vPosition.xy * 8.0 + uTime * 0.3) * 0.1;
+                    vec3 color = hsl2rgb(vec3(hue + noise, 0.95, 0.55));
+                    
+                    // Rim glow
+                    vec3 viewDir = normalize(vPosition - cameraPosition);
+                    float rim = pow(1.0 - abs(dot(viewDir, vNormal)), 2.0);
+                    color += hsl2rgb(vec3(hue + 0.05, 1.0, 0.7)) * rim * 0.4;
+                    
+                    gl_FragColor = vec4(color, 1.0);
+                }`,
+            transparent: false
+        }));
+        this.flowerBase.position.copy(position);
+        this.flowerBase.position.y -= 0.05; // Slightly below flower attachment point
+        this.plantGroup.add(this.flowerBase);
+    }
+
     _createCrystallineBloom(position) {
-        const shardCount = 16; // Increased for fuller flower
-        const shardGeometry = new THREE.PlaneGeometry(0.3, 0.6, 4, 8); // Changed to plane for better petal shape
-        shardGeometry.translate(0, 0.3, 0); // Center the petal
+        const shardCount = this.quality.plantInstanceCounts.petals;
+        // Adjust geometry segments based on quality
+        const segments = this.quality.enableComplexShaders ? [2, 4] : [1, 2];
+        const shardGeometry = new THREE.PlaneGeometry(0.45, 0.9, segments[0], segments[1]);
+        shardGeometry.translate(0, 0.3, 0);
         
         this.crystallineBloom = new THREE.InstancedMesh(shardGeometry, null, shardCount);
         this.crystallineBloom.frustumCulled = false;
@@ -144,7 +245,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         for(let i=0; i < shardCount; i++) {
             petalData[i*4+0] = (i / shardCount) * Math.PI * 2;
             petalData[i*4+1] = 0.5 + Math.random() * 0.5;
-            petalData[i*4+2] = Math.random() * 0.1 + 0.9; // Reduced variation for more uniform petals
+            petalData[i*4+2] = Math.random() * 0.15 + 0.9; // Slight variation for natural look
             petalData[i*4+3] = 0.5 + Math.random() * 0.5;
         }
         this.crystallineBloom.geometry.setAttribute('aPetalData', new THREE.InstancedBufferAttribute(petalData, 4));
@@ -152,16 +253,14 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
             uniforms: { 
                 uTime: { value: 0 }, 
                 uBloomProgress: { value: 0.0 }, 
-                uPetalFallProgress: { value: 0.0 },
                 uInteractionStrength: { value: 0.0 }
             },
             vertexShader: `
-                uniform float uTime; uniform float uBloomProgress; uniform float uPetalFallProgress;
+                uniform float uTime; uniform float uBloomProgress; 
                 uniform float uInteractionStrength;
                 attribute vec4 aPetalData; varying vec3 vNormal; varying vec3 vViewPosition; varying vec2 vUv;
                 
                 mat4 rotationY(float angle) { float s = sin(angle); float c = cos(angle); return mat4(c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1); }
-                mat4 rotationX(float angle) { float s = sin(angle); float c = cos(angle); return mat4(1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1); }
                 mat4 rotationZ(float angle) { float s = sin(angle); float c = cos(angle); return mat4(c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); }
                 
                 void main() {
@@ -170,41 +269,34 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     float random = aPetalData.y; 
                     vec3 pos = position;
                     
-                    // Improved petal shape with natural curve
-                    float petalCurve = sin(uv.y * 3.14159) * 0.2;
-                    pos.x += petalCurve * (1.0 - abs(uv.x * 2.0 - 1.0));
+                    // BEAUTIFUL petal shape with natural curve
+                    float petalCurve = sin(uv.y * 3.14159) * 0.25;
+                    pos.x += petalCurve * (1.0 - abs(uv.x * 2.0 - 1.0)) * 1.2;
                     
-                    // Scale based on UV for tapered petal
-                    float widthScale = 1.0 - pow(uv.y - 0.5, 2.0) * 2.0;
-                    pos.x *= widthScale;
+                    // Elegant taper from base to tip
+                    float widthScale = pow(sin(uv.y * 3.14159), 1.3);
+                    pos.x *= widthScale * 1.1;
                     
-                    // Gentle petal curl
-                    pos.z += sin(uv.y * 3.14159) * 0.1;
+                    // Graceful 3D curl
+                    pos.z += sin(uv.y * 3.14159) * 0.15 * (1.0 - uv.y * 0.5);
                     
-                    // Bloom animation with more natural movement
-                    float openProgress = uBloomProgress * (0.8 + random * 0.4);
-                    mat4 openMatrix = rotationZ(openProgress * 1.8); 
+                    // SMOOTH OPENING ANIMATION - petals unfold gracefully
+                    float openAngle = uBloomProgress * 1.4 * (0.85 + random * 0.3);
+                    mat4 openMatrix = rotationZ(openAngle); 
                     pos = (openMatrix * vec4(pos, 1.0)).xyz;
                     
                     // Placement around center
                     mat4 placementMatrix = rotationY(angle); 
                     pos = (placementMatrix * vec4(pos, 1.0)).xyz;
                     
-                    // Gentle breathing animation when in bloom
-                    float breath = sin(uTime * 2.0 + angle * 2.0) * 0.05 * uBloomProgress;
+                    // Gentle breathing/swaying
+                    float breath = sin(uTime * 1.5 + angle * 2.0) * 0.04 * uBloomProgress;
+                    float sway = sin(uTime * 0.8 + random * 6.28) * 0.03;
                     pos += normalize(pos) * breath;
+                    pos.x += sway;
                     
-                    // Interaction response
-                    pos += normalize(pos) * uInteractionStrength * 0.1;
-                    
-                    if (uPetalFallProgress > 0.0) {
-                        float fallSpeed = aPetalData.w; 
-                        float fallPath = uPetalFallProgress * fallSpeed;
-                        pos.y -= fallPath * fallPath * 3.0;
-                        pos.x += sin(uTime * 5.0 + random * 10.0) * uPetalFallProgress * 0.2;
-                        mat4 fallRotation = rotationY(uPetalFallProgress * 15.0 * random); 
-                        pos = (fallRotation * vec4(pos, 1.0)).xyz;
-                    }
+                    // Interaction response - petals reach toward player
+                    pos += normalize(pos) * uInteractionStrength * 0.12;
                     
                     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
                     vNormal = normalize(normalMatrix * normal);
@@ -213,29 +305,26 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                 }`,
             fragmentShader: `
                 uniform float uTime; varying vec3 vNormal; varying vec3 vViewPosition; varying vec2 vUv;
-                uniform float uInteractionStrength; ${HSL_FUNC}
+                ${HSL_FUNC}
                 
                 void main() {
-                    // Gradient from base to tip
+                    // SUPER SIMPLE gradient - minimal GPU load
                     float gradient = vUv.y;
-                    float hue = 0.58 + sin(uTime * 0.3 + gradient * 2.0) * 0.1 + uInteractionStrength * 0.2;
-                    float saturation = 1.0 - gradient * 0.3;
-                    float lightness = 0.5 + gradient * 0.3;
+                    float hue = 0.75 + gradient * 0.15; // Purple to pink
                     
-                    vec3 color = hsl2rgb(vec3(hue, saturation, lightness));
+                    vec3 color = hsl2rgb(vec3(hue, 0.9, 0.6));
                     
-                    // Veins pattern
-                    float veins = sin(vUv.y * 20.0 + uTime) * 0.1 + 0.9;
-                    color *= veins;
+                    // Simple glow at base
+                    float baseGlow = smoothstep(0.2, 0.0, vUv.y) * 0.5;
+                    color += vec3(0.3, 0.2, 0.3) * baseGlow;
                     
+                    // Simple rim (no expensive calculations)
                     vec3 viewDir = normalize(vViewPosition); 
-                    float rim = pow(1.0 - max(dot(viewDir, vNormal), 0.0), 2.0);
+                    float rim = 1.0 - max(dot(viewDir, vNormal), 0.0);
+                    color += vec3(0.2, 0.1, 0.2) * rim * 0.3;
                     
-                    // Transparency based on gradient
-                    float alpha = 0.7 + rim * 0.3;
-                    alpha *= 1.0 - pow(vUv.y - 0.8, 2.0) * 5.0; // Fade at tips
-                    
-                    gl_FragColor = vec4(color + rim * 0.3, alpha);
+                    float alpha = 0.85;
+                    gl_FragColor = vec4(color, alpha);
                 }`,
             transparent: true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
         });
@@ -243,8 +332,27 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.plantGroup.add(this.crystallineBloom);
     }
 
+    _createStamen(position) {
+        // SIMPLIFIED stamen - much less GPU intensive
+        const stamenGroup = new THREE.Group();
+        
+        // Single central glow (instead of many parts)
+        const stamenGeometry = new THREE.SphereGeometry(0.08, 8, 8); // Simple sphere
+        const stamen = new THREE.Mesh(stamenGeometry, new THREE.MeshBasicMaterial({
+            color: 0xffaaee,
+            transparent: true,
+            opacity: 0.8
+        }));
+        stamenGroup.add(stamen);
+        
+        stamenGroup.position.copy(position);
+        stamenGroup.position.y += 0.1;
+        this.stamenGroup = stamenGroup;
+        this.plantGroup.add(stamenGroup);
+    }
+
     _createCrystalOrb(position) {
-        const orbGeometry = new THREE.SphereGeometry(0.12, 32, 32); // Slightly smaller
+        const orbGeometry = new THREE.SphereGeometry(0.15, 32, 32);
         this.crystalOrb = new THREE.Mesh(orbGeometry, new THREE.ShaderMaterial({
             uniforms: { 
                 uTime: { value: 0 }, 
@@ -252,16 +360,18 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                 uInteractionStrength: { value: 0.0 }
             },
             vertexShader: `
-                uniform float uAnimationProgress; uniform float uInteractionStrength;
-                varying vec3 vNormal; varying vec3 vViewPosition;
+                uniform float uTime; uniform float uAnimationProgress; uniform float uInteractionStrength;
+                varying vec3 vNormal; varying vec3 vViewPosition; varying vec3 vPosition;
                 void main() {
                     vec3 pos = position; 
                     pos.y += smoothstep(1.0, 2.0, uAnimationProgress) * 0.6;
                     
-                    // Pulsing based on interaction
-                    float pulse = sin(uTime * 3.0) * 0.05 * uInteractionStrength;
-                    pos += normal * pulse;
+                    // Multi-frequency pulsing for magical effect
+                    float pulse1 = sin(uTime * 3.0) * 0.05;
+                    float pulse2 = sin(uTime * 5.0) * 0.03;
+                    pos += normal * (pulse1 + pulse2) * (1.0 + uInteractionStrength);
                     
+                    vPosition = pos;
                     vNormal = normalMatrix * normal; 
                     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
                     vViewPosition = -mvPosition.xyz; 
@@ -269,24 +379,46 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                 }`,
             fragmentShader: `
                 uniform float uTime; uniform float uAnimationProgress; uniform float uInteractionStrength;
-                varying vec3 vNormal; varying vec3 vViewPosition; ${HSL_FUNC}
+                varying vec3 vNormal; varying vec3 vViewPosition; varying vec3 vPosition;
+                ${HSL_FUNC}
+                ${SHADER_NOISE}
+                
                 void main() {
                     float opacity = 1.0 - smoothstep(3.0, 4.0, uAnimationProgress); 
                     if (opacity < 0.01) discard;
                     
                     vec3 viewDir = normalize(vViewPosition); 
-                    float fresnel = 0.1 + 1.0 * pow(1.0 + dot(viewDir, normalize(vNormal)), 2.0);
-                    float pulse = 0.5 + sin(uTime * 2.0) * 0.5;
+                    float fresnel = pow(1.0 - abs(dot(viewDir, normalize(vNormal))), 3.0);
                     
-                    // Color shifts with interaction
-                    float hueShift = uInteractionStrength * 0.3;
-                    vec3 color = hsl2rgb(vec3(0.6 + hueShift, 0.9, 0.7)) * pulse;
+                    // Rainbow swirling effect inside the orb
+                    float noisePattern = snoise(vPosition * 5.0 + uTime * 0.5);
+                    float hue = 0.75 + noisePattern * 0.3 + uTime * 0.1 + uInteractionStrength * 0.2;
                     
-                    // Inner glow
-                    float innerGlow = sin(uTime * 4.0) * 0.3 + 0.7;
-                    color += vec3(1.0, 0.8, 1.0) * innerGlow * 0.2;
+                    // Multiple pulsing layers
+                    float pulse1 = sin(uTime * 2.0) * 0.3 + 0.7;
+                    float pulse2 = sin(uTime * 3.5 + noisePattern) * 0.2 + 0.8;
+                    float pulse = pulse1 * pulse2;
                     
-                    gl_FragColor = vec4(color + fresnel * 0.5, opacity);
+                    // Magical energy inside
+                    float energy = pow(snoise(vPosition * 8.0 - uTime * 0.8) * 0.5 + 0.5, 2.0);
+                    
+                    // Base color with rainbow shift
+                    vec3 color = hsl2rgb(vec3(hue, 0.9, 0.6 + energy * 0.2)) * pulse;
+                    
+                    // Add bright inner glow with PURPLE-PINK colors (no white!)
+                    vec3 innerGlow1 = hsl2rgb(vec3(hue + 0.1, 1.0, 0.75)) * energy * 0.6;
+                    vec3 innerGlow2 = hsl2rgb(vec3(hue - 0.05, 0.95, 0.7)) * (sin(uTime * 4.0) * 0.2 + 0.3);
+                    
+                    // Sparkles inside the orb - PINK sparkles not white!
+                    float sparkle = pow(snoise(vPosition * 15.0 + uTime * 1.5) * 0.5 + 0.5, 5.0);
+                    vec3 sparkleColor = hsl2rgb(vec3(hue + 0.15, 1.0, 0.8));
+                    
+                    // Combine all effects
+                    color += innerGlow1 + innerGlow2;
+                    color += sparkleColor * sparkle * 0.5;
+                    color += hsl2rgb(vec3(hue + 0.2, 1.0, 0.8)) * fresnel * 0.8;
+                    
+                    gl_FragColor = vec4(color, opacity * 0.9);
                 }`,
             transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
         }));
@@ -295,20 +427,21 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createInstancedLeaves(curve) {
-        const leavesPerPlant = 24; // Increased for fuller plant
+        const leavesPerPlant = this.quality.plantInstanceCounts.leaves;
         
-        // Create a better leaf shape geometry - longer and more natural
-        const leafGeometry = new THREE.PlaneGeometry(0.15, 0.8, 4, 16);
-        leafGeometry.translate(0, 0.4, 0); // Center the leaf
+        // Adjust leaf geometry based on quality
+        const segments = this.quality.enableComplexShaders ? [1, 3] : [1, 2];
+        const leafGeometry = new THREE.PlaneGeometry(0.2, 1.0, segments[0], segments[1]);
+        leafGeometry.translate(0, 0.5, 0);
 
         this.leafMesh = new THREE.InstancedMesh(leafGeometry, null, leavesPerPlant);
         this.leafMesh.frustumCulled = false;
 
         const leafData = new Float32Array(leavesPerPlant * 4);
-        const leafRandoms = new Float32Array(leavesPerPlant * 4); // Added extra parameter for growth phase
+        const leafRandoms = new Float32Array(leavesPerPlant * 4);
 
         for (let j = 0; j < leavesPerPlant; j++) {
-            const t = Math.random() * 0.7 + 0.2; // Keep leaves more towards middle/top
+            const t = 0.3 + Math.random() * 0.5; // Better distribution
             
             const pos = curve.getPoint(t);
             const tangent = curve.getTangent(t);
@@ -364,79 +497,66 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     vUv = uv;
                     float growthPhase = aRandoms.w;
                     
-                    // REALISTIC LEAF SHAPE with slender base and natural taper
+                    // BEAUTIFUL FAIRY LEAF SHAPE - elegant and natural
                     vec3 leafPos = vec3(0.0);
                     float v = uv.y; // 0 to 1 from base to tip
                     
-                    // Natural leaf shape - slender at base, wider in middle, tapered at tip
-                    float widthProfile = sin(v * 3.14159); // Perfect smooth curve
-                    widthProfile = pow(widthProfile, 1.5) * 1.2; // More natural power curve
+                    // Perfect leaf shape - narrow base, wide middle, pointed tip
+                    float widthProfile = sin(v * 3.14159);
+                    widthProfile = pow(widthProfile, 1.8) * 1.3; // More dramatic taper
                     
-                    // Add subtle asymmetry for realism
-                    float asymmetry = sin(v * 12.0 + uTime * 0.5) * 0.08;
+                    // Natural asymmetry with shimmer
+                    float shimmerWave = sin(v * 8.0 + uTime * 2.0) * 0.06;
                     
-                    // Apply the shape with proper scaling
-                    leafPos.x = position.x * widthProfile + asymmetry;
-                    leafPos.y = position.y; // Keep original length
+                    // Apply elegant shape
+                    leafPos.x = position.x * widthProfile + shimmerWave;
+                    leafPos.y = position.y;
                     
-                    // Subtle 3D curvature - leaves aren't perfectly flat
-                    leafPos.z = sin(v * 6.283) * 0.02 * (1.0 - abs(position.x));
+                    // Beautiful 3D curl - like real fairy wings
+                    leafPos.z = sin(v * 6.283) * 0.08 * (1.0 - abs(position.x)) * v;
                     
-                    // GROWTH AND SHRINK ANIMATION - more realistic
-                    float growthCycle = sin(uTime * 0.8 + growthPhase) * 0.15 + 0.85;
-                    float microMovement = sin(uTime * 3.0 + growthPhase * 2.0) * 0.03;
-                    float totalScale = growthCycle + microMovement;
+                    // Graceful flutter animation
+                    float flutter = sin(uTime * 2.5 + growthPhase) * 0.08 + 0.92;
+                    leafPos *= flutter;
                     
-                    // Scale the leaf
-                    leafPos *= totalScale;
-                    
-                    // Base scale - much smaller to be proportional to branch
-                    float masterScale = 0.25; // Reduced from 0.45
+                    // Optimal scale for beauty
+                    float masterScale = 0.4;
                     float randomScale = aRandoms.z;
                     
-                    // Natural leaf movement
-                    float gentleSway = sin(uTime * 1.5 + aLeafData.y * 5.0) * 0.1;
-                    float leafTwitch = sin(uTime * 4.0 + aLeafData.z * 8.0) * 0.05;
+                    // Smooth flowing motion
+                    float flow = sin(uTime * 1.2 + aLeafData.y * 4.0) * 0.12;
+                    float ripple = sin(uTime * 3.5 + aLeafData.z * 6.0) * 0.04;
                     
-                    // Interaction response
-                    float interactionWave = sin(uTime * 6.0 + aLeafData.x * 10.0) * uInteractionStrength * 0.3;
+                    // Interaction - leaves reach toward player
+                    float interactionReach = sin(uTime * 4.0 + aLeafData.x * 8.0) * uInteractionStrength * 0.4;
                     
                     // Apply rotations
                     mat4 baseRotMatrix = rotationMatrix(vec3(0.0, 1.0, 0.0), aLeafData.w);
-                    mat4 tiltMatrix = rotationMatrix(vec3(1.0, 0.0, 0.0), aRandoms.y);
-                    mat4 swayMatrix = rotationMatrix(vec3(0.0, 0.0, 1.0), gentleSway + leafTwitch + interactionWave);
+                    mat4 tiltMatrix = rotationMatrix(vec3(1.0, 0.0, 0.0), aRandoms.y * 0.8);
+                    mat4 flowMatrix = rotationMatrix(vec3(0.0, 0.0, 1.0), flow + ripple + interactionReach);
                     
                     // Transform leaf position
                     vec3 finalPos = leafPos * randomScale * masterScale;
-                    finalPos = (baseRotMatrix * tiltMatrix * swayMatrix * vec4(finalPos, 1.0)).xyz;
+                    finalPos = (baseRotMatrix * tiltMatrix * flowMatrix * vec4(finalPos, 1.0)).xyz;
                     finalPos += aLeafData.xyz;
                     
-                    // Color variation - greener with some bioluminescence
-                    float hue = mix(0.35, 0.5, aRandoms.x); // Green to blue-green
-                    float glow = sin(uTime * 2.0 + aRandoms.x * 6.28) * 0.1 + 0.3;
-                    vColor = hsl2rgb(vec3(hue, 0.8, 0.4 + glow));
+                    // Vibrant purple-pink color
+                    float hue = mix(0.75, 0.88, aRandoms.x);
+                    float glow = sin(uTime * 2.5 + aRandoms.x * 6.28) * 0.2 + 0.4;
+                    vColor = hsl2rgb(vec3(hue, 0.9, 0.5 + glow));
                     
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPos, 1.0);
                 }`,
             fragmentShader: `
                 varying vec3 vColor;
                 varying vec2 vUv;
-                ${HSL_FUNC}
                 
                 void main() {
-                    // Leaf vein pattern
-                    float vein = sin(vUv.y * 25.0) * 0.1 + 0.9;
-                    vein *= 1.0 - smoothstep(0.0, 0.3, abs(vUv.x * 2.0 - 1.0));
+                    // ULTRA SIMPLE - just color and fade
+                    float edgeFade = 1.0 - smoothstep(0.4, 0.5, abs(vUv.x - 0.5));
+                    edgeFade *= 1.0 - smoothstep(0.85, 1.0, vUv.y);
                     
-                    // Edge fade for softer look
-                    float edgeFade = 1.0 - smoothstep(0.45, 0.5, abs(vUv.x - 0.5));
-                    edgeFade *= 1.0 - smoothstep(0.9, 1.0, vUv.y);
-                    edgeFade *= 1.0 - smoothstep(0.0, 0.1, vUv.y);
-                    
-                    vec3 finalColor = vColor * vein;
-                    float alpha = 0.85 * edgeFade;
-                    
-                    gl_FragColor = vec4(finalColor, alpha);
+                    gl_FragColor = vec4(vColor, 0.85 * edgeFade);
                 }`,
             transparent: true, 
             side: THREE.DoubleSide,
@@ -446,8 +566,8 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createInstancedMoss(curve) {
-        const mossPatches = 150;
-        const mossGeometry = new THREE.SphereGeometry(0.03, 5, 4);
+        const mossPatches = 40; // HALVED for performance
+        const mossGeometry = new THREE.SphereGeometry(0.035, 5, 4); // Slightly larger, fewer instances
         this.mossMesh = new THREE.InstancedMesh(mossGeometry, null, mossPatches);
         this.mossMesh.frustumCulled = false;
         const mossData = new Float32Array(mossPatches * 4);
@@ -465,14 +585,21 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.mossMesh.material = new THREE.ShaderMaterial({
             uniforms: { uTime: { value: 0 } },
             vertexShader: `uniform float uTime; attribute vec4 aMossData; void main() { float scale=0.7+sin(uTime*1.5+aMossData.w)*0.3; vec3 pos=position*scale; pos+=aMossData.xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(pos,1.0);}`,
-            fragmentShader: `void main() { gl_FragColor = vec4(0.5, 0.1, 0.8, 0.95); }`,
+            fragmentShader: `
+                uniform float uTime;
+                ${HSL_FUNC}
+                void main() {
+                    // Vibrant purple-magenta moss
+                    vec3 color = hsl2rgb(vec3(0.78, 0.9, 0.5 + sin(uTime * 0.5) * 0.1));
+                    gl_FragColor = vec4(color, 0.95);
+                }`,
             transparent: true
         });
         this.plantGroup.add(this.mossMesh);
     }
 
     _createFireflies(curve) {
-        const fireflyCount = 35; // Slightly more fireflies
+        const fireflyCount = this.quality.plantInstanceCounts.fireflies;
         const positions = new Float32Array(fireflyCount * 3);
         const randoms = new Float32Array(fireflyCount * 4);
         const colors = new Float32Array(fireflyCount * 3); // Individual colors
@@ -481,9 +608,9 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
             const t = Math.random();
             const pos = curve.getPoint(t);
             // More natural distribution around the plant
-            pos.x += (Math.random() - 0.5) * 1.2;
-            pos.y += Math.random() * 1.8;
-            pos.z += (Math.random() - 0.5) * 1.2;
+            pos.x += (Math.random() - 0.5) * 1.5;
+            pos.y += Math.random() * 2.2;
+            pos.z += (Math.random() - 0.5) * 1.5;
             pos.toArray(positions, i * 3);
             
             randoms[i * 4 + 0] = Math.random() * 10; 
@@ -491,10 +618,10 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
             randoms[i * 4 + 2] = Math.random() * 10; 
             randoms[i * 4 + 3] = Math.random() * 10;
             
-            // Color variation
-            colors[i * 3 + 0] = 0.55 + (Math.random() - 0.5) * 0.1; // hue
-            colors[i * 3 + 1] = 0.8 + Math.random() * 0.2; // saturation
-            colors[i * 3 + 2] = 0.6 + Math.random() * 0.3; // lightness
+            // PURPLE-PINK-MAGENTA COLOR VARIATION - fairytale colors only!
+            colors[i * 3 + 0] = 0.75 + Math.random() * 0.15; // Hue: 0.75-0.9 (purple to pink)
+            colors[i * 3 + 1] = 0.9 + Math.random() * 0.1; // High saturation
+            colors[i * 3 + 2] = 0.6 + Math.random() * 0.3; // Bright but not white
         }
         
         const fireflyGeometry = new THREE.BufferGeometry();
@@ -502,11 +629,15 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         fireflyGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 4));
         fireflyGeometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
         
+        // Add emissive boost for LOW quality - makes fireflies BRIGHTER with no GPU cost!
+        const emissiveBoost = this.quality.plantEmissiveBoost || 1.0;
+        
         this.fireflies = new THREE.Points(fireflyGeometry, new THREE.ShaderMaterial({
             uniforms: { 
                 uTime: { value: 0 }, 
-                uFireflySize: { value: 35.0 }, // Slightly smaller
-                uInteractionStrength: { value: 0.0 }
+                uFireflySize: { value: this.quality.plantFireflySize },
+                uInteractionStrength: { value: 0.0 },
+                uEmissiveBoost: { value: emissiveBoost } // Brightness multiplier!
             },
             vertexShader: `
                 uniform float uTime; uniform float uFireflySize; uniform float uInteractionStrength;
@@ -547,26 +678,20 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     gl_Position = projectionMatrix * mvPosition;
                 }`,
             fragmentShader: `
-                uniform float uTime; varying vec3 vColor;
+                uniform float uTime; 
+                uniform float uEmissiveBoost; 
+                varying vec3 vColor;
                 ${HSL_FUNC}
                 
                 void main() {
-                    // Soft glow effect with gradient
+                    // SIMPLE glow - minimal GPU
                     vec2 coord = gl_PointCoord - vec2(0.5);
                     float dist = length(coord);
-                    float glow = 1.0 - smoothstep(0.3, 0.5, dist);
+                    float glow = 1.0 - smoothstep(0.2, 0.5, dist);
                     
-                    // Bright center
-                    float brightCenter = 1.0 - smoothstep(0.0, 0.2, dist);
-                    
-                    // Pulsing brightness
-                    float pulse = (sin(uTime * 6.0) * 0.3 + 0.7);
-                    
-                    // Combine effects
-                    float finalAlpha = glow * pulse;
-                    vec3 finalColor = hsl2rgb(vColor) + brightCenter * 0.5;
-                    
-                    gl_FragColor = vec4(finalColor, finalAlpha);
+                    // Apply emissive boost for LOW quality - MUCH brighter!
+                    vec3 color = hsl2rgb(vColor) * uEmissiveBoost;
+                    gl_FragColor = vec4(color, glow * 0.7);
                 }`,
             transparent: true, 
             blending: THREE.AdditiveBlending, 
@@ -575,84 +700,293 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.plantGroup.add(this.fireflies);
     }
 
+    _createPollenParticles(position) {
+        // REDUCED pollen
+        const pollenCount = 10; // 20 → 10
+        const positions = new Float32Array(pollenCount * 3);
+        const randoms = new Float32Array(pollenCount * 3);
+        
+        for (let i = 0; i < pollenCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * 0.15;
+            positions[i * 3 + 0] = position.x + Math.cos(angle) * radius;
+            positions[i * 3 + 1] = position.y + Math.random() * 0.3;
+            positions[i * 3 + 2] = position.z + Math.sin(angle) * radius;
+            
+            randoms[i * 3 + 0] = Math.random() * 10;
+            randoms[i * 3 + 1] = Math.random() * 10;
+            randoms[i * 3 + 2] = Math.random() * 10;
+        }
+        
+        const pollenGeometry = new THREE.BufferGeometry();
+        pollenGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        pollenGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
+        
+        this.pollenParticles = new THREE.Points(pollenGeometry, new THREE.ShaderMaterial({
+            uniforms: { 
+                uTime: { value: 0 },
+                uSize: { value: 20.0 }
+            },
+            vertexShader: `
+                uniform float uTime; uniform float uSize; attribute vec3 aRandom;
+                ${SHADER_NOISE}
+                void main() {
+                    vec3 pos = position;
+                    // Float upward with spiral
+                    float riseTime = uTime * 0.5 + aRandom.z;
+                    float riseHeight = mod(riseTime, 3.0);
+                    pos.y += riseHeight;
+                    
+                    // Spiral motion
+                    float spiral = riseTime * 2.0;
+                    pos.x += sin(spiral + aRandom.x) * 0.08;
+                    pos.z += cos(spiral + aRandom.y) * 0.08;
+                    
+                    // Gentle drift
+                    float drift = snoise(vec2(uTime * 0.3 + aRandom.x, aRandom.y)) * 0.05;
+                    pos.x += drift;
+                    
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_PointSize = uSize * (1.0 / -mvPosition.z) * (1.0 - riseHeight / 3.0);
+                    gl_Position = projectionMatrix * mvPosition;
+                }`,
+            fragmentShader: `
+                uniform float uTime;
+                ${HSL_FUNC}
+                void main() {
+                    vec2 coord = gl_PointCoord - vec2(0.5);
+                    float dist = length(coord);
+                    float alpha = 1.0 - smoothstep(0.2, 0.5, dist);
+                    
+                    // Golden-yellow pollen color
+                    float sparkle = sin(uTime * 5.0 + gl_FragCoord.x * 0.1) * 0.3 + 0.7;
+                    vec3 color = hsl2rgb(vec3(0.15, 0.95, 0.7)) * sparkle;
+                    
+                    gl_FragColor = vec4(color, alpha * 0.7);
+                }`,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        }));
+        this.plantGroup.add(this.pollenParticles);
+    }
+
+    _createMagicalAuraRings(position) {
+        // SIMPLIFIED - only 1 ring, less complex
+        const ringGeometry = new THREE.RingGeometry(0.3, 0.35, 16); // 32 → 16 segments
+        ringGeometry.rotateX(-Math.PI / 2);
+        
+        const ring = new THREE.Mesh(ringGeometry, new THREE.ShaderMaterial({
+            uniforms: { 
+                uTime: { value: 0 }
+            },
+            vertexShader: `
+                uniform float uTime;
+                void main() {
+                    vec3 pos = position;
+                    float wave = sin(uTime * 1.2) * 0.5 + 0.5;
+                    float scale = 1.0 + wave * 2.5;
+                    pos *= scale;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                }`,
+            fragmentShader: `
+                uniform float uTime;
+                ${HSL_FUNC}
+                void main() {
+                    float wave = sin(uTime * 1.2) * 0.5 + 0.5;
+                    float fade = 1.0 - wave;
+                    vec3 color = hsl2rgb(vec3(0.82, 0.9, 0.7));
+                    gl_FragColor = vec4(color, fade * 0.3);
+                }`,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        }));
+        ring.position.copy(position);
+        ring.position.y += 0.1;
+        this.auraRing = ring; // Single ring
+        this.plantGroup.add(ring);
+    }
+
+    _createMagicalDust(curve) {
+        // MINIMAL dust
+        const dustCount = 12; // 20 → 12
+        const positions = new Float32Array(dustCount * 3);
+        const randoms = new Float32Array(dustCount * 3);
+        
+        for (let i = 0; i < dustCount; i++) {
+            const t = Math.random();
+            const pos = curve.getPoint(t);
+            pos.x += (Math.random() - 0.5) * 0.8;
+            pos.y += Math.random() * 2.0;
+            pos.z += (Math.random() - 0.5) * 0.8;
+            pos.toArray(positions, i * 3);
+            
+            randoms[i * 3 + 0] = Math.random() * 10;
+            randoms[i * 3 + 1] = Math.random() * 10;
+            randoms[i * 3 + 2] = Math.random() * 10;
+        }
+        
+        const dustGeometry = new THREE.BufferGeometry();
+        dustGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        dustGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
+        
+        this.magicalDust = new THREE.Points(dustGeometry, new THREE.ShaderMaterial({
+            uniforms: { 
+                uTime: { value: 0 }, 
+                uSize: { value: 25.0 }
+            },
+            vertexShader: `
+                uniform float uTime; uniform float uSize; attribute vec3 aRandom;
+                ${SHADER_NOISE}
+                void main() {
+                    vec3 pos = position;
+                    // Slow floating motion
+                    float noiseX = snoise(vec2(uTime * 0.2 + aRandom.x, aRandom.y)) * 0.3;
+                    float noiseY = snoise(vec2(uTime * 0.15 + aRandom.z, aRandom.x)) * 0.3;
+                    float noiseZ = snoise(vec2(uTime * 0.18 + aRandom.y, aRandom.z)) * 0.3;
+                    pos += vec3(noiseX, noiseY, noiseZ);
+                    
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_PointSize = uSize * (1.0 / -mvPosition.z);
+                    gl_Position = projectionMatrix * mvPosition;
+                }`,
+            fragmentShader: `
+                uniform float uTime;
+                ${HSL_FUNC}
+                void main() {
+                    vec2 coord = gl_PointCoord - vec2(0.5);
+                    float dist = length(coord);
+                    float alpha = 1.0 - smoothstep(0.3, 0.5, dist);
+                    
+                    // Twinkling purple-pink dust
+                    float twinkle = sin(uTime * 3.0 + gl_FragCoord.x * 0.1) * 0.3 + 0.7;
+                    vec3 color = hsl2rgb(vec3(0.8 + sin(uTime * 0.5) * 0.1, 0.9, 0.7));
+                    
+                    gl_FragColor = vec4(color * twinkle, alpha * 0.6);
+                }`,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        }));
+        this.plantGroup.add(this.magicalDust);
+    }
+
     _createAmbientLight() {
-        this.ambientLight = new THREE.PointLight(0x9040ff, 5.0, 50, 1.5);
-        this.ambientLight.position.set(0, 1.5, 0);
-        this.plantGroup.add(this.ambientLight);
+        // Quality-based light creation - OPTIMIZED for brightness without GPU cost!
+        if (!this.quality.enableComplexShaders) {
+            // LOW QUALITY: SUPER BRIGHT single light to illuminate hallways!
+            const intensity = this.quality.plantLightIntensity || 10.0; // Cranked up for hallway coverage!
+            const distance = this.quality.plantLightDistance || 90;      // Extended to light entire hallways
+            const decay = this.quality.plantLightDecay || 1.8;           // Lower decay = light travels much further
+            this.ambientLight = new THREE.PointLight(0xff88ff, intensity, distance, decay);
+            this.ambientLight.position.set(0, 1.5, 0);
+            this.plantGroup.add(this.ambientLight);
+            console.log(`💡 Plant using ULTRA LOW quality lighting: 1 SUPER BRIGHT light, intensity ${intensity}, distance ${distance}, decay ${decay}`);
+        } else if (this.quality.plantInstanceCounts.fireflies < 20) {
+            // MEDIUM QUALITY: Two lights with extended range for hallway illumination
+            const intensity = this.quality.plantLightIntensity || 5.0;
+            const distance = this.quality.plantLightDistance || 80;
+            const decay = this.quality.plantLightDecay || 1.9;
+            
+            this.ambientLight = new THREE.PointLight(0xff77ee, intensity, distance, decay);
+            this.ambientLight.position.set(0, 1.5, 0);
+            this.plantGroup.add(this.ambientLight);
+            
+            // Secondary light with 60% intensity and slightly shorter range
+            this.secondaryLight = new THREE.PointLight(0xff55dd, intensity * 0.6, distance * 0.7, decay + 0.2);
+            this.secondaryLight.position.set(0, 1.0, 0);
+            this.plantGroup.add(this.secondaryLight);
+            console.log(`💡 Plant using MEDIUM quality lighting: 2 lights, intensity ${intensity}, distance ${distance}, decay ${decay}`);
+        } else {
+            // HIGH QUALITY: Full 3-light setup with MAXIMUM range
+            this.ambientLight = new THREE.PointLight(0xff77ee, 8.0, 100, 1.8); // Extended 60→100!
+            this.ambientLight.position.set(0, 1.5, 0);
+            this.plantGroup.add(this.ambientLight);
+            
+            this.secondaryLight = new THREE.PointLight(0xff55dd, 4.0, 70, 2.0); // Extended 40→70
+            this.secondaryLight.position.set(0, 1.0, 0);
+            this.plantGroup.add(this.secondaryLight);
+            
+            this.tertiaryLight = new THREE.PointLight(0xffaaee, 3.2, 60, 2.0); // Extended 35→60
+            this.tertiaryLight.position.set(0, 2.0, 0);
+            this.plantGroup.add(this.tertiaryLight);
+            console.log('💡 Plant using HIGH quality lighting: 3 lights, MAXIMUM range');
+        }
     }
 
     updatePlayerPosition(playerPosition) {
         if (!this._mounted) return;
         const distance = this.plantGroup.position.distanceTo(playerPosition);
-        const strength = 1.0 - Math.min(distance / 7.0, 1.0);
+        const strength = 1.0 - Math.min(distance / 8.0, 1.0);
         this.interactionStrength = THREE.MathUtils.lerp(this.interactionStrength, strength > 0 ? strength * strength : 0, 0.05);
-        if (this.animationState === 'IDLE' && this.interactionStrength > 0.8) {
-            this.animationState = 'BLOOMING';
-            this.animationProgress = 0.0;
-            this.stateClock.start();
-            this.stateClock.elapsedTime = 0;
+        
+        // Player proximity speeds up blooming
+        if (this.interactionStrength > 0.5) {
+            this.bloomSpeed = 0.4 + this.interactionStrength * 0.3; // Faster when player is close
+        } else {
+            this.bloomSpeed = 0.3; // Normal speed
         }
     }
 
     update() {
         if (!this._mounted) return;
-        const elapsedTime = this.clock.getElapsedTime();
-        if (this.animationState !== 'IDLE') {
-            const deltaTime = this.stateClock.getDelta();
-            switch(this.animationState) {
-                case 'BLOOMING':
-                    this.animationProgress += deltaTime / 1.5;
-                    if (this.animationProgress >= 1.0) { this.animationProgress = 1.0; this.animationState = 'ORB_RISING'; }
-                    break;
-                case 'ORB_RISING':
-                    this.animationProgress += deltaTime / 2.0;
-                    if (this.animationProgress >= 2.0) { this.animationProgress = 2.0; this.animationState = 'PETALS_FALLING'; }
-                    break;
-                case 'PETALS_FALLING':
-                    this.animationProgress += deltaTime / 2.5;
-                    if (this.animationProgress >= 3.0) { this.animationProgress = 3.0; this.animationState = 'FADING'; }
-                    break;
-                case 'FADING':
-                    this.animationProgress += deltaTime / 2.0;
-                    if (this.animationProgress >= 4.0) { this.animationState = 'IDLE'; this.animationProgress = 0.0; this.stateClock.stop(); }
-                    break;
-            }
+        
+        // THROTTLE UPDATES for performance (quality-based)
+        this.updateCounter++;
+        if (this.updateCounter < this.updateThrottle) return;
+        this.updateCounter = 0;
+        
+        // Skip expensive calculations on LOW quality (update every OTHER throttled frame)
+        if (!this.quality.enableComplexShaders && this.updateCounter % 2 === 0) {
+            return;
         }
-        const bloomProgress = (this.animationState === 'IDLE') ? 0.0 : THREE.MathUtils.smoothstep(this.animationProgress, 0.0, 1.0);
-        const petalFallProgress = (this.animationState === 'IDLE') ? 0.0 : THREE.MathUtils.smoothstep(this.animationProgress, 2.0, 3.0);
-        const orbAnimationProgress = (this.animationState === 'IDLE') ? 0.0 : this.animationProgress;
+        
+        const elapsedTime = this.clock.getElapsedTime();
+        const deltaTime = this.clock.getDelta() * this.updateThrottle; // Compensate for throttling
+        
+        // Blooming animation
+        this.bloomProgress += deltaTime * this.bloomSpeed * this.bloomDirection;
+        
+        if (this.bloomProgress >= 1.0) {
+            this.bloomProgress = 1.0;
+            this.bloomDirection = -1;
+        } else if (this.bloomProgress <= 0.3) {
+            this.bloomProgress = 0.3;
+            this.bloomDirection = 1;
+        }
+        
+        const easedBloom = THREE.MathUtils.smoothstep(this.bloomProgress, 0.3, 1.0);
         
         // Update interaction strength on materials
         if (this.crystallineBloom) {
-            this.crystallineBloom.material.uniforms.uBloomProgress.value = bloomProgress;
-            this.crystallineBloom.material.uniforms.uPetalFallProgress.value = petalFallProgress;
-            this.crystallineBloom.material.uniforms.uInteractionStrength.value = this.interactionStrength;
+            this.crystallineBloom.material.uniforms.uBloomProgress.value = easedBloom;
         }
-        if (this.crystalOrb) {
-            this.crystalOrb.material.uniforms.uAnimationProgress.value = orbAnimationProgress;
-            this.crystalOrb.material.uniforms.uInteractionStrength.value = this.interactionStrength;
-        }
-        if (this.leafMesh) {
-            this.leafMesh.material.uniforms.uInteractionStrength.value = this.interactionStrength;
-        }
-        if (this.fireflies) {
-            this.fireflies.material.uniforms.uInteractionStrength.value = this.interactionStrength;
+        if (this.stamenGroup) {
+            this.stamenGroup.scale.setScalar(0.8 + easedBloom * 0.3);
         }
         
         this.plantGroup.rotation.z = Math.sin(elapsedTime * 0.4) * 0.05;
         this.plantGroup.rotation.x = Math.sin(elapsedTime * 0.3) * 0.05;
         const timeUniform = { value: elapsedTime };
-        if(this.roots) this.roots.material.uniforms.uTime = timeUniform;
+        // Only update essential elements
         if(this.branchMesh) this.branchMesh.material.uniforms.uTime = timeUniform;
-        if(this.leafMesh) this.leafMesh.material.uniforms.uTime = timeUniform;
-        if(this.fireflies) this.fireflies.material.uniforms.uTime = timeUniform;
         if(this.crystallineBloom) this.crystallineBloom.material.uniforms.uTime = timeUniform;
-        if(this.crystalOrb) this.crystalOrb.material.uniforms.uTime = timeUniform;
+        if(this.fireflies) this.fireflies.material.uniforms.uTime = timeUniform;
         if (this.ambientLight) {
-            const baseIntensity = 1.0 + Math.sin(elapsedTime * 1.5) * 0.2;
-            const interactionGlow = this.interactionStrength * 3.0;
+            const baseIntensity = 1.0 + Math.sin(elapsedTime * 1.5) * 0.3;
+            const interactionGlow = this.interactionStrength * 4.0;
             const brightnessMultiplier = 6.0;
             this.ambientLight.intensity = brightnessMultiplier * (baseIntensity + interactionGlow);
+            
+            // Animate secondary lights for magical shimmer
+            if (this.secondaryLight) {
+                this.secondaryLight.intensity = 3.0 + Math.sin(elapsedTime * 2.0) * 1.0 + interactionGlow * 2.0;
+            }
+            if (this.tertiaryLight) {
+                this.tertiaryLight.intensity = 2.5 + Math.cos(elapsedTime * 1.8) * 0.8 + interactionGlow * 1.5;
+            }
         }
     }
 
@@ -661,11 +995,16 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         scene.remove(this.plantGroup);
         this.roots?.geometry.dispose(); this.roots?.material.dispose();
         this.branchMesh?.geometry.dispose(); this.branchMesh?.material.dispose();
+        this.flowerBase?.geometry.dispose(); this.flowerBase?.material.dispose();
         this.crystallineBloom?.geometry.dispose(); this.crystallineBloom?.material.dispose();
-        this.crystalOrb?.geometry.dispose(); this.crystalOrb?.material.dispose();
         this.leafMesh?.geometry.dispose(); this.leafMesh?.material.dispose();
-        this.mossMesh?.geometry.dispose(); this.mossMesh?.material.dispose();
         this.fireflies?.geometry.dispose(); this.fireflies?.material.dispose();
+        if(this.stamenGroup) {
+            this.stamenGroup.children.forEach(child => {
+                child.geometry?.dispose();
+                child.material?.dispose();
+            });
+        }
         this._mounted = false;
     }
 }
