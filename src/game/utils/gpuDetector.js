@@ -124,59 +124,66 @@ export class GPUDetector {
 export const QualityPresets = {
     LOW: {
         // Lighting & Effects - ULTRA AGGRESSIVE for WORST hardware (Intel HD 2000/3000, 10+ year old laptops)
+        // STRATEGY: Single CHEAP colored light with minimal settings
         plantInstanceCounts: {
-            roots: 2,        // ABSOLUTE MINIMUM (was 3)
-            petals: 3,       // Barely visible flower (was 4) 
-            leaves: 3,       // Only 3 leaves! (was 6)
-            moss: 0,         // NO MOSS - too expensive (was 15)
-            fireflies: 3     // Only 3 fireflies! (was 5)
+            roots: 2,        // ABSOLUTE MINIMUM
+            petals: 3,       // Barely visible flower
+            leaves: 3,       // Only 3 leaves!
+            moss: 0,         // NO MOSS - too expensive
+            fireflies: 5     // A few more since they're just emissive (was 3)
         },
-        plantFireflySize: 15.0,  // Tiny particles (was 20)
-        plantLightCount: 1,      // CRITICAL: Only 1 point light per plant
-        plantLightIntensity: 10.0, // VERY BRIGHT for hallway illumination! (was 4.0)
-        plantLightDistance: 90,   // Extended range to light hallways! (was 50)
-        plantLightDecay: 1.8,     // Lower decay = light travels further (was 2.9)
-        plantEmissiveBoost: 4.0,  // Make plant materials glow MUCH more (NO GPU cost!)
-        flameParticleCount: 5,   // MINIMAL flame particles (was 10)
+        plantFireflySize: 18.0,  // Slightly bigger for visibility (was 15)
+        plantLightCount: 1,      // 1 CHEAP colored light
+        plantLightIntensity: 8.0, // Moderate intensity (cheaper than high)
+        plantLightDistance: 60,   // Limited range = cheaper GPU cost
+        plantLightDecay: 2.5,     // High decay = light fades fast = cheaper
+        plantEmissiveBoost: 5.0,  // Still strong emissive for extra visibility
+        flameParticleCount: 0,   // 🔥 NO flame particles! Too expensive for LOW (was 3)
+        flameGeometrySegments: { height: 12, radial: 8 }, // 🔥 ULTRA low poly flames!
         enableComplexShaders: false,  // Simple shaders only
         enableParticles: false,       // No particles at all
-        shadowMapSize: 128,           // ULTRA tiny shadows (was 256)
+        shadowMapSize: 128,           // ULTRA tiny shadows
         updateThrottle: 5,            // Update every 5 frames instead of 3
         
         // General
         antialias: false,
-        pixelRatio: 0.5,   // Render at HALF resolution! (was 0.75)
-        maxLights: 2,      // Only 2 lights TOTAL in scene (was 3)
+        pixelRatio: 0.60,  // 60% resolution for maximum FPS
+        maxLights: 3,      // Very limited total lights
         enablePostProcessing: false,
         enableGlow: false,
+        disableShadows: true, // 🔥 Disable shadows on LOW quality!
     },
     
     MEDIUM: {
-        // Lighting & Effects - For integrated GPUs like Intel Iris, UHD 730
+        // Lighting & Effects - OPTIMIZED for laptop integrated GPUs (Intel Iris, UHD 730, MX series)
+        // STRATEGY: Minimal geometry + single lights + aggressive throttling
         plantInstanceCounts: {
-            roots: 5,        // Moderate (was 6)
-            petals: 10,      // Decent flower (was 12)
-            leaves: 14,      // Reasonable foliage (was 18)
-            moss: 50,        // Reduced (was 80)
-            fireflies: 15    // Noticeable but not overwhelming (was 20)
+            roots: 2,        // 🔥 Same as LOW for performance (was 3)
+            petals: 4,       // 🔥 Reduced significantly (was 6)
+            leaves: 6,       // 🔥 Further reduced (was 8)
+            moss: 10,        // 🔥 Minimal moss (was 20)
+            fireflies: 6     // 🔥 Reduced for FPS (was 10)
         },
-        plantFireflySize: 28.0,  // Medium size (was 30)
-        plantLightCount: 2,      // 2 point lights per plant (was 3)
-        plantLightIntensity: 5.0, // Good intensity for MEDIUM (was implicit in code)
-        plantLightDistance: 80,   // Extended range for hallways (was 70)
-        plantLightDecay: 1.9,     // Lower decay for better reach (was 2.0)
-        plantEmissiveBoost: 2.5,  // Make plant materials glow more (NO GPU cost!)
-        flameParticleCount: 50,  // Full flame particles
-        enableComplexShaders: true,
-        enableParticles: true,
-        shadowMapSize: 1024,
+        plantFireflySize: 20.0,  // Smaller for performance (was 22)
+        plantLightCount: 1,      // ✅ Only 1 point light per plant
+        plantLightIntensity: 10.0, // Bright single light for hallway illumination
+        plantLightDistance: 90,   // Extended range to light hallways
+        plantLightDecay: 1.8,     // Lower decay = light travels further
+        plantEmissiveBoost: 4.5,  // 🔥 Higher emissive to compensate (was 4.0)
+        flameParticleCount: 5,   // 🔥 Fewer particles (was 8)
+        flameGeometrySegments: { height: 16, radial: 10 }, // 🔥 Even simpler geometry! (was 20×12)
+        enableComplexShaders: false, // ✅ Keep shaders simple!
+        enableParticles: true,       // Some particles okay
+        shadowMapSize: 512,          // Better shadows for visual quality (was 256)
+        updateThrottle: 5,           // 🔥 Update every 5 frames (was 4)
         
         // General
-        antialias: true,
-        pixelRatio: Math.min(window.devicePixelRatio, 1),  // Native or lower
-        maxLights: 6,      // Fewer lights (was 8)
+        antialias: false,  // ✅ Disabled for FPS
+        pixelRatio: 0.85,  // Better resolution for clarity (was 0.75)
+        maxLights: 3,      // 🔥 Very limited (was 4)
         enablePostProcessing: false,
-        enableGlow: true,
+        enableGlow: false, // 🔥 Disable glow effects (was true)
+        disableShadows: false, // Keep minimal shadows enabled
     },
     
     HIGH: {
@@ -189,16 +196,22 @@ export const QualityPresets = {
             fireflies: 35
         },
         plantFireflySize: 35.0,
-        plantLightCount: 3,      // Full 3 point lights per plant
+        plantLightCount: 2,      // 2 point lights per plant (was 3, still looks great!)
+        plantLightIntensity: 6.0, // Good intensity for HIGH
+        plantLightDistance: 100,  // Maximum range
+        plantLightDecay: 1.8,     // Lower decay for beautiful range
+        plantEmissiveBoost: 2.0,  // Moderate emissive
         flameParticleCount: 50,  // Full flame particles
+        flameGeometrySegments: { height: 64, radial: 36 }, // Full detail flames
         enableComplexShaders: true,
         enableParticles: true,
         shadowMapSize: 2048,
+        updateThrottle: 3,       // Update every 3 frames
         
         // General
         antialias: true,
-        pixelRatio: Math.min(window.devicePixelRatio, 2),
-        maxLights: 16,
+        pixelRatio: Math.min(window.devicePixelRatio, 1.5), // Cap at 1.5 for performance (was 2)
+        maxLights: 12,     // Reduced from 16 for better performance
         enablePostProcessing: true,
         enableGlow: true,
     }
