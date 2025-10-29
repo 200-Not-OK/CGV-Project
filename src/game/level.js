@@ -761,6 +761,11 @@ export class Level {
     
     // Update animated meshes
     this._updateAnimatedMeshes(delta);
+    
+    // Update level-specific controller (e.g., Level0Controller)
+    if (this.controller && typeof this.controller.update === 'function') {
+      this.controller.update(delta);
+    }
   }
 
   // For player collisions we prefer objects that actually have physics.
