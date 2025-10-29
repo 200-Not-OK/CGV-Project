@@ -874,45 +874,68 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createAmbientLight() {
-        // Quality-based light creation - OPTIMIZED for brightness without GPU cost!
-        if (!this.quality.enableComplexShaders) {
-            // LOW QUALITY: SUPER BRIGHT single light to illuminate hallways!
-            const intensity = this.quality.plantLightIntensity || 10.0; // Cranked up for hallway coverage!
-            const distance = this.quality.plantLightDistance || 90;      // Extended to light entire hallways
-            const decay = this.quality.plantLightDecay || 1.8;           // Lower decay = light travels much further
-            this.ambientLight = new THREE.PointLight(0xff88ff, intensity, distance, decay);
+        // Quality-based light creation - OPTIMIZED for performance!
+        const lightCount = this.quality.plantLightCount || 0;
+        
+        if (lightCount === 0) {
+            // UNUSED: Reserved for future ultra-minimal mode
+            console.log(`💡 Plant using ULTRA LOW quality: NO point lights! Emissive only (boost: ${this.quality.plantEmissiveBoost}x)`);
+            // No lights added - rely purely on emissive materials
+        } else if (lightCount === 1) {
+            // LOW/MEDIUM QUALITY: Single point light for hallway illumination
+            const intensity = this.quality.plantLightIntensity || 10.0;
+            const distance = this.quality.plantLightDistance || 90;
+            const decay = this.quality.plantLightDecay || 1.8;
+            
+            // Use different colors based on quality tier for visual distinction
+            let lightColor;
+            if (!this.quality.enableComplexShaders) {
+                // LOW quality: Bright magenta-purple for magical feel
+                lightColor = 0xff66ff; // Vibrant magenta
+            } else {
+                // MEDIUM quality: Pink-purple 
+                lightColor = 0xff88ff; // Softer pink
+            }
+            
+            this.ambientLight = new THREE.PointLight(lightColor, intensity, distance, decay);
             this.ambientLight.position.set(0, 1.5, 0);
             this.plantGroup.add(this.ambientLight);
-            console.log(`💡 Plant using ULTRA LOW quality lighting: 1 SUPER BRIGHT light, intensity ${intensity}, distance ${distance}, decay ${decay}`);
-        } else if (this.quality.plantInstanceCounts.fireflies < 20) {
-            // MEDIUM QUALITY: Two lights with extended range for hallway illumination
-            const intensity = this.quality.plantLightIntensity || 5.0;
-            const distance = this.quality.plantLightDistance || 80;
-            const decay = this.quality.plantLightDecay || 1.9;
+            
+            const qualityName = !this.quality.enableComplexShaders ? 'LOW' : 'MEDIUM';
+            console.log(`💡 Plant using ${qualityName} quality: 1 CHEAP colored light (${lightColor.toString(16)}), intensity ${intensity}, distance ${distance}, decay ${decay}`);
+        } else if (lightCount === 2) {
+            // HIGH QUALITY: Two lights with extended range for beautiful illumination
+            const intensity = this.quality.plantLightIntensity || 6.0;
+            const distance = this.quality.plantLightDistance || 100;
+            const decay = this.quality.plantLightDecay || 1.8;
             
             this.ambientLight = new THREE.PointLight(0xff77ee, intensity, distance, decay);
             this.ambientLight.position.set(0, 1.5, 0);
             this.plantGroup.add(this.ambientLight);
             
-            // Secondary light with 60% intensity and slightly shorter range
+            // Secondary light with 60% intensity
             this.secondaryLight = new THREE.PointLight(0xff55dd, intensity * 0.6, distance * 0.7, decay + 0.2);
             this.secondaryLight.position.set(0, 1.0, 0);
             this.plantGroup.add(this.secondaryLight);
-            console.log(`💡 Plant using MEDIUM quality lighting: 2 lights, intensity ${intensity}, distance ${distance}, decay ${decay}`);
+            console.log(`💡 Plant using HIGH quality: 2 lights, intensity ${intensity}, distance ${distance}, decay ${decay}`);
         } else {
-            // HIGH QUALITY: Full 3-light setup with MAXIMUM range
-            this.ambientLight = new THREE.PointLight(0xff77ee, 8.0, 100, 1.8); // Extended 60→100!
+            // ULTRA HIGH QUALITY: Three lights (if ever needed)
+            const intensity = this.quality.plantLightIntensity || 8.0;
+            const distance = this.quality.plantLightDistance || 100;
+            const decay = this.quality.plantLightDecay || 1.8;
+            
+            this.ambientLight = new THREE.PointLight(0xff77ee, intensity, distance, decay);
             this.ambientLight.position.set(0, 1.5, 0);
             this.plantGroup.add(this.ambientLight);
             
-            this.secondaryLight = new THREE.PointLight(0xff55dd, 4.0, 70, 2.0); // Extended 40→70
+            this.secondaryLight = new THREE.PointLight(0xff55dd, intensity * 0.5, distance * 0.7, decay + 0.2);
             this.secondaryLight.position.set(0, 1.0, 0);
             this.plantGroup.add(this.secondaryLight);
-            
-            this.tertiaryLight = new THREE.PointLight(0xffaaee, 3.2, 60, 2.0); // Extended 35→60
-            this.tertiaryLight.position.set(0, 2.0, 0);
+
+            this.tertiaryLight = new THREE.PointLight(0xff99ff, intensity * 0.25, distance * 0.5, decay + 0.4);
+            this.tertiaryLight.position.set(0, 0.5, 0);
             this.plantGroup.add(this.tertiaryLight);
-            console.log('💡 Plant using HIGH quality lighting: 3 lights, MAXIMUM range');
+            console.log(`💡 Plant using ULTRA HIGH quality: 3 lights, intensity ${intensity}, distance ${distance}`);
         }
     }
 
