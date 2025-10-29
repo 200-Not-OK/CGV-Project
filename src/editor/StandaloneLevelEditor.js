@@ -574,10 +574,18 @@ export class StandaloneLevelEditor {
     }
     
     // Load colliders
-    if (this.currentLevel.colliders) {
-      this.colliders = [...this.currentLevel.colliders];
-      this._createColliderVisuals();
-    }
+   if (this.currentLevel.colliders) {
+    this.colliders = [...this.currentLevel.colliders];
+    
+    // Ensure all colliders have rotation property
+    this.colliders.forEach(collider => {
+      if (!collider.rotation) {
+        collider.rotation = [0, 0, 0];
+      }
+    });
+    
+    this._createColliderVisuals();
+  }
     
     // Load platforms
     if (this.currentLevel.platforms) {
@@ -779,59 +787,65 @@ export class StandaloneLevelEditor {
   }
   
   _createColliderVisuals() {
-    // Clear existing collider visuals first
-    this.colliderMeshes.forEach(mesh => this.scene.remove(mesh));
-    this.colliderMeshes = [];
+  // Clear existing collider visuals first
+  this.colliderMeshes.forEach(mesh => this.scene.remove(mesh));
+  this.colliderMeshes = [];
+  
+  this.colliders.forEach((collider, index) => {
+    // Skip mesh-type colliders - they don't have position/size, they reference GLTF meshes
+    if (collider.type === 'mesh') {
+      return; // Skip visualization for Trimesh colliders
+    }
     
-    this.colliders.forEach((collider, index) => {
-      // Skip mesh-type colliders - they don't have position/size, they reference GLTF meshes
-      if (collider.type === 'mesh') {
-        return; // Skip visualization for Trimesh colliders
-      }
-      
-      // Ensure position exists for non-mesh colliders
-      if (!collider.position) {
-        console.warn('Collider missing position:', collider);
-        return;
-      }
-      
-      let geometry;
-      
-      // Create geometry based on collider type
-      if (collider.type === 'box') {
-        geometry = new THREE.BoxGeometry(collider.size[0], collider.size[1], collider.size[2]);
-      } else if (collider.type === 'sphere') {
-        geometry = new THREE.SphereGeometry(collider.size[0], 16, 12);
-      } else if (collider.type === 'capsule') {
-        geometry = new THREE.CylinderGeometry(collider.size[0], collider.size[0], collider.size[1], 16);
-      } else {
-        // Default to box
-        geometry = new THREE.BoxGeometry(1, 1, 1);
-      }
-      
-      // Color by material type
-      const materialColors = {
-        ground: 0x00ff00,  // Green
-        wall: 0xff0000,    // Red
-        platform: 0x0000ff // Blue
-      };
-      
-      const material = new THREE.MeshBasicMaterial({ 
-        color: materialColors[collider.materialType] || 0x888888,
-        transparent: true,
-        opacity: 0.3,
-        wireframe: true
-      });
-      
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(collider.position[0], collider.position[1], collider.position[2]);
-      mesh.userData = { type: 'collider', index: index, colliderData: collider };
-      mesh.name = `collider_${index}`;
-      
-      this.scene.add(mesh);
-      this.colliderMeshes.push(mesh);
+    // Ensure position exists for non-mesh colliders
+    if (!collider.position) {
+      console.warn('Collider missing position:', collider);
+      return;
+    }
+    
+    let geometry;
+    
+    // Create geometry based on collider type
+    if (collider.type === 'box') {
+      geometry = new THREE.BoxGeometry(collider.size[0], collider.size[1], collider.size[2]);
+    } else if (collider.type === 'sphere') {
+      geometry = new THREE.SphereGeometry(collider.size[0], 16, 12);
+    } else if (collider.type === 'capsule') {
+      geometry = new THREE.CylinderGeometry(collider.size[0], collider.size[0], collider.size[1], 16);
+    } else {
+      // Default to box
+      geometry = new THREE.BoxGeometry(1, 1, 1);
+    }
+    
+    // Color by material type
+    const materialColors = {
+      ground: 0x00ff00,  // Green
+      wall: 0xff0000,    // Red
+      platform: 0x0000ff // Blue
+    };
+    
+    const material = new THREE.MeshBasicMaterial({ 
+      color: materialColors[collider.materialType] || 0x888888,
+      transparent: true,
+      opacity: 0.3,
+      wireframe: true
     });
-  }
+    
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(collider.position[0], collider.position[1], collider.position[2]);
+    
+    // Apply rotation if it exists
+    if (collider.rotation) {
+      mesh.rotation.set(collider.rotation[0], collider.rotation[1], collider.rotation[2]);
+    }
+    
+    mesh.userData = { type: 'collider', index: index, colliderData: collider };
+    mesh.name = `collider_${index}`;
+    
+    this.scene.add(mesh);
+    this.colliderMeshes.push(mesh);
+  });
+}
   
   _highlightSelectedMesh(mesh) {
     // Clear existing highlights
@@ -2679,41 +2693,42 @@ export class StandaloneLevelEditor {
   }
   
   _addCollider(position) {
-    const typeSelect = document.getElementById('collider-type');
-    const materialSelect = document.getElementById('material-type');
+  const typeSelect = document.getElementById('collider-type');
+  const materialSelect = document.getElementById('material-type');
 
-    const type = typeSelect && typeSelect.value ? typeSelect.value : 'box';
-    const materialType = materialSelect ? materialSelect.value : 'ground';
-    
-    // Default sizes based on type
-    let size;
-    switch (type) {
-      case 'sphere':
-        size = [1]; // radius
-        break;
-      case 'capsule':
-        size = [0.5, 2]; // radius, height
-        break;
-      default: // box
-        size = [2, 2, 2]; // width, height, depth
-    }
-    
-    const collider = {
-      id: `collider_${this.nextId}`,
-      type: type,
-      position: [position.x, position.y, position.z],
-      size: size,
-      materialType: materialType,
-      meshName: this.selectedMesh ? this.selectedMesh.name : null
-    };
-    
-    this.colliders.push(collider);
-    this.nextId++;
-    
-    this._createColliderVisuals();
-    this._updateUI();
-    this._updateStatus(`Added ${type} collider at [${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)}]`);
+  const type = typeSelect && typeSelect.value ? typeSelect.value : 'box';
+  const materialType = materialSelect ? materialSelect.value : 'ground';
+  
+  // Default sizes based on type
+  let size;
+  switch (type) {
+    case 'sphere':
+      size = [1]; // radius
+      break;
+    case 'capsule':
+      size = [0.5, 2]; // radius, height
+      break;
+    default: // box
+      size = [2, 2, 2]; // width, height, depth
   }
+  
+  const collider = {
+    id: `collider_${this.nextId}`,
+    type: type,
+    position: [position.x, position.y, position.z],
+    rotation: [0, 0, 0], // Add rotation property with default values
+    size: size,
+    materialType: materialType,
+    meshName: this.selectedMesh ? this.selectedMesh.name : null
+  };
+  
+  this.colliders.push(collider);
+  this.nextId++;
+  
+  this._createColliderVisuals();
+  this._updateUI();
+  this._updateStatus(`Added ${type} collider at [${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)}]`);
+}
   
   _selectMesh(index) {
     if (index >= 0 && index < this.levelMeshes.length) {
@@ -3312,88 +3327,104 @@ export class StandaloneLevelEditor {
     this._updateUI();
   }
   
-  _applySelectedProperties() {
-    if (!this.selected) return;
+_applySelectedProperties() {
+  if (!this.selected) return;
+  
+  // Get position inputs
+  const posX = document.getElementById('selected-pos-x');
+  const posY = document.getElementById('selected-pos-y');
+  const posZ = document.getElementById('selected-pos-z');
+  
+  // Get rotation inputs
+  const rotX = document.getElementById('selected-rot-x');
+  const rotY = document.getElementById('selected-rot-y');
+  const rotZ = document.getElementById('selected-rot-z');
+  
+  if (posX && posY && posZ) {
+    // Update visual mesh position
+    this.selected.position.set(
+      parseFloat(posX.value),
+      parseFloat(posY.value),
+      parseFloat(posZ.value)
+    );
     
-    // Get position inputs
-    const posX = document.getElementById('selected-pos-x');
-    const posY = document.getElementById('selected-pos-y');
-    const posZ = document.getElementById('selected-pos-z');
-    
-    // Get rotation inputs
-    const rotX = document.getElementById('selected-rot-x');
-    const rotY = document.getElementById('selected-rot-y');
-    const rotZ = document.getElementById('selected-rot-z');
-    
-    if (posX && posY && posZ) {
-      // Update visual mesh position
-      this.selected.position.set(
+    // Update data array position
+    const index = this.selected.userData.index;
+    if (this.selectedType === 'enemy' && this.enemies[index]) {
+      this.enemies[index].position = [
         parseFloat(posX.value),
         parseFloat(posY.value),
         parseFloat(posZ.value)
-      );
+      ];
+    } else if (this.selectedType === 'npc' && this.npcs[index]) {
+      this.npcs[index].position = [
+        parseFloat(posX.value),
+        parseFloat(posY.value),
+        parseFloat(posZ.value)
+      ];
+    } else if (this.selectedType === 'light' && this.lights[index]) {
+      this.lights[index].position = [
+        parseFloat(posX.value),
+        parseFloat(posY.value),
+        parseFloat(posZ.value)
+      ];
+    } else if (this.selectedType === 'patrol' && this.patrolPoints[index]) {
+      this.patrolPoints[index].position = [
+        parseFloat(posX.value),
+        parseFloat(posY.value),
+        parseFloat(posZ.value)
+      ];
       
-      // Update data array position
-      const index = this.selected.userData.index;
-      if (this.selectedType === 'enemy' && this.enemies[index]) {
-        this.enemies[index].position = [
-          parseFloat(posX.value),
-          parseFloat(posY.value),
-          parseFloat(posZ.value)
-        ];
-      } else if (this.selectedType === 'npc' && this.npcs[index]) {
-        this.npcs[index].position = [
-          parseFloat(posX.value),
-          parseFloat(posY.value),
-          parseFloat(posZ.value)
-        ];
-      } else if (this.selectedType === 'light' && this.lights[index]) {
-        this.lights[index].position = [
-          parseFloat(posX.value),
-          parseFloat(posY.value),
-          parseFloat(posZ.value)
-        ];
-      } else if (this.selectedType === 'patrol' && this.patrolPoints[index]) {
-        this.patrolPoints[index].position = [
-          parseFloat(posX.value),
-          parseFloat(posY.value),
-          parseFloat(posZ.value)
-        ];
-        
-        // Update the corresponding enemy or NPC's patrol point array
-        const patrolData = this.patrolPoints[index];
-        if (patrolData.entityType === 'enemy' && this.enemies[patrolData.enemyIndex]) {
-          const enemy = this.enemies[patrolData.enemyIndex];
-          if (enemy.patrolPoints && enemy.patrolPoints[patrolData.pointIndex]) {
-            enemy.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
-            enemy.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
-            enemy.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
-          }
-        } else if (patrolData.entityType === 'npc' && this.npcs[patrolData.npcIndex]) {
-          const npc = this.npcs[patrolData.npcIndex];
-          if (npc.patrolPoints && npc.patrolPoints[patrolData.pointIndex]) {
-            npc.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
-            npc.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
-            npc.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
-          }
+      // Update the corresponding enemy or NPC's patrol point array
+      const patrolData = this.patrolPoints[index];
+      if (patrolData.entityType === 'enemy' && this.enemies[patrolData.enemyIndex]) {
+        const enemy = this.enemies[patrolData.enemyIndex];
+        if (enemy.patrolPoints && enemy.patrolPoints[patrolData.pointIndex]) {
+          enemy.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
+          enemy.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
+          enemy.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
         }
-      } else if (this.selectedType === 'collider' && this.colliders[index]) {
-        this.colliders[index].position = [
-          parseFloat(posX.value),
-          parseFloat(posY.value),
-          parseFloat(posZ.value)
-        ];
+      } else if (patrolData.entityType === 'npc' && this.npcs[patrolData.npcIndex]) {
+        const npc = this.npcs[patrolData.npcIndex];
+        if (npc.patrolPoints && npc.patrolPoints[patrolData.pointIndex]) {
+          npc.patrolPoints[patrolData.pointIndex][0] = parseFloat(posX.value);
+          npc.patrolPoints[patrolData.pointIndex][1] = parseFloat(posY.value);
+          npc.patrolPoints[patrolData.pointIndex][2] = parseFloat(posZ.value);
+        }
       }
+    } else if (this.selectedType === 'collider' && this.colliders[index]) {
+      this.colliders[index].position = [
+        parseFloat(posX.value),
+        parseFloat(posY.value),
+        parseFloat(posZ.value)
+      ];
     }
+  }
+  
+  if (rotX && rotY && rotZ) {
+    // Update visual mesh rotation (convert degrees to radians)
+    this.selected.rotation.set(
+      parseFloat(rotX.value) * Math.PI / 180,
+      parseFloat(rotY.value) * Math.PI / 180,
+      parseFloat(rotZ.value) * Math.PI / 180
+    );
     
-    if (rotX && rotY && rotZ) {
-      // Update visual mesh rotation (convert degrees to radians)
-      this.selected.rotation.set(
+    // Update data array rotation for objects that support rotation
+    const index = this.selected.userData.index;
+    if (this.selectedType === 'collider' && this.colliders[index]) {
+      this.colliders[index].rotation = [
         parseFloat(rotX.value) * Math.PI / 180,
         parseFloat(rotY.value) * Math.PI / 180,
         parseFloat(rotZ.value) * Math.PI / 180
-      );
+      ];
+    } else if (this.selectedType === 'platform' && this.platforms[index]) {
+      this.platforms[index].rotation = [
+        parseFloat(rotX.value) * Math.PI / 180,
+        parseFloat(rotY.value) * Math.PI / 180,
+        parseFloat(rotZ.value) * Math.PI / 180
+      ];
     }
+  }
     
     // Handle type-specific properties
     if (this.selectedType === 'enemy') {
