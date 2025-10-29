@@ -10,6 +10,16 @@ export class PointPulse extends LightComponent {
   }
 
   mount(scene) {
+    // For LOW quality: Skip point light creation (no point lights)
+    const isLowQuality = this.quality.pixelRatio <= 0.6 || this.quality.plantLightCount === 0;
+    
+    if (isLowQuality) {
+      // LOW quality: Don't create point light - objects glow themselves
+      console.log('💡 PointPulse skipped for LOW quality (no point lights)');
+      this._mounted = true;
+      return;
+    }
+    
     const color = this.props.color ?? 0xffaa33;
     
     // Adjust intensity and distance based on quality - OPTIMIZED for range
@@ -18,7 +28,7 @@ export class PointPulse extends LightComponent {
     let decay = 2.0;
     
     if (!this.quality.enableComplexShaders) {
-      // LOW quality: Keep good range but efficient decay
+      // MEDIUM quality: Keep good range but efficient decay
       intensity *= 0.8;  // Only reduce by 20% (was 30%)
       distance *= 1.0;   // Keep full distance!
       decay = 2.5;       // Higher decay = less GPU cost

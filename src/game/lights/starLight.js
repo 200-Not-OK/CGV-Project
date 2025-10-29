@@ -78,8 +78,10 @@ export class StarLight extends LightComponent {
     // Position container slightly left and towards camera
     this.starContainer.position.set(pos[0] - 5, pos[1], pos[2] - 5);
 
-        // Create light if needed
-        if (createLight) {
+        // Create light if needed - SKIP for LOW quality (no point lights)
+        const isLowQuality = this.quality.pixelRatio <= 0.6 || this.quality.plantLightCount === 0;
+        
+        if (createLight && !isLowQuality) {
             console.log('🌟 Creating PointLight for star at position:', pos);
             // Warm yellowish point light for castle ambiance
             const lightColor = this.props.lightColor ?? 0xFFF8DC; // Softer golden color
@@ -89,16 +91,9 @@ export class StarLight extends LightComponent {
             let intensity, distance, shadowMapSize, decay;
             
             // Determine quality tier by checking multiple factors
-            const isLowQuality = this.quality.pixelRatio <= 0.6;
             const isMediumQuality = this.quality.pixelRatio > 0.6 && this.quality.pixelRatio < 1.0;
             
-            if (isLowQuality) {
-                // LOW quality: Moderate intensity with optimized decay
-                intensity = 50;   // Balanced (was 35)
-                distance = 280;   // Good range
-                shadowMapSize = 128;
-                decay = 1.7;      // Better reach than before (was 2.2)
-            } else if (isMediumQuality) {
+            if (isMediumQuality) {
                 // MEDIUM quality: Subtle ambient lighting
                 intensity = 45;   // Reduced brightness (was 70)
                 distance = 350;   // Extended range
