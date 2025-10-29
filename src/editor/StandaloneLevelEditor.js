@@ -893,79 +893,146 @@ export class StandaloneLevelEditor {
       this.patrolPointMeshes.push(mesh);
     });
   }
+  _addPatrolBehaviorIndicators(group) {
+  if (group.points.length < 2) return;
+  
+  const centerPoint = group.points[0].position;
+  const labelPosition = new THREE.Vector3(
+    centerPoint[0],
+    centerPoint[1] + 2, // Position above the first point
+    centerPoint[2]
+  );
+  
+  let behaviorText, behaviorColor;
+  
+  switch (group.behavior) {
+    case 'loop':
+      behaviorText = '🔁 LOOP';
+      behaviorColor = 0x00ff00; // Green
+      break;
+    case 'pingpong':
+      behaviorText = '↔️ PING-PONG';
+      behaviorColor = 0xffff00; // Yellow
+      break;
+    case 'once':
+      behaviorText = '➡️ ONE-WAY';
+      behaviorColor = 0xff0000; // Red
+      break;
+    case 'random':
+      behaviorText = '🎲 RANDOM';
+      behaviorColor = 0xff00ff; // Magenta
+      break;
+    default:
+      behaviorText = '🔁 LOOP';
+      behaviorColor = 0x00ff00;
+  }
+  
+  // Create a simple visual indicator (you could use sprites or HTML overlays for better text)
+  const geometry = new THREE.SphereGeometry(0.2, 8, 6);
+  const material = new THREE.MeshBasicMaterial({ 
+    color: behaviorColor,
+    transparent: true,
+    opacity: 0.7
+  });
+  const indicator = new THREE.Mesh(geometry, material);
+  indicator.position.copy(labelPosition);
+  
+  this.scene.add(indicator);
+  this.patrolConnections.push(indicator);
+  
+  console.log(`🧭 Patrol route for ${group.type} has ${group.points.length} points, behavior: ${group.behavior}`);
+}
   
   _createPatrolConnections() {
-    // Clear existing patrol connections first
-    this.patrolConnections.forEach(line => this.scene.remove(line));
-    this.patrolConnections = [];
+  // Clear existing patrol connections first
+  this.patrolConnections.forEach(line => this.scene.remove(line));
+  this.patrolConnections = [];
+  
+  // Group patrol points by entity (enemy or NPC)
+  const patrolGroups = {};
+  this.patrolPoints.forEach(point => {
+    const key = point.entityType === 'npc' ? `npc_${point.npcIndex}` : `enemy_${point.enemyIndex}`;
+    if (!patrolGroups[key]) {
+      patrolGroups[key] = {
+        points: [],
+        type: point.entityType,
+        behavior: 'loop' // Default behavior
+      };
+    }
+    patrolGroups[key].points.push(point);
+  });
+  
+  // Get the actual patrol behavior from NPC data
+  Object.keys(patrolGroups).forEach(key => {
+    const group = patrolGroups[key];
+    if (group.type === 'npc') {
+      const npcIndex = parseInt(key.replace('npc_', ''));
+      if (this.npcs[npcIndex] && this.npcs[npcIndex].patrolBehavior) {
+        group.behavior = this.npcs[npcIndex].patrolBehavior;
+      }
+    }
+  });
+  
+  // Create lines between consecutive patrol points for each entity
+  Object.values(patrolGroups).forEach(group => {
+    if (group.points.length < 2) return;
     
-    // Group patrol points by entity (enemy or NPC)
-    const patrolGroups = {};
-    this.patrolPoints.forEach(point => {
-      const key = point.entityType === 'npc' ? `npc_${point.npcIndex}` : `enemy_${point.enemyIndex}`;
-      if (!patrolGroups[key]) {
-        patrolGroups[key] = {
-          points: [],
-          type: point.entityType
-        };
-      }
-      patrolGroups[key].points.push(point);
-    });
+    // Sort points by their index
+    group.points.sort((a, b) => a.pointIndex - b.pointIndex);
     
-    // Create lines between consecutive patrol points for each entity
-    Object.values(patrolGroups).forEach(group => {
-      if (group.points.length < 2) return;
+    // Create solid lines between consecutive points
+    for (let i = 0; i < group.points.length - 1; i++) {
+      const start = group.points[i].position;
+      const end = group.points[i + 1].position;
       
-      group.points.sort((a, b) => a.pointIndex - b.pointIndex);
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(start[0], start[1], start[2]),
+        new THREE.Vector3(end[0], end[1], end[2])
+      ]);
       
-      for (let i = 0; i < group.points.length - 1; i++) {
-        const start = group.points[i].position;
-        const end = group.points[i + 1].position;
-        
-        const geometry = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(start[0], start[1], start[2]),
-          new THREE.Vector3(end[0], end[1], end[2])
-        ]);
-        
-        // Different colors for NPCs (yellow) vs enemies (magenta)
-        const color = group.type === 'npc' ? 0xffff00 : 0xff00ff;
-        const material = new THREE.LineBasicMaterial({ 
-          color: color,
-          transparent: true,
-          opacity: 0.6
-        });
-        
-        const line = new THREE.Line(geometry, material);
-        this.scene.add(line);
-        this.patrolConnections.push(line);
-      }
+      // Different colors for NPCs (yellow) vs enemies (magenta)
+      const color = group.type === 'npc' ? 0xffff00 : 0xff00ff;
+      const material = new THREE.LineBasicMaterial({ 
+        color: color,
+        transparent: true,
+        opacity: 0.8,
+        linewidth: 2
+      });
       
-      // Create loop back to start for looping behavior
-      if (group.points.length >= 3) {
-        const start = group.points[group.points.length - 1].position;
-        const end = group.points[0].position;
-        
-        const geometry = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(start[0], start[1], start[2]),
-          new THREE.Vector3(end[0], end[1], end[2])
-        ]);
-        
-        const color = group.type === 'npc' ? 0xffff00 : 0xff00ff;
-        const material = new THREE.LineDashedMaterial({ 
-          color: color,
-          transparent: true,
-          opacity: 0.4,
-          dashSize: 0.5,
-          gapSize: 0.3
-        });
-        
-        const line = new THREE.Line(geometry, material);
-        line.computeLineDistances();
-        this.scene.add(line);
-        this.patrolConnections.push(line);
-      }
-    });
-  }
+      const line = new THREE.Line(geometry, material);
+      this.scene.add(line);
+      this.patrolConnections.push(line);
+    }
+    
+    // ONLY create loop back to start if behavior is explicitly 'loop'
+    if (group.points.length >= 2 && group.behavior === 'loop') {
+      const start = group.points[group.points.length - 1].position;
+      const end = group.points[0].position;
+      
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(start[0], start[1], start[2]),
+        new THREE.Vector3(end[0], end[1], end[2])
+      ]);
+      
+      const color = group.type === 'npc' ? 0xffff00 : 0xff00ff;
+      const material = new THREE.LineDashedMaterial({ 
+        color: color,
+        transparent: true,
+        opacity: 0.4,
+        dashSize: 0.5,
+        gapSize: 0.3
+      });
+      
+      const line = new THREE.Line(geometry, material);
+      line.computeLineDistances();
+      this.scene.add(line);
+      this.patrolConnections.push(line);
+    }
+    
+    // Add visual indicators for behavior type
+    this._addPatrolBehaviorIndicators(group);
+  });
+}
   
   _getEnemyColor(type) {
     const colors = {
@@ -3920,7 +3987,9 @@ _applySelectedProperties() {
       punk: 'assets/npc/Punk.glb',
       hood: 'assets/npc/HoodieCharacter.glb',
       women2: 'assets/npc/AnimatedWoman.glb',
-      woman3: 'assets/npc/AnimatedWoman1.glb'
+      woman3: 'assets/npc/AnimatedWoman1.glb',
+      casual: 'assets/npc/CasualCharacter.glb'
+      
 
     };
     return urls[type] || urls.walker;
@@ -3938,14 +4007,15 @@ _applySelectedProperties() {
       crawler: 1.5,
       yellow_bot: 1.5,
       other_bot: 1.5,
-      Worker: 2.4,
-      woman: 2.4,
-      suitf: 2.4,
-      suitM: 2.4,
-      punk: 2.4,
-      hood: 2.4,
-      women2: 2.4,
-      woman3: 2.4
+      Worker: 5,
+      woman: 5,
+      suitf: 5,
+      suitM: 5,
+      punk: 5,
+      hood: 5,
+      women2: 5,
+      woman3: 5,
+      casual: 5
     };
     return speeds[type] || 2.0;
   }

@@ -9,8 +9,7 @@ import {Woman3} from './npc/Woman3.js';
 import {Women2} from './npc/Women2.js';
 import {SuitF} from './npc/SuitF.js';
 import {SuitM} from './npc/SuitM.js';
-
-
+import {casual} from './npc/casual.js';
 
 export class NpcManager {
   constructor(scene, physicsWorld) {
@@ -27,12 +26,12 @@ export class NpcManager {
       woman3: Woman3,
       womans2: Women2,
       suitF: SuitF,
-      suitM: SuitM
-      // You can register more types here as you create them
+      suitM: SuitM,
+      casual: casual
+      
     };
     
-    // Patrol system state
-    this.patrolData = new Map(); // Maps NPC ID to patrol data
+    // REMOVED: Patrol system - let NPCs handle their own movement
   }
 
   // Load NPCs from level data (from editor)
@@ -55,16 +54,12 @@ export class NpcManager {
       return null;
     }
     
+    // Pass ALL options to the NPC constructor - let the NPC handle patrol behavior
     const npc = new Cls(this.scene, this.physicsWorld, options);
     
-    // Set initial position
+    // Set initial position if provided
     if (options.position) {
       npc.setPosition(new THREE.Vector3(...options.position));
-    }
-    
-    // Set scale if provided
-    if (options.scale) {
-      npc.setScale(options.scale);
     }
     
     // Store NPC data for reference
@@ -74,144 +69,38 @@ export class NpcManager {
       originalData: options
     };
     
-    // Initialize patrol system if this NPC has patrol points
-    if (options.patrolPoints && options.patrolPoints.length > 0) {
-      this._initializePatrol(npc, options);
-    }
-    
     this.npcs.push(npc);
+    
+    console.log(`🧍 Spawned ${type} at [${options.position?.[0]?.toFixed(2) || 0}, ${options.position?.[1]?.toFixed(2) || 0}, ${options.position?.[2]?.toFixed(2) || 0}] with ${options.patrolPoints?.length || 0} patrol points`);
+    
     return npc;
-  }
-
-  // Initialize patrol behavior for an NPC
-  _initializePatrol(npc, npcData) {
-    const patrolData = {
-      points: npcData.patrolPoints.map(point => new THREE.Vector3(point[0], point[1], point[2])),
-      currentPointIndex: 0,
-      behavior: npcData.patrolBehavior || 'loop',
-      speed: npcData.speed || 1.5,
-      waitTime: npcData.waitTime || 0.5,
-      waitTimer: 0,
-      isMoving: true,
-      forward: true // For ping-pong behavior
-    };
-    
-    this.patrolData.set(npc.userData.id, patrolData);
-    
-    console.log(`Initialized patrol for NPC ${npc.userData.id}:`, {
-      points: patrolData.points.length,
-      behavior: patrolData.behavior,
-      speed: patrolData.speed
-    });
   }
 
   update(delta, player, platforms = []) {
     for (const npc of this.npcs) {
-      // Update NPC base behavior
+      // Let the NPC handle its own update including patrol behavior
       npc.update(delta, player, platforms);
       
-      // Update patrol behavior if this NPC has patrol points
-      this._updatePatrolBehavior(npc, delta);
-    }
-  }
-
-  _updatePatrolBehavior(npc, delta) {
-    const patrolData = this.patrolData.get(npc.userData.id);
-    if (!patrolData || patrolData.points.length < 2) return;
-    
-    if (patrolData.isMoving) {
-      // Move towards current patrol point
-      const targetPoint = patrolData.points[patrolData.currentPointIndex];
-      const currentPos = npc.getPosition();
-      
-      // Calculate direction to target
-      const direction = new THREE.Vector3()
-        .subVectors(targetPoint, currentPos)
-        .normalize();
-      
-      // Move NPC
-      const moveDistance = patrolData.speed * delta;
-      const newPosition = currentPos.clone().add(direction.multiplyScalar(moveDistance));
-      npc.setPosition(newPosition);
-      
-      // Rotate NPC to face movement direction (optional)
-      if (direction.length() > 0.1) {
-        npc.faceDirection(direction);
-      }
-      
-      // Check if reached the point
-      const distanceToTarget = currentPos.distanceTo(targetPoint);
-      if (distanceToTarget < 0.5) { // Close enough to consider reached
-        patrolData.isMoving = false;
-        patrolData.waitTimer = patrolData.waitTime;
-        
-        // Move to next point based on behavior
-        this._advanceToNextPoint(patrolData);
-      }
-    } else {
-      // Waiting at point
-      patrolData.waitTimer -= delta;
-      if (patrolData.waitTimer <= 0) {
-        patrolData.isMoving = true;
+      // Debug: Log NPC movement occasionally
+      if (Math.random() < 0.001) { // ~1% chance per frame
+        this._debugLogNpcState(npc);
       }
     }
   }
 
-  _advanceToNextPoint(patrolData) {
-    const totalPoints = patrolData.points.length;
+  // Debug method to log NPC state
+  _debugLogNpcState(npc) {
+    if (!npc.body) return;
     
-    switch (patrolData.behavior) {
-      case 'loop':
-        // Move to next point, loop back to start
-        patrolData.currentPointIndex = (patrolData.currentPointIndex + 1) % totalPoints;
-        break;
-        
-      case 'pingpong':
-        // Move back and forth along the path
-        if (patrolData.forward) {
-          if (patrolData.currentPointIndex >= totalPoints - 1) {
-            patrolData.forward = false;
-            patrolData.currentPointIndex--;
-          } else {
-            patrolData.currentPointIndex++;
-          }
-        } else {
-          if (patrolData.currentPointIndex <= 0) {
-            patrolData.forward = true;
-            patrolData.currentPointIndex++;
-          } else {
-            patrolData.currentPointIndex--;
-          }
-        }
-        break;
-        
-      case 'once':
-        // Stop at the last point
-        if (patrolData.currentPointIndex < totalPoints - 1) {
-          patrolData.currentPointIndex++;
-        } else {
-          // Stay at last point indefinitely
-          patrolData.isMoving = false;
-        }
-        break;
-        
-      case 'random':
-        // Move to a random point (not current point)
-        let newIndex;
-        do {
-          newIndex = Math.floor(Math.random() * totalPoints);
-        } while (newIndex === patrolData.currentPointIndex && totalPoints > 1);
-        
-        patrolData.currentPointIndex = newIndex;
-        break;
-        
-      default:
-        // Default to loop behavior
-        patrolData.currentPointIndex = (patrolData.currentPointIndex + 1) % totalPoints;
-        break;
-    }
+    const velocity = npc.body.velocity;
+    const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
     
-    console.log(`NPC moving to point ${patrolData.currentPointIndex}, behavior: ${patrolData.behavior}`);
+    console.log(`🧍 ${npc.constructor.name}:`, {
+      position: `[${npc.mesh.position.x.toFixed(2)}, ${npc.mesh.position.y.toFixed(2)}, ${npc.mesh.position.z.toFixed(2)}]`,
+      speed: speed.toFixed(2),
+      onGround: npc.onGround,
+      alive: npc.alive
+    });
   }
 
   // Get all NPCs (useful for UI or debugging)
@@ -224,19 +113,20 @@ export class NpcManager {
     return this.npcs.find(npc => npc.userData.id === id);
   }
 
+  // Get NPCs by type
+  getNpcsByType(type) {
+    return this.npcs.filter(npc => npc.userData.type === type);
+  }
+
   // Remove an NPC
   removeNpc(npc) {
     const index = this.npcs.indexOf(npc);
     if (index > -1) {
-      // Remove patrol data
-      if (npc.userData.id) {
-        this.patrolData.delete(npc.userData.id);
-      }
-      
       // Remove from scene and physics
       if (npc.dispose) npc.dispose();
       
       this.npcs.splice(index, 1);
+      console.log(`🧍 Removed NPC ${npc.userData.id}`);
     }
   }
 
@@ -246,7 +136,25 @@ export class NpcManager {
       if (npc.dispose) npc.dispose();
     }
     this.npcs = [];
-    this.patrolData.clear();
+    console.log('🧍 Cleared all NPCs');
+  }
+
+  // Damage all NPCs in radius (for area attacks)
+  damageInRadius(center, radius, damage) {
+    const centerVec = new THREE.Vector3(center[0], center[1], center[2]);
+    let hitCount = 0;
+    
+    this.npcs.forEach(npc => {
+      if (!npc.alive) return;
+      
+      const distance = npc.mesh.position.distanceTo(centerVec);
+      if (distance <= radius) {
+        npc.takeDamage(damage);
+        hitCount++;
+      }
+    });
+    
+    return hitCount;
   }
 
   dispose() {
