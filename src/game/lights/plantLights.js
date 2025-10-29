@@ -45,6 +45,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.clock = new THREE.Clock();
         this.interactionStrength = 0.0;
 
+
         // Continuous blooming animation
         this.bloomProgress = 0.0;
         this.bloomDirection = 1;
@@ -75,6 +76,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.plantGroup = new THREE.Group();
         this.plantGroup.position.copy(this.position);
 
+
         // Debug: Log what quality settings this plant is using
         console.log(`🌿 Creating Bioluminescent Plant at [${this.position.x}, ${this.position.y}, ${this.position.z}] with:`, {
             roots: this.quality.plantInstanceCounts.roots,
@@ -86,6 +88,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
 
         // Taller, more elegant curve for fairytale plant
         const plantCurve = new THREE.CatmullRomCurve3([
+
             new THREE.Vector3(0, 0, 0),           // Ground level
             new THREE.Vector3(-0.15, 0.4, 0),     // Gentle curve
             new THREE.Vector3(0.1, 0.9, 0.05),    // Middle arc
@@ -98,13 +101,16 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
 
         this._createBioluminescentRoots();
         this._createEnergyVeinBranch(plantCurve);
+
         this._createFlowerBase(topPosition);
         this._createCrystallineBloom(topPosition);
+
         this._createStamen(topPosition);
         // REMOVED: Crystal orb (too expensive!)
         // REMOVED: Pollen particles (too expensive!)
         // REMOVED: Aura rings (too expensive!)
         this._createInstancedLeaves(plantCurve);
+
         // REMOVED: Moss (not essential)
         this._createFireflies(plantCurve); // Minimal count
         // REMOVED: Magical dust (too expensive!)
@@ -115,6 +121,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createBioluminescentRoots() {
+
         const rootCount = this.quality.plantInstanceCounts.roots;
         const rootGeometry = new THREE.IcosahedronGeometry(0.1, 0); // Simpler geometry
         this.roots = new THREE.InstancedMesh(rootGeometry, null, rootCount);
@@ -132,15 +139,19 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.roots.material = new THREE.ShaderMaterial({
             uniforms: { uTime: { value: 0 } },
             vertexShader: `
+
                 attribute vec4 aRootData;
                 void main() {
+
                     vec3 pos = position * 0.8;
                     pos += aRootData.xyz;
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
                 }`,
             fragmentShader: `
+
                 ${HSL_FUNC}
                 void main() {
+
                     vec3 color = hsl2rgb(vec3(0.82, 0.9, 0.6));
                     gl_FragColor = vec4(color, 0.8);
                 }`,
@@ -150,10 +161,12 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createEnergyVeinBranch(curve) {
+
         // Optimized: Lower segment count
         const tubeGeometry = new THREE.TubeGeometry(curve, 32, 0.05, 6, false); // 64→32 segments, 8→6 radial
         this.branchMesh = new THREE.Mesh(tubeGeometry, new THREE.ShaderMaterial({
             uniforms: { uTime: { value: 0 } },
+
             vertexShader: `
                 uniform float uTime; varying vec2 vUv; varying vec3 vPosition;
                 void main() { 
@@ -162,9 +175,11 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); 
                 }`,
             fragmentShader: `
+
                 uniform float uTime; varying vec2 vUv; varying vec3 vPosition;
                 ${HSL_FUNC}
                 void main() {
+
                     // GORGEOUS stem gradient: green → purple-pink
                     float gradient = vUv.y;
                     float hue = mix(0.3, 0.85, gradient); // Green base to pink top
@@ -190,6 +205,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         }));
         this.plantGroup.add(this.branchMesh);
     }
+
 
     _createFlowerBase(position) {
         // Create a beautiful bulb-like base where flower meets stem
@@ -233,6 +249,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createCrystallineBloom(position) {
+
         const shardCount = this.quality.plantInstanceCounts.petals;
         // Adjust geometry segments based on quality
         const segments = this.quality.enableComplexShaders ? [2, 4] : [1, 2];
@@ -245,6 +262,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         for(let i=0; i < shardCount; i++) {
             petalData[i*4+0] = (i / shardCount) * Math.PI * 2;
             petalData[i*4+1] = 0.5 + Math.random() * 0.5;
+
             petalData[i*4+2] = Math.random() * 0.15 + 0.9; // Slight variation for natural look
             petalData[i*4+3] = 0.5 + Math.random() * 0.5;
         }
@@ -256,6 +274,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                 uInteractionStrength: { value: 0.0 }
             },
             vertexShader: `
+
                 uniform float uTime; uniform float uBloomProgress; 
                 uniform float uInteractionStrength;
                 attribute vec4 aPetalData; varying vec3 vNormal; varying vec3 vViewPosition; varying vec2 vUv;
@@ -269,6 +288,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     float random = aPetalData.y; 
                     vec3 pos = position;
                     
+
                     // BEAUTIFUL petal shape with natural curve
                     float petalCurve = sin(uv.y * 3.14159) * 0.25;
                     pos.x += petalCurve * (1.0 - abs(uv.x * 2.0 - 1.0)) * 1.2;
@@ -289,10 +309,12 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     mat4 placementMatrix = rotationY(angle); 
                     pos = (placementMatrix * vec4(pos, 1.0)).xyz;
                     
+
                     // Gentle breathing/swaying
                     float breath = sin(uTime * 1.5 + angle * 2.0) * 0.04 * uBloomProgress;
                     float sway = sin(uTime * 0.8 + random * 6.28) * 0.03;
                     pos += normalize(pos) * breath;
+
                     pos.x += sway;
                     
                     // Interaction response - petals reach toward player
@@ -305,11 +327,14 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                 }`,
             fragmentShader: `
                 uniform float uTime; varying vec3 vNormal; varying vec3 vViewPosition; varying vec2 vUv;
+
                 ${HSL_FUNC}
                 
                 void main() {
+
                     // SUPER SIMPLE gradient - minimal GPU load
                     float gradient = vUv.y;
+
                     float hue = 0.75 + gradient * 0.15; // Purple to pink
                     
                     vec3 color = hsl2rgb(vec3(hue, 0.9, 0.6));
@@ -320,6 +345,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     
                     // Simple rim (no expensive calculations)
                     vec3 viewDir = normalize(vViewPosition); 
+
                     float rim = 1.0 - max(dot(viewDir, vNormal), 0.0);
                     color += vec3(0.2, 0.1, 0.2) * rim * 0.3;
                     
@@ -331,6 +357,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.crystallineBloom.position.copy(position);
         this.plantGroup.add(this.crystallineBloom);
     }
+
 
     _createStamen(position) {
         // SIMPLIFIED stamen - much less GPU intensive
@@ -352,6 +379,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createCrystalOrb(position) {
+
         const orbGeometry = new THREE.SphereGeometry(0.15, 32, 32);
         this.crystalOrb = new THREE.Mesh(orbGeometry, new THREE.ShaderMaterial({
             uniforms: { 
@@ -360,12 +388,14 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                 uInteractionStrength: { value: 0.0 }
             },
             vertexShader: `
+
                 uniform float uTime; uniform float uAnimationProgress; uniform float uInteractionStrength;
                 varying vec3 vNormal; varying vec3 vViewPosition; varying vec3 vPosition;
                 void main() {
                     vec3 pos = position; 
                     pos.y += smoothstep(1.0, 2.0, uAnimationProgress) * 0.6;
                     
+
                     // Multi-frequency pulsing for magical effect
                     float pulse1 = sin(uTime * 3.0) * 0.05;
                     float pulse2 = sin(uTime * 5.0) * 0.03;
@@ -379,6 +409,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                 }`,
             fragmentShader: `
                 uniform float uTime; uniform float uAnimationProgress; uniform float uInteractionStrength;
+
                 varying vec3 vNormal; varying vec3 vViewPosition; varying vec3 vPosition;
                 ${HSL_FUNC}
                 ${SHADER_NOISE}
@@ -388,6 +419,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     if (opacity < 0.01) discard;
                     
                     vec3 viewDir = normalize(vViewPosition); 
+
                     float fresnel = pow(1.0 - abs(dot(viewDir, normalize(vNormal))), 3.0);
                     
                     // Rainbow swirling effect inside the orb
@@ -427,6 +459,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createInstancedLeaves(curve) {
+
         const leavesPerPlant = this.quality.plantInstanceCounts.leaves;
         
         // Adjust leaf geometry based on quality
@@ -438,9 +471,11 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.leafMesh.frustumCulled = false;
 
         const leafData = new Float32Array(leavesPerPlant * 4);
+
         const leafRandoms = new Float32Array(leavesPerPlant * 4);
 
         for (let j = 0; j < leavesPerPlant; j++) {
+
             const t = 0.3 + Math.random() * 0.5; // Better distribution
             
             const pos = curve.getPoint(t);
@@ -497,10 +532,12 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     vUv = uv;
                     float growthPhase = aRandoms.w;
                     
+
                     // BEAUTIFUL FAIRY LEAF SHAPE - elegant and natural
                     vec3 leafPos = vec3(0.0);
                     float v = uv.y; // 0 to 1 from base to tip
                     
+
                     // Perfect leaf shape - narrow base, wide middle, pointed tip
                     float widthProfile = sin(v * 3.14159);
                     widthProfile = pow(widthProfile, 1.8) * 1.3; // More dramatic taper
@@ -523,6 +560,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     float masterScale = 0.4;
                     float randomScale = aRandoms.z;
                     
+
                     // Smooth flowing motion
                     float flow = sin(uTime * 1.2 + aLeafData.y * 4.0) * 0.12;
                     float ripple = sin(uTime * 3.5 + aLeafData.z * 6.0) * 0.04;
@@ -532,14 +570,17 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     
                     // Apply rotations
                     mat4 baseRotMatrix = rotationMatrix(vec3(0.0, 1.0, 0.0), aLeafData.w);
+
                     mat4 tiltMatrix = rotationMatrix(vec3(1.0, 0.0, 0.0), aRandoms.y * 0.8);
                     mat4 flowMatrix = rotationMatrix(vec3(0.0, 0.0, 1.0), flow + ripple + interactionReach);
                     
                     // Transform leaf position
                     vec3 finalPos = leafPos * randomScale * masterScale;
+
                     finalPos = (baseRotMatrix * tiltMatrix * flowMatrix * vec4(finalPos, 1.0)).xyz;
                     finalPos += aLeafData.xyz;
                     
+
                     // Vibrant purple-pink color
                     float hue = mix(0.75, 0.88, aRandoms.x);
                     float glow = sin(uTime * 2.5 + aRandoms.x * 6.28) * 0.2 + 0.4;
@@ -552,6 +593,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                 varying vec2 vUv;
                 
                 void main() {
+
                     // ULTRA SIMPLE - just color and fade
                     float edgeFade = 1.0 - smoothstep(0.4, 0.5, abs(vUv.x - 0.5));
                     edgeFade *= 1.0 - smoothstep(0.85, 1.0, vUv.y);
@@ -566,6 +608,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createInstancedMoss(curve) {
+
         const mossPatches = 40; // HALVED for performance
         const mossGeometry = new THREE.SphereGeometry(0.035, 5, 4); // Slightly larger, fewer instances
         this.mossMesh = new THREE.InstancedMesh(mossGeometry, null, mossPatches);
@@ -585,6 +628,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.mossMesh.material = new THREE.ShaderMaterial({
             uniforms: { uTime: { value: 0 } },
             vertexShader: `uniform float uTime; attribute vec4 aMossData; void main() { float scale=0.7+sin(uTime*1.5+aMossData.w)*0.3; vec3 pos=position*scale; pos+=aMossData.xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(pos,1.0);}`,
+
             fragmentShader: `
                 uniform float uTime;
                 ${HSL_FUNC}
@@ -599,6 +643,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createFireflies(curve) {
+
         const fireflyCount = this.quality.plantInstanceCounts.fireflies;
         const positions = new Float32Array(fireflyCount * 3);
         const randoms = new Float32Array(fireflyCount * 4);
@@ -608,6 +653,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
             const t = Math.random();
             const pos = curve.getPoint(t);
             // More natural distribution around the plant
+
             pos.x += (Math.random() - 0.5) * 1.5;
             pos.y += Math.random() * 2.2;
             pos.z += (Math.random() - 0.5) * 1.5;
@@ -618,6 +664,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
             randoms[i * 4 + 2] = Math.random() * 10; 
             randoms[i * 4 + 3] = Math.random() * 10;
             
+
             // PURPLE-PINK-MAGENTA COLOR VARIATION - fairytale colors only!
             colors[i * 3 + 0] = 0.75 + Math.random() * 0.15; // Hue: 0.75-0.9 (purple to pink)
             colors[i * 3 + 1] = 0.9 + Math.random() * 0.1; // High saturation
@@ -628,6 +675,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         fireflyGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         fireflyGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 4));
         fireflyGeometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+
         
         // Add emissive boost for LOW quality - makes fireflies BRIGHTER with no GPU cost!
         const emissiveBoost = this.quality.plantEmissiveBoost || 1.0;
@@ -635,6 +683,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.fireflies = new THREE.Points(fireflyGeometry, new THREE.ShaderMaterial({
             uniforms: { 
                 uTime: { value: 0 }, 
+
                 uFireflySize: { value: this.quality.plantFireflySize },
                 uInteractionStrength: { value: 0.0 },
                 uEmissiveBoost: { value: emissiveBoost } // Brightness multiplier!
@@ -678,15 +727,18 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     gl_Position = projectionMatrix * mvPosition;
                 }`,
             fragmentShader: `
+
                 uniform float uTime; 
                 uniform float uEmissiveBoost; 
                 varying vec3 vColor;
                 ${HSL_FUNC}
                 
                 void main() {
+
                     // SIMPLE glow - minimal GPU
                     vec2 coord = gl_PointCoord - vec2(0.5);
                     float dist = length(coord);
+
                     float glow = 1.0 - smoothstep(0.2, 0.5, dist);
                     
                     // Apply emissive boost for LOW quality - MUCH brighter!
@@ -764,10 +816,11 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
                     
                     gl_FragColor = vec4(color, alpha * 0.7);
                 }`,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
+            transparent: true, 
+            blending: THREE.AdditiveBlending, 
             depthWrite: false
         }));
+
         this.plantGroup.add(this.pollenParticles);
     }
 
@@ -874,6 +927,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     }
 
     _createAmbientLight() {
+
         // Quality-based light creation - OPTIMIZED for performance!
         const lightCount = this.quality.plantLightCount || 0;
         
@@ -898,8 +952,9 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
             }
             
             this.ambientLight = new THREE.PointLight(lightColor, intensity, distance, decay);
-            this.ambientLight.position.set(0, 1.5, 0);
-            this.plantGroup.add(this.ambientLight);
+        this.ambientLight.position.set(0, 1.5, 0);
+        this.plantGroup.add(this.ambientLight);
+
             
             const qualityName = !this.quality.enableComplexShaders ? 'LOW' : 'MEDIUM';
             console.log(`💡 Plant using ${qualityName} quality: 1 CHEAP colored light (${lightColor.toString(16)}), intensity ${intensity}, distance ${distance}, decay ${decay}`);
@@ -942,8 +997,10 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
     updatePlayerPosition(playerPosition) {
         if (!this._mounted) return;
         const distance = this.plantGroup.position.distanceTo(playerPosition);
+
         const strength = 1.0 - Math.min(distance / 8.0, 1.0);
         this.interactionStrength = THREE.MathUtils.lerp(this.interactionStrength, strength > 0 ? strength * strength : 0, 0.05);
+
         
         // Player proximity speeds up blooming
         if (this.interactionStrength > 0.5) {
@@ -955,6 +1012,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
 
     update() {
         if (!this._mounted) return;
+
         
         // THROTTLE UPDATES for performance (quality-based)
         this.updateCounter++;
@@ -967,6 +1025,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         }
         
         const elapsedTime = this.clock.getElapsedTime();
+
         const deltaTime = this.clock.getDelta() * this.updateThrottle; // Compensate for throttling
         
         // Blooming animation
@@ -984,6 +1043,7 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         
         // Update interaction strength on materials
         if (this.crystallineBloom) {
+
             this.crystallineBloom.material.uniforms.uBloomProgress.value = easedBloom;
         }
         if (this.stamenGroup) {
@@ -993,15 +1053,19 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         this.plantGroup.rotation.z = Math.sin(elapsedTime * 0.4) * 0.05;
         this.plantGroup.rotation.x = Math.sin(elapsedTime * 0.3) * 0.05;
         const timeUniform = { value: elapsedTime };
+
         // Only update essential elements
         if(this.branchMesh) this.branchMesh.material.uniforms.uTime = timeUniform;
         if(this.crystallineBloom) this.crystallineBloom.material.uniforms.uTime = timeUniform;
+
         if(this.fireflies) this.fireflies.material.uniforms.uTime = timeUniform;
         if (this.ambientLight) {
+
             const baseIntensity = 1.0 + Math.sin(elapsedTime * 1.5) * 0.3;
             const interactionGlow = this.interactionStrength * 4.0;
             const brightnessMultiplier = 6.0;
             this.ambientLight.intensity = brightnessMultiplier * (baseIntensity + interactionGlow);
+
             
             // Animate secondary lights for magical shimmer
             if (this.secondaryLight) {
@@ -1018,10 +1082,12 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         scene.remove(this.plantGroup);
         this.roots?.geometry.dispose(); this.roots?.material.dispose();
         this.branchMesh?.geometry.dispose(); this.branchMesh?.material.dispose();
+
         this.flowerBase?.geometry.dispose(); this.flowerBase?.material.dispose();
         this.crystallineBloom?.geometry.dispose(); this.crystallineBloom?.material.dispose();
         this.leafMesh?.geometry.dispose(); this.leafMesh?.material.dispose();
         this.fireflies?.geometry.dispose(); this.fireflies?.material.dispose();
+
         if(this.stamenGroup) {
             this.stamenGroup.children.forEach(child => {
                 child.geometry?.dispose();
@@ -1030,4 +1096,5 @@ export class CastleBioluminescentPlantGPU extends LightComponent {
         }
         this._mounted = false;
     }
+
 }
