@@ -15,9 +15,42 @@ export class QualityControls {
         this.isReloading = false;
         this.ui = null;
         
+        // Configure Enhanced Shaders based on initial quality tier
+        if (this.game.shaderSystem) {
+            if (this.currentTier === 'LOW') {
+                // Disable for LOW quality
+                if (this.game.shaderSystem.isEnabled()) {
+                    console.log('🎨 Disabling Enhanced Shaders for LOW quality (initial setup)');
+                    this.game.shaderSystem.toggleShaders();
+                    // Update button after a short delay to ensure DOM is ready
+                    setTimeout(() => this._updateShaderButton(false), 100);
+                }
+            } else {
+                // Enable for MEDIUM/HIGH quality
+                if (!this.game.shaderSystem.isEnabled()) {
+                    console.log(`🎨 Enabling Enhanced Shaders for ${this.currentTier} quality (initial setup)`);
+                    this.game.shaderSystem.toggleShaders();
+                    // Update button after a short delay to ensure DOM is ready
+                    setTimeout(() => this._updateShaderButton(true), 100);
+                } else {
+                    setTimeout(() => this._updateShaderButton(true), 100);
+                }
+            }
+        }
+        
         this.setupKeyboardControls();
         this.createUI();
         this.updateUI();
+    }
+
+    _updateShaderButton(enabled) {
+        const toggleShadersBtn = document.getElementById('toggleShadersBtn');
+        const statusText = document.getElementById('shaderStatusText');
+        
+        if (toggleShadersBtn && statusText) {
+            statusText.textContent = enabled ? 'ON' : 'OFF';
+            toggleShadersBtn.style.background = enabled ? '#2196F3' : '#ff6b6b';
+        }
     }
 
     setupKeyboardControls() {
@@ -231,6 +264,25 @@ export class QualityControls {
             }
         } else {
             console.log('ℹ️ No active level to reload. New quality will apply to next level.');
+        }
+
+        // Disable Enhanced Shaders for LOW quality
+        if (this.currentTier === 'LOW' && this.game.shaderSystem) {
+            if (this.game.shaderSystem.isEnabled()) {
+                console.log('🎨 Disabling Enhanced Shaders for LOW quality');
+                this.game.shaderSystem.toggleShaders(); // Toggle to disable if currently enabled
+                this._updateShaderButton(false);
+            }
+        } else if (this.currentTier !== 'LOW' && this.game.shaderSystem) {
+            // Automatically enable shaders for MEDIUM/HIGH quality
+            if (!this.game.shaderSystem.isEnabled()) {
+                console.log(`🎨 Enabling Enhanced Shaders for ${this.currentTier} quality`);
+                this.game.shaderSystem.toggleShaders(); // Toggle to enable if currently disabled
+                this._updateShaderButton(true);
+            } else {
+                // Already enabled, just update button
+                this._updateShaderButton(true);
+            }
         }
 
         this.isReloading = false;
