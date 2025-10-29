@@ -9,12 +9,26 @@ export class BasicLights extends LightComponent {
   }
 
   mount(scene) {
-    this.dir = new THREE.DirectionalLight(this.props.color ?? 0xffffff, this.props.intensity ?? 0.1);
-    const pos = this.props.direction ?? [10, 20, 10];
-    this.dir.position.set(...pos);
-    scene.add(this.dir);
+    // For LOW quality: Skip directional light, only use ambient
+    // Check quality settings to determine if we should skip directional light
+    const quality = this.props.quality || {};
+    const isLowQuality = quality.pixelRatio <= 0.6 || quality.plantLightCount === 0;
+    
+    if (!isLowQuality) {
+      // MEDIUM/HIGH quality: Create directional light
+      this.dir = new THREE.DirectionalLight(this.props.color ?? 0xffffff, this.props.intensity ?? 0.1);
+      const pos = this.props.direction ?? [10, 20, 10];
+      this.dir.position.set(...pos);
+      scene.add(this.dir);
+    }
 
-    this.amb = new THREE.AmbientLight(this.props.ambientColor ?? 0xe8e8e8, this.props.ambientIntensity ?? 0.05);
+    // Always create ambient light (needed for LOW quality visibility)
+    // Significantly increase intensity for LOW quality to illuminate entire map without point lights
+    const ambientIntensity = isLowQuality 
+      ? (this.props.ambientIntensity ?? 0.5) // Very bright ambient for LOW quality - illuminates entire map
+      : (this.props.ambientIntensity ?? 0.05);
+    
+    this.amb = new THREE.AmbientLight(this.props.ambientColor ?? 0xe8e8e8, ambientIntensity);
     scene.add(this.amb);
     this._mounted = true;
   }

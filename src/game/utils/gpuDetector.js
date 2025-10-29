@@ -124,7 +124,7 @@ export class GPUDetector {
 export const QualityPresets = {
     LOW: {
         // Lighting & Effects - ULTRA AGGRESSIVE for WORST hardware (Intel HD 2000/3000, 10+ year old laptops)
-        // STRATEGY: Single CHEAP colored light with minimal settings
+        // STRATEGY: NO directional/point lights - objects glow themselves with ambient lighting
         plantInstanceCounts: {
             roots: 2,        // ABSOLUTE MINIMUM
             petals: 3,       // Barely visible flower
@@ -133,11 +133,11 @@ export const QualityPresets = {
             fireflies: 5     // A few more since they're just emissive (was 3)
         },
         plantFireflySize: 18.0,  // Slightly bigger for visibility (was 15)
-        plantLightCount: 1,      // 1 CHEAP colored light
-        plantLightIntensity: 8.0, // Moderate intensity (cheaper than high)
-        plantLightDistance: 60,   // Limited range = cheaper GPU cost
-        plantLightDecay: 2.5,     // High decay = light fades fast = cheaper
-        plantEmissiveBoost: 5.0,  // Still strong emissive for extra visibility
+        plantLightCount: 0,      // NO point lights - objects glow themselves
+        plantLightIntensity: 0.0, // Not used (no lights)
+        plantLightDistance: 0,   // Not used (no lights)
+        plantLightDecay: 2.5,     // Not used (no lights)
+        plantEmissiveBoost: 12.0, // STRONG emissive glow so objects are visible without point lights
         flameParticleCount: 0,   // 🔥 NO flame particles! Too expensive for LOW (was 3)
         flameGeometrySegments: { height: 12, radial: 8 }, // 🔥 ULTRA low poly flames!
         enableComplexShaders: false,  // Simple shaders only
