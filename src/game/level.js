@@ -8,6 +8,7 @@ import { CinematicsManager } from './cinematicsManager.js';
 import { Platform } from './components/Platform.js';
 import { InteractiveObjectManager } from './InteractiveObjectManager.js';
 import { PlaceableBlockManager } from './PlaceableBlockManager.js';
+import { Level0Controller } from './levels/Level0Controller.js';
 
 /**
  * Level
@@ -110,6 +111,18 @@ export class Level {
     if (this.data.cinematics) {
       console.log('🎬 Loading cinematics...');
       this.cinematicsManager.loadCinematics(this.data.cinematics);
+    }
+
+    // 6) Level-specific controllers (e.g., Level0Controller)
+    if (this.data.id === 'level0') {
+      console.log('🎬 Initializing Level0Controller...');
+      this.controller = new Level0Controller(this.game, this);
+      // Start sequence after a brief delay to ensure everything is settled
+      setTimeout(() => {
+        if (this.controller) {
+          this.controller.startSequence();
+        }
+      }, 500);
     }
 
     console.log(`✅ Level build complete. GLTF loaded: ${this.gltfLoaded}. Visual objects: ${this.objects.length}. Physics bodies: ${this.physicsBodies.length}. Platforms: ${this.platforms.length}`);
@@ -778,6 +791,9 @@ export class Level {
       if (this.cinematicsManager) { this.cinematicsManager.dispose?.(); this.cinematicsManager = null; }
       if (this.interactiveObjectManager) { this.interactiveObjectManager.dispose?.(); this.interactiveObjectManager = null; }
       if (this.placeableBlockManager) { this.placeableBlockManager.dispose?.(); this.placeableBlockManager = null; }
+      
+      // Level-specific controllers
+      if (this.controller) { this.controller.dispose?.(); this.controller = null; }
       
       // Platforms
       if (this.platforms && this.platforms.length > 0) {
