@@ -1,8 +1,8 @@
 // Data-driven level definitions with GLTF geometry loading
 export const levels = [
   {
-    "id": "level0",
-    "name": "Level 0: The Training Grounds",
+    "id": "level1A",
+    "name": "Level 1A",
     "gltfUrl": "assets/levels/revamped/ControlRoom.gltf",
     "startPosition": [
       0,
@@ -40,7 +40,8 @@ export const levels = [
       }
     ],
     "ui": [
-      "hud"
+      "hud",
+      "coordinates"
     ],
     "enemies": [],
     "npcs": [
@@ -62,7 +63,7 @@ export const levels = [
         "type": "other_bot",
         "position": [
           13.563743283481266,
-          9.439203262329102,
+          11.439203262329102,
           -35.625234114583954
         ],
         "modelUrl": "assets/npc/other_bot/Mike.gltf",
@@ -557,36 +558,6 @@ export const levels = [
         }
       }
     ],
-    "cinematics": {
-      "onLevelStart": {
-        "sequence": [
-          {
-            "type": "takeCamera"
-          },
-          {
-            "type": "cut",
-            "position": [
-              -36.130299264016,
-              39.32663426672091,
-              -46.145177904798445
-            ],
-            "lookAt": [
-              -22.757220085318835,
-              29.03025736732181,
-              -35.41459655867294
-            ],
-            "fov": 60
-          },
-          {
-            "type": "wait",
-            "ms": 3000
-          },
-          {
-            "type": "releaseCamera"
-          }
-        ]
-      }
-    }
   },
   {
     "id": "level1",
