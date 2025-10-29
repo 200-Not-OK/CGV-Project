@@ -18,6 +18,9 @@ export class Level0Controller {
     this._pulseAnimationId = null;
     this.interactionDialogueShown = false;
     this.richardInteractionHandler = null;
+    this.cloudIndicatorGroup = null;
+    this.steveExclamationGroup = null;
+    this._steveTrackingEnabled = false;
     
     // Get references to NPCs once
     this._initializeNpcs();
@@ -825,6 +828,9 @@ export class Level0Controller {
         cm2._hideCaption(true);
       }
       
+      // Setup post-dialogue NPC positioning and indicators
+      await this._setupPostDialogueNPCs(director);
+      
       // Release camera control
       await director.release();
       
@@ -959,6 +965,263 @@ export class Level0Controller {
   }
 
   /**
+   * Setup NPCs after dialogue completion: fade, teleport, add indicators
+   */
+  async _setupPostDialogueNPCs(director) {
+    console.log('🎬 [Level0Controller] Setting up post-dialogue NPC positions');
+    
+    // Start fade out (don't await yet)
+    const fadePromise = director.fadeOut({ ms: 800 });
+    
+    // During fade out, teleport NPCs to new positions instantly
+    // Steve position: (2.10, 12.66, -38.45) - Y raised by 2 units to prevent ground clipping
+    const stevePos = new THREE.Vector3(2.10, 12.66, -38.45);
+    if (this.steve && this.steve.mesh) {
+      this.steve.mesh.position.copy(stevePos);
+      if (this.steve.body) {
+        this.steve.body.position.set(stevePos.x, stevePos.y, stevePos.z);
+        // Ensure kinematic
+        this.steve.body.type = CANNON.Body.KINEMATIC;
+        this.steve.body.velocity.set(0, 0, 0);
+        this.steve.body.angularVelocity.set(0, 0, 0);
+      }
+    }
+    
+    // Richard position: (30.14, 10.66, -7.76)
+    const richardPos = new THREE.Vector3(30.14, 10.66, -7.76);
+    if (this.richard && this.richard.mesh) {
+      this.richard.mesh.position.copy(richardPos);
+      // Face positive X direction (Math.PI / 2)
+      this.richard.mesh.rotation.y = Math.PI / 2;
+      if (this.richard.body) {
+        this.richard.body.position.set(richardPos.x, richardPos.y, richardPos.z);
+        // Ensure kinematic
+        this.richard.body.type = CANNON.Body.KINEMATIC;
+        this.richard.body.velocity.set(0, 0, 0);
+        this.richard.body.angularVelocity.set(0, 0, 0);
+      }
+    }
+    
+    // Wait for fade out to complete, then fade in
+    await fadePromise;
+    await director.fadeIn({ ms: 800 });
+    
+    // Setup visual indicators
+    this._showCloudIndicator(); // Cloud above Richard
+    this._showExclamationMarkForSteve(); // Exclamation above Steve
+    
+    // Enable Steve player tracking
+    this._steveTrackingEnabled = true;
+    
+    console.log('✅ [Level0Controller] Post-dialogue NPC setup complete');
+  }
+
+  /**
+   * Show cloud indicator above Richard's head
+   */
+  _showCloudIndicator() {
+    if (!this.richard || !this.richard.mesh) {
+      console.warn('⚠️ [Level0Controller] Cannot show cloud indicator - Richard not found');
+      return;
+    }
+
+    // Create canvas texture for cloud
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    
+    // Clear canvas with transparent background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw cloud shape (mangled/distorted cloud)
+    ctx.fillStyle = '#888888'; // Gray cloud color
+    ctx.strokeStyle = '#666666';
+    ctx.lineWidth = 3;
+    
+    // Draw multiple overlapping circles to create cloud shape
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Main cloud body (distorted/mangled look)
+    ctx.beginPath();
+    ctx.arc(centerX - 30, centerY, 25, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY - 15, 30, 0, Math.PI * 2);
+    ctx.arc(centerX + 35, centerY, 28, 0, Math.PI * 2);
+    ctx.arc(centerX + 10, centerY + 20, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Add some darker patches for "mangled" effect
+    ctx.fillStyle = '#555555';
+    ctx.beginPath();
+    ctx.arc(centerX - 25, centerY + 10, 15, 0, Math.PI * 2);
+    ctx.arc(centerX + 25, centerY - 5, 18, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Add glow effect
+    ctx.shadowColor = '#888888';
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = '#999999';
+    ctx.beginPath();
+    ctx.arc(centerX - 30, centerY, 25, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY - 15, 30, 0, Math.PI * 2);
+    ctx.arc(centerX + 35, centerY, 28, 0, Math.PI * 2);
+    ctx.arc(centerX + 10, centerY + 20, 22, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Create texture from canvas
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    
+    // Create sprite material
+    const material = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.9,
+      depthTest: false,
+      depthWrite: false
+    });
+    
+    // Create sprite
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(2.0, 2.0, 1); // Slightly larger than exclamation
+    
+    // Create a group to hold the sprite and position it above Richard's head
+    this.cloudIndicatorGroup = new THREE.Group();
+    
+    // Position above head
+    const npcHeight = this.richard.size?.[1] || 0.8;
+    this.cloudIndicatorGroup.position.y = npcHeight + 6;
+    
+    this.cloudIndicatorGroup.add(sprite);
+    
+    // Add subtle floating animation
+    let floatPhase = 0;
+    const floatUpdate = () => {
+      if (!this.cloudIndicatorGroup || !this.cloudIndicatorGroup.parent) return;
+      
+      floatPhase += 0.03;
+      const offset = Math.sin(floatPhase) * 0.1; // Gentle vertical float
+      this.cloudIndicatorGroup.position.y = npcHeight + 6 + offset;
+      
+      // Sprites automatically face the camera
+      
+      requestAnimationFrame(floatUpdate);
+    };
+    floatUpdate();
+    
+    // Add to Richard's mesh so it moves with him
+    this.richard.mesh.add(this.cloudIndicatorGroup);
+    
+    console.log('☁️ [Level0Controller] Cloud indicator added above Richard');
+  }
+
+  /**
+   * Show exclamation mark above Steve's head
+   */
+  _showExclamationMarkForSteve() {
+    if (!this.steve || !this.steve.mesh) {
+      console.warn('⚠️ [Level0Controller] Cannot show exclamation mark - Steve not found');
+      return;
+    }
+
+    // Create canvas texture for exclamation mark
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    
+    // Clear canvas with transparent background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw exclamation mark
+    ctx.fillStyle = '#ffd700'; // Gold color
+    ctx.font = 'bold 200px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('!', canvas.width / 2, canvas.height / 2);
+    
+    // Add glow effect
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 30;
+    ctx.fillText('!', canvas.width / 2, canvas.height / 2);
+    
+    // Create texture from canvas
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    
+    // Create sprite material
+    const material = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.95,
+      depthTest: false,
+      depthWrite: false
+    });
+    
+    // Create sprite
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(1.5, 1.5, 1); // Size of the exclamation mark
+    
+    // Create a group to hold the sprite and position it above Steve's head
+    this.steveExclamationGroup = new THREE.Group();
+    
+    // Position above head (using same offset as Richard's exclamation mark)
+    const npcHeight = this.steve.size?.[1] || 0.8;
+    this.steveExclamationGroup.position.y = npcHeight + 1; // Same as Richard's original offset
+    
+    this.steveExclamationGroup.add(sprite);
+    
+    // Add pulsing animation
+    let pulsePhase = 0;
+    const pulseUpdate = () => {
+      if (!this.steveExclamationGroup || !this.steveExclamationGroup.parent) return;
+      
+      pulsePhase += 0.05;
+      const scale = 1 + Math.sin(pulsePhase) * 0.15; // Pulse between 0.85 and 1.15
+      this.steveExclamationGroup.scale.setScalar(scale);
+      
+      // Sprites automatically face the camera
+      
+      requestAnimationFrame(pulseUpdate);
+    };
+    pulseUpdate();
+    
+    // Add to Steve's mesh so it moves with him
+    this.steve.mesh.add(this.steveExclamationGroup);
+    
+    console.log('⚠️ [Level0Controller] Exclamation mark added above Steve');
+  }
+
+  /**
+   * Update method - should be called from game loop to track player with Steve
+   */
+  update(delta) {
+    // Update Steve's rotation to track player
+    if (this._steveTrackingEnabled && this.steve && this.steve.mesh && this.game && this.game.player && this.game.player.mesh) {
+      const playerPos = this.game.player.mesh.position;
+      const stevePos = this.steve.mesh.position;
+      
+      // Calculate direction to player
+      const targetRotation = Math.atan2(
+        playerPos.x - stevePos.x,
+        playerPos.z - stevePos.z
+      );
+      
+      // Smoothly rotate toward player
+      const currentRot = this.steve.mesh.rotation.y;
+      const diff = targetRotation - currentRot;
+      
+      // Normalize to -PI to PI
+      let normalizedDiff = ((diff + Math.PI) % (2 * Math.PI)) - Math.PI;
+      
+      // Smooth rotation
+      this.steve.mesh.rotation.y += normalizedDiff * 0.1; // Adjust speed as needed
+    }
+  }
+
+  /**
    * Dispose and cleanup
    */
   dispose() {
@@ -985,6 +1248,34 @@ export class Level0Controller {
         if (child.geometry) child.geometry.dispose();
       });
       this.exclamationGroup = null;
+    }
+    
+    // Remove cloud indicator if it exists
+    if (this.cloudIndicatorGroup && this.richard && this.richard.mesh) {
+      this.richard.mesh.remove(this.cloudIndicatorGroup);
+      // Clean up resources
+      this.cloudIndicatorGroup.traverse((child) => {
+        if (child.material) {
+          if (child.material.map) child.material.map.dispose();
+          child.material.dispose();
+        }
+        if (child.geometry) child.geometry.dispose();
+      });
+      this.cloudIndicatorGroup = null;
+    }
+    
+    // Remove Steve exclamation mark if it exists
+    if (this.steveExclamationGroup && this.steve && this.steve.mesh) {
+      this.steve.mesh.remove(this.steveExclamationGroup);
+      // Clean up resources
+      this.steveExclamationGroup.traverse((child) => {
+        if (child.material) {
+          if (child.material.map) child.material.map.dispose();
+          child.material.dispose();
+        }
+        if (child.geometry) child.geometry.dispose();
+      });
+      this.steveExclamationGroup = null;
     }
     
     // Clean up any timers or pending operations
