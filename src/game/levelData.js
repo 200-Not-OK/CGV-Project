@@ -3,7 +3,7 @@ export const levels = [
   {
     "id": "level1A",
     "name": "Level 1A",
-    "gltfUrl": "assets/levels/revamped/ControlRoom.gltf",
+    "gltfUrl": "assets/levels/revamped/Level1.gltf",
     "startPosition": [
       0,
       12,
@@ -19,8 +19,12 @@ export const levels = [
       {
         "key": "PointLight",
         "props": {
-          "position": [0, 22, 0],
-          "color": 0xffffff,
+          "position": [
+            0,
+            22,
+            0
+          ],
+          "color": 16777215,
           "intensity": 5,
           "distance": 0,
           "decay": 0,
@@ -30,8 +34,12 @@ export const levels = [
       {
         "key": "PointLight",
         "props": {
-          "position": [0, 22, -25],
-          "color": 0xffffff,
+          "position": [
+            0,
+            22,
+            -25
+          ],
+          "color": 16777215,
           "intensity": 4,
           "distance": 0,
           "decay": 0,
@@ -236,6 +244,30 @@ export const levels = [
             ]
           ],
           "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "TreeNode2",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      },
+      {
+        "meshName": "TreeNode1",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
         }
       }
     ],
@@ -455,6 +487,326 @@ export const levels = [
         "type": "mesh",
         "meshName": "Platform3006",
         "materialType": "ground"
+      },
+      {
+        "id": "collider_4",
+        "type": "box",
+        "position": [
+          276.8880293795172,
+          10.996814174003951,
+          -73.9396409906447
+        ],
+        "size": [
+          64.49216878209612,
+          3.2354663557965324,
+          0.249976173766413
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_6",
+        "type": "box",
+        "position": [
+          288.7530212402344,
+          10.70006275177002,
+          -63.36783218383789
+        ],
+        "size": [
+          6.52842684864504,
+          4.660901069641113,
+          6.528426848645061
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_7",
+        "type": "box",
+        "position": [
+          294.7952880859375,
+          10.70006275177002,
+          -62.11376953125
+        ],
+        "size": [
+          5.400139955073087,
+          4.660901069641113,
+          5.400139955073037
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_8",
+        "type": "box",
+        "position": [
+          299.35552978515625,
+          10.70006275177002,
+          -67.92805480957031
+        ],
+        "size": [
+          5.503345912205077,
+          4.660901069641113,
+          5.503345912205049
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_9",
+        "type": "box",
+        "position": [
+          301.7371826171875,
+          11.248753547668457,
+          -61.51356887817383
+        ],
+        "size": [
+          6.587116128094749,
+          4.660901069641113,
+          6.587116128094728
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_10",
+        "type": "box",
+        "position": [
+          304.37176513671875,
+          10.70006275177002,
+          -56.413490295410156
+        ],
+        "size": [
+          6.52842684864504,
+          4.660901069641113,
+          6.528426848645054
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_11",
+        "type": "box",
+        "position": [
+          593.7308448709202,
+          10.996814174003951,
+          -71.41085016770253
+        ],
+        "size": [
+          27.36974002233353,
+          3.2354663557965324,
+          0.24997118603916135
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_12",
+        "type": "box",
+        "position": [
+          558.5648902810765,
+          10.996814174003951,
+          431.21738469557874
+        ],
+        "size": [
+          27.36974002233353,
+          3.2354663557965324,
+          0.24997118603914714
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_13",
+        "type": "box",
+        "position": [
+          49.35910262238512,
+          10.996814174003951,
+          -46.44233667893299
+        ],
+        "size": [
+          27.36974002233361,
+          3.2354663557965324,
+          0.24997118603915425
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_14",
+        "type": "box",
+        "position": [
+          50.82069625031481,
+          10.996814174003951,
+          -23.731820702980844
+        ],
+        "size": [
+          27.36974002233361,
+          3.2354663557965324,
+          0.24997118603916135
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_15",
+        "type": "box",
+        "position": [
+          -50.94272385466565,
+          10.996814174003951,
+          -23.731820702980844
+        ],
+        "size": [
+          27.369740022333602,
+          3.2354663557965324,
+          0.24997118603916135
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_16",
+        "type": "box",
+        "position": [
+          -50.94272385466565,
+          10.996814174003951,
+          -46.44233667893299
+        ],
+        "size": [
+          27.369740022333602,
+          3.2354663557965324,
+          0.24997118603915425
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_17",
+        "type": "box",
+        "position": [
+          -158.80121384490002,
+          11.084471148796432,
+          -87.16539728684316
+        ],
+        "size": [
+          27.369740022333616,
+          3.2354663557965324,
+          0.24997118603916135
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_18",
+        "type": "box",
+        "position": [
+          -227.4301658712672,
+          11.084471148796432,
+          280.21616399245374
+        ],
+        "size": [
+          27.369740022333616,
+          3.2354663557965324,
+          0.24997118603914714
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_19",
+        "type": "box",
+        "position": [
+          -393.06401909044445,
+          17.685004156214546,
+          339.47382550479756
+        ],
+        "size": [
+          4.034518518952268,
+          1.8591362417886899,
+          1.9053478012843357
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_20",
+        "type": "box",
+        "position": [
+          -393.06352258927166,
+          14.031774424862878,
+          339.5168225256386
+        ],
+        "size": [
+          4.314744958594872,
+          9.165595704492027,
+          3.285870740667974
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "ground"
       }
     ],
     "placeableBlocks": [
@@ -557,7 +909,7 @@ export const levels = [
           "materialType": "ground"
         }
       }
-    ],
+    ]
   },
   {
     "id": "level1",
