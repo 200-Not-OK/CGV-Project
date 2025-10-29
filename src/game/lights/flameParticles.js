@@ -23,10 +23,25 @@ export class FlameParticles extends LightComponent {
         this.basePosition = new THREE.Vector3().fromArray(props.position || [0, 0, 0]);
         this.noiseTexture = null;
         this.alphaTexture = null;
-        this.particleCount = props.particleCount || 50;
+        
+        // Quality-adjusted settings
+        this.quality = props.quality || { enableParticles: true, enableComplexShaders: true };
+        
+        // Particle count based on quality tier
+        let defaultParticleCount;
+        if (!this.quality.enableParticles) {
+            // Use flameParticleCount from quality settings if available
+            defaultParticleCount = this.quality.flameParticleCount || 5; // LOW: ULTRA minimal (was 10)
+        } else if (this.quality.enableComplexShaders) {
+            defaultParticleCount = 50; // HIGH/MEDIUM: Full particles
+        } else {
+            defaultParticleCount = 25; // Fallback
+        }
+        this.particleCount = props.particleCount || defaultParticleCount;
+        
         this.heatPulse = 0;
         this.flameHeight = props.height || 2.0; 
-        this.maxBaseRadius = props.baseRadius || 0.3; 
+        this.maxBaseRadius = props.baseRadius || 0.3;
     }
 
     async mount(scene) {
@@ -38,6 +53,13 @@ export class FlameParticles extends LightComponent {
             this.noiseTexture = FlameParticles.noiseTexture;
             this.alphaTexture = FlameParticles.alphaTexture;
         }
+        
+        // Debug: Log flame quality settings
+        console.log(`🔥 Creating FlameParticles at [${this.basePosition.x}, ${this.basePosition.y}, ${this.basePosition.z}] with:`, {
+            particleCount: this.particleCount,
+            enableParticles: this.quality.enableParticles,
+            enableComplexShaders: this.quality.enableComplexShaders
+        });
         
         // --- VOLUMETRIC CORE FLAME (Main Shape) ---
         const geometry = this.createFlameGeometry();
@@ -274,11 +296,25 @@ export class FlameParticles extends LightComponent {
     createFlameGeometry() {
         const height = this.flameHeight; 
         const maxBaseRadius = this.maxBaseRadius; 
-        const heightSegments = 64; 
+        
+        // Adjust geometry complexity based on quality
+        let heightSegments, radialSegments;
+        if (!this.quality.enableParticles) {
+            // LOW quality: Minimal geometry
+            heightSegments = 24;
+            radialSegments = 16;
+        } else if (this.quality.enableComplexShaders) {
+            // HIGH/MEDIUM quality: Full detail
+            heightSegments = 64;
+            radialSegments = 36;
+        } else {
+            // Fallback
+            heightSegments = 32;
+            radialSegments = 24;
+        }
         
         const taperPower = 2.0 + (height - 2.0) * 0.5; 
 
-        const radialSegments = 36;
         const geometry = new THREE.CylinderGeometry(
             1, 1, 
             height,
