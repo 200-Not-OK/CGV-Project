@@ -1,14 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { YellowBot } from '../game/npc/YellowBot.js';
 
-// Standalone Level Editor - Focused on Enemies, Patrol Points, and Lighting
-// Features:
-// - Load levels from levelData.js with GLTF geometry
-// - Edit enemies, patrol points, and lighting only
-// - Save changes back to levelData.js
-// - Level switching within editor
-
+// Standalone Level Editor - Focused on Enemies, NPCs, Patrol Points, and Lighting
 export class StandaloneLevelEditor {
   constructor(container, statusElement) {
     this.container = container;
@@ -18,7 +11,7 @@ export class StandaloneLevelEditor {
     this._initScene();
     
     // Editor state
-    this.mode = 'select'; // enemy | light | patrol | collider | mesh | select
+    this.mode = 'select'; // enemy | npc | light | patrol | collider | mesh | select
     this.enabled = true;
     
     // Level management
@@ -84,7 +77,7 @@ export class StandaloneLevelEditor {
     
     // Enemy and Light types
     this.enemyTypes = ['walker', 'runner', 'jumper', 'flyer', 'snake', 'snake_boss', 'mech_boss', 'crawler'];
-    this.npcTypes = ['yellow_bot', 'other_bot']; // NPCs (non-player characters)
+    this.npcTypes = ['yellow_bot','Worker','woman','suitf','suitM','punk','hood','casual','women2','women3', 'other_bot']; // NPCs (non-player characters)
     this.lightTypes = ['BasicLights', 'PointPulse', 'HemisphereFill'];
     this.colliderTypes = ['box', 'sphere', 'capsule'];
     this.materialTypes = ['ground', 'wall', 'platform'];
@@ -699,7 +692,7 @@ export class StandaloneLevelEditor {
         npc.patrolPoints.forEach((point, pointIndex) => {
           this.patrolPoints.push({
             position: [point[0], point[1], point[2]],
-            waitTime: point[3] || 0.5,
+            waitTime: point[3] || (npc.waitTime || 0.5),
             npcIndex: npcIndex,
             pointIndex: pointIndex,
             entityType: 'npc',
@@ -743,9 +736,14 @@ export class StandaloneLevelEditor {
     
     this.npcs.forEach((npc, index) => {
       const geometry = new THREE.SphereGeometry(0.6, 8, 8);
+      
+      // Color based on patrol status - yellow for NPCs with patrol, cyan for idle
+      const hasPatrol = npc.patrolPoints && npc.patrolPoints.length > 0;
+      const color = hasPatrol ? 0xffff00 : 0x00ffff;
+      
       const material = new THREE.MeshLambertMaterial({ 
-        color: 0xffff00, // Yellow for NPCs
-        emissive: 0x444400,
+        color: color,
+        emissive: hasPatrol ? 0x444400 : 0x004444,
         transparent: true,
         opacity: 0.85
       });
@@ -901,37 +899,68 @@ export class StandaloneLevelEditor {
     this.patrolConnections.forEach(line => this.scene.remove(line));
     this.patrolConnections = [];
     
-    // Group patrol points by enemy
-    const enemyPatrolGroups = {};
+    // Group patrol points by entity (enemy or NPC)
+    const patrolGroups = {};
     this.patrolPoints.forEach(point => {
-      if (!enemyPatrolGroups[point.enemyIndex]) {
-        enemyPatrolGroups[point.enemyIndex] = [];
+      const key = point.entityType === 'npc' ? `npc_${point.npcIndex}` : `enemy_${point.enemyIndex}`;
+      if (!patrolGroups[key]) {
+        patrolGroups[key] = {
+          points: [],
+          type: point.entityType
+        };
       }
-      enemyPatrolGroups[point.enemyIndex].push(point);
+      patrolGroups[key].points.push(point);
     });
     
-    // Create lines between consecutive patrol points for each enemy
-    Object.values(enemyPatrolGroups).forEach(group => {
-      if (group.length < 2) return;
+    // Create lines between consecutive patrol points for each entity
+    Object.values(patrolGroups).forEach(group => {
+      if (group.points.length < 2) return;
       
-      group.sort((a, b) => a.pointIndex - b.pointIndex);
+      group.points.sort((a, b) => a.pointIndex - b.pointIndex);
       
-      for (let i = 0; i < group.length - 1; i++) {
-        const start = group[i].position;
-        const end = group[i + 1].position;
+      for (let i = 0; i < group.points.length - 1; i++) {
+        const start = group.points[i].position;
+        const end = group.points[i + 1].position;
         
         const geometry = new THREE.BufferGeometry().setFromPoints([
           new THREE.Vector3(start[0], start[1], start[2]),
           new THREE.Vector3(end[0], end[1], end[2])
         ]);
         
+        // Different colors for NPCs (yellow) vs enemies (magenta)
+        const color = group.type === 'npc' ? 0xffff00 : 0xff00ff;
         const material = new THREE.LineBasicMaterial({ 
-          color: 0xff00ff,
+          color: color,
           transparent: true,
           opacity: 0.6
         });
         
         const line = new THREE.Line(geometry, material);
+        this.scene.add(line);
+        this.patrolConnections.push(line);
+      }
+      
+      // Create loop back to start for looping behavior
+      if (group.points.length >= 3) {
+        const start = group.points[group.points.length - 1].position;
+        const end = group.points[0].position;
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(start[0], start[1], start[2]),
+          new THREE.Vector3(end[0], end[1], end[2])
+        ]);
+        
+        const color = group.type === 'npc' ? 0xffff00 : 0xff00ff;
+        const material = new THREE.LineDashedMaterial({ 
+          color: color,
+          transparent: true,
+          opacity: 0.4,
+          dashSize: 0.5,
+          gapSize: 0.3
+        });
+        
+        const line = new THREE.Line(geometry, material);
+        line.computeLineDistances();
         this.scene.add(line);
         this.patrolConnections.push(line);
       }
@@ -1564,13 +1593,13 @@ export class StandaloneLevelEditor {
       
       <div id="patrol-controls" style="display: ${this.mode === 'patrol' ? 'block' : 'none'};">
         <h4>Patrol Point Controls</h4>
-        <p>Select an enemy first, then click to add patrol points</p>
+        <p>Select an enemy or NPC first, then click to add patrol points</p>
         
         <div id="patrol-list">
           <h5>Patrol Points (${this.patrolPoints.length})</h5>
           ${this.patrolPoints.map((point, index) => `
             <div class="item-row" data-type="patrol" data-index="${index}">
-              Enemy ${point.enemyIndex} Point ${point.pointIndex}<br>
+              ${point.entityType === 'npc' ? 'NPC' : 'Enemy'} ${point.entityType === 'npc' ? point.npcIndex : point.enemyIndex} Point ${point.pointIndex}<br>
               [${point.position.join(', ')}] Wait: ${point.waitTime}s
               <button onclick="window.editor._deletePatrolPoint(${index})">Delete</button>
             </div>
@@ -1595,8 +1624,8 @@ export class StandaloneLevelEditor {
         <p>Left-click - Place/Select objects</p>
         <p>Delete - Remove selected</p>
         <p><strong>Hotkeys:</strong></p>
-        <p>1 - Enemies, 2 - Lights, 3 - Patrol</p>
-        <p>4 - Meshes, 5 - Colliders, 6 - Select</p>
+        <p>1 - Enemies, 2 - NPCs, 3 - Lights, 4 - Patrol</p>
+        <p>5 - Meshes, 6 - Colliders, 7 - Select</p>
       </div>
       
       <style>
@@ -1706,6 +1735,25 @@ export class StandaloneLevelEditor {
                  onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
                  oninput="window.editor._onPropertyInputChange()"
                  onchange="window.editor._onPropertyInputChange()">
+        </div>
+        <div style="margin-top: 10px; padding: 8px; background: #222; border-radius: 3px;">
+          <h5 style="margin: 0 0 5px 0; color: #ffcc00;">Patrol Settings</h5>
+          <label style="font-size: 11px;">Patrol Behavior:</label><br>
+          <select id="selected-npc-patrol-behavior" style="width: 100%; padding: 3px; font-size: 11px;">
+            <option value="loop" ${npcData.patrolBehavior === 'loop' ? 'selected' : ''}>Loop (continuous)</option>
+            <option value="pingpong" ${npcData.patrolBehavior === 'pingpong' ? 'selected' : ''}>Ping-Pong (back and forth)</option>
+            <option value="once" ${npcData.patrolBehavior === 'once' ? 'selected' : ''}>Once (stop at end)</option>
+            <option value="random" ${npcData.patrolBehavior === 'random' ? 'selected' : ''}>Random order</option>
+          </select>
+          <label style="font-size: 11px; margin-top: 5px; display: block;">Wait Time at Points (s):</label>
+          <input type="number" id="selected-npc-wait-time" value="${npcData.waitTime || 0.5}" step="0.1" min="0" 
+                 style="width: 100%; padding: 3px; font-size: 11px;"
+                 onkeydown="if(event.key==='Enter'){window.editor._applySelectedProperties();return;}event.stopPropagation();" 
+                 oninput="window.editor._onPropertyInputChange()"
+                 onchange="window.editor._onPropertyInputChange()">
+          <div style="margin-top: 5px; font-size: 10px; color: #aaa;">
+            Patrol Points: ${npcData.patrolPoints ? npcData.patrolPoints.length : 0}
+          </div>
         </div>
       `;
     } else if (this.selectedType === 'light') {
@@ -2371,11 +2419,12 @@ export class StandaloneLevelEditor {
 
     // Mode switching
     if (event.code === 'Digit1') this.mode = 'enemy';
-    if (event.code === 'Digit2') this.mode = 'light';
-    if (event.code === 'Digit3') this.mode = 'patrol';
-    if (event.code === 'Digit4') this.mode = 'mesh';
-    if (event.code === 'Digit5') this.mode = 'collider';
-    if (event.code === 'Digit6') this.mode = 'select';
+    if (event.code === 'Digit2') this.mode = 'npc';
+    if (event.code === 'Digit3') this.mode = 'light';
+    if (event.code === 'Digit4') this.mode = 'patrol';
+    if (event.code === 'Digit5') this.mode = 'mesh';
+    if (event.code === 'Digit6') this.mode = 'collider';
+    if (event.code === 'Digit7') this.mode = 'select';
 
     if (event.code.startsWith('Digit')) {
       this._clearVisualRepresentations();
@@ -2614,9 +2663,14 @@ export class StandaloneLevelEditor {
       modelUrl: this._getDefaultModelUrl(type),
       patrolPoints: [],
       speed: this._getDefaultSpeed(type),
-      scale: 1.0, // Default scale
+      scale: 1.0,
       chaseRange: 0, // NPCs don't chase
-      id: this.nextId++
+      id: this.nextId++,
+      // Enhanced patrol properties
+      patrolBehavior: 'loop', // loop, pingpong, once, random
+      currentPatrolIndex: 0,
+      isMoving: true,
+      waitTime: 0.5 // Default wait time at each point
     };
     
     this.npcs.push(npc);
@@ -2656,7 +2710,6 @@ export class StandaloneLevelEditor {
       const pointIndex = enemy.patrolPoints.length;
       enemy.patrolPoints.push([position.x, position.y, position.z, 0.5]);
       
-      // Update patrol points and visuals
       this._extractPatrolPoints();
       this._clearVisualRepresentations();
       this._createEnemyVisuals();
@@ -2675,9 +2728,8 @@ export class StandaloneLevelEditor {
       if (!npc.patrolPoints) npc.patrolPoints = [];
       
       const pointIndex = npc.patrolPoints.length;
-      npc.patrolPoints.push([position.x, position.y, position.z, 0.5]);
+      npc.patrolPoints.push([position.x, position.y, position.z, npc.waitTime || 0.5]);
       
-      // Update patrol points and visuals
       this._extractPatrolPoints();
       this._clearVisualRepresentations();
       this._createEnemyVisuals();
@@ -3454,6 +3506,8 @@ _applySelectedProperties() {
       const npcTypeSelect = document.getElementById('selected-npc-type');
       const speedInput = document.getElementById('selected-npc-speed');
       const scaleInput = document.getElementById('selected-npc-scale');
+      const patrolBehaviorSelect = document.getElementById('selected-npc-patrol-behavior');
+      const waitTimeInput = document.getElementById('selected-npc-wait-time');
       
       const index = this.selected.userData.index;
       if (this.npcs[index]) {
@@ -3466,6 +3520,20 @@ _applySelectedProperties() {
         }
         if (scaleInput) {
           this.npcs[index].scale = parseFloat(scaleInput.value);
+        }
+        if (patrolBehaviorSelect) {
+          this.npcs[index].patrolBehavior = patrolBehaviorSelect.value;
+        }
+        if (waitTimeInput) {
+          this.npcs[index].waitTime = parseFloat(waitTimeInput.value);
+          
+          // Update wait times in existing patrol points
+          if (this.npcs[index].patrolPoints) {
+            this.npcs[index].patrolPoints.forEach(point => {
+              point[3] = parseFloat(waitTimeInput.value);
+            });
+            this._extractPatrolPoints(); // Refresh patrol points data
+          }
         }
       }
     } else if (this.selectedType === 'light') {
@@ -3744,6 +3812,9 @@ _applySelectedProperties() {
       case 'enemy':
         this._deleteEnemy(index);
         break;
+      case 'npc':
+        this._deleteNpc(index);
+        break;
       case 'light':
         this._deleteLight(index);
         break;
@@ -3762,6 +3833,7 @@ _applySelectedProperties() {
       this._extractPatrolPoints(); // Update patrol points
       this._clearVisualRepresentations();
       this._createEnemyVisuals();
+      this._createNpcVisuals();
       this._createLightVisuals();
       this._createColliderVisuals();
       this._createPatrolPointVisuals();
@@ -3802,21 +3874,30 @@ _applySelectedProperties() {
   _deletePatrolPoint(index) {
     if (index >= 0 && index < this.patrolPoints.length) {
       const point = this.patrolPoints[index];
-      const enemy = this.enemies[point.enemyIndex];
       
-      if (enemy && enemy.patrolPoints) {
-        enemy.patrolPoints.splice(point.pointIndex, 1);
-        this._extractPatrolPoints();
-        this._clearVisualRepresentations();
-        this._createEnemyVisuals();
-        this._createLightVisuals();
-        this._createColliderVisuals();
-        this._createPatrolPointVisuals();
-        this._createPatrolConnections();
-        this._updateUI();
-        this.selected = null;
-        this.selectedType = null;
+      if (point.entityType === 'enemy') {
+        const enemy = this.enemies[point.enemyIndex];
+        if (enemy && enemy.patrolPoints) {
+          enemy.patrolPoints.splice(point.pointIndex, 1);
+        }
+      } else if (point.entityType === 'npc') {
+        const npc = this.npcs[point.npcIndex];
+        if (npc && npc.patrolPoints) {
+          npc.patrolPoints.splice(point.pointIndex, 1);
+        }
       }
+      
+      this._extractPatrolPoints();
+      this._clearVisualRepresentations();
+      this._createEnemyVisuals();
+      this._createNpcVisuals();
+      this._createLightVisuals();
+      this._createColliderVisuals();
+      this._createPatrolPointVisuals();
+      this._createPatrolConnections();
+      this._updateUI();
+      this.selected = null;
+      this.selectedType = null;
     }
   }
   
@@ -3831,7 +3912,16 @@ _applySelectedProperties() {
       mech_boss: 'assets/enemies/robot_boss/scene.gltf',
       crawler: 'assets/enemies/crawler/Crawler.gltf',
       yellow_bot: 'assets/npc/yellow_bot/scene.gltf',
-      other_bot: 'assets/npc/other_bot/Mike.gltf'
+      other_bot: 'assets/npc/other_bot/Mike.gltf',
+      Worker: 'assets/npc/Worker.glb',
+      woman: 'assets/npc/Woman.glb',
+      suitf: 'assets/npc/Suit.glb',
+      suitM: 'assets/npc/BusinessMan.glb',
+      punk: 'assets/npc/Punk.glb',
+      hood: 'assets/npc/HoodieCharacter.glb',
+      women2: 'assets/npc/AnimatedWoman.glb',
+      woman3: 'assets/npc/AnimatedWoman1.glb'
+
     };
     return urls[type] || urls.walker;
   }
@@ -3845,7 +3935,17 @@ _applySelectedProperties() {
       snake: 1.5,
       snake_boss: 2.5,
       mech_boss: 1.5,
-      crawler: 1.5
+      crawler: 1.5,
+      yellow_bot: 1.5,
+      other_bot: 1.5,
+      Worker: 2.4,
+      woman: 2.4,
+      suitf: 2.4,
+      suitM: 2.4,
+      punk: 2.4,
+      hood: 2.4,
+      women2: 2.4,
+      woman3: 2.4
     };
     return speeds[type] || 2.0;
   }
@@ -4153,5 +4253,25 @@ export const levels = ${levelsJSON};`;
 
     // Render
     this.renderer.render(this.scene, this.camera);
+  }
+
+  // Helper method to get NPC patrol data for game integration
+  getNpcPatrolData() {
+    const npcPatrolData = {};
+    
+    this.npcs.forEach((npc, index) => {
+      if (npc.patrolPoints && npc.patrolPoints.length > 0) {
+        npcPatrolData[npc.id] = {
+          patrolPoints: npc.patrolPoints,
+          speed: npc.speed || 2,
+          behavior: npc.patrolBehavior || 'loop',
+          waitTime: npc.waitTime || 0.5,
+          currentPointIndex: 0,
+          isMoving: true
+        };
+      }
+    });
+    
+    return npcPatrolData;
   }
 }
