@@ -84,25 +84,39 @@ export class StarLight extends LightComponent {
             // Warm yellowish point light for castle ambiance
             const lightColor = this.props.lightColor ?? 0xFFF8DC; // Softer golden color
             
-            // Stars are PRIMARY light sources - optimized for better coverage
+            // Stars are PRIMARY light sources - need STRONG illumination from high positions!
             // Quality-based intensity and distance
             let intensity, distance, shadowMapSize, decay;
-            if (!this.quality.enableComplexShaders) {
-                // LOW quality: Good range with efficient decay
-                intensity = 35;   // Slightly increased
-                distance = 250;   // Extended range
+            
+            // Determine quality tier by checking multiple factors
+            const isLowQuality = this.quality.pixelRatio <= 0.6;
+            const isMediumQuality = this.quality.pixelRatio > 0.6 && this.quality.pixelRatio < 1.0;
+            
+            if (isLowQuality) {
+                // LOW quality: Moderate intensity with optimized decay
+                intensity = 50;   // Balanced (was 35)
+                distance = 280;   // Good range
                 shadowMapSize = 128;
-                decay = 2.2;      // Efficient decay
-            } else {
-                // MEDIUM/HIGH quality: Maximum coverage
-                intensity = 60;   // Increased
-                distance = 400;   // Extended range!
+                decay = 1.7;      // Better reach than before (was 2.2)
+            } else if (isMediumQuality) {
+                // MEDIUM quality: Subtle ambient lighting
+                intensity = 45;   // Reduced brightness (was 70)
+                distance = 350;   // Extended range
                 shadowMapSize = 256;
-                decay = 1.8;      // Gradual falloff
+                decay = 1.7;      // Good reach
+            } else {
+                // HIGH quality: Balanced illumination
+                intensity = 55;   // Toned down (was 90)
+                distance = 450;   // Great range!
+                shadowMapSize = 512;
+                decay = 1.6;      // Good reach
             }
             
             this.light = new THREE.PointLight(lightColor, intensity, distance, decay);
             this.light.position.set(...pos);
+            
+            // Store base intensity for pulse animation
+            this.baseIntensity = intensity;
             
             console.log(`⭐ Star light created: intensity=${intensity}, distance=${distance}, decay=${decay}`);
             
@@ -142,8 +156,9 @@ export class StarLight extends LightComponent {
         this.time += delta;
         // Subtle glow pulse: slight variation for star-like effect
         const pulse = Math.sin(this.time * 1.0) * 0.05 + 1.0; // Range [0.95,1.05]
-        if (this.light) {
-            this.light.intensity = 50 * pulse; // Reduced intensity
+        if (this.light && this.baseIntensity) {
+            // Use the quality-adjusted base intensity for the pulse
+            this.light.intensity = this.baseIntensity * pulse;
         }
         // No need to pulse emissive since we're using MeshBasicMaterial
         // The PointLight provides all the dynamic lighting
