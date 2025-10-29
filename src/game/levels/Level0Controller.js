@@ -22,6 +22,30 @@ export class Level0Controller {
     this.steveExclamationGroup = null;
     this._steveTrackingEnabled = false;
     
+    // Door trigger tutorial flags
+    this._doorTriggersEnabled = false;
+    this._doorTriggersConsumed = false;
+    this._doorTriggerBoxes = [
+      { center: new THREE.Vector3(-36.67, 10.66, -29.51), halfSize: new THREE.Vector3(2, 2, 2) },
+      { center: new THREE.Vector3( 36.67, 10.66, -29.51), halfSize: new THREE.Vector3(2, 2, 2) }
+    ];
+    
+    // Lift area trigger flags
+    this._liftTriggerEnabled = false;
+    this._liftTriggerConsumed = false;
+    this._liftTriggerBox = {
+      center: new THREE.Vector3(-233.48, 24.44, 88.47),
+      halfSize: new THREE.Vector3(15, 15, 15) // 30x30x30 units - huge trigger area
+    };
+    
+    // Right-side approach trigger flags (huge)
+    this._rightPathTriggerEnabled = true; // enabled immediately; adjust if needed
+    this._rightPathTriggerConsumed = false;
+    this._rightPathTriggerBox = {
+      center: new THREE.Vector3(277.64, 10.91, -33.92),
+      halfSize: new THREE.Vector3(15, 15, 15) // 30x30x30 units
+    };
+    
     // Get references to NPCs once
     this._initializeNpcs();
     
@@ -352,7 +376,7 @@ export class Level0Controller {
           .subVectors(nextTarget, currentPos);
         direction.y = 0;
         direction.normalize();
-        const targetRotation = Math.atan2(direction.x, direction.z);
+        const targetRotation = Math.atan2(direction.x, direction.z) + Math.PI; // Add PI to fix backwards facing
         this.richard.mesh.rotation.y = targetRotation;
         
         // Show dialogue again (non-blocking so pacing continues)
@@ -365,7 +389,7 @@ export class Level0Controller {
         direction.normalize();
         
         // Update rotation to face movement direction
-        const targetRotation = Math.atan2(direction.x, direction.z);
+        const targetRotation = Math.atan2(direction.x, direction.z) + Math.PI; // Add PI to fix backwards facing
         const currentRot = this.richard.mesh.rotation.y;
         let diff = targetRotation - currentRot;
         // Normalize to -PI to PI
@@ -402,10 +426,14 @@ export class Level0Controller {
   _makeNpcFaceTarget(npc, targetPos) {
     if (!npc || !npc.mesh) return;
     
-    const targetRotation = Math.atan2(
+    let targetRotation = Math.atan2(
       targetPos.x - npc.mesh.position.x,
       targetPos.z - npc.mesh.position.z
     );
+    // Fix Richard's backwards facing issue
+    if (npc === this.richard) {
+      targetRotation += Math.PI;
+    }
     
     const currentRot = npc.mesh.rotation.y;
     let diff = targetRotation - currentRot;
@@ -547,10 +575,14 @@ export class Level0Controller {
   async _faceNpcTo(npc, targetPos) {
     return new Promise((resolve) => {
       const lerpSpeed = 0.1;
-      const targetRotation = Math.atan2(
+      let targetRotation = Math.atan2(
         targetPos.x - npc.mesh.position.x,
         targetPos.z - npc.mesh.position.z
       );
+      // Fix Richard's backwards facing issue
+      if (npc === this.richard) {
+        targetRotation += Math.PI;
+      }
       
       const checkRotation = () => {
         const currentRot = npc.mesh.rotation.y;
@@ -578,7 +610,7 @@ export class Level0Controller {
    * @param {number} ms - Duration in milliseconds (0 = no auto-hide, waits for manual hide)
    * @returns {Promise} Resolves when caption is shown (not when it hides)
    */
-  _showCaption(text, ms, characterName = 'Pravesh') {
+  _showCaption(text, ms, characterName = 'Richard') {
     return new Promise((resolve) => {
       const cm = this.level.cinematicsManager;
       if (!cm) {
@@ -991,8 +1023,8 @@ export class Level0Controller {
     const richardPos = new THREE.Vector3(30.14, 10.66, -7.76);
     if (this.richard && this.richard.mesh) {
       this.richard.mesh.position.copy(richardPos);
-      // Face positive X direction (Math.PI / 2)
-      this.richard.mesh.rotation.y = Math.PI / 2;
+      // Face positive X direction (-Math.PI / 2 or 3*Math.PI/2, adjusted for model forward direction)
+      this.richard.mesh.rotation.y = -Math.PI / 2;
       if (this.richard.body) {
         this.richard.body.position.set(richardPos.x, richardPos.y, richardPos.z);
         // Ensure kinematic
@@ -1006,12 +1038,15 @@ export class Level0Controller {
     await fadePromise;
     await director.fadeIn({ ms: 800 });
     
-    // Setup visual indicators
-    this._showCloudIndicator(); // Cloud above Richard
-    this._showExclamationMarkForSteve(); // Exclamation above Steve
+   // Setup visual indicators
+   this._showCloudIndicator(); // Cloud above Richard
     
     // Enable Steve player tracking
     this._steveTrackingEnabled = true;
+    
+    // Enable door trigger tutorial after repositioning
+    this._doorTriggersEnabled = true;
+    this._doorTriggersConsumed = false;
     
     console.log('✅ [Level0Controller] Post-dialogue NPC setup complete');
   }
@@ -1121,77 +1156,477 @@ export class Level0Controller {
    * Show exclamation mark above Steve's head
    */
   _showExclamationMarkForSteve() {
+    // Disabled as per request: ensure any existing indicator is removed and do nothing
     if (!this.steve || !this.steve.mesh) {
-      console.warn('⚠️ [Level0Controller] Cannot show exclamation mark - Steve not found');
+      console.warn('⚠️ [Level0Controller] Cannot modify Steve exclamation mark - Steve not found');
       return;
     }
+    if (this.steveExclamationGroup) {
+      try {
+        this.steve.mesh.remove(this.steveExclamationGroup);
+        this.steveExclamationGroup.traverse((child) => {
+          if (child.material) {
+            if (child.material.map) child.material.map.dispose();
+            child.material.dispose();
+          }
+          if (child.geometry) child.geometry.dispose();
+        });
+      } catch (e) {
+        console.warn('⚠️ [Level0Controller] Error cleaning Steve exclamation group', e);
+      }
+      this.steveExclamationGroup = null;
+    }
+    // Intentionally no-op: Steve should not have an exclamation mark
+    console.log('ℹ️ [Level0Controller] Steve exclamation mark disabled');
+  }
 
-    // Create canvas texture for exclamation mark
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
+  /**
+   * Door trigger tutorial: Steve grants Stack tool and explains controls
+   */
+  async _runStackToolTutorial() {
+    if (!this.level?.cinematicsManager || !this.game?.player) return;
+    const cm = this.level.cinematicsManager;
+    const director = cm.director;
     
-    // Clear canvas with transparent background
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw exclamation mark
-    ctx.fillStyle = '#ffd700'; // Gold color
-    ctx.font = 'bold 200px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('!', canvas.width / 2, canvas.height / 2);
-    
-    // Add glow effect
-    ctx.shadowColor = '#ffd700';
-    ctx.shadowBlur = 30;
-    ctx.fillText('!', canvas.width / 2, canvas.height / 2);
-    
-    // Create texture from canvas
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    
-    // Create sprite material
-    const material = new THREE.SpriteMaterial({
-      map: texture,
-      transparent: true,
-      opacity: 0.95,
-      depthTest: false,
-      depthWrite: false
-    });
-    
-    // Create sprite
-    const sprite = new THREE.Sprite(material);
-    sprite.scale.set(1.5, 1.5, 1); // Size of the exclamation mark
-    
-    // Create a group to hold the sprite and position it above Steve's head
-    this.steveExclamationGroup = new THREE.Group();
-    
-    // Position above head (using same offset as Richard's exclamation mark)
-    const npcHeight = this.steve.size?.[1] || 0.8;
-    this.steveExclamationGroup.position.y = npcHeight + 1; // Same as Richard's original offset
-    
-    this.steveExclamationGroup.add(sprite);
-    
-    // Add pulsing animation
-    let pulsePhase = 0;
-    const pulseUpdate = () => {
-      if (!this.steveExclamationGroup || !this.steveExclamationGroup.parent) return;
+    try {
+      this.cutsceneActive = true;
+      // Freeze player movement
+      this.game.player.lockMovement('StackToolTutorial');
       
-      pulsePhase += 0.05;
-      const scale = 1 + Math.sin(pulsePhase) * 0.15; // Pulse between 0.85 and 1.15
-      this.steveExclamationGroup.scale.setScalar(scale);
+      // Steve says "Wait" briefly, then fade out
+      await this._showCaption('Wait.', 800, 'Steve');
+      await this._wait(200);
+      await director.fadeOut({ ms: 700 });
       
-      // Sprites automatically face the camera
+      // Teleport player in front of Steve and make both face each other
+      if (this.steve?.mesh && this.game.player?.setPosition) {
+        const stevePos = this.steve.mesh.position.clone();
+        const steveForward = new THREE.Vector3(Math.sin(this.steve.mesh.rotation.y), 0, Math.cos(this.steve.mesh.rotation.y));
+        const playerTarget = stevePos.clone().sub(steveForward.multiplyScalar(2.5));
+        playerTarget.y = this.game.player.body ? this.game.player.body.position.y : playerTarget.y;
+        this.game.player.setPosition(playerTarget);
+        
+        // Orient player toward Steve
+        const targetRot = Math.atan2(stevePos.x - playerTarget.x, stevePos.z - playerTarget.z);
+        this.game.player.mesh.rotation.y = targetRot;
+      }
+      // Steve face player
+      if (this.game.player?.mesh) {
+        await this._faceNpcTo(this.steve, this.game.player.mesh.position);
+      }
       
-      requestAnimationFrame(pulseUpdate);
-    };
-    pulseUpdate();
+      // Frame both: camera cut to midpoint and lookAt midpoint
+      const mid = new THREE.Vector3().addVectors(this.steve.mesh.position, this.game.player.mesh.position).multiplyScalar(0.5);
+      const camOffset = new THREE.Vector3(0, 2.2, 5.0); // Slightly above and back
+      const camPos = mid.clone().add(camOffset.applyAxisAngle(new THREE.Vector3(0,1,0), 0));
+      director.takeControl();
+      director.cutTo({ position: [camPos.x, camPos.y, camPos.z], lookAt: [mid.x, mid.y + 1.2, mid.z], fov: 50 });
+      await director.fadeIn({ ms: 600 });
+      
+      // Dialogue sequence with Enter to advance
+      this._setupEnterKeyListener(director);
+      await this._showCaption("Before you go, take this. It's an old 'Stack' tool.", 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      await this._wait(200);
+      
+      // Show popup: Tool acquired
+      this._showTemporaryPopup('Tool acquired: Stack', 1800);
+      await this._wait(600);
+      
+      // Ensure tool is granted/mounted (already present by default, but remount to be safe)
+      if (this.game.player.weapon && this.game.player.weapon.mount) {
+        this.game.player.weapon.mount();
+      }
+      
+      // Continue dialogue and on-screen controls
+      this._setupEnterKeyListener(director);
+      await this._showCaption('You can use it to place up to 3 data blocks.', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Show control hints overlay
+      const controlsEl = this._showControlsOverlay([
+        '[X] - PUSH (Create Block / Boost)',
+        '[Z] - POP (Destroy All Blocks)'
+      ]);
+      
+      this._setupEnterKeyListener(director);
+      await this._showCaption('Press X to push a block out and boost yourself up. You can stack 3.', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      this._setupEnterKeyListener(director);
+      await this._showCaption('But beware—pressing Z pops all 3 at once. Use it wisely.', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      this._setupEnterKeyListener(director);
+      await this._showCaption('It should help you reach places hard to get to get to,also take this communitcator. Good luck.', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Cleanup overlays
+      if (controlsEl && controlsEl.parentElement) controlsEl.parentElement.removeChild(controlsEl);
+      
+      // Release camera and restore gameplay
+      await director.release();
+      if (this.game.thirdCameraObject) {
+        this.game.activeCamera = this.game.thirdCameraObject;
+      }
+      this.game.player.unlockMovement();
+      this.cutsceneActive = false;
+      
+      // Enable lift area trigger after Stack tool tutorial completes
+      this._liftTriggerEnabled = true;
+      this._liftTriggerConsumed = false;
+    } catch (e) {
+      console.error('❌ [Level0Controller] Error in Stack tool tutorial:', e);
+      try { await cm.director.release(); } catch {}
+      if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
+      this.game?.player?.unlockMovement?.();
+      this.cutsceneActive = false;
+    }
+  }
+
+  _showTemporaryPopup(text, durationMs = 1500) {
+    const el = document.createElement('div');
+    el.textContent = text;
+    el.style.position = 'fixed';
+    el.style.top = '20%';
+    el.style.left = '50%';
+    el.style.transform = 'translate(-50%, -50%)';
+    el.style.padding = '12px 18px';
+    el.style.background = 'rgba(0,0,0,0.7)';
+    el.style.color = '#ffd700';
+    el.style.fontFamily = 'sans-serif';
+    el.style.fontSize = '20px';
+    el.style.border = '1px solid #ffd700';
+    el.style.borderRadius = '8px';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+    setTimeout(() => {
+      if (el.parentElement) el.parentElement.removeChild(el);
+    }, durationMs);
+    return el;
+  }
+
+  /**
+   * Lift area cutscene: guides player to fix the lift using Stack tool
+   */
+  async _runLiftAreaCutscene() {
+    if (!this.level?.cinematicsManager || !this.game?.player) return;
+    const cm = this.level.cinematicsManager;
+    const director = cm.director;
     
-    // Add to Steve's mesh so it moves with him
-    this.steve.mesh.add(this.steveExclamationGroup);
+    try {
+      this.cutsceneActive = true;
+      // Freeze player movement
+      this.game.player.lockMovement('LiftAreaCutscene');
+      
+      // Take camera control
+      director.takeControl();
+      
+      // Get player position for initial camera
+      const playerPos = this.game.player.mesh?.position || new THREE.Vector3(-233.48, 24.44, 88.47);
+      
+      // Start camera at player position, looking at player
+      director.cutTo({
+        position: [playerPos.x, playerPos.y + 2, playerPos.z + 3],
+        lookAt: [playerPos.x, playerPos.y, playerPos.z],
+        fov: 60
+      });
+      
+      // Camera Position 1: Smoothly zoom to first position
+      const cam1Pos = [-511.98492748550547, 59.054352677049046, 290.6290871046316];
+      const cam1LookAt = [-522.212259079078, 52.12130177488762, 306.3559588108277];
+      
+      // Move camera smoothly from player to first position (use moveTo if available, otherwise cutTo)
+      if (director.moveTo) {
+        await director.moveTo({
+          position: cam1Pos,
+          lookAt: cam1LookAt,
+          fov: 60,
+          duration: 2500,
+          ease: 'quadOut'
+        });
+      } else {
+        // Fallback: cut to position (instant transition)
+        director.cutTo({
+          position: cam1Pos,
+          lookAt: cam1LookAt,
+          fov: 60
+        });
+        await this._wait(500); // Brief pause
+      }
+      
+      // Sync freeCam yaw/pitch
+      const lookAtVec1 = new THREE.Vector3(...cam1LookAt);
+      const cam = director.cam;
+      const dir1 = lookAtVec1.clone().sub(new THREE.Vector3(...cam1Pos)).normalize();
+      director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir1.y, -1, 1));
+      director.freeCam.yaw = Math.atan2(dir1.x, dir1.z);
+      
+      // Wait a moment
+      await this._wait(500);
+      
+      // Setup Enter key listener
+      this._setupEnterKeyListener(director);
+      
+      // Richard: "Theres a node"
+      await this._showCaption('Theres a node', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Fade out
+      await director.fadeOut({ ms: 800 });
+      
+      // Camera Position 2: Cut to new position
+      const cam2Pos = [-402.3180252502396, 78.19130472056894, 228.4097942646058];
+      const cam2LookAt = [-411.6181265700495, 60.753981237230946, 231.48353224607055];
+      
+      director.cutTo({
+        position: cam2Pos,
+        lookAt: cam2LookAt,
+        fov: 60
+      });
+      
+      // Sync freeCam
+      const lookAtVec2 = new THREE.Vector3(...cam2LookAt);
+      const dir2 = lookAtVec2.clone().sub(new THREE.Vector3(...cam2Pos)).normalize();
+      director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir2.y, -1, 1));
+      director.freeCam.yaw = Math.atan2(dir2.x, dir2.z);
+      
+      // Fade in
+      await director.fadeIn({ ms: 600 });
+      await this._wait(300);
+      
+      // Setup Enter key listener
+      this._setupEnterKeyListener(director);
+      
+      // Steve: "Those crawlers. They moved the data blocks now the lift is not working."
+      await this._showCaption('Those crawlers. They moved the data blocks now the lift is not working.', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Camera Position 3: Cut to lift position
+      const cam3Pos = [-464.162086792485, 26.74864580159782, 215.22313148750766];
+      const cam3LookAt = [-477.0301245620225, 17.353779398664244, 227.31238660239322];
+      
+      director.cutTo({
+        position: cam3Pos,
+        lookAt: cam3LookAt,
+        fov: 60
+      });
+      
+      // Sync freeCam
+      const lookAtVec3 = new THREE.Vector3(...cam3LookAt);
+      const dir3 = lookAtVec3.clone().sub(new THREE.Vector3(...cam3Pos)).normalize();
+      director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir3.y, -1, 1));
+      director.freeCam.yaw = Math.atan2(dir3.x, dir3.z);
+      
+      await this._wait(300);
+      
+      // Setup Enter key listener
+      this._setupEnterKeyListener(director);
+      
+      // Richard: "Press E to lift a block and place it on the plates"
+      await this._showCaption('Press E to lift a block and place it on the plates', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Fade out
+      await director.fadeOut({ ms: 800 });
+      
+      // Camera Position 4: Same position, different lookAt
+      const cam4Pos = [-464.162086792485, 26.74864580159782, 215.22313148750766];
+      const cam4LookAt = [-479.08220153313306, 19.759346565943243, 203.88558888249946];
+      
+      director.cutTo({
+        position: cam4Pos,
+        lookAt: cam4LookAt,
+        fov: 60
+      });
+      
+      // Sync freeCam
+      const lookAtVec4 = new THREE.Vector3(...cam4LookAt);
+      const dir4 = lookAtVec4.clone().sub(new THREE.Vector3(...cam4Pos)).normalize();
+      director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir4.y, -1, 1));
+      director.freeCam.yaw = Math.atan2(dir4.x, dir4.z);
+      
+      // Fade in
+      await director.fadeIn({ ms: 600 });
+      await this._wait(300);
+      
+      // Setup Enter key listener
+      this._setupEnterKeyListener(director);
+      
+      // Steve: "that should get the lift back up and running"
+      await this._showCaption('that should get the lift back up and running', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Release camera and restore gameplay
+      await director.release();
+      if (this.game.thirdCameraObject) {
+        this.game.activeCamera = this.game.thirdCameraObject;
+      }
+      this.game.player.unlockMovement();
+      this.cutsceneActive = false;
+      
+      console.log('✅ [Level0Controller] Lift area cutscene complete');
+    } catch (e) {
+      console.error('❌ [Level0Controller] Error in lift area cutscene:', e);
+      try { await cm.director.release(); } catch {}
+      if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
+      this.game?.player?.unlockMovement?.();
+      this.cutsceneActive = false;
+    }
+  }
+  
+  /**
+   * Right-side approach cutscene (huge trigger at 277.64,10.91,-33.92)
+   */
+  async _runRightPathCutscene() {
+    if (!this.level?.cinematicsManager || !this.game?.player) return;
+    const cm = this.level.cinematicsManager;
+    const director = cm.director;
     
-    console.log('⚠️ [Level0Controller] Exclamation mark added above Steve');
+    try {
+      this.cutsceneActive = true;
+      this.game.player.lockMovement('RightPathCutscene');
+      director.takeControl();
+      
+      // Camera Position A (cut)
+      const posA = [          473.7477219100351,
+        425.74556424108334,
+        -46.46995264207804];
+      const lookA = [          467.4625834298615,
+        410.9627146951916,
+        -34.55507145976787];
+      director.cutTo({ position: posA, lookAt: lookA, fov: 60 });
+      
+      // Sync freeCam
+      {
+        const la = new THREE.Vector3(...lookA);
+        const dir = la.clone().sub(new THREE.Vector3(...posA)).normalize();
+        director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+        director.freeCam.yaw = Math.atan2(dir.x, dir.z);
+      }
+      await this._wait(300);
+      
+      // Zoom-in move to Position B (only position provided, keep current lookAt)
+      const posB = [          316.97099059777327,
+        26.65214080517854,
+        389.6782162464306];
+      const lookB = [          307.083892677723,
+        17.455672626394914,
+        404.4318689384238];
+      if (director.moveTo) {
+        await director.moveTo({ position: posB, lookAt: lookB, fov: 60, duration: 2500, ease: 'quadOut' });
+      } else {
+        director.cutTo({ position: posB, lookAt: lookB, fov: 60 });
+        await this._wait(400);
+      }
+      
+      // Richard: there s the node
+      this._setupEnterKeyListener(director);
+      await this._showCaption('theres the node', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Fade out
+      await director.fadeOut({ ms: 800 });
+      
+      // Position C (cut)
+      const posC = [268.80087190447995, 182.26145828072922, 9.299643635569545];
+      const lookC = [267.12235344898016, 166.66979483365512, 21.71264515606087];
+      director.cutTo({ position: posC, lookAt: lookC, fov: 60 });
+      // Sync freeCam
+      {
+        const lc = new THREE.Vector3(...lookC);
+        const dir = lc.clone().sub(new THREE.Vector3(...posC)).normalize();
+        director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+        director.freeCam.yaw = Math.atan2(dir.x, dir.z);
+      }
+      await director.fadeIn({ ms: 600 });
+      await this._wait(300);
+      
+      // Dialogue: Steve then Richard
+      this._setupEnterKeyListener(director);
+      await this._showCaption('how did they know to guard the shortest path', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      this._setupEnterKeyListener(director);
+      await this._showCaption('nevermind that', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Fade out
+      await director.fadeOut({ ms: 800 });
+      
+      // Position D (cut)
+      const posD = [321.0640880949602, 50.73027575325627, -72.21474211077759];
+      const lookD = [329.43533656744535, 42.465643469972974, -56.04013076354499];
+      director.cutTo({ position: posD, lookAt: lookD, fov: 60 });
+      // Sync freeCam
+      {
+        const ld = new THREE.Vector3(...lookD);
+        const dir = ld.clone().sub(new THREE.Vector3(...posD)).normalize();
+        director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+        director.freeCam.yaw = Math.atan2(dir.x, dir.z);
+      }
+      await director.fadeIn({ ms: 600 });
+      await this._wait(300);
+      
+      // Richard: final guidance
+      this._setupEnterKeyListener(director);
+      await this._showCaption('you have two ways to get to the node, Choose wisely', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Return camera back to player
+      await director.release();
+      if (this.game.thirdCameraObject) {
+        this.game.activeCamera = this.game.thirdCameraObject;
+      }
+      this.game.player.unlockMovement();
+      this.cutsceneActive = false;
+      
+      console.log('✅ [Level0Controller] Right-path cutscene complete');
+    } catch (e) {
+      console.error('❌ [Level0Controller] Error in right-path cutscene:', e);
+      try { await cm.director.release(); } catch {}
+      if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
+      this.game?.player?.unlockMovement?.();
+      this.cutsceneActive = false;
+    }
+  }
+
+  _showControlsOverlay(lines = []) {
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '50%';
+    wrapper.style.left = '50%';
+    wrapper.style.transform = 'translate(-50%, -50%)';
+    wrapper.style.padding = '10px 14px';
+    wrapper.style.background = 'rgba(0,0,0,0.6)';
+    wrapper.style.color = '#fff';
+    wrapper.style.fontFamily = 'monospace';
+    wrapper.style.fontSize = '16px';
+    wrapper.style.borderRadius = '6px';
+    wrapper.style.border = '1px solid rgba(255,255,255,0.25)';
+    wrapper.style.zIndex = '9999';
+    
+    for (const line of lines) {
+      const p = document.createElement('div');
+      p.textContent = line;
+      p.style.whiteSpace = 'pre';
+      wrapper.appendChild(p);
+    }
+    document.body.appendChild(wrapper);
+    return wrapper;
   }
 
   /**
@@ -1218,6 +1653,54 @@ export class Level0Controller {
       
       // Smooth rotation
       this.steve.mesh.rotation.y += normalizedDiff * 0.1; // Adjust speed as needed
+    }
+    
+    // Check door trigger volumes to start Stack tool tutorial
+    if (this._doorTriggersEnabled && !this._doorTriggersConsumed && this.game?.player?.body) {
+      const p = this.game.player.body.position; // CANNON.Vec3
+      for (const box of this._doorTriggerBoxes) {
+        // Simple AABB check (ignore Y or include small vertical tolerance)
+        const inX = Math.abs(p.x - box.center.x) <= box.halfSize.x;
+        const inZ = Math.abs(p.z - box.center.z) <= box.halfSize.z;
+        // Y not critical, allow generous tolerance
+        if (inX && inZ) {
+          this._doorTriggersConsumed = true;
+          this._doorTriggersEnabled = false;
+          // Fire and forget async tutorial
+          this._runStackToolTutorial().catch(err => console.error('❌ Stack tutorial error', err));
+          break;
+        }
+      }
+    }
+    
+    // Check lift trigger volume to start lift area cutscene
+    if (this._liftTriggerEnabled && !this._liftTriggerConsumed && this.game?.player?.body) {
+      const p = this.game.player.body.position; // CANNON.Vec3
+      const box = this._liftTriggerBox;
+      // Simple AABB check with Y tolerance
+      const inX = Math.abs(p.x - box.center.x) <= box.halfSize.x;
+      const inY = Math.abs(p.y - box.center.y) <= box.halfSize.y;
+      const inZ = Math.abs(p.z - box.center.z) <= box.halfSize.z;
+      if (inX && inY && inZ) {
+        this._liftTriggerConsumed = true;
+        this._liftTriggerEnabled = false;
+        // Fire and forget async cutscene
+        this._runLiftAreaCutscene().catch(err => console.error('❌ Lift area cutscene error', err));
+      }
+    }
+    
+    // Check right-side approach trigger volume
+    if (this._rightPathTriggerEnabled && !this._rightPathTriggerConsumed && this.game?.player?.body) {
+      const p2 = this.game.player.body.position; // CANNON.Vec3
+      const box2 = this._rightPathTriggerBox;
+      const inX2 = Math.abs(p2.x - box2.center.x) <= box2.halfSize.x;
+      const inY2 = Math.abs(p2.y - box2.center.y) <= box2.halfSize.y;
+      const inZ2 = Math.abs(p2.z - box2.center.z) <= box2.halfSize.z;
+      if (inX2 && inY2 && inZ2) {
+        this._rightPathTriggerConsumed = true;
+        this._rightPathTriggerEnabled = false;
+        this._runRightPathCutscene().catch(err => console.error('❌ Right-path cutscene error', err));
+      }
     }
   }
 
