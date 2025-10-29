@@ -5,10 +5,11 @@ import { loadGLTFModel } from '../gltfLoader.js';
 export class StarLight extends LightComponent {
     constructor(props = {}) {
         super(props);
-    this.light = null;
-    this.starModel = null;
+        this.light = null;
+        this.starModel = null;
         // glowMesh removed, using stronger emissive materials instead
         this.time = 0;
+        this.quality = props.quality || { enableComplexShaders: true };
     }
 
     async mount(scene) {
@@ -83,10 +84,27 @@ export class StarLight extends LightComponent {
             // Warm yellowish point light for castle ambiance
             const lightColor = this.props.lightColor ?? 0xFFF8DC; // Softer golden color
             
-            // Stars are PRIMARY light sources - increased intensity for proper illumination
-            // DirectionalLight handles all shadow casting for optimal performance
-            this.light = new THREE.PointLight(lightColor, 50, 300, 1.8); // Reduced intensity
+            // Stars are PRIMARY light sources - optimized for better coverage
+            // Quality-based intensity and distance
+            let intensity, distance, shadowMapSize, decay;
+            if (!this.quality.enableComplexShaders) {
+                // LOW quality: Good range with efficient decay
+                intensity = 35;   // Slightly increased
+                distance = 250;   // Extended range
+                shadowMapSize = 128;
+                decay = 2.2;      // Efficient decay
+            } else {
+                // MEDIUM/HIGH quality: Maximum coverage
+                intensity = 60;   // Increased
+                distance = 400;   // Extended range!
+                shadowMapSize = 256;
+                decay = 1.8;      // Gradual falloff
+            }
+            
+            this.light = new THREE.PointLight(lightColor, intensity, distance, decay);
             this.light.position.set(...pos);
+            
+            console.log(`⭐ Star light created: intensity=${intensity}, distance=${distance}, decay=${decay}`);
             
             // PERFORMANCE: Shadows will be enabled dynamically for closest star only
             // This saves significant GPU resources (no cubemap shadow maps needed for distant stars)
@@ -94,8 +112,8 @@ export class StarLight extends LightComponent {
             console.log('⭐ Star light configured WITHOUT shadows (will enable for closest star)');
             
             // Configure shadow properties (will be used when this becomes the closest star)
-            this.light.shadow.mapSize.width = 256; // Reduced for performance
-            this.light.shadow.mapSize.height = 256; // Reduced for performance
+            this.light.shadow.mapSize.width = shadowMapSize;
+            this.light.shadow.mapSize.height = shadowMapSize;
             this.light.shadow.camera.near = 0.1;
             this.light.shadow.camera.far = 100; // Adjusted for star distance
             this.light.shadow.bias = -0.001;

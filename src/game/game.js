@@ -26,6 +26,8 @@ import { CollectiblesManager } from './CollectiblesManager.js';
 import { SoundManager } from './soundManager.js';
 import { ProximitySoundManager } from './proximitySoundManager.js';
 import { PerformanceMonitor } from './performanceMonitor.js';
+import { initGPUDetector } from './utils/gpuDetector.js';
+import { initQualityControls } from './utils/qualityControls.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -37,6 +39,16 @@ export class Game {
     this.scene = scene;
     this.renderer = renderer;
     this.shaderSystem = shaderSystem;
+
+    // GPU Detection & Quality Settings
+    console.log('🔍 Detecting GPU capabilities...');
+    this.gpuDetector = initGPUDetector(this.renderer);
+    this.qualitySettings = this.gpuDetector.getQualitySettings();
+    console.log(`🎮 GPU Tier: ${this.gpuDetector.tier}`);
+    console.log(`⚙️ Quality Settings:`, this.qualitySettings);
+    
+    // Apply quality to renderer
+    this.renderer.setPixelRatio(this.qualitySettings.pixelRatio);
 
     // Initialize physics world with scene for improved collision detection
     this.physicsWorld = new PhysicsWorld(this.scene, {
@@ -206,8 +218,8 @@ export class Game {
     this.doorHelpersVisible = false; // Track door collision helper visibility (invisible by default)
     this.doorsUnlockedByApples = false; // Track if doors have been unlocked by apple collection
 
-    // Lighting manager (modular per-level lights)
-    this.lights = new LightManager(this.scene);
+    // Lighting manager (modular per-level lights) with quality settings
+    this.lights = new LightManager(this.scene, this.qualitySettings);
 
     // Sound manager (initialize with camera for 3D audio)
     this.soundManager = new SoundManager(this.thirdCameraObject);
@@ -292,6 +304,11 @@ export class Game {
 ⏸️  ESC - Pause/Resume game
 ========================`);
     }, 1000); // Delay to ensure other startup messages are shown first
+    
+    // Initialize Quality Testing Controls (press Shift+Q to test different GPU tiers)
+    setTimeout(() => {
+      this.qualityControls = initQualityControls(this);
+    }, 1500);
   }
 
   // Initialize the first level asynchronously
@@ -965,6 +982,17 @@ export class Game {
     this.lights.clear();
     const list = (levelData && levelData.lights) ? levelData.lights : null;
     if (!list) return;
+    
+    // Debug: Log current quality settings
+    if (this.qualitySettings && this.qualitySettings.plantInstanceCounts) {
+      console.log(`💡 Creating lights with quality settings:`, {
+        fireflies: this.qualitySettings.plantInstanceCounts.fireflies,
+        leaves: this.qualitySettings.plantInstanceCounts.leaves,
+        petals: this.qualitySettings.plantInstanceCounts.petals,
+        tier: this.gpuDetector?.tier || 'Unknown'
+      });
+    }
+    
     // list is array of either string keys or objects { key, props }
     let lightCounter = {}; // Track count of each light type for unique keys
     for (const item of list) {
