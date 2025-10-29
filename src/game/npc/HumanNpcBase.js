@@ -17,15 +17,16 @@ export class HumanNpcBase extends NpcBase {
     // Human NPC properties
     this.npcType = options.npcType || 'human';
     
-    // Patrol behavior
-    this.patrolPoints = options.patrolPoints || [];
-    this.currentPatrolIndex = 0;
-    this.patrolSpeed = this.speed * 0.5; // Slower when patrolling
-    this.idleDuration = 3; // seconds to idle at patrol point
+    // Patrol behavior - handle the data format from levelData
+    this.patrolPoints = this._normalizePatrolPoints(options.patrolPoints || []);
+    this.currentPatrolIndex = options.currentPatrolIndex || 0;
+    this.patrolSpeed = options.speed ? options.speed * 0.8 : 1.2;
+    this.idleDuration = options.waitTime || 2; // Use waitTime from data or default to 2 seconds
     this.idleTimer = 0;
-    this.isIdle = false;
+    this.isIdle = !(options.isMoving ?? true); // Use isMoving from data
+    this.patrolBehavior = options.patrolBehavior || 'loop';
     
-    // Store initial position for patrol generation if no points provided
+    // Store initial position
     this.initialPosition = options.position ? 
       new THREE.Vector3(options.position[0], options.position[1], options.position[2]) :
       new THREE.Vector3(0, 0.5, 0);
@@ -35,13 +36,24 @@ export class HumanNpcBase extends NpcBase {
       this._generatePatrolPoints();
     }
     
-    console.log(`🧍 ${this.constructor.name} created with ${this.patrolPoints.length} patrol points`);
+    console.log(`🧍 ${this.constructor.name} created with ${this.patrolPoints.length} patrol points, speed: ${this.patrolSpeed}`);
+  }
+
+  // NEW METHOD: Normalize patrol points to handle both [x,y,z] and [x,y,z,waitTime] formats
+  _normalizePatrolPoints(points) {
+    return points.map(point => {
+      if (point.length >= 3) {
+        // Return just [x, y, z] - ignore any extra values
+        return [point[0], point[1], point[2]];
+      }
+      return point;
+    });
   }
 
   _generatePatrolPoints() {
     // Generate 2-4 patrol points around initial position
     const numPoints = 2 + Math.floor(Math.random() * 3);
-    const patrolRadius = 3 + Math.random() * 5; // 3-8 unit radius
+    const patrolRadius = 3 + Math.random() * 4;
     
     for (let i = 0; i < numPoints; i++) {
       const angle = (i / numPoints) * Math.PI * 2;
@@ -55,7 +67,12 @@ export class HumanNpcBase extends NpcBase {
   }
 
   updatePatrolBehavior(delta) {
-    if (this.patrolPoints.length === 0 || !this.onGround) return;
+    if (this.patrolPoints.length === 0 || !this.onGround) {
+      if (this.patrolPoints.length === 0) {
+        console.warn(`🧍 ${this.constructor.name} has no patrol points`);
+      }
+      return;
+    }
     
     if (this.isIdle) {
       this.idleTimer += delta;
@@ -64,7 +81,19 @@ export class HumanNpcBase extends NpcBase {
       if (this.idleTimer >= this.idleDuration) {
         this.isIdle = false;
         this.idleTimer = 0;
-        this.currentPatrolIndex = (this.currentPatrolIndex + 1) % this.patrolPoints.length;
+        
+        // Move to next patrol point based on behavior type
+        if (this.patrolBehavior === 'loop') {
+          this.currentPatrolIndex = (this.currentPatrolIndex + 1) % this.patrolPoints.length;
+        } else if (this.patrolBehavior === 'pingpong') {
+          // TODO: Implement pingpong behavior
+          this.currentPatrolIndex = (this.currentPatrolIndex + 1) % this.patrolPoints.length;
+        } else {
+          // Default to loop
+          this.currentPatrolIndex = (this.currentPatrolIndex + 1) % this.patrolPoints.length;
+        }
+        
+        console.log(`🧍 ${this.constructor.name} moving to patrol point ${this.currentPatrolIndex}`);
       }
       return;
     }
@@ -76,35 +105,47 @@ export class HumanNpcBase extends NpcBase {
     const direction = new THREE.Vector3().subVectors(targetPos, currentPos);
     const distanceToTarget = direction.length();
     
-    if (distanceToTarget < 1.0) {
+    if (distanceToTarget < 1.5) { // Increased arrival distance for higher speeds
       // Reached patrol point, go idle
       this.isIdle = true;
       this.setDesiredMovement(new THREE.Vector3(0, 0, 0));
+      console.log(`🧍 ${this.constructor.name} reached patrol point ${this.currentPatrolIndex}, idling for ${this.idleDuration}s`);
     } else {
       // Move toward patrol point
       direction.y = 0;
-      direction.normalize();
-      this.setDesiredMovement(direction.multiplyScalar(this.patrolSpeed));
+      if (direction.length() > 0.01) {
+        direction.normalize();
+        this.setDesiredMovement(direction.multiplyScalar(this.patrolSpeed));
+        
+        // Debug logging - less frequent for high-speed NPCs
+        if (Math.random() < 0.005) {
+          console.log(`🧍 ${this.constructor.name} moving to point ${this.currentPatrolIndex}, distance: ${distanceToTarget.toFixed(2)}, speed: ${this.patrolSpeed}`);
+        }
+      }
     }
   }
 
+  // OVERRIDE THE UPDATE METHOD
   update(delta, player, platforms = []) {
     if (!this.alive || !this.body) return;
     
-    // Call base update for physics and health bar
-    super.update(delta, player, platforms);
-    
-    // Update patrol behavior
+    // UPDATE ORDER IS CRITICAL:
+    // 1. First update patrol behavior to set desired movement
     this.updatePatrolBehavior(delta);
     
-    // Update animation based on movement
+    // 2. Then call base update which will use the desired movement we just set
+    super.update(delta, player, platforms);
+    
+    // 3. Update animations based on current movement state
     this.updateAnimations();
   }
 
   updateAnimations() {
     if (!this.mixer) return;
     
-    const isMoving = this._desiredMovement.lengthSq() > 0.01;
+    // Check if actually moving (not just wanting to move)
+    const isMoving = this.body && 
+      (Math.abs(this.body.velocity.x) > 0.1 || Math.abs(this.body.velocity.z) > 0.1);
     
     if (isMoving && this.actions.walk) {
       this._playAction(this.actions.walk, 0.2, true);
@@ -117,9 +158,7 @@ export class HumanNpcBase extends NpcBase {
   takeDamage(amount) {
     const remainingHealth = super.takeDamage(amount);
     
-    // Human NPCs might play a hurt animation or sound here
     if (this.alive && this.health < this.maxHealth * 0.5) {
-      // Maybe change to a limping animation when badly hurt
       console.log(`😫 ${this.constructor.name} is badly hurt!`);
     }
     

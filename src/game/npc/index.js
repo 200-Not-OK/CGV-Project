@@ -10,3 +10,4 @@ export {Women2} from './Women2.js';
 export {SuitF} from './SuitF.js';
 export {SuitM} from './SuitM.js';
 export {Punk} from './Punk.js';
+export {casual} from './casual.js';
