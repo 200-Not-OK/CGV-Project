@@ -798,10 +798,15 @@ export class Level {
         // Ensure NPC materials respond well to lighting
         try {
           if (this.game && this.game.shaderSystem && npc && npc.mesh) {
-            this.game.shaderSystem.applyCharacterShader(npc.mesh, {
-              roughness: 0.6,
-              metalness: 0.1,
-              rimIntensity: 0.2
+            // Apply character shader to ALL submeshes
+            npc.mesh.traverse((child) => {
+              if (child.isMesh && child.material) {
+                this.game.shaderSystem.applyCharacterShader(child, {
+                  roughness: 0.6,
+                  metalness: 0.1,
+                  rimIntensity: 0.8
+                });
+              }
             });
           } else if (npc && npc.mesh) {
             npc.mesh.traverse((child) => {
@@ -811,7 +816,11 @@ export class Level {
                   m.roughness = Math.min(0.8, (m.roughness ?? 0.7));
                   m.metalness = Math.max(0.0, (m.metalness ?? 0.1));
                   if (m.emissive && m.emissiveIntensity !== undefined) {
-                    m.emissiveIntensity = Math.max(m.emissiveIntensity, 0.05);
+                    m.emissiveIntensity = Math.max(m.emissiveIntensity, 0.3);
+                  } else {
+                    // Add emissive if it doesn't exist
+                    m.emissive = new THREE.Color(0x4a4a6e);
+                    m.emissiveIntensity = 0.3;
                   }
                 }
               }

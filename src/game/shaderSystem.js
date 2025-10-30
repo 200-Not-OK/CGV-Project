@@ -123,9 +123,9 @@ export class ShaderSystem {
       roughness: options.roughness ?? 0.6,
       metalness: options.metalness ?? 0.1,
       
-      // Subtle rim lighting effect via emissive
-      emissive: options.rimColor ?? new THREE.Color(0x1a1a2e),
-      emissiveIntensity: options.rimIntensity ?? 0.15,
+      // Much brighter rim lighting effect via emissive
+      emissive: options.rimColor ?? new THREE.Color(0x4a4a6e),
+      emissiveIntensity: options.rimIntensity ?? 0.45,
       
       // Enable shadows
       shadowSide: THREE.DoubleSide,
