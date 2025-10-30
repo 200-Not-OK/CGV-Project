@@ -152,8 +152,22 @@ export const QualityPresets = {
         enablePostProcessing: false,
         enableGlow: false,
         disableShadows: true, // 🔥 Disable shadows on LOW quality!
+
+        lightFeatureFlags: {
+            lightningBorders: false,
+            binaryScreens: false,
+            techLights: false,
+            redLightning: false,
+            flameParticles: false
+        },
+        lightningBorderProfile: {
+            updateEvery: 4,
+            intensity: 2.0,
+            borderWidth: 0.12,
+            allowAdditive: false
+        }
     },
-    
+
     MEDIUM: {
         // Lighting & Effects - OPTIMIZED for laptop integrated GPUs (Intel Iris, UHD 730, MX series)
         // STRATEGY: Minimal geometry + single lights + aggressive throttling
@@ -184,8 +198,22 @@ export const QualityPresets = {
         enablePostProcessing: false,
         enableGlow: false, // 🔥 Disable glow effects (was true)
         disableShadows: false, // Keep minimal shadows enabled
+
+        lightFeatureFlags: {
+            lightningBorders: true,
+            binaryScreens: true,
+            techLights: true,
+            redLightning: true,
+            flameParticles: true
+        },
+        lightningBorderProfile: {
+            updateEvery: 2,
+            intensity: 2.6,
+            borderWidth: 0.14,
+            allowAdditive: true
+        }
     },
-    
+
     HIGH: {
         // Lighting & Effects - For dedicated GPUs (GTX 1660+, RTX series, RX 5700+)
         plantInstanceCounts: {
@@ -214,6 +242,20 @@ export const QualityPresets = {
         maxLights: 12,     // Reduced from 16 for better performance
         enablePostProcessing: true,
         enableGlow: true,
+
+        lightFeatureFlags: {
+            lightningBorders: true,
+            binaryScreens: true,
+            techLights: true,
+            redLightning: true,
+            flameParticles: true
+        },
+        lightningBorderProfile: {
+            updateEvery: 1,
+            intensity: 3.2,
+            borderWidth: 0.15,
+            allowAdditive: true
+        }
     }
 };
 
