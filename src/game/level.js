@@ -119,27 +119,22 @@ export class Level {
       const defaultNormal = new THREE.Vector3(0, 0, 1);
       const quat = new THREE.Quaternion().setFromUnitVectors(defaultNormal, normal);
       const euler = new THREE.Euler().setFromQuaternion(quat);
-      // Offset main screen forward along normal (like quad mode)
-      const offset = 0.06;
-      const offsetCenter = center.clone().add(normal.clone().multiplyScalar(offset));
-      // Instantiate the BinaryScreen
-      const screen = new BinaryScreen({
-         position: [offsetCenter.x, offsetCenter.y, offsetCenter.z],
-         width,
-         height,
-         rotation: [euler.x, euler.y, euler.z],
-         textColor: '#009a00',
-         glowColor: 0x009a00,
-         palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
-         emitLight: true,
-         lightIntensity: 3.5,
-         updateInterval: 36
+      // Instead of constructing a plane manually, use exact-corners builder
+      // so the quad matches the surface precisely and is pushed outward safely.
+      const screen = createBinaryScreenFromExactCorners(this.scene, corners, {
+        adaptiveDepthToggle: true,
+        surfaceOffset: 0.25,
+        textColor: '#009a00',
+        glowColor: 0x009a00,
+        palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
+        emitLight: true,
+        lightIntensity: 3.5,
+        updateInterval: 36
       });
       // Force disable frustum culling so screen never disappears
       if (screen.mesh) {
         screen.mesh.frustumCulled = false;
       }
-      screen.addToScene(this.scene);
       this.objects.push(screen.group);
       this.binaryScreens.push(screen);
 
@@ -157,7 +152,8 @@ export class Level {
         emitLight: true,
         lightIntensity: 3.5,
         updateInterval: 36,
-        adaptiveDepthToggle: false
+        adaptiveDepthToggle: true,
+        surfaceOffset: 0.25
       });
       if (screen2.mesh) {
         screen2.mesh.frustumCulled = false;
