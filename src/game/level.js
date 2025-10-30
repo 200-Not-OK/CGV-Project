@@ -1020,4 +1020,39 @@ export class Level {
       this.animatedMeshes = [];
 
       // Managers
-      if (this.enemyManager) { this.enemyMan
+      if (this.enemyManager) { this.enemyManager.dispose?.(); this.enemyManager = null; }
+      if (this.npcManager) { this.npcManager.dispose?.(); this.npcManager = null; }
+      if (this.cinematicsManager) { this.cinematicsManager.dispose?.(); this.cinematicsManager = null; }
+      if (this.interactiveObjectManager) { this.interactiveObjectManager.dispose?.(); this.interactiveObjectManager = null; }
+      if (this.placeableBlockManager) { this.placeableBlockManager.dispose?.(); this.placeableBlockManager = null; }
+      
+      // Level-specific controllers
+      if (this.controller) { this.controller.dispose?.(); this.controller = null; }
+      
+      // Platforms
+      if (this.platforms && this.platforms.length > 0) {
+        for (const platform of this.platforms) {
+          platform.destroy();
+        }
+        this.platforms = [];
+      }
+    } catch (e) {
+      console.warn('Level.dispose encountered an issue:', e);
+    }
+  }
+
+  _disposeObject3DDeep(obj) {
+    obj.traverse((n) => {
+      if (n.isMesh) {
+        if (n.geometry) n.geometry.dispose?.();
+        if (n.material) {
+          if (Array.isArray(n.material)) {
+            n.material.forEach(m => m?.dispose?.());
+          } else {
+            n.material.dispose?.();
+          }
+        }
+      }
+    });
+  }
+}
