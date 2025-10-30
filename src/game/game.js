@@ -27,6 +27,10 @@ import { CollectiblesManager } from './CollectiblesManager.js';
 import { SoundManager } from './soundManager.js';
 import { ProximitySoundManager } from './proximitySoundManager.js';
 import { PerformanceMonitor } from './performanceMonitor.js';
+import { initGPUDetector } from './utils/gpuDetector.js';
+import { initQualityControls } from './utils/qualityControls.js';
+import { GlitchManager } from './GlitchManager.js';
+import { ComputerTerminal } from './components/ComputerTerminal.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -38,6 +42,16 @@ export class Game {
     this.scene = scene;
     this.renderer = renderer;
     this.shaderSystem = shaderSystem;
+
+    // GPU Detection & Quality Settings
+    console.log('🔍 Detecting GPU capabilities...');
+    this.gpuDetector = initGPUDetector(this.renderer);
+    this.qualitySettings = this.gpuDetector.getQualitySettings();
+    console.log(`🎮 GPU Tier: ${this.gpuDetector.tier}`);
+    console.log(`⚙️ Quality Settings:`, this.qualitySettings);
+    
+    // Apply quality to renderer
+    this.renderer.setPixelRatio(this.qualitySettings.pixelRatio);
 
     // Initialize physics world with scene for improved collision detection
     this.physicsWorld = new PhysicsWorld(this.scene, {
@@ -209,11 +223,21 @@ export class Game {
     this.doorHelpersVisible = false; // Track door collision helper visibility (invisible by default)
     this.doorsUnlockedByApples = false; // Track if doors have been unlocked by apple collection
 
-    // Lighting manager (modular per-level lights)
-    this.lights = new LightManager(this.scene);
+    // Lighting manager (modular per-level lights) with quality settings
+    this.lights = new LightManager(this.scene, this.qualitySettings);
 
     // Sound manager (initialize with camera for 3D audio)
     this.soundManager = new SoundManager(this.thirdCameraObject);
+
+    //glitch
+    this.glitchManager = new GlitchManager();
+    this.computerTerminal = null;
+
+     // Setup LLM tracking
+    this.setupLLMTracking();
+    
+    // Make sure computer updates are called
+    //this.setupComputerUpdates();
 
     // Proximity sound manager (for location-based sounds like torches)
     this.proximitySoundManager = null; // Will be initialized after player is ready
@@ -295,6 +319,11 @@ export class Game {
 ⏸️  ESC - Pause/Resume game
 ========================`);
     }, 1000); // Delay to ensure other startup messages are shown first
+    
+    // Initialize Quality Testing Controls (press Shift+Q to test different GPU tiers)
+    setTimeout(() => {
+      this.qualityControls = initQualityControls(this);
+    }, 1500);
   }
 
   // Initialize the first level asynchronously
@@ -306,6 +335,66 @@ export class Game {
     // Show level picker shortly after load-in (as requested)
     setTimeout(() => this._showLevelPicker(), 400);
   }
+  emergencyComputerDebug() {
+  console.log('🚨 EMERGENCY COMPUTER DEBUG 🚨');
+  
+  const playerPos = this.player.getPosition();
+  console.log('🎯 Player position:', playerPos);
+  
+  // Create computer right in front of player
+  const emergencyPos = [
+    playerPos.x + 5, 
+    playerPos.y, 
+    playerPos.z + 5
+  ];
+  
+  console.log('🔧 Creating emergency computer at:', emergencyPos);
+  
+  const emergencyComputerData = {
+    position: emergencyPos,
+    radius: 15.0,
+    requiredLLMs: ["llm_gpt", "llm_claude", "llm_gemini"]
+  };
+  
+  // Remove existing
+  if (this.computerTerminal) {
+    this.scene.remove(this.computerTerminal.mesh);
+  }
+  
+  // Create new
+  this.computerTerminal = new ComputerTerminal(emergencyComputerData, this.glitchManager, this);
+  this.scene.add(this.computerTerminal.mesh);
+  
+  console.log('✅ Emergency computer created');
+  this.showMessage('EMERGENCY: Computer created in front of you!');
+  
+  // Verify
+  setTimeout(() => {
+    this.debugComputerTerminal();
+  }, 100);
+}
+
+debugInteractionPrompt() {
+  console.log('🔍 === INTERACTION PROMPT DEBUG ===');
+  
+  const interactionPrompt = this.ui.get('interactionPrompt');
+  if (interactionPrompt) {
+    console.log('💬 Interaction prompt exists:', interactionPrompt);
+    console.log('👀 Prompt visible:', interactionPrompt.isVisible);
+    console.log('🎯 Computer terminal exists:', !!this.computerTerminal);
+    
+    if (this.computerTerminal) {
+      console.log('📍 Computer position:', this.computerTerminal.mesh.position.toArray());
+      console.log('🎯 Player position:', this.player.getPosition());
+      console.log('📏 Distance to computer:', this.computerTerminal.mesh.position.distanceTo(this.player.getPosition()));
+      console.log('🎯 Player in computer range:', this.computerTerminal.isPlayerInRange(this.player.getPosition()));
+    }
+  } else {
+    console.error('❌ No interaction prompt found in UI!');
+  }
+  
+  console.log('🔍 === END DEBUG ===');
+}
 
   _bindKeys() {
     window.addEventListener('keydown', (e) => {
@@ -362,21 +451,104 @@ export class Game {
         if (this.combatSystem) {
           this.combatSystem.toggleDebug();
         }
-      } else if (code === 'KeyE') {
-        // interact with doors or chests
-        let interacted = false;
-        
-        // First try chest interaction
-        if (this.collectiblesManager && this.collectiblesManager.handleInteraction) {
-          interacted = this.collectiblesManager.handleInteraction();
-        }
-        
-        // If no chest interaction, try door interaction
-        if (!interacted && this.doorManager) {
-          const playerPos = this.player.getPosition();
-          this.doorManager.interactWithClosestDoor(playerPos);
-        }
-      } else if (code === 'KeyF') {
+      }else if (code === 'KeyE') {
+  // interact with computer, doors, or chests
+  let interacted = false;
+  
+  // First try computer interaction (in level 3)
+  if (this.computerTerminal && this.computerTerminal.isPlayerInRange(this.player.getPosition())) {
+    console.log('💻 E key pressed near computer');
+    this.computerTerminal.interact();
+    interacted = true;
+  }
+  
+  // If no computer interaction, try chest interaction
+  if (!interacted && this.collectiblesManager && this.collectiblesManager.handleInteraction) {
+    interacted = this.collectiblesManager.handleInteraction();
+  }
+  
+  // If no chest interaction, try door interaction
+  if (!interacted && this.doorManager) {
+    const playerPos = this.player.getPosition();
+    this.doorManager.interactWithClosestDoor(playerPos);
+  }
+  
+  if (!interacted) {
+    console.log('❌ No interactable object found');
+  }
+}else if (code === 'Key8') {
+  // DEBUG: Check interaction prompt
+  this.debugInteractionPrompt();
+}else if (code === 'Key0') { // Zero key
+  this.emergencyComputerDebug();
+}else if (code === 'KeyU') {
+  // DEBUG: Add all LLMs instantly
+  console.log('🔧 DEBUG: Adding all LLMs');
+  this.glitchManager.collectedLLMs.add('llm_gpt');
+  this.glitchManager.collectedLLMs.add('llm_claude');
+  this.glitchManager.collectedLLMs.add('llm_gemini');
+  
+  if (this.showMessage) {
+    this.showMessage('DEBUG: All LLMs added! Computer should be active.');
+  }
+  console.log('✅ LLMs added:', this.glitchManager.collectedLLMs);
+}else if (code === 'KeyO') {
+  // DEBUG: Teleport to computer location from level data
+  console.log('🔧 DEBUG: Teleporting to computer location');
+  
+  if (this.level && this.level.data && this.level.data.computerLocation) {
+    const computerPos = this.level.data.computerLocation.position;
+    this.player.setPosition(new THREE.Vector3(computerPos[0], computerPos[1], computerPos[2]));
+    console.log('🚀 Teleported to computer at:', computerPos);
+    
+    if (this.showMessage) {
+      this.showMessage('DEBUG: Teleported to computer location');
+    }
+  } else {
+    console.error('❌ No computer location found in level data');
+  }
+}else if (code === 'KeyT') {
+  // DEBUG: Computer diagnostics
+  console.log('🔧 DEBUG: Running computer diagnostics');
+  this.debugComputerTerminal();
+  
+  if (this.computerTerminal) {
+    console.log('✅ Computer terminal exists');
+    console.log('🎯 Attempting to interact...');
+    this.computerTerminal.interact();
+  } else {
+    console.error('❌ No computer terminal found!');
+    
+    // Try to create it from level data
+    if (this.level?.data?.computerLocation) {
+      console.log('🔄 Attempting to create computer from level data...');
+      this.setupComputerTerminal();
+    }
+  }
+}
+else if (code === 'KeyY') {
+  // DEBUG: Create computer from level data
+  console.log('🔧 DEBUG: Creating computer from level data');
+  
+  if (this.level?.data?.computerLocation) {
+    console.log('🎯 Creating computer from level data at:', this.level.data.computerLocation.position);
+    this.setupComputerTerminal();
+    
+    // Verify creation
+    setTimeout(() => {
+      if (this.computerTerminal) {
+        console.log('✅ Computer created successfully');
+        this.debugComputerTerminal();
+      } else {
+        console.error('❌ Computer creation failed!');
+      }
+    }, 500);
+  } else {
+    console.error('❌ No computer location found in level data!');
+    console.log('Current level data:', this.level?.data);
+  }
+
+} else if (code === 'KeyF') {
         // toggle FPS counter visibility
         this.toggleFPSCounter();
       } else if (code === 'KeyQ') {
@@ -626,6 +798,11 @@ export class Game {
       return;
     }
 
+    // Update computer terminal if it exists
+  if (this.computerTerminal && this.player) {
+    this.computerTerminal.update(this.player.getPosition());
+  }
+
     // Start physics timing
     this.performanceMonitor.startPhysics();
     // Step physics simulation
@@ -747,97 +924,118 @@ export class Game {
 
   // Load level by index and swap UI based on level metadata
   // Load level by index and swap UI based on level metadata
-  async loadLevel(index) {
-    if (this.level) this.level.dispose();
+async loadLevel(index) {
+  if (this.level) this.level.dispose();
 
-    // Preserve debug state before disposing old physics world
-    const wasDebugEnabled = this.physicsWorld.isDebugEnabled();
+  // Preserve debug state before disposing old physics world
+  const wasDebugEnabled = this.physicsWorld.isDebugEnabled();
 
-    // Clear existing physics bodies and recreate physics world with improved collision detection
-    this.physicsWorld.dispose();
-    this.physicsWorld = new PhysicsWorld(this.scene, {
-      useAccurateCollision: false, // Disable Trimesh by default for more reliable collision
-      debugMode: wasDebugEnabled   // Preserve debug state across level transitions
-    });
+  // Clear existing physics bodies and recreate physics world
+  this.physicsWorld.dispose();
+  this.physicsWorld = new PhysicsWorld(this.scene, {
+    useAccurateCollision: false,
+    debugMode: wasDebugEnabled
+  });
 
-    // Update references that depend on physics world
-    this.player.physicsWorld = this.physicsWorld;
-    this.combatSystem.physicsWorld = this.physicsWorld;
-    this.doorManager.physicsWorld = this.physicsWorld;
-    this.collectiblesManager.updatePhysicsWorld(this.physicsWorld);
-    this.doorManager.dispose();
-    this.doorManager = new DoorManager(this.scene, this.physicsWorld, this);
-    this.doorsUnlockedByApples = false;
+  console.log('🚀 Loading level index:', index);
+  
+  // === FIX: Use the original level loading pattern ===
+  // First get the level data to check for computer
+  const levelData = await this.levelManager.loadIndex(index);
+  this.currentLevelId = levelData.id;
+  
+  console.log('📋 Level data loaded:', this.currentLevelId);
+  console.log('📍 Computer location in data:', levelData.computerLocation);
 
-    if (this.player.originalModelSize) {
-      this.player.createPhysicsBody(this.player.originalModelSize);
-    }
+  // Update references that depend on physics world
+  this.player.physicsWorld = this.physicsWorld;
+  this.combatSystem.physicsWorld = this.physicsWorld;
+  this.doorManager.physicsWorld = this.physicsWorld;
+  this.collectiblesManager.updatePhysicsWorld(this.physicsWorld);
+  this.doorManager.dispose();
+  this.doorManager = new DoorManager(this.scene, this.physicsWorld, this);
+  this.doorsUnlockedByApples = false;
 
-    this.levelManager.physicsWorld = this.physicsWorld;
-    this.level = await this.levelManager.loadIndex(index);
-
-    // Position player at start position from level data
-    const start = this.level.data.startPosition;
-    this.player.setPosition(new THREE.Vector3(...start));
-    console.log(`🏃 Player spawned at position: [${start.join(', ')}] for level: ${this.level.data.name}`);
-
-    // swap UI + lights first
-    this.applyLevelUI(this.level.data);
-    this.applyLevelLights(this.level.data);
-
-    // IMPORTANT:
-    // If an onLevelStart cinematic exists, we want the cinematic to control VO timing.
-    const hasLevelStartCinematic =
-      !!(this.level?.data?.cinematics && (this.level.data.cinematics.onLevelStart || Array.isArray(this.level.data.cinematics)));
-
-    // Load sounds. If cinematic exists, defer VO to it.
-    await this.applyLevelSounds(this.level.data, { deferVoiceoverToCinematic: hasLevelStartCinematic });
-
-    // Spawn collectibles AFTER sounds/UI are ready
-    this.collectiblesManager.cleanup();
-    await this.collectiblesManager.spawnCollectiblesForLevel(this.level.data);
-
-    // Doors (Level 2 example)
-    if (index === 1) {
-      this.doorManager.spawn('model', {
-        position: [25.9, 0, -4.5],
-        preset: 'wooden',
-        width: 6,
-        height: 6.5,
-        depth: 0.5,
-        type: 'model',
-        modelUrl: 'assets/doors/level2_boss_door.glb',
-        swingDirection: 'forward left',
-        interactionDistance: 10,
-        autoOpenOnApproach: false,
-        locked: true,
-        requiredKey: 'all_apples'
-      });
-      this.doorManager.spawn('basic', {
-        position: [56.5, 0, -9.4],
-        preset: 'wooden',
-        width: 4.7,
-        height: 6.5,
-        depth: 0.5,
-        type: 'model',
-        modelUrl: 'assets/doors/level2_boss_door.glb',
-        swingDirection: 'forward left',
-        initialRotation: 90,
-        interactionDistance: 10,
-        autoOpenOnApproach: false,
-        locked: true,
-        requiredKey: 'all_apples'
-      });
-      this.doorManager.toggleColliders(this.doorHelpersVisible);
-    }
-
-    // Finally: trigger the cinematic (sounds are loaded and ready).
-    // The cinematic's `playVO` step will start narration exactly on cue.
-    this.level.triggerLevelStartCinematic(this.activeCamera, this.player);
-
-    return this.level;
+  if (this.player.originalModelSize) {
+    this.player.createPhysicsBody(this.player.originalModelSize);
   }
 
+  this.levelManager.physicsWorld = this.physicsWorld;
+  
+  // === FIX: Load the level properly to create colliders ===
+  this.level = await this.levelManager.loadIndex(index);
+
+  // === COMPUTER SETUP - CALL THIS AFTER LEVEL IS LOADED ===
+  if (this.level.data.id === 'level3') {
+    console.log('🎯 Setting up computer for level3');
+    this.setupComputerTerminal();
+  } else {
+    // Remove computer if switching away from level3
+    if (this.computerTerminal) {
+      console.log('🗑️ Removing computer (switching from level3)');
+      this.scene.remove(this.computerTerminal.mesh);
+      this.computerTerminal = null;
+    }
+  }
+
+  // Position player at start position from level data
+  const start = this.level.data.startPosition;
+  this.player.setPosition(new THREE.Vector3(...start));
+  console.log(`🏃 Player spawned at position: [${start.join(', ')}] for level: ${this.level.data.name}`);
+
+  // swap UI + lights first
+  this.applyLevelUI(this.level.data);
+  this.applyLevelLights(this.level.data);
+
+  // IMPORTANT: If an onLevelStart cinematic exists, we want the cinematic to control VO timing.
+  const hasLevelStartCinematic = !!(this.level?.data?.cinematics && (this.level.data.cinematics.onLevelStart || Array.isArray(this.level.data.cinematics)));
+
+  // Load sounds. If cinematic exists, defer VO to it.
+  await this.applyLevelSounds(this.level.data, { deferVoiceoverToCinematic: hasLevelStartCinematic });
+
+  // Spawn collectibles AFTER sounds/UI are ready
+  this.collectiblesManager.cleanup();
+  await this.collectiblesManager.spawnCollectiblesForLevel(this.level.data);
+
+  // Doors (Level 2 example)
+  if (index === 1) {
+    this.doorManager.spawn('model', {
+      position: [25.9, 0, -4.5],
+      preset: 'wooden',
+      width: 6,
+      height: 6.5,
+      depth: 0.5,
+      type: 'model',
+      modelUrl: 'assets/doors/level2_boss_door.glb',
+      swingDirection: 'forward left',
+      interactionDistance: 10,
+      autoOpenOnApproach: false,
+      locked: true,
+      requiredKey: 'all_apples'
+    });
+    this.doorManager.spawn('basic', {
+      position: [56.5, 0, -9.4],
+      preset: 'wooden',
+      width: 4.7,
+      height: 6.5,
+      depth: 0.5,
+      type: 'model',
+      modelUrl: 'assets/doors/level2_boss_door.glb',
+      swingDirection: 'forward left',
+      initialRotation: 90,
+      interactionDistance: 10,
+      autoOpenOnApproach: false,
+      locked: true,
+      requiredKey: 'all_apples'
+    });
+    this.doorManager.toggleColliders(this.doorHelpersVisible);
+  }
+
+  // Finally: trigger the cinematic (sounds are loaded and ready).
+  this.level.triggerLevelStartCinematic(this.activeCamera, this.player);
+
+  return this.level;
+}
 
   /**
    * Check if all apples have been collected and unlock doors in Level 2
@@ -969,6 +1167,17 @@ export class Game {
     this.lights.clear();
     const list = (levelData && levelData.lights) ? levelData.lights : null;
     if (!list) return;
+    
+    // Debug: Log current quality settings
+    if (this.qualitySettings && this.qualitySettings.plantInstanceCounts) {
+      console.log(`💡 Creating lights with quality settings:`, {
+        fireflies: this.qualitySettings.plantInstanceCounts.fireflies,
+        leaves: this.qualitySettings.plantInstanceCounts.leaves,
+        petals: this.qualitySettings.plantInstanceCounts.petals,
+        tier: this.gpuDetector?.tier || 'Unknown'
+      });
+    }
+    
     // list is array of either string keys or objects { key, props }
     let lightCounter = {}; // Track count of each light type for unique keys
     for (const item of list) {
@@ -1533,4 +1742,248 @@ setTimeout(() => {
     const idx = list.findIndex(l => l.id === id);
     return idx >= 0 ? idx : 0;
   }
+setupComputerTerminal() {
+  console.log('🛠️ === SETUP COMPUTER TERMINAL START ===');
+  
+  try {
+    // Check if we have level data
+    if (!this.level || !this.level.data) {
+      console.error('❌ No level data available in setupComputerTerminal');
+      console.log('this.level:', this.level);
+      return;
+    }
+    
+    const levelData = this.level.data;
+    console.log('📋 Setting up computer for level:', levelData.id);
+    
+    // Check if computerLocation exists
+    if (!levelData.computerLocation) {
+      console.error('❌ No computerLocation in level data!');
+      console.log('Available keys in level data:', Object.keys(levelData));
+      return;
+    }
+    
+    console.log('📍 Computer location from level data:', levelData.computerLocation);
+    
+    // Remove existing computer if any
+    if (this.computerTerminal) {
+      console.log('🗑️ Removing existing computer terminal');
+      this.scene.remove(this.computerTerminal.mesh);
+      this.computerTerminal = null;
+    }
+    
+    // Verify the position is valid
+    const position = levelData.computerLocation.position;
+    if (!Array.isArray(position) || position.length !== 3) {
+      console.error('❌ Invalid computer position:', position);
+      return;
+    }
+    
+    console.log('🎯 Computer will be created at:', position);
+    
+    // Set required LLMs from level data
+    if (levelData.computerLocation.requiredLLMs && levelData.computerLocation.requiredLLMs.length > 0) {
+      this.glitchManager.requiredLLMs = [...levelData.computerLocation.requiredLLMs];
+      console.log('🎯 Using required LLMs from level data:', this.glitchManager.requiredLLMs);
+    } else {
+      console.warn('⚠️ No requiredLLMs specified in level data, using defaults');
+    }
+    
+    // Create new computer terminal
+    console.log('🔧 Creating new computer terminal...');
+    this.computerTerminal = new ComputerTerminal(
+      levelData.computerLocation, 
+      this.glitchManager,
+      this
+    );
+    
+    console.log('💾 Computer terminal created:', this.computerTerminal);
+    
+    // Add to scene
+    this.scene.add(this.computerTerminal.mesh);
+    console.log('✅ Computer added to scene');
+    
+    // Force immediate render
+    this.renderer.render(this.scene, this.activeCamera);
+    
+    // Debug: verify computer is in scene
+    setTimeout(() => {
+      this.debugComputerTerminal();
+    }, 100);
+    
+  } catch (error) {
+    console.error('❌ Error setting up computer terminal:', error);
+  }
+  
+  console.log('🛠️ === SETUP COMPUTER TERMINAL END ===');
+}
+
+
+/**
+ * Setup LLM collection tracking
+ */
+setupLLMTracking() {
+  console.log('🔧 Setting up LLM tracking...');
+  
+  // Check if collectiblesManager exists
+  if (!this.collectiblesManager) {
+    console.error('❌ CollectiblesManager not found!');
+    return;
+  }
+  
+  // Override the chest collection handler to track LLMs
+  if (this.collectiblesManager.onChestCollected) {
+    const originalOnChestCollected = this.collectiblesManager.onChestCollected.bind(this.collectiblesManager);
+    
+    this.collectiblesManager.onChestCollected = (chestId, contents) => {
+      console.log('📦 Chest collected:', chestId, contents);
+      
+      // Call original handler first
+      originalOnChestCollected(chestId, contents);
+      
+      // Track LLMs in level 3
+      if (this.currentLevelId === 'level3' && contents && contents.startsWith('llm_')) {
+        // FIXED TYPO: was this.glatchManager, now this.glitchManager
+        this.glitchManager.collectedLLMs.add(contents);
+        console.log(`🧠 LLM Collected: ${contents}. Total: ${this.glitchManager.collectedLLMs.size}`);
+        
+        // Show collection message
+        if (this.showMessage) {
+          this.showMessage(`LLM Acquired: ${contents.toUpperCase()}! (${this.glitchManager.collectedLLMs.size}/3)`);
+        }
+      }
+      
+      // Check glitched level completion
+      if (this.currentLevelId && this.currentLevelId.includes('_glitched')) {
+        this.checkGlitchedLevelCompletion();
+      }
+    };
+    
+    console.log('✅ LLM tracking setup complete');
+  } else {
+    console.error('❌ onChestCollected method not found in collectiblesManager');
+  }
+}
+
+/**
+ * Check if enough collectibles are collected in glitched levels
+ */
+checkGlitchedLevelCompletion() {
+  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
+  
+  const levelData = this.levelManager.getLevelData(this.currentLevelId);
+  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
+  
+  const chests = levelData.collectibles.chests;
+  
+  // Count collected chests
+  const collectedCount = chests.filter(chest => {
+    return this.collectiblesManager.isChestCollected(chest.id);
+  }).length;
+  
+  const requiredCount = this.glitchManager.requiredGlitchedCollectibles[this.currentLevelId];
+  
+  console.log(`📊 Glitched level progress: ${collectedCount}/${requiredCount} collectibles`);
+  
+  if (collectedCount >= requiredCount) {
+    console.log(`✅ Required collectibles collected in ${this.currentLevelId}!`);
+    
+    // Mark this glitched level as completed
+    this.glitchManager.completeGlitchedLevel(this.currentLevelId);
+    
+    // Determine next level
+    let nextLevel, message;
+    if (this.currentLevelId === 'level1_glitched' && !this.glitchManager.glitchedLevelsCompleted.level2_glitched) {
+      nextLevel = 'level2_glitched';
+      message = 'Level 1 Glitched completed! Moving to Level 2 Glitched.';
+    } else {
+      nextLevel = 'level3';
+      message = 'All glitched levels completed! Returning to Level 3.';
+    }
+    
+    // Show completion message
+    this.showMessage(message, 3000);
+    
+    // Wait, then go to next level
+    setTimeout(() => {
+      this.loadLevelByName(nextLevel);
+    }, 3000);
+  }
+}
+
+async loadLevelByName(levelId) {
+  const levels = this.levelManager.levels || [];
+  const index = levels.findIndex(level => level.id === levelId);
+  if (index >= 0) {
+    return this.loadLevel(index);
+  } else {
+    console.error(`Level not found: ${levelId}`);
+    return null;
+  }
+}
+
+showMessage(message, duration = 3000) {
+  console.log('💬 Message:', message);
+  
+  // Create message element
+  const messageElement = document.createElement('div');
+  messageElement.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    text-align: center;
+    z-index: 1000;
+    border: 2px solid #00ff00;
+    max-width: 80%;
+  `;
+  messageElement.textContent = message;
+  
+  document.body.appendChild(messageElement);
+  
+  // Remove after duration
+  setTimeout(() => {
+    if (messageElement.parentNode) {
+      messageElement.parentNode.removeChild(messageElement);
+    }
+  }, duration);
+}
+
+checkGlitchedLevelCompletion() {
+  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
+  
+  const levelData = this.levelManager.getLevelData(this.currentLevelId);
+  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
+  
+  const chests = levelData.collectibles.chests;
+  
+  // Check if ALL chests in this glitched level are collected
+  const allCollected = chests.every(chest => {
+    return this.collectiblesManager.isChestCollected(chest.id);
+  });
+  
+  if (allCollected) {
+    console.log('✅ All chests collected in glitched level!');
+    
+    // Mark this glitched level as completed
+    this.glitchManager.completeGlitchedLevel(this.currentLevelId);
+    
+    // Show completion message
+    this.showMessage(`Glitched level completed! Returning to Level 3.`);
+    
+    // Wait 2 seconds, then automatically return to Level 3
+    setTimeout(() => {
+      this.loadLevelByName('level3');
+    }, 2000);
+  }
+}
+
+
+
 }

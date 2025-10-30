@@ -1,3 +1,13 @@
 export { NpcBase } from './NpcBase.js';
 export { YellowBot } from './YellowBot.js';
 export { OtherBot } from './OtherBot.js';
+export {HumanNpcBase} from './HumanNpcBase.js';
+export {Worker} from './Worker.js';
+export {Hood} from './Hood.js';
+export {Woman} from './Woman.js';
+export {Woman3} from './Woman3.js';
+export {Women2} from './Women2.js';
+export {SuitF} from './SuitF.js';
+export {SuitM} from './SuitM.js';
+export {Punk} from './Punk.js';
+export {casual} from './casual.js';

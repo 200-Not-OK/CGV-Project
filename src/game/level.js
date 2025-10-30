@@ -9,6 +9,8 @@ import { Platform } from './components/Platform.js';
 import { InteractiveObjectManager } from './InteractiveObjectManager.js';
 import { PlaceableBlockManager } from './PlaceableBlockManager.js';
 import { Level0Controller } from './levels/Level0Controller.js';
+import { createBinaryScreenFromExactCorners } from './lights/binaryScreen.js';
+import { createLightningBorder } from './lights/lightningBorder.js';
 
 /**
  * Level
@@ -34,6 +36,12 @@ export class Level {
     this.animatedMeshes = []; // Meshes with animations (rotating, moving, disappearing)
     this.gltfLoaded = false;
     this.gltfScene = null;
+    this.binaryScreens = [];
+    this.lightningBorders = [];
+    this.binaryScreenDefinitions = [];
+    this.lightningBorderDefinitions = [];
+    this.qualitySettings = game?.qualitySettings || null;
+    this._initialWorldMatrices = new Map();
 
     this.enemyManager = new EnemyManager(this.scene, this.physicsWorld);
     this.npcManager = new NpcManager(this.scene, this.physicsWorld);
@@ -83,6 +91,129 @@ export class Level {
     // 3) Always ensure there's at least a ground collider if none exist
     this._ensureDefaultGround();
 
+    // Reset quality-controlled definitions for this build
+    this.binaryScreenDefinitions = [];
+    this.lightningBorderDefinitions = [];
+
+    // 4.x) Matrix Binary Screen using four corner coordinates
+    if (this.data.id === 'level1A') {
+      this.binaryScreenDefinitions = [
+        {
+          corners: [
+            [-506.55433082580566, 49.15734148106972, 344.64214557816035],
+            [-506.48336392524857, 10.113008499145508, 343.9887554457972],
+            [-506.55433082580566, 49.1898516045852, 180.00618346145467],
+            [-506.55433082580566, 8.921134221600987, 179.9905334386446]
+          ],
+          options: {
+            adaptiveDepthToggle: true,
+            surfaceOffset: 0.25,
+            textColor: '#009a00',
+            glowColor: 0x009a00,
+            palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
+            emitLight: false,
+            lightIntensity: 0,
+            updateInterval: 36
+          }
+        },
+        {
+          corners: [
+            [-381.8494117474221, 10.113008499145508, 344.4659492257442],
+            [-381.77683923106383, 10.113008499145508, 182.17718862534116],
+            [-506.4621742595336, 10.113008499145508, 182.27160267413527],
+            [-506.39063830155794, 10.113008499145508, 344.0525235389457]
+          ],
+          options: {
+            textColor: '#009a00',
+            glowColor: 0x009a00,
+            palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
+            emitLight: false,
+            lightIntensity: 0,
+            updateInterval: 36,
+            adaptiveDepthToggle: true,
+            surfaceOffset: 0.25
+          }
+        }
+      ];
+    }
+
+    if (this.data.id === 'level1A') {
+      this.lightningBorderDefinitions = [
+        {
+          points: [
+            [-238.763533228934, 10.11297035217285, 111.259811281751],
+            [-212.91361619596836, 10.112970352172853, 111.22900955922275],
+            [-213.00662396063655, 10.112970352172853, 137.0766949209293],
+            [-238.7703527033764, 10.112970352172852, 137.02286907263107]
+          ],
+          color: 0xff0000,
+          attachTo: 'Lift2',
+          intensityMultiplier: 1.0
+        },
+        {
+          points: [
+            [-272.41684354930214, 10.112970352172852, 97.47242494779229],
+            [-246.45488604629878, 10.112970352172852, 97.43355490780569],
+            [-246.43497549870725, 10.112970352172852, 123.25671149236048],
+            [-272.36738205394096, 10.112970352172852, 123.28926191983044]
+          ],
+          color: 0x0000ff,
+          attachTo: 'Lift3',
+          intensityMultiplier: 1.1
+        },
+        {
+          points: [
+            [-505.6399060182645, 13.888110280036926, 182.74142004345708],
+            [-488.23234733923545, 13.888110280036926, 182.45399800223606],
+            [-488.0980752485533, 13.888110280036926, 207.92803835156283],
+            [-505.7311442743019, 13.888110280036926, 207.90950078013196]
+          ],
+          color: 0x00ff00,
+          attachTo: 'Lift',
+          intensityMultiplier: 1.15
+        },
+        // New panels attached to Lift3003 (near x~512..538, z~406..432)
+        {
+          points: [
+            [512.6500824817671, 10.112970352172852, 432.094720780554],
+            [512.5226276612185, 10.11297035217285, 406.28033258052716],
+            [538.2994197913204, 10.11297035217285, 406.3051761038544],
+            [538.2247399980001, 10.11297035217285, 432.121383067471]
+          ],
+          color: 0xff0000, // red
+          attachTo: 'Lift3003',
+          intensityMultiplier: 1.2
+        },
+        // New panels attached to Lift3002 (near x~544..570, z~86..112)
+        {
+          points: [
+            [570.1383771286943, 10.112970352172852, 112.0728142294769],
+            [570.1147140568605, 10.112970352172852, 86.22023432014143],
+            [544.4698585156376, 10.112970352172852, 86.24961386687826],
+            [544.3415450976222, 10.11297035217285, 111.94885861120632]
+          ],
+          color: 0x0000ff, // blue
+          attachTo: 'Lift3002',
+          intensityMultiplier: 1.2
+        },
+        // New panels attached to Lift3001 (near x~332..358, z~-49..-23)
+        {
+          points: [
+            [357.8233574708235, 10.112970352172852, -23.114545357660937],
+            [357.8138802686789, 10.112970352172853, -49.05168156130572],
+            [331.90318130241974, 10.112970352172853, -49.0147674807271],
+            [331.8699634696396, 10.112970352172852, -23.193487611579815]
+          ],
+          color: 0x00ff00, // green
+          attachTo: 'Lift3001',
+          intensityMultiplier: 1.2
+        }
+      ];
+    }
+
+    // Apply quality-controlled features after definitions are prepared
+    this.applyQualitySettings(this.game?.qualitySettings || null);
+
     // 4) Enemies
     console.log('👾 Loading enemies...');
     this._loadEnemies();
@@ -128,6 +259,131 @@ export class Level {
     console.log(`✅ Level build complete. GLTF loaded: ${this.gltfLoaded}. Visual objects: ${this.objects.length}. Physics bodies: ${this.physicsBodies.length}. Platforms: ${this.platforms.length}`);
   }
 
+  applyQualitySettings(qualitySettings = null) {
+    const resolved = qualitySettings || this.game?.qualitySettings || null;
+    this.qualitySettings = resolved;
+    this._applyBinaryScreensForQuality(resolved);
+    this._applyLightningBordersForQuality(resolved);
+  }
+
+  _applyBinaryScreensForQuality(qualitySettings) {
+    const flags = qualitySettings?.lightFeatureFlags || {};
+    const enableScreens = flags.binaryScreens !== false;
+    if (!enableScreens) {
+      this._clearBinaryScreens();
+      return;
+    }
+    if (!this.binaryScreenDefinitions || this.binaryScreenDefinitions.length === 0) {
+      return;
+    }
+
+    this._clearBinaryScreens();
+
+    for (const def of this.binaryScreenDefinitions) {
+      const options = { ...(def.options || {}) };
+      try {
+        const screen = createBinaryScreenFromExactCorners(this.scene, def.corners, options);
+        if (screen.mesh) {
+          screen.mesh.frustumCulled = false;
+        }
+        this.objects.push(screen.group);
+        this.binaryScreens.push(screen);
+      } catch (err) {
+        console.warn('⚠️ Failed to create binary screen for quality settings:', err);
+      }
+    }
+  }
+
+  _clearBinaryScreens() {
+    if (!this.binaryScreens || this.binaryScreens.length === 0) return;
+    for (const screen of this.binaryScreens) {
+      try {
+        screen.removeFromScene?.(this.scene);
+        screen.dispose?.();
+      } catch (err) {
+        console.warn('⚠️ Error disposing binary screen:', err);
+      }
+      const idx = this.objects.indexOf(screen.group);
+      if (idx !== -1) {
+        this.objects.splice(idx, 1);
+      }
+    }
+    this.binaryScreens = [];
+  }
+
+  _applyLightningBordersForQuality(qualitySettings) {
+    const flags = qualitySettings?.lightFeatureFlags || {};
+    const enableBorders = flags.lightningBorders !== false;
+    if (!enableBorders) {
+      this._clearLightningBorders();
+      return;
+    }
+    if (!this.lightningBorderDefinitions || this.lightningBorderDefinitions.length === 0) {
+      return;
+    }
+
+    this._clearLightningBorders();
+
+    const profile = qualitySettings?.lightningBorderProfile || {};
+    for (const def of this.lightningBorderDefinitions) {
+      const intensityBase = profile.intensity ?? 3.0;
+      const borderWidth = def.borderWidth ?? profile.borderWidth ?? 0.15;
+      const updateEvery = Math.max(1, Math.round(def.updateEvery ?? profile.updateEvery ?? 1));
+      const allowAdditive = profile.allowAdditive !== undefined ? profile.allowAdditive : true;
+      const intensity = intensityBase * (def.intensityMultiplier ?? 1.0);
+
+      try {
+        const border = createLightningBorder(this.scene, {
+          points: def.points,
+          color: def.color,
+          intensity,
+          borderWidth,
+          updateEvery,
+          allowAdditive,
+          quality: qualitySettings,
+          attachToMeshName: def.attachTo || null
+        });
+
+        if (!border || !border.mesh) {
+          continue;
+        }
+
+        border.mesh.frustumCulled = false;
+
+        if (def.attachTo) {
+          try {
+            const target = this._findMeshByName(def.attachTo);
+            if (target) {
+              const bind = this._initialWorldMatrices?.get?.(def.attachTo) || null;
+              border.attachToObject(target, { pointsAreWorld: true, bindMatrixWorld: bind });
+              console.log(`🔗 Lightning border attached to ${def.attachTo}`);
+            } else {
+              console.warn(`⚠️ Could not find ${def.attachTo} to attach lightning border; leaving in world space`);
+            }
+          } catch (attachErr) {
+            console.warn(`⚠️ Failed to attach lightning border to ${def.attachTo}:`, attachErr);
+          }
+        }
+
+        this.lightningBorders.push(border);
+      } catch (err) {
+        console.warn('⚠️ Failed to create lightning border for quality settings:', err);
+      }
+    }
+  }
+
+  _clearLightningBorders() {
+    if (!this.lightningBorders || this.lightningBorders.length === 0) return;
+    for (const border of this.lightningBorders) {
+      try {
+        border.dispose?.();
+      } catch (err) {
+        console.warn('⚠️ Error disposing lightning border:', err);
+      }
+    }
+    this.lightningBorders = [];
+  }
+
   async _loadGLTFGeometry(url) {
     console.log('🔄 Loading GLTF from:', url);
     const gltf = await loadGLTFModel(url);
@@ -148,6 +404,19 @@ export class Level {
       }
     });
   console.log(`🔍 Found ${meshesToProcess.length} meshes in GLTF`);
+
+    // Capture initial world matrices for robust re-attachment after quality changes
+    try {
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse((obj) => {
+        if (obj && obj.name) {
+          this._initialWorldMatrices.set(obj.name, obj.matrixWorld.clone());
+        }
+      });
+      console.log(`📌 Captured initial world matrices for ${this._initialWorldMatrices.size} objects`);
+    } catch (e) {
+      console.warn('⚠️ Failed to capture initial world matrices:', e);
+    }
 
     const hasManualColliders = Array.isArray(this.data.colliders) && this.data.colliders.length > 0;
 
@@ -815,6 +1084,35 @@ export class Level {
     // Update animated meshes
     this._updateAnimatedMeshes(delta);
     
+    // Update BinaryScreens (ensure they animate)
+    if (this.binaryScreens && this.binaryScreens.length > 0) {
+      // Track elapsedTime or get time from game context if needed
+      if (!this._binaryScreenElapsed) this._binaryScreenElapsed = 0;
+      this._binaryScreenElapsed += delta * 1000; // ms wanted
+      for (const scr of this.binaryScreens) {
+        scr.update(delta * 1000, this._binaryScreenElapsed);
+      }
+    }
+    // Update LightningBorders
+    if (this.lightningBorders && this.lightningBorders.length > 0) {
+      if (!this._lightningElapsed) this._lightningElapsed = 0;
+      this._lightningElapsed += delta * 1000;
+      for (const lb of this.lightningBorders) {
+        // Lazy re-attach if quality switch recreated border before target was available
+        try {
+          if (lb && !lb._resolvedParent && lb.options && lb.options.attachToMeshName) {
+            const target = this._findMeshByName(lb.options.attachToMeshName);
+            if (target) {
+              const bind = this._initialWorldMatrices?.get?.(lb.options.attachToMeshName) || null;
+              lb.attachToObject(target, { pointsAreWorld: true, bindMatrixWorld: bind });
+              console.log(`🔗 (lazy) Lightning border attached to ${lb.options.attachToMeshName}`);
+            }
+          }
+        } catch (e) { /* ignore */ }
+        lb.update(delta * 1000, this._lightningElapsed);
+      }
+    }
+    
     // Update level-specific controller (e.g., Level0Controller)
     if (this.controller && typeof this.controller.update === 'function') {
       this.controller.update(delta);
@@ -860,6 +1158,10 @@ export class Level {
         this._disposeObject3DDeep(this.gltfScene);
         this.gltfScene = null;
       }
+
+      // Clear quality-controlled features
+      this._clearLightningBorders();
+      this._clearBinaryScreens();
 
       // Remove visual objects
       for (const obj of this.objects) {

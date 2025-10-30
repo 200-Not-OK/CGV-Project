@@ -7,7 +7,8 @@ export class FirstPersonCamera {
     this.input = input;
     this.dom = domElement;
 
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // Lower near plane to reduce close-up clipping of attached effects
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.02, 1000);
     this.yaw = 0;
     this.pitch = 0;
     this.sensitivity = 0.0025;
