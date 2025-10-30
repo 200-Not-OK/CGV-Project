@@ -25,6 +25,15 @@ export class StackWeapon {
     this.enabled = false;
   }
   
+  /**
+   * Set the maximum number of blocks that can be placed
+   * @param {number} max - Maximum blocks, or Infinity for unlimited
+   */
+  setMaxBlocks(max) {
+    this.maxBlocks = max;
+    console.log(`🎮 StackWeapon maxBlocks set to: ${max === Infinity ? 'unlimited' : max}`);
+  }
+  
   mount() {
     this.enabled = true;
     console.log('🎮 StackWeapon mounted - X to place, Z to pop');
@@ -54,8 +63,8 @@ export class StackWeapon {
     const now = Date.now();
     if (now - this.lastPlaceTime < this.placeCooldown * 1000) return;
     
-    // Max blocks check
-    if (this.blocks.length >= this.maxBlocks) {
+    // Max blocks check (skip if maxBlocks is set to unlimited/Infinity)
+    if (this.maxBlocks !== Infinity && this.maxBlocks > 0 && this.blocks.length >= this.maxBlocks) {
       console.log(`❌ Max stack (${this.maxBlocks}) reached!`);
       return;
     }
