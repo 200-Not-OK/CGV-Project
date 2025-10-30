@@ -1,8 +1,8 @@
 // Data-driven level definitions with GLTF geometry loading
 export const levels = [
   {
-    "id": "level0",
-    "name": "Level 0: The Training Grounds",
+    "id": "level1A",
+    "name": "Level 1A",
     "gltfUrl": "assets/levels/revamped/ControlRoom.gltf",
     "startPosition": [
       0,
@@ -10,13 +10,367 @@ export const levels = [
       0
     ],
     "lights": [
-      "BasicLights"
+      {
+        "key": "TechLights",
+        "props": {
+          "position": [0, 0, 0]
+        }
+      },
+      {
+        "key": "BasicLights",
+        "props": {
+          "intensity": 0.6
+        }
+      },
+      {
+        "key": "PointLight",
+        "props": {
+          "position": [0, 22, 0],
+          "color": 0x88ccff,
+          "intensity": 3,
+          "distance": 0,
+          "decay": 0,
+          "castShadow": false
+        }
+      },
+      {
+        "key": "PointLight",
+        "props": {
+          "position": [0, 22, -25],
+          "color": 0x88ccff,
+          "intensity": 2.5,
+          "distance": 0,
+          "decay": 0,
+          "castShadow": false
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [12.912955239766767, 37.88715128438456, -0.6576220834419964],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.5,
+          "length": 18.0
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [12.944228948310343, 36.3885593052973, -0.7342901183469568],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.6,
+          "length": 16.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-12.771536745930266, 37.10794565203993, -0.2786261734922153],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.45,
+          "length": 20.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-12.786166101517708, 35.637551218443186, 0.09513458030733979],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.55,
+          "length": 17.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [11.918973319923648, 32.82629147937733, -0.5821365533665996],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.7,
+          "length": 15.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-12.380822352048272, 32.98950836127626, 0.30395344141215386],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.4,
+          "length": 22.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-7.066101073891365, 39.086951601572, -1.202468494343286],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.65,
+          "length": 19.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-7.654338940706618, 39.1165865627044, 0.7016923973175011],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.52,
+          "length": 21.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [7.062490970189732, 38.89875358023083, -1.4657143172867606],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.48,
+          "length": 17.5,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [6.6347481289407355, 38.869158640436886, 1.324692383072716],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.58,
+          "length": 19.5,
+          "branches": 5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.13807616959711, 19.463404294493557, -25.823032754301256],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.16909747940394, 19.463404294493557, -27.13562457148415],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.19859913312111, 19.463404294493557, -28.453574585960094],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.14985223550229, 19.463404294493557, -29.66304109539178],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.24519648095297, 19.463404294493557, -31.030929245129776],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.23451972231483, 19.463404294493557, -32.12921366927179],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.20699800401285, 19.463404294493557, -33.31666531646326],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.56784082247674, 19.463404294493557, -26.342960488002813],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.608876255091346, 19.463404294493557, -27.791121946094922],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.651721009570444, 19.463404294493557, -29.038673863085236],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.821846110202166, 19.463404294493557, -30.411332975256368],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.79240656912321, 19.463404294493557, -31.410144903763197],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.98665721682491, 19.463404294493557, -32.763087823485215],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.77547883082075, 19.463404294493557, -33.87862076073715],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      }
     ],
     "ui": [
-      "hud"
+      "hud",
+      "coordinates"
     ],
     "enemies": [],
-    "npcs": [],
+    "npcs": [
+      {
+        "type": "yellow_bot",
+        "position": [
+          6.350443774254943,
+          9.439203262329102,
+          -25.949882425660608
+        ],
+        "modelUrl": "assets/npc/yellow_bot/scene.gltf",
+        "patrolPoints": [],
+        "speed": 2,
+        "scale": 10,
+        "chaseRange": 0,
+        "id": 2
+      },
+      {
+        "type": "other_bot",
+        "position": [
+          13.563743283481266,
+          11.439203262329102,
+          -35.625234114583954
+        ],
+        "modelUrl": "assets/npc/other_bot/Mike.gltf",
+        "patrolPoints": [],
+        "speed": 2,
+        "scale": 1,
+        "chaseRange": 0,
+        "id": 3
+      }
+    ],
     "platforms": [],
     "interactiveObjects": [
       {
@@ -501,36 +855,6 @@ export const levels = [
         }
       }
     ],
-    "cinematics": {
-      "onLevelStart": {
-        "sequence": [
-          {
-            "type": "takeCamera"
-          },
-          {
-            "type": "cut",
-            "position": [
-              -36.130299264016,
-              39.32663426672091,
-              -46.145177904798445
-            ],
-            "lookAt": [
-              -22.757220085318835,
-              29.03025736732181,
-              -35.41459655867294
-            ],
-            "fov": 60
-          },
-          {
-            "type": "wait",
-            "ms": 3000
-          },
-          {
-            "type": "releaseCamera"
-          }
-        ]
-      }
-    }
   },
   {
     "id": "level1",
@@ -542,7 +866,12 @@ export const levels = [
       0
     ],
     "lights": [
-      "BasicLights"
+      {
+        "key": "BasicLights",
+        "props": {
+          "intensity": 0.1
+        }
+      }
     ],
     "ui": [
       "hud"
@@ -2130,7 +2459,12 @@ export const levels = [
       }
     ],
     "lights": [
-      "BasicLights"
+      {
+        "key": "BasicLights",
+        "props": {
+          "intensity": 0.1
+        }
+      }
     ],
     "enemies": [
       {
