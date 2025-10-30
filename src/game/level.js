@@ -447,7 +447,7 @@ export class Level {
 
         this.game.shaderSystem.applyCustomShaderToObject(
             gltf.scene,
-            (m) => m.userData?.type === 'gltf',
+            (m) => m.userData?.type === 'gltf' && !m.userData?.isNpc && !m.userData?.skipShader,
             {
             // Softer cartoon style - less bright and oversaturated
             ambientColor: new THREE.Color(0xffffff).multiplyScalar(0.35),
@@ -497,19 +497,6 @@ export class Level {
             highlightTintColor: new THREE.Color(0xf8f5f0)
             }
           );
-        
-        // Add black outlines to all Level 3 objects for hand-drawn effect
-        try {
-          console.log('🖊️ Adding black outlines to all Level 3 objects');
-          this.game.shaderSystem.addOutlineToObject(
-            gltf.scene,
-            (m) => m.userData?.type === 'gltf',
-            { thickness: 1.05, color: 0x000000 }
-          );
-          console.log('✅ Black outlines applied to Level 3 objects');
-        } catch (outlineErr) {
-          console.warn('⚠️ Failed to apply outlines to Level 3:', outlineErr);
-        }
       }
     } catch (e) {
       console.warn('⚠️ Failed to apply custom shader to GLTF assets:', e);
