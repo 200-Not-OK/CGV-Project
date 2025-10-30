@@ -17,11 +17,21 @@ import * as THREE from 'three';
 // VERTEX SHADER
 // ============================================================================
 const vertexShader = `
+  uniform float uOverlayPush; // view-space Z push to avoid near-plane clipping
   varying vec2 vUv;
   
   void main() {
     vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    float zBefore = mvPosition.z;
+    float zAfter = mvPosition.z - uOverlayPush; // camera looks down -Z
+    // Scale XY so screen-space size remains consistent after Z adjustment
+    // Keep ratio stable; avoid division by zero with small epsilon
+    float denom = abs(zBefore) > 1e-6 ? zBefore : (zBefore < 0.0 ? -1e-6 : 1e-6);
+    float ratio = zAfter / denom;
+    mvPosition.xy *= ratio;
+    mvPosition.z = zAfter;
+    gl_Position = projectionMatrix * mvPosition;
   }
 `;
 
@@ -158,8 +168,14 @@ export class LightningBorder {
     }
 
     this.options = {
-      points: options.points,
-      color: options.color || 0x00ff00,  // Green
+      points: options.points,             // expected in world space by default
+      pointsAreWorld: options.pointsAreWorld !== false, // default true
+      attachToMeshName: options.attachToMeshName || null, // optional string to resolve in scene
+      parent: options.parent || null,     // optional THREE.Object3D
+      surfaceOffset: options.surfaceOffset !== undefined ? options.surfaceOffset : 0.08,
+      adaptiveDepthToggle: options.adaptiveDepthToggle === undefined ? true : !!options.adaptiveDepthToggle,
+      followAlwaysOverlay: options.followAlwaysOverlay === undefined ? false : !!options.followAlwaysOverlay,
+      color: options.color || 0x00ff00,   // Green
       intensity: options.intensity || 3.0,
       borderWidth: options.borderWidth || 0.15,
       ...options
@@ -170,6 +186,11 @@ export class LightningBorder {
     this.light = null;
     this.time = 0;
 
+    this._resolvedParent = null; // THREE.Object3D we attach to (if any)
+    this._worldPoints = this.options.points.map(p => new THREE.Vector3(p[0], p[1], p[2]));
+    this._localNormal = null; // computed from localPoints
+    this._isOverlayMode = false;
+
     this.init();
   }
 
@@ -178,13 +199,57 @@ export class LightningBorder {
     console.log('   Points:', this.options.points);
     console.log('   Color: Green lightning');
 
+    // Resolve parent if requested
+    if (!this._resolvedParent && (this.options.parent || this.options.attachToMeshName)) {
+      this._resolvedParent = this.options.parent || this._resolveByName(this.options.attachToMeshName);
+      if (this._resolvedParent) {
+        console.log('🧲 LightningBorder: attaching to parent object', this._resolvedParent.name || '(unnamed)');
+      }
+    }
+
+    // Prepare quad positions: either world or parent-local
+    const localPoints = this._resolvedParent && this.options.pointsAreWorld
+      ? this._worldPoints.map(v => this._resolvedParent.worldToLocal(v.clone()))
+      : this._worldPoints;
+
+    // Compute a stable normal (favor CCW ordering) and offset points slightly to avoid z-fighting
+    const e1 = localPoints[1].clone().sub(localPoints[0]);
+    const e2 = localPoints[3].clone().sub(localPoints[0]);
+    let n = e2.clone().cross(e1);
+    if (n.lengthSq() < 1e-8) n.set(0, 1, 0);
+
+    // Ensure normal points upward for mostly horizontal quads so offset lifts above surface
+    let normalWorld = n.clone();
+    if (this._resolvedParent) {
+      this._resolvedParent.updateWorldMatrix(true, false);
+      const normalMatrix = new THREE.Matrix3().getNormalMatrix(this._resolvedParent.matrixWorld);
+      normalWorld.applyMatrix3(normalMatrix).normalize();
+    } else {
+      normalWorld.normalize();
+    }
+    const WORLD_UP = new THREE.Vector3(0, 1, 0);
+    if (Math.abs(normalWorld.dot(WORLD_UP)) > 0.5 && normalWorld.dot(WORLD_UP) < 0) {
+      normalWorld.negate();
+      n.negate();
+    }
+    n.normalize();
+    this._localNormal = n.clone();
+
+    const OFFSET = this.options.surfaceOffset || 0;
+    if (OFFSET !== 0) {
+      const offsetVec = n.clone().multiplyScalar(OFFSET);
+      for (const lp of localPoints) lp.add(offsetVec);
+    }
+
+    // Cache local-space center for near-plane push calculations (after offset)
+    this._localCenter = localPoints.reduce((acc, v) => acc.add(v), new THREE.Vector3()).multiplyScalar(0.25);
+
     // Create custom geometry for quad from 4 points
-    const points = this.options.points;
     const positions = new Float32Array([
-      ...points[0], // 0: p0 (bottom left)
-      ...points[1], // 1: p1 (bottom right)
-      ...points[2], // 2: p2 (top right)
-      ...points[3]  // 3: p3 (top left)
+      localPoints[0].x, localPoints[0].y, localPoints[0].z,
+      localPoints[1].x, localPoints[1].y, localPoints[1].z,
+      localPoints[2].x, localPoints[2].y, localPoints[2].z,
+      localPoints[3].x, localPoints[3].y, localPoints[3].z
     ]);
     // 2 triangles: 0-1-2, 2-3-0
     const indices = [0, 1, 2, 2, 3, 0];
@@ -207,14 +272,20 @@ export class LightningBorder {
         uTime: { value: 0 },
         uColor: { value: new THREE.Color(this.options.color) },
         uBorderWidth: { value: this.options.borderWidth },
-        uIntensity: { value: this.options.intensity }
+        uIntensity: { value: this.options.intensity },
+        uOverlayPush: { value: 0.0 }
       },
       vertexShader,
       fragmentShader,
       transparent: true, // Keep transparent for proper look
       blending: THREE.AdditiveBlending, // Keep additive for glow effect
       side: THREE.DoubleSide,
-      depthWrite: false // Transparent objects don't write depth
+      depthWrite: false,
+      fog: false,
+      toneMapped: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -4
     });
 
     // Create mesh
@@ -224,8 +295,54 @@ export class LightningBorder {
     // Skip deferred - render in forward pass AFTER lighting
     this.mesh.userData.skipDeferred = true;
 
-    // Add to scene
+    // Ensure bounds exist, though we disable culling
+    geometry.computeBoundingBox();
+    geometry.computeBoundingSphere();
+
+    // Add to scene and follow parent by copying its world matrix each frame.
+    // This avoids parent-based frustum culling causing the border to disappear.
     this.scene.add(this.mesh);
+    this.mesh.matrixAutoUpdate = !this._resolvedParent; // disable auto when following
+    this._followParent = !!this._resolvedParent;
+    if (this._followParent && this._resolvedParent) {
+      this._resolvedParent.updateWorldMatrix(true, false);
+      this.mesh.matrix.copy(this._resolvedParent.matrixWorld);
+    }
+
+    // Compute overlay/near-plane push with the exact camera used for rendering
+    this.mesh.onBeforeRender = (renderer, scene, camera) => {
+      try {
+        // Expose active camera for other systems (parity with BinaryScreen usage)
+        if (scene && scene.userData) scene.userData.activeCamera = camera;
+
+        const mat = this.mesh.material;
+        // Always keep depth testing ON so other objects occlude correctly
+        mat.depthTest = true;
+        mat.depthWrite = false;
+        mat.polygonOffset = true;
+        mat.polygonOffsetFactor = -2;
+        mat.polygonOffsetUnits = -4;
+        // Draw late to help blended look but still respect depth buffer
+        this.mesh.renderOrder = 10000;
+        this._isOverlayMode = false;
+
+        // Compute worst-case vertex push in view space against current camera near plane
+        const mv = new THREE.Matrix4().multiplyMatrices(camera.matrixWorldInverse, this.mesh.matrixWorld);
+        const posAttr = this.mesh.geometry.getAttribute('position');
+        let zMax = -Infinity;
+        for (let i = 0; i < 4; i++) {
+          const vLocal = new THREE.Vector3(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i));
+          const vView = vLocal.applyMatrix4(mv);
+          if (vView.z > zMax) zMax = vView.z; // least negative (closest)
+        }
+        const near = (typeof camera.near === 'number') ? camera.near : 0.1;
+        const margin = 0.05; // small, to avoid visual size jumps
+        const needed = Math.max(0, zMax + near + margin);
+        // Clamp push to avoid dramatic perspective scaling
+        const maxPush = near * 0.5; // half the near plane distance
+        this.material.uniforms.uOverlayPush.value = Math.min(needed, maxPush);
+      } catch (e) { /* ignore */ }
+    };
 
     console.log('✅ Lightning Border created (self-illuminated, no light needed)!');
   }
@@ -238,9 +355,93 @@ export class LightningBorder {
     
     // Update shader time
     this.material.uniforms.uTime.value = this.time;
+
+    // If following a parent, copy its world matrix so we render in the same transform
+    if (this._followParent && this._resolvedParent && this.mesh) {
+      // Make sure parent's world matrix is current
+      this._resolvedParent.updateWorldMatrix(true, false);
+      this.mesh.matrix.copy(this._resolvedParent.matrixWorld);
+      this.mesh.updateMatrixWorld(true);
+    }
+
+    // Overlay/near-plane handling happens in onBeforeRender using the exact camera state
+
+    // Per-frame depth/near-plane handling is done in onBeforeRender to use the exact camera
     
   }
-  
+
+  // Attach to a parent object after creation. Optionally converts world-space points to local.
+  attachToObject(object3D, options = {}) {
+    if (!object3D || !object3D.isObject3D) return;
+    const { pointsAreWorld = true } = options;
+
+    this._resolvedParent = object3D;
+
+    // If we already have a mesh, reparent and, if needed, convert geometry to parent local space
+    if (this.mesh) {
+      // Ensure we live at scene root to avoid parent frustum culling
+      if (this.mesh.parent) this.mesh.parent.remove(this.mesh);
+
+      // Compute local point positions if our stored points are in world space
+      if (pointsAreWorld) {
+        const geom = this.mesh.geometry;
+        const lp = this._worldPoints.map(v => object3D.worldToLocal(v.clone()));
+        // Recompute local normal (favor CCW) and apply surface offset consistently
+        const e1 = lp[1].clone().sub(lp[0]);
+        const e2 = lp[3].clone().sub(lp[0]);
+        let n = e2.clone().cross(e1);
+        if (n.lengthSq() < 1e-8) n.set(0, 1, 0);
+
+        let normalWorld = n.clone();
+        object3D.updateWorldMatrix(true, false);
+        const normalMatrix = new THREE.Matrix3().getNormalMatrix(object3D.matrixWorld);
+        normalWorld.applyMatrix3(normalMatrix).normalize();
+        const WORLD_UP = new THREE.Vector3(0, 1, 0);
+        if (Math.abs(normalWorld.dot(WORLD_UP)) > 0.5 && normalWorld.dot(WORLD_UP) < 0) {
+          normalWorld.negate();
+          n.negate();
+        }
+        n.normalize();
+        this._localNormal = n.clone();
+
+        const OFFSET = this.options.surfaceOffset || 0;
+        if (OFFSET !== 0) {
+          const offsetVec = n.clone().multiplyScalar(OFFSET);
+          for (const v of lp) v.add(offsetVec);
+        }
+        this._localCenter = lp.reduce((acc, vec) => acc.add(vec), new THREE.Vector3()).multiplyScalar(0.25);
+        const arr = geom.getAttribute('position').array;
+        arr[0] = lp[0].x; arr[1] = lp[0].y; arr[2] = lp[0].z;
+        arr[3] = lp[1].x; arr[4] = lp[1].y; arr[5] = lp[1].z;
+        arr[6] = lp[2].x; arr[7] = lp[2].y; arr[8] = lp[2].z;
+        arr[9] = lp[3].x; arr[10] = lp[3].y; arr[11] = lp[3].z;
+        geom.getAttribute('position').needsUpdate = true;
+        geom.computeVertexNormals();
+        geom.computeBoundingBox();
+        geom.computeBoundingSphere();
+      }
+
+      // Add back to scene and follow
+      this.scene.add(this.mesh);
+      this._followParent = true;
+      this.mesh.matrixAutoUpdate = false;
+      this._resolvedParent.updateWorldMatrix(true, false);
+      this.mesh.matrix.copy(this._resolvedParent.matrixWorld);
+      this.mesh.updateMatrixWorld(true);
+    }
+  }
+
+  _resolveByName(name) {
+    if (!name || !this.scene || !this.scene.getObjectByName) return null;
+    const obj = this.scene.getObjectByName(name);
+    if (obj) return obj;
+    let found = null;
+    this.scene.traverse((child) => {
+      if (!found && child.name === name) found = child;
+    });
+    return found;
+  }
+
   setPosition(x, y, z) {
     if (this.mesh) {
       this.mesh.position.set(x, y, z);
@@ -266,4 +467,3 @@ export class LightningBorder {
 export function createLightningBorder(scene, options) {
   return new LightningBorder(scene, options);
 }
-

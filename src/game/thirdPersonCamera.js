@@ -7,7 +7,8 @@ export class ThirdPersonCamera {
     this.input = input;
     this.dom = domElement;
 
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // Lower near plane to reduce close-up clipping of attached effects
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.02, 1000);
     this.distance = 8;           // radius from player
     this.pitch = 20 * (Math.PI / 180); // radians
     this.yaw = 0;                // around Y-axis
