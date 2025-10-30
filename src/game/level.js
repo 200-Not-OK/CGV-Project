@@ -433,6 +433,74 @@ export class Level {
       console.log('🖼️ No manual colliders defined — adding visuals only (no physics from GLTF)');
       this._loadVisualsOnly(meshesToProcess);
     }
+
+    // Apply custom GPU shader to all GLTF meshes for Level 3
+    try {
+      if (this.game && this.game.shaderSystem && this.data && this.data.id === 'level3') {
+        console.log('🎨 Applying custom GPU shader to Level 3 assets');
+        const quality = (this.game.gpuDetector && this.game.gpuDetector.getQualitySettings) ? this.game.gpuDetector.getQualitySettings() : {};
+        const toon = quality.toon || { enabled: true, posterizeLevels: 5, outlinePlayer: false };
+        const tier = (this.game.gpuDetector && this.game.gpuDetector.tier) || 'MEDIUM';
+        const isLow = tier === 'LOW';
+        const isHigh = tier === 'HIGH';
+        const toonEnabled = !!toon.enabled && !isLow;
+
+        this.game.shaderSystem.applyCustomShaderToObject(
+            gltf.scene,
+            (m) => m.userData?.type === 'gltf' && !m.userData?.isNpc && !m.userData?.skipShader,
+            {
+            // Softer cartoon style - less bright and oversaturated
+            ambientColor: new THREE.Color(0xffffff).multiplyScalar(0.35),
+            saturationBoost: -0.15,
+            vibrance: -0.10,
+            shadowLift: 0.08,
+            exposure: 0.65,
+            rimIntensity: 0.15,
+            rimPower: 2.5,
+            specIntensity: 0.25,
+            specPower: 48.0,
+            // Softer directional light
+            sunColor: new THREE.Color(0xffffff).multiplyScalar(2.0),
+            sunWrap: 0.65,
+            // Subtle toon look
+            toonDiffuseSteps: toonEnabled ? 2.0 : 0.0,
+            toonSpecSteps: toonEnabled ? 2.0 : 0.0,
+            toonSoftness: toonEnabled ? 0.45 : 0.0,
+            // Disable outline to avoid any halo/ring around player
+            outlineStrength: 0.0,
+            outlinePower: 2.0,
+            posterizeLevels: 0.0,
+            // Hand-drawn hatching/grain
+            hatchStrength: toonEnabled ? 0.08 : 0.0,
+            hatchScale: 0.61,
+            hatchContrast: 0.85,
+            boilStrength: toonEnabled ? 0.035 : 0.0,
+            boilSpeed: 0.6,
+            grainStrength: 0.0,
+            // Gentle lift dark albedo
+            albedoLift: 0.005,
+            darkTintColor: new THREE.Color(0xf0e6d0).multiplyScalar(0.15),
+            darkTintStrength: 0.20,
+            // Selective enhancement: MASSIVE boost for red, pink, purple
+            hueDesatCenter: new THREE.Vector3(1.0, -0.5, -0.5).normalize(), // Red-pink-magenta axis
+            hueDesatWidth: 0.50,
+            hueDesatStrength: -0.65, // MASSIVE negative = huge saturation BOOST
+            hueDimStrength: 0.0,
+            // Yellow pop
+            hue2DesatCenter: new THREE.Vector3(1.0, 1.0, 0.0).normalize(), // Yellow axis
+            hue2DesatWidth: 0.45,
+            hue2DesatStrength: -0.35, // Negative = saturation BOOST
+            hue2DimStrength: 0.0,
+            // Subtle white cleanup
+            highlightWhiteBoost: 0.05,
+            highlightWhiteThreshold: 0.88,
+            highlightTintColor: new THREE.Color(0xf8f5f0)
+            }
+          );
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to apply custom shader to GLTF assets:', e);
+    }
   }
 
   /**
