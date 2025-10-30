@@ -4,6 +4,7 @@
  */
 
 import { QualityPresets } from './gpuDetector.js';
+import { BinaryScreen } from '../lights/binaryScreen.js';
 
 export class QualityControls {
     constructor(game) {
@@ -37,6 +38,9 @@ export class QualityControls {
                 }
             }
         }
+        
+        // Configure BinaryScreen glow profile based on initial tier
+        this._applyBinaryScreenProfile(this.currentTier);
         
         this.setupKeyboardControls();
         this.createUI();
@@ -121,6 +125,7 @@ export class QualityControls {
             'MEDIUM': '#ffd93d',
             'HIGH': '#6bcf7f'
         }[this.currentTier];
+        const featureFlags = settings.lightFeatureFlags || {};
 
         this.ui.innerHTML = `
             <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.2);">
@@ -150,7 +155,15 @@ export class QualityControls {
                 <div style="margin-bottom: 3px;">🎨 Shaders: ${settings.enableComplexShaders ? 'Complex' : 'Simple'}</div>
                 <div>📊 Resolution: ${(settings.pixelRatio * 100).toFixed(0)}%</div>
             </div>
-            
+
+            <div style="margin-bottom: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 4px; font-size: 10px;">
+                <div style="margin-bottom: 3px;">⚡ Lightning Borders: ${featureFlags.lightningBorders === false ? 'OFF' : 'ON'}</div>
+                <div style="margin-bottom: 3px;">🖥️ Binary Screens: ${featureFlags.binaryScreens === false ? 'OFF' : 'ON'}</div>
+                <div style="margin-bottom: 3px;">🌐 Tech Lights: ${featureFlags.techLights === false ? 'OFF' : 'ON'}</div>
+                <div style="margin-bottom: 3px;">🌩️ Lightning Bolts: ${featureFlags.redLightning === false ? 'OFF' : 'ON'}</div>
+                <div>🔥 Flame FX: ${featureFlags.flameParticles === false ? 'OFF' : 'ON'}</div>
+            </div>
+
             <div style="font-size: 10px; color: rgba(255,255,255,0.5); line-height: 1.5;">
                 <div style="margin-bottom: 2px;"><kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;">Shift+Q</kbd> Cycle Quality</div>
                 <div style="margin-bottom: 2px;"><kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;">Shift+1/2/3</kbd> Force LOW/MED/HIGH</div>
@@ -213,6 +226,9 @@ export class QualityControls {
             this.game.gpuDetector.tier = this.currentTier;
         }
         
+        // Update BinaryScreen glow profile
+        this._applyBinaryScreenProfile(this.currentTier);
+        
         // Store current quality settings
         this.game.qualitySettings = newSettings;
 
@@ -264,6 +280,14 @@ export class QualityControls {
             }
         } else {
             console.log('ℹ️ No active level to reload. New quality will apply to next level.');
+        }
+
+        if (this.game.level && typeof this.game.level.applyQualitySettings === 'function') {
+            try {
+                this.game.level.applyQualitySettings(newSettings);
+            } catch (err) {
+                console.warn('⚠️ Failed to reapply level quality settings:', err);
+            }
         }
 
         // Disable Enhanced Shaders for LOW quality
@@ -410,6 +434,50 @@ export class QualityControls {
 
         console.table(comparison);
         return comparison;
+    }
+
+    _applyBinaryScreenProfile(tier) {
+        // Define glow profiles per tier
+        if (tier === 'LOW') {
+            BinaryScreen.setQualityProfile({
+                glowEnabled: false,
+                headBlur: 0,
+                trailBlur: 0,
+                trailLength: 12,
+                speedMultiplier: 1.0,
+                driftStrength: 0.0,
+                headExtraGlow: 0,
+                headDoubleDraw: false,
+                trailBlurFalloff: 0.7
+            });
+        } else if (tier === 'MEDIUM') {
+            BinaryScreen.setQualityProfile({
+                glowEnabled: true,
+                headBlur: 8,
+                trailBlur: 2,
+                trailLength: 18,
+                speedMultiplier: 1.05,
+                driftStrength: 0.2,
+                headExtraGlow: 0,
+                headDoubleDraw: false,
+                trailBlurFalloff: 0.75,
+                headLightsCount: 0
+            });
+        } else { // HIGH
+            BinaryScreen.setQualityProfile({
+                glowEnabled: true,
+                headBlur: 16,
+                trailBlur: 6,
+                trailLength: 26,
+                speedMultiplier: 1.2,
+                driftStrength: 0.6,
+                headExtraGlow: 2,
+                headDoubleDraw: true,
+                trailBlurFalloff: 0.8,
+                headLightsCount: 0, // Disable dynamic point lights on binary screen
+                overlaysEnabled: true
+            });
+        }
     }
 }
 

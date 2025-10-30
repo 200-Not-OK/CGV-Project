@@ -56,7 +56,8 @@ export class PlaceableBlock {
       metalness: 0.6,
       roughness: 0.4,
       emissive: this.color,
-      emissiveIntensity: 0.2
+      emissiveIntensity: 0.8,
+      toneMapped: false
     });
     
     this.mesh = new THREE.Mesh(geometry, material);
@@ -71,6 +72,20 @@ export class PlaceableBlock {
     this.mesh.userData.type = 'placeableBlock';
     
     this.scene.add(this.mesh);
+
+    // Add a very cheap additive glow sprite (radial gradient) for extra punch
+    try {
+      const sprite = this._createGlowSprite(this.color);
+      const maxDim = Math.max(this.size[0], this.size[1], this.size[2]);
+      sprite.scale.setScalar(maxDim * 2.5);
+      sprite.position.set(0, 0, 0); // center on block
+      sprite.renderOrder = 10001;
+      this.glowSprite = sprite;
+      // Attach to block so it follows moves/rotations automatically
+      this.mesh.add(sprite);
+    } catch (e) {
+      // Non-fatal; sprite is optional
+    }
   }
   
   _createPhysics() {
@@ -232,6 +247,8 @@ export class PlaceableBlock {
       this.mesh.position.copy(this.body.position);
       this.mesh.quaternion.copy(this.body.quaternion);
     }
+
+    // Sprite is parented to mesh; no per-frame sync needed
     
     // Check for respawn if not held
     this.checkRespawn();
@@ -382,9 +399,54 @@ export class PlaceableBlock {
       this.mesh.geometry.dispose();
       this.mesh.material.dispose();
     }
+    if (this.glowSprite) {
+      this.scene.remove(this.glowSprite);
+      if (this.glowSprite.material && this.glowSprite.material.map) {
+        this.glowSprite.material.map.dispose?.();
+      }
+      this.glowSprite.material.dispose?.();
+      this.glowSprite = null;
+    }
     
     if (this.body && this.physicsWorld.world) {
       this.physicsWorld.world.removeBody(this.body);
     }
   }
+}
+
+// Create and cache a small radial gradient texture sprite for cheap glow
+PlaceableBlock._glowCache = new Map();
+PlaceableBlock.prototype._createGlowSprite = function(colorHex) {
+  const key = colorHex >>> 0;
+  let tex = PlaceableBlock._glowCache.get(key);
+  if (!tex) {
+    const size = 64;
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    // Strong center, soft falloff to edge
+    g.addColorStop(0.0, 'rgba(255,255,255,0.65)');
+    g.addColorStop(0.35, 'rgba(255,255,255,0.25)');
+    g.addColorStop(1.0, 'rgba(255,255,255,0.0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,size,size);
+    tex = new THREE.CanvasTexture(c);
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+    PlaceableBlock._glowCache.set(key, tex);
+  }
+  const spriteMat = new THREE.SpriteMaterial({
+    map: tex,
+    color: new THREE.Color(colorHex),
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false
+  });
+  const sprite = new THREE.Sprite(spriteMat);
+  sprite.frustumCulled = false;
+  return sprite;
 }
