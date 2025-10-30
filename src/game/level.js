@@ -9,6 +9,9 @@ import { Platform } from './components/Platform.js';
 import { InteractiveObjectManager } from './InteractiveObjectManager.js';
 import { PlaceableBlockManager } from './PlaceableBlockManager.js';
 import { Level0Controller } from './levels/Level0Controller.js';
+import { BinaryScreen } from './lights/binaryScreen.js';
+import { createBinaryScreenFromCorners } from './lights/binaryScreen.js';
+import { createBinaryScreenFromExactCorners } from './lights/binaryScreen.js';
 
 /**
  * Level
@@ -34,6 +37,7 @@ export class Level {
     this.animatedMeshes = []; // Meshes with animations (rotating, moving, disappearing)
     this.gltfLoaded = false;
     this.gltfScene = null;
+    this.binaryScreens = [];
 
     this.enemyManager = new EnemyManager(this.scene, this.physicsWorld);
     this.npcManager = new NpcManager(this.scene, this.physicsWorld);
@@ -82,6 +86,85 @@ export class Level {
 
     // 3) Always ensure there's at least a ground collider if none exist
     this._ensureDefaultGround();
+
+    // 4.x) Matrix Binary Screen using four corner coordinates
+    if(this.data.id === 'level1A') {
+      // User's four corner coordinates (in order: top-left, bottom-left, top-right, bottom-right)
+      const corners = [
+        [-506.55433082580566, 49.15734148106972, 344.64214557816035], // top left (A)
+        [-506.48336392524857, 10.113008499145508, 343.9887554457972], // bottom left (B)
+        [-506.55433082580566, 49.1898516045852, 180.00618346145467], // top right (C)
+        [-506.55433082580566, 8.921134221600987, 179.9905334386446]  // bottom right (D)
+      ];
+      // Vectors for calculation
+      const A = new THREE.Vector3(...corners[0]);
+      const B = new THREE.Vector3(...corners[1]);
+      const C = new THREE.Vector3(...corners[2]);
+      const D = new THREE.Vector3(...corners[3]);
+      // Calculate screen width (top right to top left)
+      const widthVec = new THREE.Vector3().subVectors(C, A);
+      const width = widthVec.length();
+      // Calculate screen height (top left to bottom left)
+      const heightVec = new THREE.Vector3().subVectors(B, A);
+      const height = heightVec.length();
+      // Center: average all four corners
+      const center = new THREE.Vector3(
+        (A.x + B.x + C.x + D.x) / 4,
+        (A.y + B.y + C.y + D.y) / 4,
+        (A.z + B.z + C.z + D.z) / 4
+      );
+      // Calculate screen normal (cross product of width and height vectors)
+      const normal = new THREE.Vector3().crossVectors(widthVec, heightVec).normalize();
+      // Determine quaternion for orientation (screen faces +Z normally)
+      const defaultNormal = new THREE.Vector3(0, 0, 1);
+      const quat = new THREE.Quaternion().setFromUnitVectors(defaultNormal, normal);
+      const euler = new THREE.Euler().setFromQuaternion(quat);
+      // Offset main screen forward along normal (like quad mode)
+      const offset = 0.06;
+      const offsetCenter = center.clone().add(normal.clone().multiplyScalar(offset));
+      // Instantiate the BinaryScreen
+      const screen = new BinaryScreen({
+         position: [offsetCenter.x, offsetCenter.y, offsetCenter.z],
+         width,
+         height,
+         rotation: [euler.x, euler.y, euler.z],
+         textColor: '#009a00',
+         glowColor: 0x009a00,
+         palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
+         emitLight: true,
+         lightIntensity: 3.5,
+         updateInterval: 36
+      });
+      // Force disable frustum culling so screen never disappears
+      if (screen.mesh) {
+        screen.mesh.frustumCulled = false;
+      }
+      screen.addToScene(this.scene);
+      this.objects.push(screen.group);
+      this.binaryScreens.push(screen);
+
+      // Add another screen using FOUR exact corners provided (no auto-calculation)
+      const screen2CornersExact = [
+        [-381.8494117474221, 10.113008499145508, 344.4659492257442],
+        [-381.77683923106383, 10.113008499145508, 182.17718862534116],
+        [-506.4621742595336, 10.113008499145508, 182.27160267413527],
+        [-506.39063830155794, 10.113008499145508, 344.0525235389457]
+      ];
+      const screen2 = createBinaryScreenFromExactCorners(this.scene, screen2CornersExact, {
+        textColor: '#009a00',
+        glowColor: 0x009a00,
+        palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
+        emitLight: true,
+        lightIntensity: 3.5,
+        updateInterval: 36,
+        adaptiveDepthToggle: false
+      });
+      if (screen2.mesh) {
+        screen2.mesh.frustumCulled = false;
+      }
+      this.objects.push(screen2.group);
+      this.binaryScreens.push(screen2);
+    }
 
     // 4) Enemies
     console.log('👾 Loading enemies...');
@@ -761,6 +844,16 @@ export class Level {
     
     // Update animated meshes
     this._updateAnimatedMeshes(delta);
+    
+    // Update BinaryScreens (ensure they animate)
+    if (this.binaryScreens && this.binaryScreens.length > 0) {
+      // Track elapsedTime or get time from game context if needed
+      if (!this._binaryScreenElapsed) this._binaryScreenElapsed = 0;
+      this._binaryScreenElapsed += delta * 1000; // ms wanted
+      for (const scr of this.binaryScreens) {
+        scr.update(delta * 1000, this._binaryScreenElapsed);
+      }
+    }
     
     // Update level-specific controller (e.g., Level0Controller)
     if (this.controller && typeof this.controller.update === 'function') {

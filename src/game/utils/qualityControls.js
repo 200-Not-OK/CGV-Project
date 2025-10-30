@@ -4,6 +4,7 @@
  */
 
 import { QualityPresets } from './gpuDetector.js';
+import { BinaryScreen } from '../lights/binaryScreen.js';
 
 export class QualityControls {
     constructor(game) {
@@ -37,6 +38,9 @@ export class QualityControls {
                 }
             }
         }
+        
+        // Configure BinaryScreen glow profile based on initial tier
+        this._applyBinaryScreenProfile(this.currentTier);
         
         this.setupKeyboardControls();
         this.createUI();
@@ -212,6 +216,9 @@ export class QualityControls {
         if (this.game.gpuDetector) {
             this.game.gpuDetector.tier = this.currentTier;
         }
+        
+        // Update BinaryScreen glow profile
+        this._applyBinaryScreenProfile(this.currentTier);
         
         // Store current quality settings
         this.game.qualitySettings = newSettings;
@@ -410,6 +417,52 @@ export class QualityControls {
 
         console.table(comparison);
         return comparison;
+    }
+
+    _applyBinaryScreenProfile(tier) {
+        // Define glow profiles per tier
+        if (tier === 'LOW') {
+            BinaryScreen.setQualityProfile({
+                glowEnabled: false,
+                headBlur: 0,
+                trailBlur: 0,
+                trailLength: 12,
+                speedMultiplier: 1.0,
+                driftStrength: 0.0,
+                headExtraGlow: 0,
+                headDoubleDraw: false,
+                trailBlurFalloff: 0.7
+            });
+        } else if (tier === 'MEDIUM') {
+            BinaryScreen.setQualityProfile({
+                glowEnabled: true,
+                headBlur: 8,
+                trailBlur: 2,
+                trailLength: 18,
+                speedMultiplier: 1.05,
+                driftStrength: 0.2,
+                headExtraGlow: 2,
+                headDoubleDraw: false,
+                trailBlurFalloff: 0.75
+            });
+        } else { // HIGH
+            BinaryScreen.setQualityProfile({
+                glowEnabled: true,
+                headBlur: 16,
+                trailBlur: 6,
+                trailLength: 26,
+                speedMultiplier: 1.2,
+                driftStrength: 0.6,
+                headExtraGlow: 6,
+                headDoubleDraw: true,
+                trailBlurFalloff: 0.8,
+                headLightsCount: 5,
+                headLightIntensity: 2.2,
+                headLightDistance: 4.0,
+                headLightOffset: 0.15,
+                overlaysEnabled: true
+            });
+        }
     }
 }
 
