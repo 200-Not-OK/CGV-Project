@@ -795,38 +795,6 @@ export class Level {
         const opts = { ...nd, game: this.game };
         const npc = this.npcManager.spawn(nd.type, opts);
         console.log(`🤖 Spawned ${nd.type} NPC at [${nd.position[0]?.toFixed(2)}, ${nd.position[1]?.toFixed(2)}, ${nd.position[2]?.toFixed(2)}]`);
-        // Ensure NPC materials respond well to lighting
-        try {
-          if (this.game && this.game.shaderSystem && npc && npc.mesh) {
-            // Apply character shader to ALL submeshes
-            npc.mesh.traverse((child) => {
-              if (child.isMesh && child.material) {
-                this.game.shaderSystem.applyCharacterShader(child, {
-                  roughness: 0.6,
-                  metalness: 0.1,
-                  rimIntensity: 0.8
-                });
-              }
-            });
-          } else if (npc && npc.mesh) {
-            npc.mesh.traverse((child) => {
-              if (child.isMesh && child.material) {
-                const m = child.material;
-                if (m.isMeshStandardMaterial) {
-                  m.roughness = Math.min(0.8, (m.roughness ?? 0.7));
-                  m.metalness = Math.max(0.0, (m.metalness ?? 0.1));
-                  if (m.emissive && m.emissiveIntensity !== undefined) {
-                    m.emissiveIntensity = Math.max(m.emissiveIntensity, 0.3);
-                  } else {
-                    // Add emissive if it doesn't exist
-                    m.emissive = new THREE.Color(0x4a4a6e);
-                    m.emissiveIntensity = 0.3;
-                  }
-                }
-              }
-            });
-          }
-        } catch (e) { /* ignore per-NPC material enhancement errors */ }
       } catch (e) {
         console.warn('Failed to spawn NPC', nd, e);
       }

@@ -128,6 +128,33 @@ export class YellowBot extends NpcBase {
 
       this.mesh.add(gltf.scene);
 
+      // Apply character shader to ALL submeshes after model loads
+      try {
+        const game = this.game;
+        if (game && game.shaderSystem && this.mesh) {
+          this.mesh.traverse((child) => {
+            if (child.isMesh && child.material) {
+              game.shaderSystem.applyCharacterShader(child, {
+                roughness: 0.6,
+                metalness: 0.1,
+                rimIntensity: 1.5
+              });
+            }
+          });
+        } else if (this.mesh) {
+          // Fallback: adjust material properties without emissive
+          this.mesh.traverse((child) => {
+            if (child.isMesh && child.material) {
+              const m = child.material;
+              if (m.isMeshStandardMaterial) {
+                m.roughness = Math.min(0.8, (m.roughness ?? 0.7));
+                m.metalness = Math.max(0.0, (m.metalness ?? 0.1));
+              }
+            }
+          });
+        }
+      } catch (e) { console.warn('YellowBot material enhancement failed', e); }
+
       // Handle animations
       if (gltf.animations && gltf.animations.length > 0) {
         this._mapBotAnimations(gltf.animations);

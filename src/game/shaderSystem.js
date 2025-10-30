@@ -118,17 +118,25 @@ export class ShaderSystem {
     const characterMaterial = new THREE.MeshStandardMaterial({
       map: originalMaterial.map,
       normalMap: originalMaterial.normalMap,
+      color: originalMaterial.color ? originalMaterial.color.clone() : new THREE.Color(0xffffff),
+      alphaMap: originalMaterial.alphaMap,
+      aoMap: originalMaterial.aoMap,
+      roughnessMap: originalMaterial.roughnessMap,
+      metalnessMap: originalMaterial.metalnessMap,
+      emissiveMap: originalMaterial.emissiveMap,
       
       // Character-specific properties
-      roughness: options.roughness ?? 0.6,
-      metalness: options.metalness ?? 0.1,
+      roughness: originalMaterial.roughness !== undefined ? originalMaterial.roughness : (options.roughness ?? 0.6),
+      metalness: originalMaterial.metalness !== undefined ? originalMaterial.metalness : (options.metalness ?? 0.1),
       
-      // Much brighter rim lighting effect via emissive
-      emissive: options.rimColor ?? new THREE.Color(0x4a4a6e),
-      emissiveIntensity: options.rimIntensity ?? 0.45,
+      // No emissive - keep original color
+      emissive: new THREE.Color(0x000000),
+      emissiveIntensity: 0.0,
       
       // Enable shadows
       shadowSide: THREE.DoubleSide,
+      transparent: originalMaterial.transparent || false,
+      opacity: originalMaterial.opacity !== undefined ? originalMaterial.opacity : 1.0,
     });
     
     mesh.material = characterMaterial;
@@ -849,8 +857,57 @@ export class ShaderSystem {
           altUp: tmp.altUp.clone(),
           forwardAxis: new THREE.Vector3(0, 0, -1),
           forwardDetermined: false,
-          lastFacing: 1
+          lastFacing: 1,
+          blinkTimer: 0,
+          blinkDuration: 0,
+          isBlinking: false,
+          originalScaleY: 1.0
         });
+        
+        // Initialize blink timer once
+        if (!eyeState.blinkTimerInitialized) {
+          eyeState.blinkTimer = 3.0 + Math.random() * 2.0; // Random initial delay 3-5 seconds
+          eyeState.blinkTimerInitialized = true;
+          if (sunData.mesh) {
+            sunData.mesh.traverse((child) => {
+              if (child.isMesh) {
+                eyeState.originalScaleY = child.scale.y;
+              }
+            });
+          }
+          // Create eyelid meshes - make them HUGE to cover entire eyeball
+          if (sunData.mesh && sunData.rig) {
+            const radius = sunData.radius || 700; // Half of diameter 1400
+            const eyelidSize = radius * 2.5; // Make much larger than eyeball
+            
+            const topEyelid = new THREE.Mesh(
+              new THREE.PlaneGeometry(eyelidSize, eyelidSize),
+              new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.DoubleSide })
+            );
+            topEyelid.position.set(0, radius * 1.5, 0);
+            topEyelid.rotation.x = Math.PI / 2;
+            topEyelid.renderOrder = 1000;
+            topEyelid.name = 'topEyelid';
+            
+            const bottomEyelid = new THREE.Mesh(
+              new THREE.PlaneGeometry(eyelidSize, eyelidSize),
+              new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.DoubleSide })
+            );
+            bottomEyelid.position.set(0, -radius * 1.5, 0);
+            bottomEyelid.rotation.x = -Math.PI / 2;
+            bottomEyelid.renderOrder = 1000;
+            bottomEyelid.name = 'bottomEyelid';
+            
+            // Add to rig so they move with the eye
+            sunData.rig.add(topEyelid);
+            sunData.rig.add(bottomEyelid);
+            
+            eyeState.topEyelid = topEyelid;
+            eyeState.bottomEyelid = bottomEyelid;
+            eyeState.eyelidSpeed = radius * 2; // Speed scaled to eyeball size
+            eyeState.eyelidRadius = radius;
+          }
+        }
 
         if (sunData.lookOffset) {
           lookTarget.add(sunData.lookOffset);
@@ -969,6 +1026,65 @@ export class ShaderSystem {
             rig.quaternion.slerp(tmp.finalQuat, t);
           } else {
             rig.quaternion.copy(tmp.finalQuat);
+          }
+        }
+        
+        // Handle blinking animation
+        const dtSec = Math.max(0, (deltaTime || 0)) * 0.001;
+        eyeState.blinkTimer -= dtSec;
+        
+        if (eyeState.isBlinking) {
+          eyeState.blinkDuration -= dtSec;
+          if (eyeState.blinkDuration <= 0) {
+            eyeState.isBlinking = false;
+            eyeState.blinkTimer = 3.0 + Math.random() * 2.0; // Next blink in 3-5 seconds
+          }
+        } else if (eyeState.blinkTimer <= 0) {
+          eyeState.isBlinking = true;
+          eyeState.blinkDuration = 0.2; // Blink lasts 0.2 seconds
+        }
+        
+        // Animate eyelid positions - slide down from top and up from bottom
+        if (eyeState.topEyelid && eyeState.bottomEyelid) {
+          const dtMs = Math.max(0, (deltaTime || 0));
+          
+          if (eyeState.isBlinking) {
+            const blinkProgress = 1.0 - eyeState.blinkDuration / 0.2; // 0 to 1
+            
+            // Use ease-in-out curve for smooth blinking
+            const smoothProgress = blinkProgress < 0.5 
+              ? 2 * blinkProgress * blinkProgress 
+              : -1 + (4 - 2 * blinkProgress) * blinkProgress;
+            
+            // Move eyelids toward each other
+            const radius = eyeState.eyelidRadius || 700;
+            eyeState.topEyelid.position.y = (radius * 1.5) - smoothProgress * (radius * 1.5); // From start to 0
+            eyeState.bottomEyelid.position.y = -(radius * 1.5) + smoothProgress * (radius * 1.5); // From start to 0
+            
+            // Fade in opacity as they close
+            eyeState.topEyelid.material.opacity = smoothProgress * 1.0; // Fully opaque when closed
+            eyeState.bottomEyelid.material.opacity = smoothProgress * 1.0;
+          } else {
+            // Open eyes - smoothly return to original position
+            const openSpeed = 2.0; // Speed of opening
+            const radius = eyeState.eyelidRadius || 700;
+            const targetTopY = radius * 1.5;
+            const targetBottomY = -radius * 1.5;
+            
+            eyeState.topEyelid.position.y = THREE.MathUtils.lerp(
+              eyeState.topEyelid.position.y,
+              targetTopY,
+              openSpeed * dtSec
+            );
+            eyeState.bottomEyelid.position.y = THREE.MathUtils.lerp(
+              eyeState.bottomEyelid.position.y,
+              targetBottomY,
+              openSpeed * dtSec
+            );
+            
+            // Fade out opacity
+            eyeState.topEyelid.material.opacity *= Math.pow(0.9, dtSec * 60);
+            eyeState.bottomEyelid.material.opacity *= Math.pow(0.9, dtSec * 60);
           }
         }
       } catch (e) {
