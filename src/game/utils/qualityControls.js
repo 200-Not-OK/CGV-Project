@@ -45,6 +45,9 @@ export class QualityControls {
         this.setupKeyboardControls();
         this.createUI();
         this.updateUI();
+
+        // Create Toon Tuner panel (hidden by default)
+        this.createToonTunerUI();
     }
 
     _updateShaderButton(enabled) {
@@ -88,6 +91,12 @@ export class QualityControls {
                 e.preventDefault();
                 this.runBenchmark();
             }
+
+            // Shift+T: Toggle Toon Tuner panel
+            if (e.shiftKey && e.code === 'KeyT') {
+                e.preventDefault();
+                this.toggleToonTuner();
+            }
         });
     }
 
@@ -114,6 +123,157 @@ export class QualityControls {
         `;
 
         document.body.appendChild(this.ui);
+    }
+
+    createToonTunerUI() {
+        if (!this.ui) return;
+        const panel = document.createElement('div');
+        panel.id = 'toon-tuner';
+        panel.style.cssText = `
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255,255,255,0.15);
+            display: none;
+        `;
+        const title = document.createElement('div');
+        title.textContent = 'Toon Tuner (Shift+T)';
+        title.style.cssText = 'font-weight: bold; margin-bottom: 6px; color:#ffd93d;';
+        panel.appendChild(title);
+
+        const row = (label, input) => {
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex; align-items:center; gap:8px; margin:4px 0;';
+            const lab = document.createElement('div');
+            lab.textContent = label;
+            lab.style.cssText = 'width:150px; color:#eee;';
+            const val = document.createElement('span');
+            val.textContent = input.value;
+            val.style.cssText = 'min-width:40px; text-align:right; color:#aaf;';
+            input.addEventListener('input', () => { val.textContent = input.value; this.applyToonFromUI(); });
+            wrap.appendChild(lab);
+            wrap.appendChild(input);
+            wrap.appendChild(val);
+            return wrap;
+        };
+
+        const mk = (min, max, step, value) => { const el = document.createElement('input'); el.type='range'; el.min=min; el.max=max; el.step=step; el.value=value; el.style.width='140px'; return el; };
+
+        // Sliders
+        this._toonInputs = {
+            exposure: mk(0.8, 1.6, 0.01, 1.22),
+            saturationBoost: mk(0.0, 0.6, 0.01, 0.22),
+            vibrance: mk(0.0, 1.0, 0.01, 0.38),
+            posterizeLevels: mk(0, 8, 1, 5),
+            toonDiffuseSteps: mk(0, 6, 1, 4),
+            toonSoftness: mk(0.0, 0.45, 0.01, 0.18),
+            hatchStrength: mk(0.0, 0.5, 0.01, 0.12),
+            hatchScale: mk(0.5, 3.5, 0.01, 2.2),
+            hatchContrast: mk(0.5, 2.0, 0.01, 1.2),
+            boilStrength: mk(0.0, 0.12, 0.001, 0.03),
+            grainStrength: mk(0.0, 0.08, 0.001, 0.0),
+            hueDesatWidth: mk(0.5, 1.0, 0.01, 0.78),
+            hueDesatStrength: mk(0.0, 0.6, 0.01, 0.28),
+            albedoLift: mk(0.0, 0.8, 0.01, 0.35),
+            darkTintStrength: mk(0.0, 0.3, 0.01, 0.12),
+            sunWrap: mk(0.5, 1.5, 0.01, 1.2),
+        };
+
+        panel.appendChild(row('Exposure', this._toonInputs.exposure));
+        panel.appendChild(row('Saturation Boost', this._toonInputs.saturationBoost));
+        panel.appendChild(row('Vibrance', this._toonInputs.vibrance));
+        panel.appendChild(row('Posterize Levels', this._toonInputs.posterizeLevels));
+        panel.appendChild(row('Toon Diffuse Steps', this._toonInputs.toonDiffuseSteps));
+        panel.appendChild(row('Toon Softness', this._toonInputs.toonSoftness));
+        panel.appendChild(row('Hatch Strength', this._toonInputs.hatchStrength));
+        panel.appendChild(row('Hatch Scale', this._toonInputs.hatchScale));
+        panel.appendChild(row('Hatch Contrast', this._toonInputs.hatchContrast));
+        panel.appendChild(row('Boil Strength', this._toonInputs.boilStrength));
+        panel.appendChild(row('Grain Strength', this._toonInputs.grainStrength));
+        panel.appendChild(row('Green Desat Width', this._toonInputs.hueDesatWidth));
+        panel.appendChild(row('Green Desat Strength', this._toonInputs.hueDesatStrength));
+        panel.appendChild(row('Albedo Lift', this._toonInputs.albedoLift));
+        panel.appendChild(row('Dark Tint Strength', this._toonInputs.darkTintStrength));
+        panel.appendChild(row('Sun Wrap', this._toonInputs.sunWrap));
+
+        const btns = document.createElement('div');
+        btns.style.cssText = 'display:flex; gap:8px; margin-top:8px;';
+        const applyBtn = document.createElement('button');
+        applyBtn.textContent = 'Apply';
+        applyBtn.onclick = () => this.applyToonFromUI();
+        const resetBtn = document.createElement('button');
+        resetBtn.textContent = 'Reset';
+        resetBtn.onclick = () => this.resetToonDefaults();
+        btns.appendChild(applyBtn);
+        btns.appendChild(resetBtn);
+        panel.appendChild(btns);
+
+        this.ui.appendChild(panel);
+        this._toonPanel = panel;
+    }
+
+    toggleToonTuner() {
+        if (!this._toonPanel) return;
+        if (this.ui && this.ui.style.display === 'none') this.ui.style.display = 'block';
+        // Re-attach panel if updateUI replaced contents
+        if (this._toonPanel && this.ui && this._toonPanel.parentElement !== this.ui) {
+            this.ui.appendChild(this._toonPanel);
+        }
+        const visible = this._toonPanel.style.display !== 'none';
+        this._toonPanel.style.display = visible ? 'none' : 'block';
+        this.showNotification(visible ? 'Toon Tuner: hidden' : 'Toon Tuner: visible', 1200);
+    }
+
+    applyToonFromUI() {
+        if (!this.game || !this.game.shaderSystem || !this._toonInputs) return;
+        const v = this._toonInputs;
+        const settings = {
+            exposure: parseFloat(v.exposure.value),
+            saturationBoost: parseFloat(v.saturationBoost.value),
+            vibrance: parseFloat(v.vibrance.value),
+            posterizeLevels: parseFloat(v.posterizeLevels.value),
+            toonDiffuseSteps: parseFloat(v.toonDiffuseSteps.value),
+            toonSoftness: parseFloat(v.toonSoftness.value),
+            hatchStrength: parseFloat(v.hatchStrength.value),
+            hatchScale: parseFloat(v.hatchScale.value),
+            hatchContrast: parseFloat(v.hatchContrast.value),
+            boilStrength: parseFloat(v.boilStrength.value),
+            grainStrength: parseFloat(v.grainStrength.value),
+            hueDesatWidth: parseFloat(v.hueDesatWidth.value),
+            hueDesatStrength: parseFloat(v.hueDesatStrength.value),
+            albedoLift: parseFloat(v.albedoLift.value),
+            darkTintStrength: parseFloat(v.darkTintStrength.value),
+            sunWrap: parseFloat(v.sunWrap.value)
+        };
+        try { this.game.shaderSystem.applyToonSettings(settings); } catch (e) {
+            console.warn('Failed to apply toon settings', e);
+        }
+    }
+
+    resetToonDefaults() {
+        const tier = this.game?.gpuDetector?.tier || 'MEDIUM';
+        const isHigh = tier === 'HIGH';
+        const defaults = {
+            exposure: 1.22,
+            saturationBoost: 0.22,
+            vibrance: 0.38,
+            posterizeLevels: 5,
+            toonDiffuseSteps: 4,
+            toonSoftness: 0.18,
+            hatchStrength: isHigh ? 0.22 : 0.12,
+            hatchScale: 2.2,
+            hatchContrast: 1.2,
+            boilStrength: isHigh ? 0.05 : 0.03,
+            grainStrength: isHigh ? 0.035 : 0.0,
+            hueDesatWidth: 0.78,
+            hueDesatStrength: isHigh ? 0.35 : 0.28,
+            albedoLift: isHigh ? 0.45 : 0.35,
+            darkTintStrength: 0.12,
+            sunWrap: 1.2
+        };
+        Object.entries(defaults).forEach(([k, val]) => {
+            if (this._toonInputs[k]) this._toonInputs[k].value = val;
+        });
+        this.applyToonFromUI();
     }
 
     updateUI() {
@@ -212,6 +372,10 @@ export class QualityControls {
 
         this.isReloading = true;
         this.updateUI();
+        // Ensure Toon Tuner persists after UI refresh
+        if (this._toonPanel && this.ui && this._toonPanel.parentElement !== this.ui) {
+            this.ui.appendChild(this._toonPanel);
+        }
 
         const newSettings = QualityPresets[this.currentTier];
         

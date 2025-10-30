@@ -121,6 +121,9 @@ export class Player {
     this.characterLight = new THREE.PointLight(0xFFFFFF, 50, 15); // Very bright white light, large range
     this.characterLight.position.set(0, 3, 0); // Position above player for better coverage
     this.characterLight.castShadow = false; // No shadows, just illumination
+    // Restrict this light to affect only the player by using a separate layer
+    // We'll enable this layer on the player meshes, but keep them visible on default layer for the camera
+    this.characterLight.layers.set(1);
     this.mesh.add(this.characterLight); // Attach to player so it follows
     console.log('💡 Character self-illumination light added');
     
@@ -185,6 +188,8 @@ export class Player {
               child.castShadow = true;    // Character casts shadows
               child.receiveShadow = true;  // Character receives shadows from environment
               child.frustumCulled = false; // Prevent disappearing due to frustum culling
+              // Enable layer 1 on all player meshes so the character-only light affects them
+              child.layers.enable(1);
               
               // Ensure material is stable and doesn't flicker
               if (child.material) {
