@@ -441,59 +441,53 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
           }
           return value;
         }
+        
+        mat3 rotY(float a){
+          float c = cos(a), s = sin(a);
+          return mat3(c,0.0,s, 0.0,1.0,0.0, -s,0.0,c);
+        }
+        mat3 rotX(float a){
+          float c = cos(a), s = sin(a);
+          return mat3(1.0,0.0,0.0, 0.0,c,-s, 0.0,s,c);
+        }
 
         void main(){
+          // Sample clouds in direction space to avoid UV seam
           vec3 dir = normalize(vDir);
-          float angle = atan(dir.z, dir.x);
-          vec2 uv = vec2(angle / (2.0 * PI) + 0.5, dir.y * 0.5 + 0.5);
-          vec2 flow = uv + vec2(uTime * 0.02, uTime * -0.015);
-          
-          // Wrap UV coordinates to fix seam discontinuity at edges
-          flow = fract(flow);
-          
-          // Reduce cloud coverage near the seam to hide the cut
-          float distFromSeam = min(flow.x, 1.0 - flow.x);
-          float seamReducer = 1.0;
-          if (distFromSeam < 0.08) {
-            seamReducer = 0.3 + distFromSeam * 8.75; // 0.3 at seam, 1.0 at 0.08
-          }
-          
-          float base = fbm(vec3(flow * uScale, uTime * 0.12));
-          float detail = fbm(vec3(flow * (uScale * 2.0) + vec2(0.23, 0.71), uTime * 0.2));
+          float t = uTime * 0.05;
+          mat3 R = rotY(t);
+          vec3 pd = normalize(R * dir);
+          float base = fbm(pd * uScale);
+          float detail = fbm(pd * (uScale * 2.0) + vec3(0.23, 0.71, 0.37));
           float raw = mix(base, detail, 0.55);
-          // Apply coverage/softness first
           float clouds = smoothstep(uCoverage - uSoftness, uCoverage + uSoftness, raw);
-          
-          // Make seam nearly transparent (fewer clouds there)
-          clouds *= seamReducer;
-          
+
           // Toon quantization: 2-3 bands
           float steps = max(uToonSteps, 1.0);
           float q = floor(clouds * steps + 1e-5) / steps;
-          
-          // Edge detection via small neighbor offsets - wrap samples to avoid seam
-          vec2 eps = vec2(0.0025, 0.0);
-          vec2 flowR = fract(flow + vec2(eps.x, 0.0));
-          vec2 flowL = fract(flow - vec2(eps.x, 0.0));
-          vec2 flowU = fract(flow + vec2(0.0, eps.x));
-          vec2 flowD = fract(flow - vec2(0.0, eps.x));
-          
-          float cR = mix(fbm(vec3(flowR * uScale, uTime*0.12)), fbm(vec3(flowR * (uScale*2.0) + vec2(0.23,0.71), uTime*0.2)), 0.55);
-          float cL = mix(fbm(vec3(flowL * uScale, uTime*0.12)), fbm(vec3(flowL * (uScale*2.0) + vec2(0.23,0.71), uTime*0.2)), 0.55);
-          float cU = mix(fbm(vec3(flowU * uScale, uTime*0.12)), fbm(vec3(flowU * (uScale*2.0) + vec2(0.23,0.71), uTime*0.2)), 0.55);
-          float cD = mix(fbm(vec3(flowD * uScale, uTime*0.12)), fbm(vec3(flowD * (uScale*2.0) + vec2(0.23,0.71), uTime*0.2)), 0.55);
-          float grad = length(vec2(cR - cL, cU - cD));
+
+          // Seamless edge detection using small rotations
+          float dAng = 0.006;
+          vec3 dYawP = rotY(dAng) * dir;
+          vec3 dYawN = rotY(-dAng) * dir;
+          vec3 dPitP = rotX(dAng) * dir;
+          vec3 dPitN = rotX(-dAng) * dir;
+          float nYawP = mix(fbm(normalize(R * dYawP) * uScale), fbm(normalize(R * dYawP) * (uScale*2.0) + vec3(0.23,0.71,0.37)), 0.55);
+          float nYawN = mix(fbm(normalize(R * dYawN) * uScale), fbm(normalize(R * dYawN) * (uScale*2.0) + vec3(0.23,0.71,0.37)), 0.55);
+          float nPitP = mix(fbm(normalize(R * dPitP) * uScale), fbm(normalize(R * dPitP) * (uScale*2.0) + vec3(0.23,0.71,0.37)), 0.55);
+          float nPitN = mix(fbm(normalize(R * dPitN) * uScale), fbm(normalize(R * dPitN) * (uScale*2.0) + vec3(0.23,0.71,0.37)), 0.55);
+          float grad = length(vec2(nYawP - nYawN, nPitP - nPitN));
           float edge = smoothstep(uEdgeWidth, 0.0, grad);
 
           // Sun highlight
           float sunHighlight = pow(max(dot(dir, normalize(uSunDir)), 0.0), 8.0);
-          
+
           // Compose color with toon bands
           vec3 color = mix(uSkyTint, uCloudColor, q);
           color += vec3(1.0, 0.92, 0.76) * sunHighlight * 0.25;
           // Darken edges for drawn outline look
           color = mix(color, color * (1.0 - uEdgeDark), edge);
-          
+
           float alpha = clamp(q * 0.9 + sunHighlight * 0.15, 0.0, 1.0);
           gl_FragColor = vec4(color, alpha);
         }
