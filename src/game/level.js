@@ -433,6 +433,37 @@ export class Level {
       console.log('🖼️ No manual colliders defined — adding visuals only (no physics from GLTF)');
       this._loadVisualsOnly(meshesToProcess);
     }
+
+    // Apply custom GPU shader to all GLTF meshes for Level 3
+    try {
+      if (this.game && this.game.shaderSystem && this.data && this.data.id === 'level3') {
+        console.log('🎨 Applying custom GPU shader to Level 3 assets');
+        this.game.shaderSystem.applyCustomShaderToObject(
+            gltf.scene,
+            (m) => m.userData?.type === 'gltf',
+            {
+            ambientColor: new THREE.Color(0xffffff).multiplyScalar(0.42),
+            saturationBoost: 0.3,  // stronger color pop
+            vibrance: 0.55,        // extra pop for low-sat materials
+            shadowLift: 0.12,      // maintain detail in shadows
+            rimIntensity: 0.28,
+            rimPower: 2.2,
+            specIntensity: 0.45,
+            specPower: 64.0,
+            // Stronger sun contribution within the shader
+            sunColor: new THREE.Color(0xffe6b0).multiplyScalar(3.0),
+            sunWrap: 0.9,
+            // Toon look
+            toonDiffuseSteps: 3.0,
+            toonSpecSteps: 2.0,
+            outlineStrength: 0.35,
+            outlinePower: 2.0
+            }
+          );
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to apply custom shader to GLTF assets:', e);
+    }
   }
 
   /**
@@ -714,6 +745,29 @@ export class Level {
         const opts = { ...nd, game: this.game };
         const npc = this.npcManager.spawn(nd.type, opts);
         console.log(`🤖 Spawned ${nd.type} NPC at [${nd.position[0]?.toFixed(2)}, ${nd.position[1]?.toFixed(2)}, ${nd.position[2]?.toFixed(2)}]`);
+        // Ensure NPC materials respond well to lighting
+        try {
+          if (this.game && this.game.shaderSystem && npc && npc.mesh) {
+            this.game.shaderSystem.applyCharacterShader(npc.mesh, {
+              roughness: 0.6,
+              metalness: 0.1,
+              rimIntensity: 0.2
+            });
+          } else if (npc && npc.mesh) {
+            npc.mesh.traverse((child) => {
+              if (child.isMesh && child.material) {
+                const m = child.material;
+                if (m.isMeshStandardMaterial) {
+                  m.roughness = Math.min(0.8, (m.roughness ?? 0.7));
+                  m.metalness = Math.max(0.0, (m.metalness ?? 0.1));
+                  if (m.emissive && m.emissiveIntensity !== undefined) {
+                    m.emissiveIntensity = Math.max(m.emissiveIntensity, 0.05);
+                  }
+                }
+              }
+            });
+          }
+        } catch (e) { /* ignore per-NPC material enhancement errors */ }
       } catch (e) {
         console.warn('Failed to spawn NPC', nd, e);
       }
