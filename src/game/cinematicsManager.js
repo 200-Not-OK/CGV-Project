@@ -73,6 +73,15 @@ export class CinematicsManager {
       this.game.cinematicLock = false;
       if (this.game.input?.setEnabled) this.game.input.setEnabled(true);
 
+      // Automatically re-acquire pointer lock after every cinematic ends
+      try {
+        if (typeof document !== 'undefined' && !document.pointerLockElement && document.body?.requestPointerLock) {
+          document.body.requestPointerLock();
+        }
+      } catch (e) {
+        console.warn('[Cinematics] Unable to request pointer lock after cinematic:', e);
+      }
+
       this.isPlaying = false;
       this.current = null;
       this.skipRequested = false;
