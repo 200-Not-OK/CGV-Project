@@ -32,17 +32,23 @@ export class RedLightning extends LightComponent {
         const quality = props.quality || {};
         const qualityTier = quality.tier || 'MEDIUM';
         
-        // Adjust settings based on quality tier
+        // AGGRESSIVE optimization for low-end devices
         let branchMultiplier = 1.0;
         let intensityMultiplier = 1.0;
+        let frequencyMultiplier = 1.0;
+        let geometryMultiplier = 1.0;
         
         if (qualityTier === 'LOW') {
-            // Reduce branches and intensity for low-end devices
-            branchMultiplier = 0.4; // Fewer branches
-            intensityMultiplier = 0.8;
+            // VERY aggressive reduction for integrated GPUs
+            branchMultiplier = 0.2; // Max 1 branch (20% of 5 = 1)
+            intensityMultiplier = 0.6; // Much dimmer
+            frequencyMultiplier = 0.5; // Strike half as often
+            geometryMultiplier = 0.5; // Simpler geometry
         } else if (qualityTier === 'MEDIUM') {
-            branchMultiplier = 0.7;
-            intensityMultiplier = 0.9;
+            branchMultiplier = 0.5; // Max 2-3 branches
+            intensityMultiplier = 0.75;
+            frequencyMultiplier = 0.75;
+            geometryMultiplier = 0.75;
         }
         // HIGH uses full quality (multiplier = 1.0)
         
@@ -52,10 +58,11 @@ export class RedLightning extends LightComponent {
         this.edgeColor = props.edgeColor || 0x5321f0; // Dramatic deep purple/blue edge
         this.branchColor = props.branchColor || 0xFF007C; // Hot magenta for branches
         this.intensity = (props.intensity || 5.5) * intensityMultiplier;
-        this.strikeFrequency = props.strikeFrequency || 0.32;
+        this.strikeFrequency = (props.strikeFrequency || 0.32) * frequencyMultiplier;
         this.boltLength = props.length || 18.0; // Long dramatic bolts
         this.maxBranches = Math.max(1, Math.floor((props.branches || 5) * branchMultiplier));
         this.qualityTier = qualityTier;
+        this.geometryMultiplier = geometryMultiplier;
         
         // Physics-based timing (scaled for maximum visibility)
         // Real leader: ~20ms, we use ~2s for dramatic visual effect
@@ -338,17 +345,21 @@ export class RedLightning extends LightComponent {
             side: THREE.DoubleSide
         });
         
-        // Create main bolt tube - OPTIMIZED for performance
+        // Create main bolt tube - Quality-based segments
         const curve = new THREE.CatmullRomCurve3(this.boltPath);
-        const tubeGeometry = new THREE.TubeGeometry(curve, 64, 0.18, 6, false); // Reduced segments for performance
+        const tubularSegments = Math.max(16, Math.floor(64 * this.geometryMultiplier));
+        const radialSegments = Math.max(4, Math.floor(6 * this.geometryMultiplier));
+        const tubeGeometry = new THREE.TubeGeometry(curve, tubularSegments, 0.18, radialSegments, false);
         const boltMesh = new THREE.Mesh(tubeGeometry, boltMaterial);
         this.lightningGroup.add(boltMesh);
         this.boltMeshes.push({ mesh: boltMesh, material: boltMaterial, isBranch: false });
         
-        // Create branches - OPTIMIZED
+        // Create branches - Quality-based segments
         this.branchPaths.forEach(branchData => {
             const branchCurve = new THREE.CatmullRomCurve3(branchData.path);
-            const branchGeometry = new THREE.TubeGeometry(branchCurve, 24, 0.12, 5, false); // Reduced for performance
+            const branchTubularSegs = Math.max(8, Math.floor(24 * this.geometryMultiplier));
+            const branchRadialSegs = Math.max(3, Math.floor(5 * this.geometryMultiplier));
+            const branchGeometry = new THREE.TubeGeometry(branchCurve, branchTubularSegs, 0.12, branchRadialSegs, false);
             const branchMaterial = boltMaterial.clone();
             branchMaterial.uniforms.leaderIntensity.value = 0.33; // Slightly brighter
             // --- COLORFUL BRANCHES ---
@@ -368,7 +379,9 @@ export class RedLightning extends LightComponent {
     }
 
     createGlowEffect() {
-        const glowGeometry = new THREE.SphereGeometry(0.8, 12, 12); // Reduced segments for performance
+        // Quality-based glow sphere segments
+        const glowSegs = Math.max(6, Math.floor(12 * this.geometryMultiplier));
+        const glowGeometry = new THREE.SphereGeometry(0.8, glowSegs, glowSegs);
         const glowMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 time: { value: 0 },
