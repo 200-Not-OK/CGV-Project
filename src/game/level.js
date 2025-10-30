@@ -111,8 +111,8 @@ export class Level {
             textColor: '#009a00',
             glowColor: 0x009a00,
             palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
-            emitLight: true,
-            lightIntensity: 3.5,
+            emitLight: false,
+            lightIntensity: 0,
             updateInterval: 36
           }
         },
@@ -127,8 +127,8 @@ export class Level {
             textColor: '#009a00',
             glowColor: 0x009a00,
             palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
-            emitLight: true,
-            lightIntensity: 3.5,
+            emitLight: false,
+            lightIntensity: 0,
             updateInterval: 36,
             adaptiveDepthToggle: true,
             surfaceOffset: 0.25

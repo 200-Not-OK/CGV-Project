@@ -458,9 +458,10 @@ export class QualityControls {
                 trailLength: 18,
                 speedMultiplier: 1.05,
                 driftStrength: 0.2,
-                headExtraGlow: 2,
+                headExtraGlow: 0,
                 headDoubleDraw: false,
-                trailBlurFalloff: 0.75
+                trailBlurFalloff: 0.75,
+                headLightsCount: 0
             });
         } else { // HIGH
             BinaryScreen.setQualityProfile({
@@ -470,13 +471,10 @@ export class QualityControls {
                 trailLength: 26,
                 speedMultiplier: 1.2,
                 driftStrength: 0.6,
-                headExtraGlow: 6,
+                headExtraGlow: 2,
                 headDoubleDraw: true,
                 trailBlurFalloff: 0.8,
-                headLightsCount: 5,
-                headLightIntensity: 2.2,
-                headLightDistance: 4.0,
-                headLightOffset: 0.15,
+                headLightsCount: 0, // Disable dynamic point lights on binary screen
                 overlaysEnabled: true
             });
         }
