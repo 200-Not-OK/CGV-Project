@@ -577,6 +577,8 @@ export class ShaderSystem {
 
   applyCustomShaderToMesh(mesh, opts = {}) {
     if (!mesh || !mesh.isMesh) return null;
+    // Skip NPCs - they should never use the custom shader
+    if (mesh.userData?.isNpc || mesh.userData?.skipShader || mesh.userData?.isStar) return null;
     const originalMaterial = mesh.material;
     if (!this.originalMaterials.has(mesh.uuid)) {
       this.originalMaterials.set(mesh.uuid, originalMaterial);
@@ -798,6 +800,22 @@ export class ShaderSystem {
     }
 
     const stableSunDir = this._smoothedSunDir;
+    
+    // Initialize eyeState if it doesn't exist yet (before the anchorPos check)
+    if (sunData && !sunData.eyeState) {
+      sunData.eyeState = {
+        initialized: false,
+        altUp: new THREE.Vector3(1, 0, 0),
+        forwardAxis: new THREE.Vector3(0, 0, -1),
+        forwardDetermined: false,
+        lastFacing: 1,
+        blinkTimer: 1.0, // Start with 1 second delay for testing
+        blinkDuration: 0,
+        isBlinking: false,
+        originalScaleY: 1.0,
+        blinkTimerInitialized: true // Mark as initialized so inner code doesn't override
+      };
+    }
 
     this.enhancedMaterials.forEach((mat) => {
       if (!mat || !mat.uniforms) return;
@@ -882,18 +900,18 @@ export class ShaderSystem {
             
             const topEyelid = new THREE.Mesh(
               new THREE.PlaneGeometry(eyelidSize, eyelidSize),
-              new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.DoubleSide })
+              new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.FrontSide })
             );
-            topEyelid.position.set(0, radius * 1.5, 0);
+            topEyelid.position.set(0, radius * 1.5, -radius * 0.3); // Position in front and above
             topEyelid.rotation.x = Math.PI / 2;
             topEyelid.renderOrder = 1000;
             topEyelid.name = 'topEyelid';
             
             const bottomEyelid = new THREE.Mesh(
               new THREE.PlaneGeometry(eyelidSize, eyelidSize),
-              new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.DoubleSide })
+              new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.FrontSide })
             );
-            bottomEyelid.position.set(0, -radius * 1.5, 0);
+            bottomEyelid.position.set(0, -radius * 1.5, -radius * 0.3); // Position in front and below
             bottomEyelid.rotation.x = -Math.PI / 2;
             bottomEyelid.renderOrder = 1000;
             bottomEyelid.name = 'bottomEyelid';
@@ -1029,66 +1047,75 @@ export class ShaderSystem {
           }
         }
         
-        // Handle blinking animation
-        const dtSec = Math.max(0, (deltaTime || 0)) * 0.001;
-        eyeState.blinkTimer -= dtSec;
-        
-        if (eyeState.isBlinking) {
-          eyeState.blinkDuration -= dtSec;
-          if (eyeState.blinkDuration <= 0) {
-            eyeState.isBlinking = false;
-            eyeState.blinkTimer = 3.0 + Math.random() * 2.0; // Next blink in 3-5 seconds
-          }
-        } else if (eyeState.blinkTimer <= 0) {
-          eyeState.isBlinking = true;
-          eyeState.blinkDuration = 0.2; // Blink lasts 0.2 seconds
-        }
-        
-        // Animate eyelid positions - slide down from top and up from bottom
-        if (eyeState.topEyelid && eyeState.bottomEyelid) {
-          const dtMs = Math.max(0, (deltaTime || 0));
-          
-          if (eyeState.isBlinking) {
-            const blinkProgress = 1.0 - eyeState.blinkDuration / 0.2; // 0 to 1
-            
-            // Use ease-in-out curve for smooth blinking
-            const smoothProgress = blinkProgress < 0.5 
-              ? 2 * blinkProgress * blinkProgress 
-              : -1 + (4 - 2 * blinkProgress) * blinkProgress;
-            
-            // Move eyelids toward each other
-            const radius = eyeState.eyelidRadius || 700;
-            eyeState.topEyelid.position.y = (radius * 1.5) - smoothProgress * (radius * 1.5); // From start to 0
-            eyeState.bottomEyelid.position.y = -(radius * 1.5) + smoothProgress * (radius * 1.5); // From start to 0
-            
-            // Fade in opacity as they close
-            eyeState.topEyelid.material.opacity = smoothProgress * 1.0; // Fully opaque when closed
-            eyeState.bottomEyelid.material.opacity = smoothProgress * 1.0;
-          } else {
-            // Open eyes - smoothly return to original position
-            const openSpeed = 2.0; // Speed of opening
-            const radius = eyeState.eyelidRadius || 700;
-            const targetTopY = radius * 1.5;
-            const targetBottomY = -radius * 1.5;
-            
-            eyeState.topEyelid.position.y = THREE.MathUtils.lerp(
-              eyeState.topEyelid.position.y,
-              targetTopY,
-              openSpeed * dtSec
-            );
-            eyeState.bottomEyelid.position.y = THREE.MathUtils.lerp(
-              eyeState.bottomEyelid.position.y,
-              targetBottomY,
-              openSpeed * dtSec
-            );
-            
-            // Fade out opacity
-            eyeState.topEyelid.material.opacity *= Math.pow(0.9, dtSec * 60);
-            eyeState.bottomEyelid.material.opacity *= Math.pow(0.9, dtSec * 60);
-          }
-        }
       } catch (e) {
         // ignore eye update errors
+      }
+    }
+    
+    // Simple blinking: Black for 2 seconds, then normal for 2 seconds, repeat forever
+    if (!sunData) {
+      if (!this._noSunDataWarned) {
+        console.warn('👁️ No sunData found');
+        this._noSunDataWarned = true;
+      }
+    } else if (!sunData.mesh) {
+      if (!this._noSunMeshWarned) {
+        console.warn('👁️ No sunData.mesh found');
+        this._noSunMeshWarned = true;
+      }
+    }
+    
+    if (sunData && sunData.mesh) {
+      // Initialize on first run
+      if (!sunData._blinkState) {
+        sunData._blinkState = {
+          timer: 0,
+          originalColor: null,
+          originalMap: null,
+          initialized: false
+        };
+        console.log('👁️ Initialized blink state for eyeball');
+      }
+      
+      const state = sunData._blinkState;
+      const dtSec = Math.max(0, (deltaTime || 0)) * 0.001;
+      state.timer += dtSec;
+      
+      // Debug: log every 5 seconds
+      if (Math.floor(state.timer) % 5 === 0 && state.timer > 0) {
+        console.log('👁️ Blink timer:', state.timer.toFixed(2), 'isBlack:', (state.timer % 4.0 >= 2.0));
+      }
+      
+      // Initialize colors once - mesh is actually inside the rig
+      if (!state.initialized && sunData.rig) {
+        sunData.rig.traverse((child) => {
+          if (child.isMesh && child.material) {
+            state.originalColor = child.material.color ? child.material.color.clone() : new THREE.Color(1, 1, 1);
+            state.originalMap = child.material.map;
+            state.initialized = true;
+            console.log('👁️ Found eye mesh with color:', state.originalColor, 'map:', !!state.originalMap);
+          }
+        });
+      }
+      
+      // Simple cycle: 0-2s = normal, 2-4s = black, repeat
+      const cycleTime = state.timer % 4.0;
+      const isBlack = cycleTime >= 2.0;
+      
+      if (sunData.rig && state.initialized) {
+        sunData.rig.traverse((child) => {
+          if (child.isMesh && child.material) {
+            if (isBlack) {
+              child.material.color.setRGB(0, 0, 0);
+              child.material.map = null;
+              child.material.needsUpdate = true;
+            } else {
+              child.material.color.copy(state.originalColor);
+              child.material.map = state.originalMap;
+              child.material.needsUpdate = true;
+            }
+          }
+        });
       }
     }
   }
