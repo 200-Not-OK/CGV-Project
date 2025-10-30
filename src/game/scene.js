@@ -581,7 +581,7 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
       scene.add(topFill);
       scene.userData.topFillLight = topFill;
       // Mild ambient to lift darkest areas
-      const ambient = new THREE.AmbientLight(0xffffff, 0.22);
+      const ambient = new THREE.AmbientLight(0xffffff, 0.55);
       scene.add(ambient);
       scene.userData.ambientFill = ambient;
     } catch (e) { /* ignore visual sun errors */ }

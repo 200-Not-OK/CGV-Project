@@ -1066,7 +1066,7 @@ async loadLevel(index) {
         }
       }
       const ambient = this.scene.userData?.ambientFill;
-      if (ambient) { ambient.intensity = 0.22; }
+      if (ambient) { ambient.intensity = 0.55; }
       // Fix shader sun direction to bottom-up for illumination from ground
       if (this.scene?.userData) {
         this.scene.userData.sunOverrideDir = new THREE.Vector3(0, 1, 0);
