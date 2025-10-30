@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createSceneAndRenderer } from './scene.js';
+import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight } from './scene.js';
 import { InputManager } from './input.js';
 import { Player } from './player.js';
 import { LevelManager } from './levelManager.js';
@@ -908,6 +908,11 @@ else if (code === 'KeyY') {
     // update lights (allow dynamic lights to animate)
     if (this.lights) this.lights.update(delta);
 
+    // Update shaders with camera & sun info
+    if (this.shaderSystem) {
+      this.shaderSystem.update(delta, this.activeCamera, this.scene);
+    }
+
     // End update timing
     this.performanceMonitor.endUpdate();
 
@@ -969,6 +974,10 @@ async loadLevel(index) {
   if (this.level.data.id === 'level3') {
     console.log('🎯 Setting up computer for level3');
     this.setupComputerTerminal();
+    // Light, complimentary sky for level 3
+    try { setSkyPreset(this.scene, this.renderer, 'light'); } catch (e) { console.warn('Sky preset failed', e); }
+    // Ensure only the eyeball sun contributes light
+    try { enforceOnlySunLight(this.scene); } catch (e) { console.warn('Light enforcement failed', e); }
   } else {
     // Remove computer if switching away from level3
     if (this.computerTerminal) {
@@ -976,6 +985,8 @@ async loadLevel(index) {
       this.scene.remove(this.computerTerminal.mesh);
       this.computerTerminal = null;
     }
+    // Restore default sky elsewhere
+    try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
   }
 
   // Position player at start position from level data
