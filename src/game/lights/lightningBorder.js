@@ -175,16 +175,28 @@ export class LightningBorder {
       surfaceOffset: options.surfaceOffset !== undefined ? options.surfaceOffset : 0.08,
       adaptiveDepthToggle: options.adaptiveDepthToggle === undefined ? true : !!options.adaptiveDepthToggle,
       followAlwaysOverlay: options.followAlwaysOverlay === undefined ? false : !!options.followAlwaysOverlay,
+      updateEvery: options.updateEvery ?? 1,
+      allowAdditive: options.allowAdditive !== undefined ? !!options.allowAdditive : true,
       color: options.color || 0x00ff00,   // Green
       intensity: options.intensity || 3.0,
       borderWidth: options.borderWidth || 0.15,
       ...options
     };
 
+    this.quality = options.quality || null;
+    if (options.updateEvery === undefined && this.quality?.lightningBorderProfile?.updateEvery !== undefined) {
+      this.options.updateEvery = this.quality.lightningBorderProfile.updateEvery;
+    }
+    if (options.allowAdditive === undefined && this.quality?.lightningBorderProfile?.allowAdditive !== undefined) {
+      this.options.allowAdditive = this.quality.lightningBorderProfile.allowAdditive;
+    }
+
     this.mesh = null;
     this.material = null;
     this.light = null;
     this.time = 0;
+    this.updateEvery = Math.max(1, Math.round(this.options.updateEvery || 1));
+    this.timeScale = 1 / this.updateEvery;
 
     this._resolvedParent = null; // THREE.Object3D we attach to (if any)
     this._worldPoints = this.options.points.map(p => new THREE.Vector3(p[0], p[1], p[2]));
@@ -266,6 +278,8 @@ export class LightningBorder {
     geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
     geometry.setIndex(indices);
 
+    const useAdditive = this.options.allowAdditive !== false;
+
     // Create shader material
     this.material = new THREE.ShaderMaterial({
       uniforms: {
@@ -278,7 +292,7 @@ export class LightningBorder {
       vertexShader,
       fragmentShader,
       transparent: true, // Keep transparent for proper look
-      blending: THREE.AdditiveBlending, // Keep additive for glow effect
+      blending: useAdditive ? THREE.AdditiveBlending : THREE.NormalBlending,
       side: THREE.DoubleSide,
       depthWrite: false,
       fog: false,
@@ -350,9 +364,9 @@ export class LightningBorder {
   update(deltaTime, elapsedTime) {
     if (!this.mesh || !this.material) return;
     
-    const deltaSeconds = deltaTime / 1000;
+    const deltaSeconds = (deltaTime / 1000) * this.timeScale;
     this.time += deltaSeconds;
-    
+
     // Update shader time
     this.material.uniforms.uTime.value = this.time;
 
@@ -373,7 +387,7 @@ export class LightningBorder {
   // Attach to a parent object after creation. Optionally converts world-space points to local.
   attachToObject(object3D, options = {}) {
     if (!object3D || !object3D.isObject3D) return;
-    const { pointsAreWorld = true } = options;
+    const { pointsAreWorld = true, bindMatrixWorld = null } = options;
 
     this._resolvedParent = object3D;
 
@@ -385,7 +399,13 @@ export class LightningBorder {
       // Compute local point positions if our stored points are in world space
       if (pointsAreWorld) {
         const geom = this.mesh.geometry;
-        const lp = this._worldPoints.map(v => object3D.worldToLocal(v.clone()));
+        let lp;
+        if (bindMatrixWorld && bindMatrixWorld.isMatrix4) {
+          const inv = new THREE.Matrix4().copy(bindMatrixWorld).invert();
+          lp = this._worldPoints.map(v => v.clone().applyMatrix4(inv));
+        } else {
+          lp = this._worldPoints.map(v => object3D.worldToLocal(v.clone()));
+        }
         // Recompute local normal (favor CCW) and apply surface offset consistently
         const e1 = lp[1].clone().sub(lp[0]);
         const e2 = lp[3].clone().sub(lp[0]);

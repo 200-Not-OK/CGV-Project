@@ -10,7 +10,13 @@ export class LightManager {
 
   async add(key, ComponentClass, props = {}) {
     if (this._instances.has(key)) return this._instances.get(key);
-    
+
+    const moduleName = ComponentClass?.name;
+    if (this._isFeatureDisabled(moduleName)) {
+      console.log(`💡 Skipping ${moduleName} due to quality settings`);
+      return null;
+    }
+
     // Inject quality settings into props if available
     const finalProps = this.qualitySettings 
       ? { ...props, quality: props.quality || this.qualitySettings }
@@ -56,5 +62,22 @@ export class LightManager {
   // Get all light instances for shadow management
   getAll() {
     return Object.fromEntries(this._instances);
+  }
+
+  _isFeatureDisabled(moduleName) {
+    if (!moduleName || !this.qualitySettings || !this.qualitySettings.lightFeatureFlags) {
+      return false;
+    }
+
+    const featureMap = {
+      TechLights: 'techLights',
+      FlameParticles: 'flameParticles',
+      BinaryShader: 'binaryScreens',
+      RedLightning: 'redLightning'
+    };
+
+    const flagKey = featureMap[moduleName];
+    if (!flagKey) return false;
+    return this.qualitySettings.lightFeatureFlags[flagKey] === false;
   }
 }
