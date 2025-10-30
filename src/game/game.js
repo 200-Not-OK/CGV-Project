@@ -16,6 +16,7 @@ import { Collectibles } from './components/collectibles.js';
 import { InteractionPrompt } from './components/interactionPrompt.js';
 import { DeathMenu } from './components/deathMenu.js';
 import { VoiceoverCard } from './components/voiceoverCard.js';
+import { Coordinates } from './components/coordinates.js';
 import { FirstPersonCamera } from './firstPersonCamera.js';
 import { LightManager } from './lightManager.js';
 import * as LightModules from './lights/index.js';
@@ -197,6 +198,8 @@ export class Game {
     // Add FPS counter
     this.ui.add('fps', FPS, { showFrameTime: true });
     console.log('📊 FPS counter enabled. Press F to toggle visibility.');
+    // Add coordinates display
+    this.ui.add('coordinates', Coordinates, {});
     // Add crosshair for combat
     this.ui.add('crosshair', Crosshair, { visible: true });
     // Add interaction prompt for chests
@@ -664,7 +667,8 @@ export class Game {
         },
         playerModel: this.player.mesh,
         enemies: this.level ? this.level.getEnemies() : [],
-        collectibles: this.collectiblesManager ? this.collectiblesManager.getAllCollectibles() : []
+        collectibles: this.collectiblesManager ? this.collectiblesManager.getAllCollectibles() : [],
+        game: this  // Pass game reference for coordinates component
       };
       this.ui.update(delta, ctx);
     }
@@ -797,6 +801,26 @@ export class Game {
     // swap UI + lights first
     this.applyLevelUI(this.level.data);
     this.applyLevelLights(this.level.data);
+    
+    // Apply tech shaders to Level 1A meshes if TechLights is present
+    if (this.level.data.id === 'level1A') {
+      // Wait a frame for lights to be fully mounted
+      setTimeout(() => {
+        const techLightsInstance = this.lights._instances.get('TechLights_0');
+        if (techLightsInstance && techLightsInstance.applyToMeshes) {
+          // Apply tech shaders to servers and tree structures
+          techLightsInstance.applyToMeshes(this.scene, {
+            servers: [
+              'server', 'rack', 'panel', 'computer', 'machine', 'terminal', 'monitor',
+              'stripe', 'line', 'data', 'circuit', 'wire', 'cable', 'led',
+              'horizontal', 'vertical', 'strip', 'bar'
+            ],
+            tree: ['tree', 'techtree', 'structure', 'tech', 'node', 'branch', 'network']
+          });
+          console.log('🔵 Tech shaders applied to Level 1A meshes');
+        }
+      }, 100);
+    }
 
     // IMPORTANT:
     // If an onLevelStart cinematic exists, we want the cinematic to control VO timing.
@@ -1029,6 +1053,9 @@ export class Game {
     if (this.ui.get('voiceoverCard')) {
       globalComponents.set('voiceoverCard', this.ui.get('voiceoverCard'));
     }
+    if (this.ui.get('coordinates')) {
+      globalComponents.set('coordinates', this.ui.get('coordinates'));
+    }
     
     this.ui.clear();
     
@@ -1086,6 +1113,9 @@ export class Game {
         this.ui.add('collectibles', Collectibles, config);
       } else if (key === 'fps') {
         // FPS is already added as a global component, skip
+        continue;
+      } else if (key === 'coordinates') {
+        // Coordinates is already added as a global component, skip
         continue;
       } else {
         console.warn('Unknown UI component type in level data:', key);
