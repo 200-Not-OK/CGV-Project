@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight } from './scene.js';
+import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows } from './scene.js';
 import { InputManager } from './input.js';
 import { Player } from './player.js';
 import { LevelManager } from './levelManager.js';
@@ -434,6 +434,27 @@ debugInteractionPrompt() {
       } else if (code === 'KeyN') {
         // Open the Level Picker instead of jumping to next level
         this._showLevelPicker();
+      } else if (code === 'KeyZ') {
+        // DEBUG: Cycle solo lights one-by-one to locate artifact source
+        e.preventDefault();
+        try {
+          this._collectSceneLights();
+          if (!this._lightDbg || this._lightDbg.lights.length === 0) {
+            console.warn('No lights found to debug');
+            return;
+          }
+          this._lightDbg.idx = (this._lightDbg.idx + 1) % this._lightDbg.lights.length;
+          const target = this._lightDbg.lights[this._lightDbg.idx];
+          this._soloLight(target);
+          console.log('🔦 Solo light:', target.type, target.name || '(unnamed)', 'index:', this._lightDbg.idx);
+        } catch (err) { console.warn('Light solo failed:', err); }
+      } else if (code === 'KeyX') {
+        // DEBUG: Restore all lights to original intensities/visibility
+        e.preventDefault();
+        try {
+          this._restoreAllLights();
+          console.log('🔦 Restored all lights');
+        } catch (err) { console.warn('Restore lights failed:', err); }
       } else if (code === 'KeyM') {
         // toggle physics debug visualization
         this.physicsWorld.enableDebugRenderer(!this.physicsWorld.isDebugEnabled());
@@ -460,6 +481,57 @@ debugInteractionPrompt() {
     console.log('💻 E key pressed near computer');
     this.computerTerminal.interact();
     interacted = true;
+  }
+
+  // ======== LIGHT DEBUG HELPERS ========
+  _collectSceneLights() 
+  {
+    if (!this._lightDbg) this._lightDbg = { lights: [], idx: -1, backups: new Map() };
+    const list = [];
+    this.scene.traverse((o) => { if (o && o.isLight) list.push(o); });
+    // Save backups for new lights
+    for (const l of list) {
+      if (!this._lightDbg.backups.has(l)) {
+        this._lightDbg.backups.set(l, { intensity: typeof l.intensity === 'number' ? l.intensity : undefined, visible: l.visible });
+      }
+    }
+    this._lightDbg.lights = list;
+  }
+
+  _soloLight(target) 
+  {
+    if (!this._lightDbg) return;
+    // Turn off all lights first
+    for (const l of this._lightDbg.lights) {
+      try {
+        if (typeof l.intensity === 'number') l.intensity = 0;
+        l.visible = false;
+        l.castShadow = false;
+      } catch {}
+    }
+    // Turn on target
+    if (target) {
+      const bak = this._lightDbg.backups.get(target);
+      try {
+        if (typeof target.intensity === 'number') target.intensity = (bak && bak.intensity !== undefined) ? bak.intensity : 1.0;
+        target.visible = true;
+        target.castShadow = false;
+      } catch {}
+    }
+  }
+
+  _restoreAllLights() 
+  {
+    if (!this._lightDbg) return;
+    for (const l of this._lightDbg.lights) {
+      const bak = this._lightDbg.backups.get(l);
+      try {
+        if (bak && bak.intensity !== undefined && typeof l.intensity === 'number') l.intensity = bak.intensity;
+        l.visible = bak ? bak.visible : true;
+        l.castShadow = false;
+      } catch {}
+    }
+    this._lightDbg.idx = -1;
   }
   
   // If no computer interaction, try chest interaction
@@ -978,6 +1050,68 @@ async loadLevel(index) {
     try { setSkyPreset(this.scene, this.renderer, 'light'); } catch (e) { console.warn('Sky preset failed', e); }
     // Ensure only the eyeball sun contributes light
     try { enforceOnlySunLight(this.scene); } catch (e) { console.warn('Light enforcement failed', e); }
+    // Hard-disable all object/light shadows to prevent any halo circle
+    try { disableAllShadows(this.scene); } catch (e) { console.warn('Disable all shadows failed', e); }
+    // Turn off eyeball sun directional, use softer bottom-up lighting
+    try {
+      const sunLight = this.scene.userData?.sunLight;
+      if (sunLight) { sunLight.visible = false; sunLight.intensity = 0; sunLight.castShadow = false; }
+      const topFill = this.scene.userData?.topFillLight;
+      if (topFill) { 
+        topFill.intensity = 0.6; 
+        topFill.position.set(0, -800, 0);
+        // Update light target to point upward from ground
+        if (topFill.target) {
+          topFill.target.position.set(0, 0, 0);
+        }
+      }
+      const ambient = this.scene.userData?.ambientFill;
+      if (ambient) { ambient.intensity = 0.22; }
+      // Fix shader sun direction to bottom-up for illumination from ground
+      if (this.scene?.userData) {
+        this.scene.userData.sunOverrideDir = new THREE.Vector3(0, 1, 0);
+      }
+    } catch (e) { console.warn('Bottom-up light config failed', e); }
+
+    // Ensure sky spheres (radius ~2000-2200) render for all cameras
+    try {
+      const FAR_FOR_SKY = 3000;
+      const cams = [this.thirdCameraObject, this.firstCameraObject, this.freeCameraObject];
+      cams.forEach((c) => {
+        if (c && (typeof c.far === 'number') && c.far < FAR_FOR_SKY) {
+          c.far = FAR_FOR_SKY;
+          c.updateProjectionMatrix && c.updateProjectionMatrix();
+        }
+      });
+    } catch (e) { console.warn('Failed to extend camera far plane for sky', e); }
+    // Apply player outline for toon style if GPU tier allows
+    try {
+      const quality = this.gpuDetector?.getQualitySettings?.() || {};
+      const toon = quality.toon || {};
+      const tier = this.gpuDetector?.tier || 'MEDIUM';
+      const canOutline = toon.enabled && toon.outlinePlayer && tier !== 'LOW';
+      if (canOutline && this.shaderSystem && this.player?.mesh && !this.player.mesh.userData.__toonOutlined) {
+        // Attempt immediately; if model not ready, retry shortly
+        const tryOutline = () => {
+          let outlined = false;
+          this.player.mesh.traverse((child) => {
+            if (child.isMesh && child.geometry && !child.userData?.__toonOutline) {
+              this.shaderSystem.addOutlineToMesh(child, { thickness: 1.03, color: 0x000000 });
+              outlined = true;
+            }
+          });
+          if (outlined) {
+            this.player.mesh.userData.__toonOutlined = true;
+          } else {
+            // Retry once if not yet available
+            setTimeout(tryOutline, 300);
+          }
+        };
+        tryOutline();
+      }
+    } catch (e) {
+      console.warn('Toon player outline failed:', e);
+    }
   } else {
     // Remove computer if switching away from level3
     if (this.computerTerminal) {

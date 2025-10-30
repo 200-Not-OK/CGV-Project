@@ -438,28 +438,78 @@ export class Level {
     try {
       if (this.game && this.game.shaderSystem && this.data && this.data.id === 'level3') {
         console.log('🎨 Applying custom GPU shader to Level 3 assets');
+        const quality = (this.game.gpuDetector && this.game.gpuDetector.getQualitySettings) ? this.game.gpuDetector.getQualitySettings() : {};
+        const toon = quality.toon || { enabled: true, posterizeLevels: 5, outlinePlayer: false };
+        const tier = (this.game.gpuDetector && this.game.gpuDetector.tier) || 'MEDIUM';
+        const isLow = tier === 'LOW';
+        const isHigh = tier === 'HIGH';
+        const toonEnabled = !!toon.enabled && !isLow;
+
         this.game.shaderSystem.applyCustomShaderToObject(
             gltf.scene,
             (m) => m.userData?.type === 'gltf',
             {
-            ambientColor: new THREE.Color(0xffffff).multiplyScalar(0.42),
-            saturationBoost: 0.3,  // stronger color pop
-            vibrance: 0.55,        // extra pop for low-sat materials
-            shadowLift: 0.12,      // maintain detail in shadows
-            rimIntensity: 0.28,
-            rimPower: 2.2,
-            specIntensity: 0.45,
-            specPower: 64.0,
-            // Stronger sun contribution within the shader
-            sunColor: new THREE.Color(0xffe6b0).multiplyScalar(3.0),
-            sunWrap: 0.9,
-            // Toon look
-            toonDiffuseSteps: 3.0,
-            toonSpecSteps: 2.0,
-            outlineStrength: 0.35,
-            outlinePower: 2.0
+            // Softer cartoon style - less bright and oversaturated
+            ambientColor: new THREE.Color(0xffffff).multiplyScalar(0.35),
+            saturationBoost: -0.15,
+            vibrance: -0.10,
+            shadowLift: 0.08,
+            exposure: 0.65,
+            rimIntensity: 0.15,
+            rimPower: 2.5,
+            specIntensity: 0.25,
+            specPower: 48.0,
+            // Softer directional light
+            sunColor: new THREE.Color(0xffffff).multiplyScalar(2.0),
+            sunWrap: 0.65,
+            // Subtle toon look
+            toonDiffuseSteps: toonEnabled ? 2.0 : 0.0,
+            toonSpecSteps: toonEnabled ? 2.0 : 0.0,
+            toonSoftness: toonEnabled ? 0.45 : 0.0,
+            // Disable outline to avoid any halo/ring around player
+            outlineStrength: 0.0,
+            outlinePower: 2.0,
+            posterizeLevels: 0.0,
+            // Hand-drawn hatching/grain
+            hatchStrength: toonEnabled ? 0.08 : 0.0,
+            hatchScale: 0.61,
+            hatchContrast: 0.85,
+            boilStrength: toonEnabled ? 0.035 : 0.0,
+            boilSpeed: 0.6,
+            grainStrength: 0.0,
+            // Gentle lift dark albedo
+            albedoLift: 0.005,
+            darkTintColor: new THREE.Color(0xf0e6d0).multiplyScalar(0.15),
+            darkTintStrength: 0.20,
+            // Selective enhancement: MASSIVE boost for red, pink, purple
+            hueDesatCenter: new THREE.Vector3(1.0, -0.5, -0.5).normalize(), // Red-pink-magenta axis
+            hueDesatWidth: 0.50,
+            hueDesatStrength: -0.65, // MASSIVE negative = huge saturation BOOST
+            hueDimStrength: 0.0,
+            // Yellow pop
+            hue2DesatCenter: new THREE.Vector3(1.0, 1.0, 0.0).normalize(), // Yellow axis
+            hue2DesatWidth: 0.45,
+            hue2DesatStrength: -0.35, // Negative = saturation BOOST
+            hue2DimStrength: 0.0,
+            // Subtle white cleanup
+            highlightWhiteBoost: 0.05,
+            highlightWhiteThreshold: 0.88,
+            highlightTintColor: new THREE.Color(0xf8f5f0)
             }
           );
+        
+        // Add black outlines to all Level 3 objects for hand-drawn effect
+        try {
+          console.log('🖊️ Adding black outlines to all Level 3 objects');
+          this.game.shaderSystem.addOutlineToObject(
+            gltf.scene,
+            (m) => m.userData?.type === 'gltf',
+            { thickness: 1.05, color: 0x000000 }
+          );
+          console.log('✅ Black outlines applied to Level 3 objects');
+        } catch (outlineErr) {
+          console.warn('⚠️ Failed to apply outlines to Level 3:', outlineErr);
+        }
       }
     } catch (e) {
       console.warn('⚠️ Failed to apply custom shader to GLTF assets:', e);
