@@ -11,6 +11,7 @@ export class ShaderSystem {
     this.enhancedMaterials = new Map();
     this.originalMaterials = new Map(); // Store original materials for toggling
     this.shadersEnabled = true; // Track shader state
+    this._lastToonSettings = {}; // Live-tunable toon uniforms
     
     this.setupRenderer();
   }
@@ -246,12 +247,16 @@ export class ShaderSystem {
   createCustomShader(options = {}) {
     const vertexShader = options.vertexShader || `
       varying vec3 vNormal;
+      varying vec3 vNormalWorld;
       varying vec3 vPosition;
+      varying vec3 vWorldPos;
       varying vec2 vUv;
       
       void main() {
         vNormal = normalize(normalMatrix * normal);
+        vNormalWorld = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
         vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+        vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
         vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
@@ -269,6 +274,33 @@ export class ShaderSystem {
       uniform vec3 sunColor;
       uniform vec3 ambientColor;
       uniform vec3 cameraPositionWorld;
+      uniform vec3 worldUp;
+      // Hand-drawn controls
+      uniform float time;            // seconds
+      uniform float hatchStrength;   // 0..1 amount of shadow hatching
+      uniform float hatchScale;      // stripes density (units)
+      uniform float hatchContrast;   // 0.5..2.0 sharpening of hatch mask
+      uniform float boilStrength;    // subtle time wobble
+      uniform float boilSpeed;       // speed of wobble
+      uniform float grainStrength;   // paper grain strength 0..0.2
+      // Dark material lifting (ink-friendly)
+      uniform float albedoLift;      // 0..1 lifts very dark albedo toward mid-tones
+      uniform vec3 darkTintColor;    // small warm tint for near-black materials
+      uniform float darkTintStrength;// 0..0.5 strength of tint on darks
+      // Selective hue de-saturation (e.g., clamp greens)
+      uniform vec3 hueDesatCenter;   // axis of target hue in RGB space (normalized)
+      uniform float hueDesatWidth;   // 0..1, cosine similarity threshold start
+      uniform float hueDesatStrength;// 0..1 amount to reduce saturation for that hue
+      uniform float hueDimStrength;  // 0..1 darken amount for that hue
+      // Second selective band (e.g., yellows)
+      uniform vec3 hue2DesatCenter;
+      uniform float hue2DesatWidth;
+      uniform float hue2DesatStrength;
+      uniform float hue2DimStrength;
+      // Highlight whitening to keep whites clean
+      uniform float highlightWhiteBoost;     // 0..0.25 amount to push toward white
+      uniform float highlightWhiteThreshold; // 0..1 threshold to start whitening
+      uniform vec3 highlightTintColor;       // target tint for near-whites (cream)
       uniform vec3 rimColor;
       uniform float rimIntensity;
       uniform float rimPower;
@@ -278,6 +310,7 @@ export class ShaderSystem {
       // Toon controls
       uniform float toonDiffuseSteps; // e.g., 3.0 for banded diffuse
       uniform float toonSpecSteps;    // e.g., 2.0 for crisp spec
+      uniform float toonSoftness;     // 0..0.5 softens band edges to reduce popping
       uniform float outlineStrength;  // 0..1 darkening near edges
       uniform float outlinePower;     // controls edge falloff
       // Sun wrap amount (0..1) controls how much light wraps around silhouettes
@@ -286,11 +319,43 @@ export class ShaderSystem {
       uniform float saturationBoost; // uniform boost to saturation
       uniform float vibrance;        // boosts low-sat colors more than already vibrant ones
       uniform float shadowLift;      // gently lifts deep shadows
+      // Posterize control (0 or <2 disables)
+      uniform float posterizeLevels; // e.g., 5.0 for 5 steps per channel
+      // Exposure (to avoid double tone mapping with renderer)
+      uniform float exposure;
       
       varying vec3 vNormal;
       varying vec3 vPosition;
+      varying vec3 vNormalWorld;
+      varying vec3 vWorldPos;
       varying vec2 vUv;
       
+      float softQuantize(float x, float steps, float softness) {
+        if (steps < 0.5) return x;
+        float scaled = x * steps;
+        float idx = floor(scaled);
+        float t = fract(scaled);
+        // clamp softness to safe range
+        float s = smoothstep(0.5 - softness, 0.5 + softness, t);
+        return (idx + s) / steps;
+      }
+
+      // Rotate 2D
+      mat2 rot2(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c); }
+
+      // Stripe pattern [0..1], 1 = line
+      float stripe(vec2 uv, float width){
+        float s = 0.5 + 0.5 * sin(uv.x);
+        return smoothstep(1.0 - width, 1.0, s);
+      }
+
+      // Cheap hash
+      float hash21(vec2 p){
+        p = fract(p*vec2(123.34, 345.45));
+        p += dot(p, p+34.345);
+        return fract(p.x*p.y);
+      }
+
       void main() {
         // normals in view space
         vec3 N = normalize(vNormal);
@@ -298,6 +363,8 @@ export class ShaderSystem {
         vec3 Lp = normalize(lightPosition - vPosition);
         // view vector (approx in view space)
         vec3 V = normalize(-vPosition);
+        // transform world-space sunDir into view space to avoid camera-relative banding
+        vec3 sunDirView = normalize((viewMatrix * vec4(sunDir, 0.0)).xyz);
         
         // Albedo
         vec3 albedo = baseColor;
@@ -305,18 +372,28 @@ export class ShaderSystem {
           vec4 tex = texture2D(map, vUv);
           albedo = tex.rgb;
         }
+        // Lift extremely dark albedo to avoid crushed blacks on wood/ground
+        if (albedoLift > 0.001) {
+          float Ya = dot(albedo, vec3(0.299, 0.587, 0.114));
+          float darkMask = 1.0 - smoothstep(0.10, 0.35, Ya);
+          vec3 towardMid = albedo + (vec3(1.0) - albedo) * 0.35; // gentle lift
+          albedo = mix(albedo, towardMid, clamp(albedoLift, 0.0, 1.0) * darkMask);
+          albedo += darkTintColor * (clamp(darkTintStrength, 0.0, 0.5) * darkMask);
+          albedo = clamp(albedo, 0.0, 1.0);
+        }
         
         // Diffuse terms: point light and directional sun tint
         float ndl_point = max(dot(N, Lp), 0.0);
-        float ndl_sun_raw = dot(N, normalize(sunDir));
+        float ndl_sun_raw = dot(N, sunDirView);
         float ndl_sun = clamp((ndl_sun_raw + sunWrap) / (1.0 + sunWrap), 0.0, 1.0);
 
         // Toon banding for diffuse
         float dPoint = ndl_point;
         float dSun = ndl_sun;
         if (toonDiffuseSteps > 0.5) {
-          dPoint = floor(dPoint * toonDiffuseSteps) / toonDiffuseSteps;
-          dSun = floor(dSun * toonDiffuseSteps) / toonDiffuseSteps;
+          float softness = clamp(toonSoftness, 0.0, 0.45);
+          dPoint = softQuantize(dPoint, toonDiffuseSteps, softness);
+          dSun = softQuantize(dSun, toonDiffuseSteps, softness);
         }
         vec3 diffuse = lightColor * lightIntensity * dPoint + sunColor * dSun;
         
@@ -326,21 +403,42 @@ export class ShaderSystem {
         float spec = pow(ndh, specPower) * specIntensity * (0.04 + (1.0 - roughness) * 0.5);
         spec *= lightIntensity; // disable point-spec when point light is off
         if (toonSpecSteps > 0.5) {
-          spec = floor(spec * toonSpecSteps) / toonSpecSteps;
+          float softness = clamp(toonSoftness, 0.0, 0.45);
+          spec = softQuantize(spec, toonSpecSteps, softness);
         }
         vec3 specular = specColor * spec;
         
         // Rim (Fresnel-like)
         float fresnel = pow(1.0 - max(dot(N, V), 0.0), rimPower);
         vec3 rim = rimColor * fresnel * rimIntensity;
+        // Suppress rim on upward-facing flat surfaces (avoids dark ring on ground)
+        float upDot = abs(dot(normalize(vNormalWorld), normalize(worldUp)));
+        float rimMask = 1.0 - smoothstep(0.6, 0.9, upDot);
+        rim *= rimMask;
         
         // Ambient
         vec3 ambient = ambientColor;
         
         vec3 lit = albedo * (ambient + diffuse) + specular + rim;
-        
-        // Simple tone map
-        vec3 finalColor = lit / (lit + vec3(1.0));
+        // Apply exposure; rely on renderer ACES toneMapping
+        vec3 finalColor = lit * exposure;
+
+        // Hand-drawn hatching in shadowed regions (cheap procedural)
+        if (hatchStrength > 0.001) {
+          float scale = max(hatchScale, 0.0001);
+          float ph = time * boilSpeed * 1.2;
+          vec2 baseUV = vWorldPos.xz * scale + boilStrength * vec2(
+            sin(vWorldPos.x * 0.35 + ph), cos(vWorldPos.z * 0.27 - ph)
+          );
+          float l0 = stripe(baseUV * rot2(radians(0.0)), 0.22);
+          float l1 = stripe(baseUV * rot2(radians(60.0)), 0.22);
+          float l2 = stripe(baseUV * rot2(radians(120.0)), 0.22);
+          float hatch = max(l0, max(l1, l2));
+          // darken more in shadows
+          float shade = clamp(1.0 - (dSun*0.85 + dPoint*0.15), 0.0, 1.0);
+          hatch = pow(hatch * shade, clamp(hatchContrast, 0.5, 2.0));
+          finalColor *= (1.0 - hatchStrength * hatch);
+        }
 
         // Cartoon-style outline via view-angle darkening
         if (outlineStrength > 0.001) {
@@ -356,9 +454,53 @@ export class ShaderSystem {
         float satBoost = saturationBoost + vibr;
         finalColor += fromGray * satBoost;
 
+        // Selective hue de-saturation + dimming for target bands
+        {
+          vec3 hVec = fromGray;
+          float lenh = max(length(hVec), 1e-4);
+          vec3 hDir = hVec / lenh;
+          // Band 1 (e.g., green, blue, purple)
+          if (abs(hueDesatStrength) > 0.001 || hueDimStrength > 0.001) {
+            vec3 axis1 = normalize(hueDesatCenter);
+            float sim1 = max(0.0, dot(axis1, hDir));
+            float m1 = smoothstep(hueDesatWidth, 1.0, sim1);
+            finalColor -= fromGray * (hueDesatStrength * m1);
+            finalColor *= (1.0 - hueDimStrength * m1);
+          }
+          // Band 2 (e.g., yellow)
+          if (abs(hue2DesatStrength) > 0.001 || hue2DimStrength > 0.001) {
+            vec3 axis2 = normalize(hue2DesatCenter);
+            float sim2 = max(0.0, dot(axis2, hDir));
+            float m2 = smoothstep(hue2DesatWidth, 1.0, sim2);
+            finalColor -= fromGray * (hue2DesatStrength * m2);
+            finalColor *= (1.0 - hue2DimStrength * m2);
+          }
+        }
+
         // Gentle shadow lift (protect highlights)
         float liftAmount = shadowLift * max(0.0, 0.3 - Y);
         finalColor += liftAmount * (vec3(1.0) - finalColor) * 0.35;
+        
+        // Posterize after color adjustments
+        if (posterizeLevels > 1.5) {
+          finalColor = floor(finalColor * posterizeLevels) / posterizeLevels;
+        }
+
+        // Paper grain
+        if (grainStrength > 0.001) {
+          float g = hash21(vWorldPos.xy * 0.75 + time * 0.5);
+          finalColor += (g - 0.5) * grainStrength;
+        }
+        // Keep whites clean and neutral
+        if (highlightWhiteBoost > 0.001) {
+          float Y2 = dot(finalColor, vec3(0.299, 0.587, 0.114));
+          float wMask = smoothstep(highlightWhiteThreshold, 1.0, Y2);
+          finalColor = mix(finalColor, highlightTintColor, wMask * highlightWhiteBoost);
+        }
+        // Slight lift for upward-facing surfaces (ground) to avoid overly dark floors
+        float upDot2 = abs(dot(normalize(vNormalWorld), normalize(worldUp)));
+        float groundMask = smoothstep(0.65, 0.95, upDot2);
+        finalColor += (vec3(1.0) - finalColor) * groundMask * 0.06;
         finalColor = clamp(finalColor, 0.0, 1.0);
         
         gl_FragColor = vec4(finalColor, 1.0);
@@ -380,6 +522,7 @@ export class ShaderSystem {
         sunColor: { value: new THREE.Color(0xffe6b0).multiplyScalar(6.0) },
         ambientColor: { value: new THREE.Color(0xffffff).multiplyScalar(0.35) },
         cameraPositionWorld: { value: new THREE.Vector3() },
+        worldUp: { value: new THREE.Vector3(0, 1, 0) },
         rimColor: { value: new THREE.Color(0xffffff) },
         rimIntensity: { value: 0.18 },
         rimPower: { value: 2.0 },
@@ -388,12 +531,36 @@ export class ShaderSystem {
         specPower: { value: 32.0 },
         toonDiffuseSteps: { value: options.uniforms?.toonDiffuseSteps?.value ?? 0.0 },
         toonSpecSteps: { value: options.uniforms?.toonSpecSteps?.value ?? 0.0 },
+        toonSoftness: { value: options.uniforms?.toonSoftness?.value ?? 0.0 },
         outlineStrength: { value: options.uniforms?.outlineStrength?.value ?? 0.0 },
         outlinePower: { value: options.uniforms?.outlinePower?.value ?? 2.0 },
         sunWrap: { value: options.uniforms?.sunWrap?.value ?? 0.6 },
         saturationBoost: { value: options.uniforms?.saturationBoost?.value ?? 0.15 },
         vibrance: { value: options.uniforms?.vibrance?.value ?? 0.3 },
         shadowLift: { value: options.uniforms?.shadowLift?.value ?? 0.08 },
+        exposure: { value: options.uniforms?.exposure?.value ?? 1.0 },
+        posterizeLevels: { value: options.uniforms?.posterizeLevels?.value ?? 0.0 },
+        time: { value: 0.0 },
+        hatchStrength: { value: options.uniforms?.hatchStrength?.value ?? 0.0 },
+        hatchScale: { value: options.uniforms?.hatchScale?.value ?? 2.0 },
+        hatchContrast: { value: options.uniforms?.hatchContrast?.value ?? 1.0 },
+        boilStrength: { value: options.uniforms?.boilStrength?.value ?? 0.0 },
+        boilSpeed: { value: options.uniforms?.boilSpeed?.value ?? 0.6 },
+        grainStrength: { value: options.uniforms?.grainStrength?.value ?? 0.0 },
+        albedoLift: { value: options.uniforms?.albedoLift?.value ?? 0.0 },
+        darkTintColor: { value: options.uniforms?.darkTintColor?.value ?? new THREE.Color(0x000000) },
+        darkTintStrength: { value: options.uniforms?.darkTintStrength?.value ?? 0.0 },
+        hueDesatCenter: { value: (function(){ const v = new THREE.Vector3(-0.5, 1.0, -0.5); v.normalize(); return v; })() },
+        hueDesatWidth: { value: options.uniforms?.hueDesatWidth?.value ?? 0.78 },
+        hueDesatStrength: { value: options.uniforms?.hueDesatStrength?.value ?? 0.0 },
+        hueDimStrength: { value: options.uniforms?.hueDimStrength?.value ?? 0.0 },
+        hue2DesatCenter: { value: (function(){ const v = new THREE.Vector3(1.0, 1.0, -0.2); v.normalize(); return v; })() },
+        hue2DesatWidth: { value: options.uniforms?.hue2DesatWidth?.value ?? 0.7 },
+        hue2DesatStrength: { value: options.uniforms?.hue2DesatStrength?.value ?? 0.0 },
+        hue2DimStrength: { value: options.uniforms?.hue2DimStrength?.value ?? 0.0 },
+        highlightWhiteBoost: { value: options.uniforms?.highlightWhiteBoost?.value ?? 0.0 },
+        highlightWhiteThreshold: { value: options.uniforms?.highlightWhiteThreshold?.value ?? 0.82 },
+        highlightTintColor: { value: options.uniforms?.highlightTintColor?.value || new THREE.Color(0xfff0d9) },
         ...options.uniforms
       },
       ...options.materialOptions
@@ -418,14 +585,38 @@ export class ShaderSystem {
         saturationBoost: { value: opts.saturationBoost ?? 0.15 },
         vibrance: { value: opts.vibrance ?? 0.3 },
         shadowLift: { value: opts.shadowLift ?? 0.08 },
+        exposure: { value: opts.exposure ?? 1.0 },
         rimIntensity: { value: opts.rimIntensity ?? 0.18 },
         rimPower: { value: opts.rimPower ?? 2.0 },
         specIntensity: { value: opts.specIntensity ?? 0.35 },
         specPower: { value: opts.specPower ?? 32.0 },
         toonDiffuseSteps: { value: opts.toonDiffuseSteps ?? 0.0 },
         toonSpecSteps: { value: opts.toonSpecSteps ?? 0.0 },
+        toonSoftness: { value: opts.toonSoftness ?? 0.0 },
         outlineStrength: { value: opts.outlineStrength ?? 0.0 },
-        outlinePower: { value: opts.outlinePower ?? 2.0 }
+        outlinePower: { value: opts.outlinePower ?? 2.0 },
+        time: { value: 0.0 },
+        hatchStrength: { value: opts.hatchStrength ?? 0.0 },
+        hatchScale: { value: opts.hatchScale ?? 2.0 },
+        hatchContrast: { value: opts.hatchContrast ?? 1.0 },
+        boilStrength: { value: opts.boilStrength ?? 0.0 },
+        boilSpeed: { value: opts.boilSpeed ?? 0.6 },
+        grainStrength: { value: opts.grainStrength ?? 0.0 },
+        posterizeLevels: { value: opts.posterizeLevels ?? 0.0 },
+        albedoLift: { value: opts.albedoLift ?? 0.0 },
+        darkTintColor: { value: opts.darkTintColor ?? new THREE.Color(0x000000) },
+        darkTintStrength: { value: opts.darkTintStrength ?? 0.0 },
+        hueDesatCenter: { value: opts.hueDesatCenter ?? (function(){ const v = new THREE.Vector3(-0.5, 1.0, -0.5); v.normalize(); return v; })() },
+        hueDesatWidth: { value: opts.hueDesatWidth ?? 0.78 },
+        hueDesatStrength: { value: opts.hueDesatStrength ?? 0.0 },
+        hueDimStrength: { value: opts.hueDimStrength ?? 0.0 },
+        hue2DesatCenter: { value: opts.hue2DesatCenter ?? (function(){ const v = new THREE.Vector3(1.0, 1.0, -0.2); v.normalize(); return v; })() },
+        hue2DesatWidth: { value: opts.hue2DesatWidth ?? 0.7 },
+        hue2DesatStrength: { value: opts.hue2DesatStrength ?? 0.0 },
+        hue2DimStrength: { value: opts.hue2DimStrength ?? 0.0 },
+        highlightWhiteBoost: { value: opts.highlightWhiteBoost ?? 0.0 },
+        highlightWhiteThreshold: { value: opts.highlightWhiteThreshold ?? 0.82 },
+        highlightTintColor: { value: opts.highlightTintColor ?? new THREE.Color(0xfff0d9) }
       },
       materialOptions: { lights: false }
     });
@@ -434,6 +625,48 @@ export class ShaderSystem {
     mesh.receiveShadow = true;
     this.enhancedMaterials.set(mesh.uuid, shaderMat);
     return shaderMat;
+  }
+
+  /**
+   * Add a cheap mesh-based outline by rendering backfaces slightly scaled.
+   * Applies to a single mesh. Safe for iGPU when used sparingly.
+   */
+  addOutlineToMesh(mesh, options = {}) {
+    if (!mesh || !mesh.isMesh) return null;
+    if (mesh.userData.__toonOutline) return mesh.userData.__toonOutline;
+
+    const thickness = options.thickness ?? 1.03;
+    const color = options.color ?? 0x000000;
+
+    const outlineMat = new THREE.MeshBasicMaterial({
+      color,
+      side: THREE.BackSide,
+      depthTest: true,
+      depthWrite: false,
+      toneMapped: false
+    });
+
+    const outlineMesh = new THREE.Mesh(mesh.geometry, outlineMat);
+    outlineMesh.name = (mesh.name || 'mesh') + '_toonOutline';
+    outlineMesh.renderOrder = (mesh.renderOrder || 0) - 1;
+    outlineMesh.scale.set(thickness, thickness, thickness);
+    outlineMesh.frustumCulled = mesh.frustumCulled;
+
+    mesh.add(outlineMesh);
+    mesh.userData.__toonOutline = outlineMesh;
+    return outlineMesh;
+  }
+
+  /**
+   * Traverse an object and add outlines to each Mesh child.
+   */
+  addOutlineToObject(object3d, filterFn = null, options = {}) {
+    object3d.traverse((child) => {
+      if (child.isMesh) {
+        if (filterFn && !filterFn(child)) return;
+        this.addOutlineToMesh(child, options);
+      }
+    });
   }
 
   applyCustomShaderToObject(object3d, filterFn = null, opts = {}) {
@@ -458,6 +691,8 @@ export class ShaderSystem {
    */
   update(deltaTime, camera = null, scene = null) {
     // Update dynamic uniforms (camera and sun)
+    if (!this._timeSec) this._timeSec = 0;
+    this._timeSec += Math.max(0, (deltaTime || 0)) * 0.001;
     const cam = camera;
     const sunData = scene && scene.userData ? scene.userData.sunEye : null;
     const sunGroup = sunData && sunData.group ? sunData.group : (scene && scene.userData ? scene.userData.sun : null);
@@ -539,13 +774,33 @@ export class ShaderSystem {
       sunDirection.copy(sunData.direction).normalize();
     }
 
+    // Allow scene to override sun direction (e.g., fixed top-down for Level 3)
+    if (scene && scene.userData && scene.userData.sunOverrideDir) {
+      const o = scene.userData.sunOverrideDir;
+      if (o && typeof o.x === 'number') {
+        sunDirection.copy(o).normalize();
+      }
+    }
+
+    // Smooth sun direction to avoid popping/banding
+    if (!this._smoothedSunDir) {
+      this._smoothedSunDir = new THREE.Vector3().copy(sunDirection);
+    } else {
+      this._smoothedSunDir.lerp(sunDirection, 0.12).normalize();
+    }
+
+    const stableSunDir = this._smoothedSunDir;
+
     this.enhancedMaterials.forEach((mat) => {
       if (!mat || !mat.uniforms) return;
       if (cam && mat.uniforms.cameraPositionWorld) {
         mat.uniforms.cameraPositionWorld.value.copy(cam.position);
       }
       if (mat.uniforms.sunDir) {
-        mat.uniforms.sunDir.value.copy(sunDirection);
+        mat.uniforms.sunDir.value.copy(stableSunDir);
+      }
+      if (mat.uniforms.time) {
+        mat.uniforms.time.value = this._timeSec;
       }
     });
 
@@ -558,11 +813,11 @@ export class ShaderSystem {
           uniforms.uTime.value += deltaTime * 0.6;
         }
         if (uniforms.uSunDir) {
-          uniforms.uSunDir.value.copy(sunDirection);
+          uniforms.uSunDir.value.copy(stableSunDir);
         }
       }
       if (skyEntry.gradientMaterial && skyEntry.gradientMaterial.uniforms && skyEntry.gradientMaterial.uniforms.sunDir) {
-        skyEntry.gradientMaterial.uniforms.sunDir.value.copy(sunDirection);
+        skyEntry.gradientMaterial.uniforms.sunDir.value.copy(stableSunDir);
       }
       if (skyEntry.group) {
         if (anchorPos) {
@@ -788,5 +1043,39 @@ export class ShaderSystem {
       material.dispose();
     });
     this.enhancedMaterials.clear();
+  }
+
+  /**
+   * Live-update toon settings across all enhanced materials.
+   * Pass a partial settings object with any supported uniform values.
+   */
+  applyToonSettings(partial = {}) {
+    if (!partial || typeof partial !== 'object') return;
+    this._lastToonSettings = { ...this._lastToonSettings, ...partial };
+    const u = this._lastToonSettings;
+    const setIf = (mat, key, value) => {
+      if (!mat || !mat.uniforms) return;
+      if (key in mat.uniforms && value !== undefined && value !== null) {
+        const uni = mat.uniforms[key];
+        if (uni && uni.value !== undefined) {
+          if (uni.value.set && typeof value === 'object') {
+            // THREE.Color or Vector3
+            uni.value.copy ? uni.value.copy(value) : uni.value.set(value);
+          } else {
+            uni.value = value;
+          }
+        }
+      }
+    };
+    this.enhancedMaterials.forEach((mat) => {
+      if (!mat || !mat.uniforms) return;
+      // Numeric uniforms
+      ['exposure','saturationBoost','vibrance','posterizeLevels','toonDiffuseSteps','toonSpecSteps','toonSoftness','hatchStrength','hatchScale','hatchContrast','boilStrength','boilSpeed','grainStrength','hueDesatWidth','hueDesatStrength','hueDimStrength','hue2DesatWidth','hue2DesatStrength','hue2DimStrength','albedoLift','darkTintStrength','sunWrap','highlightWhiteBoost','highlightWhiteThreshold'].forEach(k => setIf(mat, k, u[k]));
+      // Vectors/Colors
+      if (u.darkTintColor) setIf(mat, 'darkTintColor', u.darkTintColor);
+      if (u.hueDesatCenter) setIf(mat, 'hueDesatCenter', u.hueDesatCenter);
+      if (u.hue2DesatCenter) setIf(mat, 'hue2DesatCenter', u.hue2DesatCenter);
+      if (u.highlightTintColor) setIf(mat, 'highlightTintColor', u.highlightTintColor);
+    });
   }
 }
