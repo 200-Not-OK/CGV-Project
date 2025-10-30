@@ -442,7 +442,7 @@ PlaceableBlock.prototype._createGlowSprite = function(colorHex) {
     color: new THREE.Color(colorHex),
     transparent: true,
     depthWrite: false,
-    depthTest: false,
+    depthTest: true,
     blending: THREE.AdditiveBlending,
     toneMapped: false
   });
