@@ -16,6 +16,7 @@ import { Collectibles } from './components/collectibles.js';
 import { InteractionPrompt } from './components/interactionPrompt.js';
 import { DeathMenu } from './components/deathMenu.js';
 import { VoiceoverCard } from './components/voiceoverCard.js';
+import { Coordinates } from './components/coordinates.js';
 import { FirstPersonCamera } from './firstPersonCamera.js';
 import { LightManager } from './lightManager.js';
 import * as LightModules from './lights/index.js';
@@ -199,6 +200,8 @@ export class Game {
     // Add FPS counter
     this.ui.add('fps', FPS, { showFrameTime: true });
     console.log('📊 FPS counter enabled. Press F to toggle visibility.');
+    // Add coordinates display
+    this.ui.add('coordinates', Coordinates, {});
     // Add crosshair for combat
     this.ui.add('crosshair', Crosshair, { visible: true });
     // Add interaction prompt for chests
@@ -824,7 +827,8 @@ else if (code === 'KeyY') {
         },
         playerModel: this.player.mesh,
         enemies: this.level ? this.level.getEnemies() : [],
-        collectibles: this.collectiblesManager ? this.collectiblesManager.getAllCollectibles() : []
+        collectibles: this.collectiblesManager ? this.collectiblesManager.getAllCollectibles() : [],
+        game: this  // Pass game reference for coordinates component
       };
       this.ui.update(delta, ctx);
     }
@@ -1210,6 +1214,9 @@ async loadLevel(index) {
     if (this.ui.get('voiceoverCard')) {
       globalComponents.set('voiceoverCard', this.ui.get('voiceoverCard'));
     }
+    if (this.ui.get('coordinates')) {
+      globalComponents.set('coordinates', this.ui.get('coordinates'));
+    }
     
     this.ui.clear();
     
@@ -1267,6 +1274,9 @@ async loadLevel(index) {
         this.ui.add('collectibles', Collectibles, config);
       } else if (key === 'fps') {
         // FPS is already added as a global component, skip
+        continue;
+      } else if (key === 'coordinates') {
+        // Coordinates is already added as a global component, skip
         continue;
       } else {
         console.warn('Unknown UI component type in level data:', key);

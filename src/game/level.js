@@ -8,6 +8,7 @@ import { CinematicsManager } from './cinematicsManager.js';
 import { Platform } from './components/Platform.js';
 import { InteractiveObjectManager } from './InteractiveObjectManager.js';
 import { PlaceableBlockManager } from './PlaceableBlockManager.js';
+import { Level0Controller } from './levels/Level0Controller.js';
 
 /**
  * Level
@@ -110,6 +111,18 @@ export class Level {
     if (this.data.cinematics) {
       console.log('🎬 Loading cinematics...');
       this.cinematicsManager.loadCinematics(this.data.cinematics);
+    }
+
+    // 6) Level-specific controllers (e.g., Level0Controller)
+    if (this.data.id === 'level1A') {
+      console.log('🎬 Initializing Level0Controller...');
+      this.controller = new Level0Controller(this.game, this);
+      // Start sequence after a brief delay to ensure everything is settled
+      setTimeout(() => {
+        if (this.controller) {
+          this.controller.startSequence();
+        }
+      }, 500);
     }
 
     console.log(`✅ Level build complete. GLTF loaded: ${this.gltfLoaded}. Visual objects: ${this.objects.length}. Physics bodies: ${this.physicsBodies.length}. Platforms: ${this.platforms.length}`);
@@ -406,15 +419,49 @@ export class Level {
   _loadNpcs() {
     if (!Array.isArray(this.data.npcs) || this.data.npcs.length === 0) return;
 
+    // Ensure NPC manager is clean before loading
+    if (this.npcManager.npcs.length > 0) {
+      console.warn(`⚠️ NPC manager has ${this.npcManager.npcs.length} existing NPCs before loading level ${this.data.id}. Clearing them.`);
+      this.npcManager.dispose();
+      // Recreate NPC manager to ensure clean state
+      this.npcManager = new NpcManager(this.scene, this.physicsWorld);
+    }
+
+    // Count NPCs by type to detect duplicates in level data
+    const npcCounts = {};
+    for (const nd of this.data.npcs) {
+      npcCounts[nd.type] = (npcCounts[nd.type] || 0) + 1;
+    }
+    
+    // Warn if duplicates found in level data
+    for (const [type, count] of Object.entries(npcCounts)) {
+      if (count > 1) {
+        console.warn(`⚠️ Multiple ${type} NPCs found in level ${this.data.id} (${count} instances)`);
+      }
+    }
+
     for (const nd of this.data.npcs) {
       try {
         const opts = { ...nd, game: this.game };
-        this.npcManager.spawn(nd.type, opts);
+        const npc = this.npcManager.spawn(nd.type, opts);
+        console.log(`🤖 Spawned ${nd.type} NPC at [${nd.position[0]?.toFixed(2)}, ${nd.position[1]?.toFixed(2)}, ${nd.position[2]?.toFixed(2)}]`);
       } catch (e) {
         console.warn('Failed to spawn NPC', nd, e);
       }
     }
-    console.log(`🤖 Loaded ${this.data.npcs.length} NPCs`);
+    console.log(`🤖 Loaded ${this.data.npcs.length} NPCs (total in manager: ${this.npcManager.npcs.length})`);
+    
+    // Final check for duplicates in spawned NPCs
+    const spawnedCounts = {};
+    for (const npc of this.npcManager.npcs) {
+      const type = npc.npcType || 'unknown';
+      spawnedCounts[type] = (spawnedCounts[type] || 0) + 1;
+    }
+    for (const [type, count] of Object.entries(spawnedCounts)) {
+      if (count > 1) {
+        console.error(`❌ ERROR: ${count} ${type} NPCs spawned (expected 1 or 0)!`);
+      }
+    }
   }
   
   _loadPlatforms() {
@@ -714,6 +761,11 @@ export class Level {
     
     // Update animated meshes
     this._updateAnimatedMeshes(delta);
+    
+    // Update level-specific controller (e.g., Level0Controller)
+    if (this.controller && typeof this.controller.update === 'function') {
+      this.controller.update(delta);
+    }
   }
 
   // For player collisions we prefer objects that actually have physics.
@@ -778,6 +830,9 @@ export class Level {
       if (this.cinematicsManager) { this.cinematicsManager.dispose?.(); this.cinematicsManager = null; }
       if (this.interactiveObjectManager) { this.interactiveObjectManager.dispose?.(); this.interactiveObjectManager = null; }
       if (this.placeableBlockManager) { this.placeableBlockManager.dispose?.(); this.placeableBlockManager = null; }
+      
+      // Level-specific controllers
+      if (this.controller) { this.controller.dispose?.(); this.controller = null; }
       
       // Platforms
       if (this.platforms && this.platforms.length > 0) {
