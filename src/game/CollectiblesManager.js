@@ -824,76 +824,84 @@ export class CollectiblesManager {
    * Update collectibles animations and check for player proximity
    */
   update(deltaTime) {
-    // Check if we have pending level data and physics world is now ready
-    if (this.pendingLevelData && this.physicsWorld && this.physicsWorld.addBody) {
-      console.log('🚀 Physics world now ready in update! Spawning pending collectibles...');
-      this.spawnCollectiblesForLevel(this.pendingLevelData);
+  // Check if we have pending level data and physics world is now ready
+  if (this.pendingLevelData && this.physicsWorld && this.physicsWorld.addBody) {
+    console.log('🚀 Physics world now ready in update! Spawning pending collectibles...');
+    this.spawnCollectiblesForLevel(this.pendingLevelData);
+  }
+  
+  // Remove the problematic deltaTime logging - it's incorrect and causes performance issues
+  // if (deltaTime % 60 === 0) { // This is wrong - deltaTime is fractional seconds
+  //   console.log(`🔄 CollectiblesManager update - ${this.collectibles.size} collectibles, playerRef: ${!!this.playerRef}`);
+  // }
+  
+  let nearestChest = null;
+  let nearestDistance = Infinity;
+  
+  for (const [id, collectible] of this.collectibles) {
+    if (collectible.collected) continue;
+    
+    // Update GLTF animation mixer if present
+    if (collectible.mesh.userData.mixer) {
+      collectible.mesh.userData.mixer.update(deltaTime);
     }
     
-    if (deltaTime % 60 === 0) { // Log every ~1 second at 60fps
-      console.log(`🔄 CollectiblesManager update - ${this.collectibles.size} collectibles, playerRef: ${!!this.playerRef}`);
-    }
-    
-    let nearestChest = null;
-    let nearestDistance = Infinity;
-    
-    for (const [id, collectible] of this.collectibles) {
-      if (collectible.collected) continue;
+    // Handle different animation types
+    if (collectible.type === 'chest') {
+      // Chests remain static unless opening
+      // No floating or spinning animation by default
       
-      // Update GLTF animation mixer if present
-      if (collectible.mesh.userData.mixer) {
-        collectible.mesh.userData.mixer.update(deltaTime);
-      }
-      
-      // Handle different animation types
-      if (collectible.type === 'chest') {
-        // Chests remain static unless opening
-        // No floating or spinning animation by default
-        
-        // Check distance to player for interaction
-        if (this.playerRef && !collectible.mesh.userData.isAnimating) {
-          const distance = collectible.mesh.position.distanceTo(this.playerRef.mesh.position);
-          if (distance < 3.0 && distance < nearestDistance) { // Interaction radius for chests
-            nearestChest = collectible;
-            nearestDistance = distance;
-            console.log(`📦 Near chest ${collectible.id} at distance ${distance.toFixed(2)}`);
-          }
-        }
-      } else {
-        // Original floating animation for direct collectibles
-        collectible.mesh.userData.floatPhase += deltaTime * 2;
-        const floatOffset = Math.sin(collectible.mesh.userData.floatPhase) * 0.1;
-        collectible.mesh.position.y = collectible.mesh.userData.originalY + floatOffset;
-        
-        // Rotation animation
-        collectible.mesh.rotation.y += deltaTime * 1.5;
-        
-        // Check distance to player for automatic collection (legacy behavior)
-        if (this.playerRef) {
-          const distance = collectible.mesh.position.distanceTo(this.playerRef.mesh.position);
-          if (distance < 1.5) { // Collection radius
-            this.collectItem(id);
-          }
+      // Check distance to player for interaction
+      if (this.playerRef && !collectible.mesh.userData.isAnimating) {
+        const distance = collectible.mesh.position.distanceTo(this.playerRef.mesh.position);
+        if (distance < 3.0 && distance < nearestDistance) { // Interaction radius for chests
+          nearestChest = collectible;
+          nearestDistance = distance;
+          console.log(`📦 Near chest ${collectible.id} at distance ${distance.toFixed(2)}`);
         }
       }
+    } else {
+      // Original floating animation for direct collectibles
+      collectible.mesh.userData.floatPhase += deltaTime * 2;
+      const floatOffset = Math.sin(collectible.mesh.userData.floatPhase) * 0.1;
+      collectible.mesh.position.y = collectible.mesh.userData.originalY + floatOffset;
       
-      // Update physics body position to match visual
-      collectible.body.position.y = collectible.mesh.position.y;
+      // Rotation animation
+      collectible.mesh.rotation.y += deltaTime * 1.5;
+      
+      // Check distance to player for automatic collection (legacy behavior)
+      if (this.playerRef) {
+        const distance = collectible.mesh.position.distanceTo(this.playerRef.mesh.position);
+        if (distance < 1.5) { // Collection radius
+          this.collectItem(id);
+        }
+      }
     }
     
-    // Handle interaction prompt
-    if (nearestChest && this.interactionPrompt) {
+    // Update physics body position to match visual
+    collectible.body.position.y = collectible.mesh.position.y;
+  }
+  
+  // FIXED: Handle interaction prompt - only manage chest prompts, don't interfere with computer prompts
+  if (this.interactionPrompt) {
+    const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
+    const isShowingComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
+    
+    if (nearestChest && !isShowingComputerPrompt) {
+      // Only show chest prompt if not currently showing computer prompt
       if (!this.interactionPrompt.isVisible) {
         console.log(`🎯 Showing interaction prompt for chest ${nearestChest.id}`);
         this.interactionPrompt.show(`to open chest (${nearestChest.contents})`);
       }
       this.currentInteractableChest = nearestChest;
-    } else if (this.interactionPrompt && this.interactionPrompt.isVisible) {
-      console.log(`❌ Hiding interaction prompt`);
+    } else if (this.interactionPrompt.isVisible && !isShowingComputerPrompt) {
+      // Only hide if we're showing a chest prompt (not a computer prompt)
+      console.log(`❌ Hiding chest interaction prompt`);
       this.interactionPrompt.hide();
       this.currentInteractableChest = null;
     }
   }
+}
 
   /**
    * Handle interaction key press (E)
