@@ -10709,7 +10709,38 @@ export const levels = [
       "BasicLights"
     ],
     "ui": [
-      "hud"
+      "hud",
+      {
+        "type": "minimap",
+        "config": {
+          "zoom": 1.6
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 5,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍏",
+              "name": "Green Apples",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
     ],
     "enemies": [],
     "fallbackObjects": [
@@ -19140,25 +19171,25 @@ export const levels = [
         "patrolPoints": [
           [
             9.55,
-            1,
+            1.5,
             22.04,
             0.5
           ],
           [
             9.84,
-            1,
+            1.5,
             -16.45,
             0.5
           ],
           [
             78.37,
-            1.03,
+            1.5,
             -18.53,
             0.5
           ],
           [
             149.9,
-            1,
+            1.5,
             -17.59,
             0.5
           ]
@@ -19183,25 +19214,25 @@ export const levels = [
         "patrolPoints": [
           [
             -10.92,
-            1,
+            1.5,
             -47.86,
             0.5
           ],
           [
             -9.03,
-            1,
+            1.5,
             10.01,
             0.5
           ],
           [
             -10.21,
-            1,
+            1.5,
             25.26,
             0.5
           ],
           [
             -35.41,
-            1,
+            1.5,
             24.55,
             0.5
           ],
@@ -19213,13 +19244,13 @@ export const levels = [
           ],
           [
             -10.64,
-            1,
+            1.5,
             45.79,
             0.5
           ],
           [
             35.61,
-            1,
+            1.5,
             45.39,
             0.5
           ]
@@ -19431,6 +19462,24 @@ export const levels = [
           "loopBehavior": "loop"
         }
       }
-    ]
+    ],
+    "collectibles": {
+      "chests": [
+        {
+          "id": "chest_176",
+          "position": [
+            -42.052131226448125,
+            8.48471884994061,
+            -29.347785283207585
+          ],
+          "contents": "apple"
+        }
+      ],
+      "apples": [],
+      "potions": [],
+      "coins": [],
+      "gems": [],
+      "keys": []
+    }
   }
 ];
