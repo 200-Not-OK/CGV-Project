@@ -830,11 +830,6 @@ export class CollectiblesManager {
     this.spawnCollectiblesForLevel(this.pendingLevelData);
   }
   
-  // Remove the problematic deltaTime logging - it's incorrect and causes performance issues
-  // if (deltaTime % 60 === 0) { // This is wrong - deltaTime is fractional seconds
-  //   console.log(`🔄 CollectiblesManager update - ${this.collectibles.size} collectibles, playerRef: ${!!this.playerRef}`);
-  // }
-  
   let nearestChest = null;
   let nearestDistance = Infinity;
   
@@ -857,7 +852,6 @@ export class CollectiblesManager {
         if (distance < 3.0 && distance < nearestDistance) { // Interaction radius for chests
           nearestChest = collectible;
           nearestDistance = distance;
-          console.log(`📦 Near chest ${collectible.id} at distance ${distance.toFixed(2)}`);
         }
       }
     } else {
@@ -882,25 +876,44 @@ export class CollectiblesManager {
     collectible.body.position.y = collectible.mesh.position.y;
   }
   
-  // FIXED: Handle interaction prompt - only manage chest prompts, don't interfere with computer prompts
+  // FIXED: Better interaction prompt coordination
   if (this.interactionPrompt) {
     const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
     const isShowingComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
     
-    if (nearestChest && !isShowingComputerPrompt) {
-      // Only show chest prompt if not currently showing computer prompt
-      if (!this.interactionPrompt.isVisible) {
-        console.log(`🎯 Showing interaction prompt for chest ${nearestChest.id}`);
-        this.interactionPrompt.show(`to open chest (${nearestChest.contents})`);
+    if (nearestChest) {
+      // If we have a nearby chest and no computer prompt is showing
+      if (!isShowingComputerPrompt) {
+        if (!this.interactionPrompt.isVisible) {
+          console.log(`🎯 Showing interaction prompt for chest ${nearestChest.id}`);
+          this.interactionPrompt.show(`to open chest (${nearestChest.contents})`);
+        } else {
+          // Update the text if it's already visible but not a computer prompt
+          const isChestPrompt = currentText.includes('chest');
+          if (!isChestPrompt) {
+            this.interactionPrompt.show(`to open chest (${nearestChest.contents})`);
+          }
+        }
+        this.currentInteractableChest = nearestChest;
       }
-      this.currentInteractableChest = nearestChest;
-    } else if (this.interactionPrompt.isVisible && !isShowingComputerPrompt) {
-      // Only hide if we're showing a chest prompt (not a computer prompt)
-      console.log(`❌ Hiding chest interaction prompt`);
-      this.interactionPrompt.hide();
-      this.currentInteractableChest = null;
+    } else {
+      // Only hide if we were showing a chest prompt AND no computer prompt is active
+      if (this.interactionPrompt.isVisible && this.currentInteractableChest && !isShowingComputerPrompt) {
+        console.log(`❌ Hiding chest interaction prompt (no chest nearby)`);
+        this.interactionPrompt.hide();
+        this.currentInteractableChest = null;
+      }
     }
   }
+}
+
+shouldManagePrompt() {
+  if (!this.interactionPrompt || !this.interactionPrompt.isVisible) return true;
+  
+  const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
+  const isComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
+  
+  return !isComputerPrompt;
 }
 
   /**

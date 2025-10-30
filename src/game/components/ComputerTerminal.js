@@ -161,11 +161,11 @@ export class ComputerTerminal {
       }
     }
     
-    // Handle interaction prompt
+    // Handle interaction prompt - BE MORE ASSERTIVE
     if (this.playerInRange && this.game.ui) {
       const interactionPrompt = this.game.ui.get('interactionPrompt');
       if (interactionPrompt) {
-        // Always update the prompt when in range
+        // Always set our prompt when in range, overriding others if needed
         if (this.canActivate) {
           interactionPrompt.show('ACCESS GLITCHED DIMENSIONS');
         } else {
@@ -173,22 +173,17 @@ export class ComputerTerminal {
           const required = this.glitchManager.requiredLLMs.length;
           interactionPrompt.show(`NEEDS ${required - collected} MORE LLMs`);
         }
-        // Keep track that we're showing computer prompt
+        // Mark that we're controlling the prompt
         this.currentInteractable = this;
-        console.log('🖥️ Showing/updating computer interaction prompt');
+        console.log('🖥️ Computer controlling interaction prompt');
       }
     } else if (this.game.ui && this.currentInteractable === this) {
-      // Only hide if we were the ones showing it and player moved away
+      // Only hide if we were controlling it and player moved away
       const interactionPrompt = this.game.ui.get('interactionPrompt');
       if (interactionPrompt && interactionPrompt.isVisible) {
-        const currentText = interactionPrompt.getText ? interactionPrompt.getText() : '';
-        const isOurPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
-        
-        if (isOurPrompt) {
-          console.log('🖥️ Hiding computer interaction prompt');
-          interactionPrompt.hide();
-          this.currentInteractable = null;
-        }
+        console.log('🖥️ Computer releasing interaction prompt');
+        interactionPrompt.hide();
+        this.currentInteractable = null;
       }
     }
   }
