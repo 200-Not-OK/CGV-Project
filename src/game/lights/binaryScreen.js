@@ -36,7 +36,10 @@ export class BinaryScreen {
     this.emitLight = options.emitLight !== undefined ? options.emitLight : true;
     this.lightIntensity = options.lightIntensity || 2.0;
     this.lightDistance = options.lightDistance || 10;
-    this.adaptiveDepthToggle = !!options.adaptiveDepthToggle;
+    // Enable adaptive close-up handling by default to avoid z-fighting/clipping when very close
+    this.adaptiveDepthToggle = options.adaptiveDepthToggle === undefined ? true : !!options.adaptiveDepthToggle;
+    // For exact-corners mode: how far to offset the quad outward along its normal
+    this.surfaceOffset = options.surfaceOffset;
     
     // Exact corners mode: if provided, we place the screen exactly at those 4 points
     this.corners = Array.isArray(options.corners) && options.corners.length === 4 ? options.corners : null;
@@ -122,8 +125,9 @@ export class BinaryScreen {
       depthTest: true,
       depthWrite: false,
       polygonOffset: true,
-      polygonOffsetFactor: -1,
-      polygonOffsetUnits: -2,
+      // Slightly stronger default offset to reduce z-fighting with backing wall
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -4,
       toneMapped: false
     });
     material.blending = THREE.NormalBlending;
@@ -191,7 +195,7 @@ export class BinaryScreen {
       const normal = edge1.clone().cross(edge2);
       if (normal.lengthSq() < 1e-6) normal.set(0, 1, 0);
       normal.normalize();
-      const OFFSET = 0.2;
+      const OFFSET = (this.surfaceOffset !== undefined ? this.surfaceOffset : 0.2);
       for (let v of ordered) v.addScaledVector(normal, OFFSET);
 
       // 4) Build geometry with continuous UVs
@@ -451,7 +455,7 @@ export class BinaryScreen {
         }
       }
 
-      // Adaptive close-up handling to avoid near-plane triangle clipping
+      // Adaptive close-up handling to avoid z-fighting/occlusion when very near
       try {
         if (this.adaptiveDepthToggle) {
           const cam = (this.sceneRef && this.sceneRef.userData && this.sceneRef.userData.activeCamera) || (window && window.game && window.game.activeCamera) || null;
@@ -461,8 +465,34 @@ export class BinaryScreen {
             const camPos = cam.getWorldPosition ? cam.getWorldPosition(new THREE.Vector3()) : cam.position;
             const toCam = camPos.clone().sub(p0);
             const dist = Math.abs(toCam.dot(n));
-            const veryCloseThreshold = 0.18;
-            this.mesh.material.depthTest = !(dist < veryCloseThreshold);
+
+            // Thresholds chosen to smoothly transition overlay behavior
+            const closeThreshold = 0.35; // begin overlay-style rendering
+            const farThreshold = 0.45;   // restore normal depth testing
+
+            const mat = this.mesh.material;
+            // Lerp-like hysteresis using previous state to avoid flicker
+            const currentlyOverlay = this._isOverlayMode === true;
+            const shouldOverlay = currentlyOverlay ? (dist < farThreshold) : (dist < closeThreshold);
+
+            if (shouldOverlay) {
+              // Render on top to prevent z-fighting when the camera is very close
+              mat.depthTest = false;
+              mat.depthWrite = false;
+              mat.polygonOffset = false;
+              // Ensure very-late render order so it draws last
+              this.mesh.renderOrder = 10000;
+              this._isOverlayMode = true;
+            } else {
+              // Restore standard settings
+              mat.depthTest = true;
+              mat.depthWrite = false;
+              mat.polygonOffset = true;
+              mat.polygonOffsetFactor = -2;
+              mat.polygonOffsetUnits = -4;
+              this.mesh.renderOrder = 999;
+              this._isOverlayMode = false;
+            }
           }
         }
       } catch (e) {
@@ -646,4 +676,3 @@ export function addBinaryScreenToLevel1(scene, options = {}) {
   const mergedOptions = { ...defaultOptions, ...options };
   return createBinaryScreen(scene, mergedOptions);
 }
-
