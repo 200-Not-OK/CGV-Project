@@ -5,7 +5,8 @@ export class FreeCamera {
   constructor(input, domElement = window) {
     this.input = input;
     this.dom = domElement;
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+    // Lower near plane to reduce close-up clipping of attached effects
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.02, 2000);
     this.camera.position.set(20, 20, 20);
     // By default spawn looking at the origin
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
