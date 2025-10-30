@@ -12,6 +12,7 @@ import { Level0Controller } from './levels/Level0Controller.js';
 import { BinaryScreen } from './lights/binaryScreen.js';
 import { createBinaryScreenFromCorners } from './lights/binaryScreen.js';
 import { createBinaryScreenFromExactCorners } from './lights/binaryScreen.js';
+import { createLightningBorder } from './lights/lightningBorder.js';
 
 /**
  * Level
@@ -38,6 +39,7 @@ export class Level {
     this.gltfLoaded = false;
     this.gltfScene = null;
     this.binaryScreens = [];
+    this.lightningBorders = [];
 
     this.enemyManager = new EnemyManager(this.scene, this.physicsWorld);
     this.npcManager = new NpcManager(this.scene, this.physicsWorld);
@@ -160,6 +162,102 @@ export class Level {
       }
       this.objects.push(screen2.group);
       this.binaryScreens.push(screen2);
+    }
+
+    // 4.y) Lightning border placed by four points (replace old BasicLights cluster)
+    if (this.data.id === 'level1A') {
+      const borderPoints = [
+        [-238.763533228934, 10.11297035217285, 111.259811281751], // bottom left
+        [-212.91361619596836, 10.112970352172853, 111.22900955922275], // bottom right
+        [-213.00662396063655, 10.112970352172853, 137.0766949209293], // top right
+        [-238.7703527033764, 10.112970352172852, 137.02286907263107] // top left
+      ];
+      const lightningBorder = createLightningBorder(this.scene, {
+        points: borderPoints,
+        color: 0xff0000,
+        intensity: 3.0,
+        borderWidth: 0.15
+      });
+      // Make sure it doesn't cull
+      if (lightningBorder.mesh) {
+        lightningBorder.mesh.frustumCulled = false;
+      }
+      // Attach to the moving lift so it follows its transform
+      try {
+        const liftMesh = this._findMeshByName('Lift2');
+        if (liftMesh) {
+          lightningBorder.attachToObject(liftMesh, { pointsAreWorld: true });
+          console.log('🔗 Lightning border attached to Lift2');
+        } else {
+          console.warn('⚠️ Could not find Lift2 to attach lightning border; leaving in world space');
+        }
+      } catch (e) {
+        console.warn('⚠️ Failed to attach lightning border to Lift2:', e);
+      }
+      this.lightningBorders.push(lightningBorder);
+    }
+
+    // Add another LightningBorder for second region
+    if (this.data.id === 'level1A') {
+      const borderPoints2 = [
+        [-272.41684354930214, 10.112970352172852, 97.47242494779229], // bottom left
+        [-246.45488604629878, 10.112970352172852, 97.43355490780569], // bottom right
+        [-246.43497549870725, 10.112970352172852, 123.25671149236048], // top right
+        [-272.36738205394096, 10.112970352172852, 123.28926191983044] // top left
+      ];
+      const lightningBorder2 = createLightningBorder(this.scene, {
+        points: borderPoints2,
+        color: 0x0000ff,
+        intensity: 3.0,
+        borderWidth: 0.15
+      });
+      if (lightningBorder2.mesh) {
+        lightningBorder2.mesh.frustumCulled = false;
+      }
+      // Attach to Lift3 (second moving platform)
+      try {
+        const liftMesh = this._findMeshByName('Lift3');
+        if (liftMesh) {
+          lightningBorder2.attachToObject(liftMesh, { pointsAreWorld: true });
+          console.log('🔗 Lightning border 2 attached to Lift3');
+        } else {
+          console.warn('⚠️ Could not find Lift3 to attach lightning border 2; leaving in world space');
+        }
+      } catch (e) {
+        console.warn('⚠️ Failed to attach lightning border 2 to Lift3:', e);
+      }
+      this.lightningBorders.push(lightningBorder2);
+    }
+
+    // 4.z) Third lightning border attached to vertical Lift platform
+    if (this.data.id === 'level1A') {
+      const borderPoints3 = [
+        [-505.6399060182645, 13.888110280036926, 182.74142004345708], // bottom left
+        [-488.23234733923545, 13.888110280036926, 182.45399800223606], // bottom right
+        [-488.0980752485533, 13.888110280036926, 207.92803835156283], // top right
+        [-505.7311442743019, 13.888110280036926, 207.90950078013196]  // top left
+      ];
+      const lightningBorder3 = createLightningBorder(this.scene, {
+        points: borderPoints3,
+        color: 0x00ff00,
+        intensity: 3.0,
+        borderWidth: 0.15
+      });
+      if (lightningBorder3.mesh) {
+        lightningBorder3.mesh.frustumCulled = false;
+      }
+      try {
+        const liftMesh = this._findMeshByName('Lift');
+        if (liftMesh) {
+          lightningBorder3.attachToObject(liftMesh, { pointsAreWorld: true });
+          console.log('🔗 Lightning border 3 attached to Lift');
+        } else {
+          console.warn('⚠️ Could not find Lift to attach lightning border 3; leaving in world space');
+        }
+      } catch (e) {
+        console.warn('⚠️ Failed to attach lightning border 3 to Lift:', e);
+      }
+      this.lightningBorders.push(lightningBorder3);
     }
 
     // 4) Enemies
@@ -850,6 +948,14 @@ export class Level {
         scr.update(delta * 1000, this._binaryScreenElapsed);
       }
     }
+    // Update LightningBorders
+    if (this.lightningBorders && this.lightningBorders.length > 0) {
+      if (!this._lightningElapsed) this._lightningElapsed = 0;
+      this._lightningElapsed += delta * 1000;
+      for (const lb of this.lightningBorders) {
+        lb.update(delta * 1000, this._lightningElapsed);
+      }
+    }
     
     // Update level-specific controller (e.g., Level0Controller)
     if (this.controller && typeof this.controller.update === 'function') {
@@ -914,39 +1020,4 @@ export class Level {
       this.animatedMeshes = [];
 
       // Managers
-      if (this.enemyManager) { this.enemyManager.dispose?.(); this.enemyManager = null; }
-      if (this.npcManager) { this.npcManager.dispose?.(); this.npcManager = null; }
-      if (this.cinematicsManager) { this.cinematicsManager.dispose?.(); this.cinematicsManager = null; }
-      if (this.interactiveObjectManager) { this.interactiveObjectManager.dispose?.(); this.interactiveObjectManager = null; }
-      if (this.placeableBlockManager) { this.placeableBlockManager.dispose?.(); this.placeableBlockManager = null; }
-      
-      // Level-specific controllers
-      if (this.controller) { this.controller.dispose?.(); this.controller = null; }
-      
-      // Platforms
-      if (this.platforms && this.platforms.length > 0) {
-        for (const platform of this.platforms) {
-          platform.destroy();
-        }
-        this.platforms = [];
-      }
-    } catch (e) {
-      console.warn('Level.dispose encountered an issue:', e);
-    }
-  }
-
-  _disposeObject3DDeep(obj) {
-    obj.traverse((n) => {
-      if (n.isMesh) {
-        if (n.geometry) n.geometry.dispose?.();
-        if (n.material) {
-          if (Array.isArray(n.material)) {
-            n.material.forEach(m => m?.dispose?.());
-          } else {
-            n.material.dispose?.();
-          }
-        }
-      }
-    });
-  }
-}
+      if (this.enemyManager) { this.enemyMan
