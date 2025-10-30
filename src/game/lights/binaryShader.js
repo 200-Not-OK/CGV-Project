@@ -307,13 +307,14 @@ export class MatrixShaderMesh {
       width: options.width || 4.0,
       height: options.height || 10.0,
       rotation: options.rotation || [0, 0, 0],
-      color: options.color || 0x00ff00,
+      color: options.color || 0x00d4ff,
       speed: options.speed || 7.0,
       density: options.density || 12,  // Higher density, but only 40% show (= 4-5 streams with gaps)
       brightness: options.brightness || 3.0,  // Moderate brightness - code-styled
       fallStrength: options.fallStrength || 0.5,
       lightIntensity: options.lightIntensity || 1.5,  // Subtle ambient light
       lightDistance: options.lightDistance || 6.0,   // Shorter range
+      qualityTier: options.qualityTier || 'MEDIUM',  // Store quality tier
       ...options
     };
 
@@ -333,13 +334,22 @@ export class MatrixShaderMesh {
     console.log('   Brightness:', this.options.brightness);
     console.log('   ✅ Spaced 0s & 1s, Cyber Cyan, Self-Illuminated!');
 
-    // Create cylinder geometry
+    // Create cylinder geometry with quality-based segment count
     const radius = this.options.width / (2 * Math.PI);
+    
+    // Reduce geometry complexity based on quality
+    let segments = 24; // Default for HIGH
+    if (this.options.qualityTier === 'LOW') {
+      segments = 8; // Much fewer segments for LOW
+    } else if (this.options.qualityTier === 'MEDIUM') {
+      segments = 12; // Half segments for MEDIUM
+    }
+    
     const geometry = new THREE.CylinderGeometry(
       radius,
       radius,
       this.options.height,
-      24,  // 24 segments for smooth circle
+      segments,  // Quality-based segment count
       1,
       true // Open ended
     );
@@ -403,20 +413,6 @@ export class MatrixShaderMesh {
     
     if (this.material) {
       this.material.update(deltaSeconds);
-      
-      // Debug: Log time value occasionally
-      if (!this._updateCounter) this._updateCounter = 0;
-      this._updateCounter++;
-      if (this._updateCounter === 120) { // Every 2 seconds at 60fps
-        console.log('💚 MatrixShaderMesh update:', {
-          deltaTime: deltaTime.toFixed(4),
-          deltaSeconds: deltaSeconds.toFixed(4),
-          uTime: this.material.uniforms.uTime.value.toFixed(2),
-          uSpeed: this.material.uniforms.uSpeed.value,
-          materialVisible: this.mesh?.visible
-        });
-        this._updateCounter = 0;
-      }
     }
     
     // No lights to update - shader is self-illuminated!
@@ -455,22 +451,37 @@ export class BinaryShader extends LightComponent {
     const quality = this.props.quality || {};
     const qualityTier = quality.tier || 'MEDIUM';
     
-    // Adjust settings based on quality tier
+    // AGGRESSIVE optimization for low-end devices
     let densityMultiplier = 1.0;
     let brightnessMultiplier = 1.0;
     let speedMultiplier = 1.0;
+    let skipInstance = false;
     
     if (qualityTier === 'LOW') {
-      // Reduce density and complexity for low-end devices
-      densityMultiplier = 0.5; // Half the columns/streams
-      brightnessMultiplier = 0.8; // Slightly dimmer
-      speedMultiplier = 0.8; // Slower animation
+      // VERY aggressive reduction for integrated GPUs
+      densityMultiplier = 0.25; // Only 25% of streams
+      brightnessMultiplier = 0.6; // Much dimmer
+      speedMultiplier = 0.7; // Slower to reduce GPU load
+      
+      // Skip every other instance on LOW to reduce total count
+      if (!BinaryShader._instanceCount) BinaryShader._instanceCount = 0;
+      BinaryShader._instanceCount++;
+      if (BinaryShader._instanceCount % 2 === 0) {
+        skipInstance = true;
+      }
     } else if (qualityTier === 'MEDIUM') {
-      densityMultiplier = 0.75;
-      brightnessMultiplier = 0.9;
-      speedMultiplier = 0.9;
+      densityMultiplier = 0.5; // Half density
+      brightnessMultiplier = 0.75;
+      speedMultiplier = 0.85;
     }
     // HIGH uses full quality (multiplier = 1.0)
+    
+    // If we should skip this instance on LOW quality, don't mount it
+    if (skipInstance) {
+      console.log('💙 BinaryShader SKIPPED (LOW quality optimization)');
+      this._mounted = false;
+      return;
+    }
     
     const options = {
       position: this.props.position || [0, 5, 0],
@@ -481,6 +492,7 @@ export class BinaryShader extends LightComponent {
       density: (this.props.density || 12.0) * densityMultiplier,
       brightness: (this.props.brightness || 3.0) * brightnessMultiplier,
       fallStrength: this.props.fallStrength || 0.5,
+      qualityTier: qualityTier,  // Pass quality tier to mesh
       ...this.props
     };
 
@@ -514,13 +526,7 @@ export class BinaryShader extends LightComponent {
       this.elapsedTime += dt;
       this.binaryShaderMesh.update(deltaTime, this.elapsedTime);
       
-      // Debug logging (only log occasionally to avoid spam)
-      if (!this._debugCounter) this._debugCounter = 0;
-      this._debugCounter++;
-      if (this._debugCounter === 60) { // Log every 60 frames
-        console.log('💚 BinaryShader update called - deltaTime:', deltaTime.toFixed(4), 'uTime:', this.binaryShaderMesh.material?.uniforms.uTime.value.toFixed(2));
-        this._debugCounter = 0;
-      }
+      // Debug logging disabled for performance
     }
   }
 }
