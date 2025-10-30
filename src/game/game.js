@@ -801,6 +801,26 @@ export class Game {
     // swap UI + lights first
     this.applyLevelUI(this.level.data);
     this.applyLevelLights(this.level.data);
+    
+    // Apply tech shaders to Level 1A meshes if TechLights is present
+    if (this.level.data.id === 'level1A') {
+      // Wait a frame for lights to be fully mounted
+      setTimeout(() => {
+        const techLightsInstance = this.lights._instances.get('TechLights_0');
+        if (techLightsInstance && techLightsInstance.applyToMeshes) {
+          // Apply tech shaders to servers and tree structures
+          techLightsInstance.applyToMeshes(this.scene, {
+            servers: [
+              'server', 'rack', 'panel', 'computer', 'machine', 'terminal', 'monitor',
+              'stripe', 'line', 'data', 'circuit', 'wire', 'cable', 'led',
+              'horizontal', 'vertical', 'strip', 'bar'
+            ],
+            tree: ['tree', 'techtree', 'structure', 'tech', 'node', 'branch', 'network']
+          });
+          console.log('🔵 Tech shaders applied to Level 1A meshes');
+        }
+      }, 100);
+    }
 
     // IMPORTANT:
     // If an onLevelStart cinematic exists, we want the cinematic to control VO timing.
