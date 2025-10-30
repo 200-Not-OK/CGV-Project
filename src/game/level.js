@@ -9,8 +9,6 @@ import { Platform } from './components/Platform.js';
 import { InteractiveObjectManager } from './InteractiveObjectManager.js';
 import { PlaceableBlockManager } from './PlaceableBlockManager.js';
 import { Level0Controller } from './levels/Level0Controller.js';
-import { BinaryScreen } from './lights/binaryScreen.js';
-import { createBinaryScreenFromCorners } from './lights/binaryScreen.js';
 import { createBinaryScreenFromExactCorners } from './lights/binaryScreen.js';
 import { createLightningBorder } from './lights/lightningBorder.js';
 
@@ -40,6 +38,10 @@ export class Level {
     this.gltfScene = null;
     this.binaryScreens = [];
     this.lightningBorders = [];
+    this.binaryScreenDefinitions = [];
+    this.lightningBorderDefinitions = [];
+    this.qualitySettings = game?.qualitySettings || null;
+    this._initialWorldMatrices = new Map();
 
     this.enemyManager = new EnemyManager(this.scene, this.physicsWorld);
     this.npcManager = new NpcManager(this.scene, this.physicsWorld);
@@ -89,176 +91,92 @@ export class Level {
     // 3) Always ensure there's at least a ground collider if none exist
     this._ensureDefaultGround();
 
+    // Reset quality-controlled definitions for this build
+    this.binaryScreenDefinitions = [];
+    this.lightningBorderDefinitions = [];
+
     // 4.x) Matrix Binary Screen using four corner coordinates
-    if(this.data.id === 'level1A') {
-      // User's four corner coordinates (in order: top-left, bottom-left, top-right, bottom-right)
-      const corners = [
-        [-506.55433082580566, 49.15734148106972, 344.64214557816035], // top left (A)
-        [-506.48336392524857, 10.113008499145508, 343.9887554457972], // bottom left (B)
-        [-506.55433082580566, 49.1898516045852, 180.00618346145467], // top right (C)
-        [-506.55433082580566, 8.921134221600987, 179.9905334386446]  // bottom right (D)
-      ];
-      // Vectors for calculation
-      const A = new THREE.Vector3(...corners[0]);
-      const B = new THREE.Vector3(...corners[1]);
-      const C = new THREE.Vector3(...corners[2]);
-      const D = new THREE.Vector3(...corners[3]);
-      // Calculate screen width (top right to top left)
-      const widthVec = new THREE.Vector3().subVectors(C, A);
-      const width = widthVec.length();
-      // Calculate screen height (top left to bottom left)
-      const heightVec = new THREE.Vector3().subVectors(B, A);
-      const height = heightVec.length();
-      // Center: average all four corners
-      const center = new THREE.Vector3(
-        (A.x + B.x + C.x + D.x) / 4,
-        (A.y + B.y + C.y + D.y) / 4,
-        (A.z + B.z + C.z + D.z) / 4
-      );
-      // Calculate screen normal (cross product of width and height vectors)
-      const normal = new THREE.Vector3().crossVectors(widthVec, heightVec).normalize();
-      // Determine quaternion for orientation (screen faces +Z normally)
-      const defaultNormal = new THREE.Vector3(0, 0, 1);
-      const quat = new THREE.Quaternion().setFromUnitVectors(defaultNormal, normal);
-      const euler = new THREE.Euler().setFromQuaternion(quat);
-      // Instead of constructing a plane manually, use exact-corners builder
-      // so the quad matches the surface precisely and is pushed outward safely.
-      const screen = createBinaryScreenFromExactCorners(this.scene, corners, {
-        adaptiveDepthToggle: true,
-        surfaceOffset: 0.25,
-        textColor: '#009a00',
-        glowColor: 0x009a00,
-        palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
-        emitLight: true,
-        lightIntensity: 3.5,
-        updateInterval: 36
-      });
-      // Force disable frustum culling so screen never disappears
-      if (screen.mesh) {
-        screen.mesh.frustumCulled = false;
-      }
-      this.objects.push(screen.group);
-      this.binaryScreens.push(screen);
-
-      // Add another screen using FOUR exact corners provided (no auto-calculation)
-      const screen2CornersExact = [
-        [-381.8494117474221, 10.113008499145508, 344.4659492257442],
-        [-381.77683923106383, 10.113008499145508, 182.17718862534116],
-        [-506.4621742595336, 10.113008499145508, 182.27160267413527],
-        [-506.39063830155794, 10.113008499145508, 344.0525235389457]
-      ];
-      const screen2 = createBinaryScreenFromExactCorners(this.scene, screen2CornersExact, {
-        textColor: '#009a00',
-        glowColor: 0x009a00,
-        palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
-        emitLight: true,
-        lightIntensity: 3.5,
-        updateInterval: 36,
-        adaptiveDepthToggle: true,
-        surfaceOffset: 0.25
-      });
-      if (screen2.mesh) {
-        screen2.mesh.frustumCulled = false;
-      }
-      this.objects.push(screen2.group);
-      this.binaryScreens.push(screen2);
-    }
-
-    // 4.y) Lightning border placed by four points (replace old BasicLights cluster)
     if (this.data.id === 'level1A') {
-      const borderPoints = [
-        [-238.763533228934, 10.11297035217285, 111.259811281751], // bottom left
-        [-212.91361619596836, 10.112970352172853, 111.22900955922275], // bottom right
-        [-213.00662396063655, 10.112970352172853, 137.0766949209293], // top right
-        [-238.7703527033764, 10.112970352172852, 137.02286907263107] // top left
-      ];
-      const lightningBorder = createLightningBorder(this.scene, {
-        points: borderPoints,
-        color: 0xff0000,
-        intensity: 3.0,
-        borderWidth: 0.15
-      });
-      // Make sure it doesn't cull
-      if (lightningBorder.mesh) {
-        lightningBorder.mesh.frustumCulled = false;
-      }
-      // Attach to the moving lift so it follows its transform
-      try {
-        const liftMesh = this._findMeshByName('Lift2');
-        if (liftMesh) {
-          lightningBorder.attachToObject(liftMesh, { pointsAreWorld: true });
-          console.log('🔗 Lightning border attached to Lift2');
-        } else {
-          console.warn('⚠️ Could not find Lift2 to attach lightning border; leaving in world space');
+      this.binaryScreenDefinitions = [
+        {
+          corners: [
+            [-506.55433082580566, 49.15734148106972, 344.64214557816035],
+            [-506.48336392524857, 10.113008499145508, 343.9887554457972],
+            [-506.55433082580566, 49.1898516045852, 180.00618346145467],
+            [-506.55433082580566, 8.921134221600987, 179.9905334386446]
+          ],
+          options: {
+            adaptiveDepthToggle: true,
+            surfaceOffset: 0.25,
+            textColor: '#009a00',
+            glowColor: 0x009a00,
+            palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
+            emitLight: true,
+            lightIntensity: 3.5,
+            updateInterval: 36
+          }
+        },
+        {
+          corners: [
+            [-381.8494117474221, 10.113008499145508, 344.4659492257442],
+            [-381.77683923106383, 10.113008499145508, 182.17718862534116],
+            [-506.4621742595336, 10.113008499145508, 182.27160267413527],
+            [-506.39063830155794, 10.113008499145508, 344.0525235389457]
+          ],
+          options: {
+            textColor: '#009a00',
+            glowColor: 0x009a00,
+            palette: ['#7a0000', '#003070', '#007a2a', '#006000'],
+            emitLight: true,
+            lightIntensity: 3.5,
+            updateInterval: 36,
+            adaptiveDepthToggle: true,
+            surfaceOffset: 0.25
+          }
         }
-      } catch (e) {
-        console.warn('⚠️ Failed to attach lightning border to Lift2:', e);
-      }
-      this.lightningBorders.push(lightningBorder);
+      ];
     }
 
-    // Add another LightningBorder for second region
     if (this.data.id === 'level1A') {
-      const borderPoints2 = [
-        [-272.41684354930214, 10.112970352172852, 97.47242494779229], // bottom left
-        [-246.45488604629878, 10.112970352172852, 97.43355490780569], // bottom right
-        [-246.43497549870725, 10.112970352172852, 123.25671149236048], // top right
-        [-272.36738205394096, 10.112970352172852, 123.28926191983044] // top left
-      ];
-      const lightningBorder2 = createLightningBorder(this.scene, {
-        points: borderPoints2,
-        color: 0x0000ff,
-        intensity: 3.0,
-        borderWidth: 0.15
-      });
-      if (lightningBorder2.mesh) {
-        lightningBorder2.mesh.frustumCulled = false;
-      }
-      // Attach to Lift3 (second moving platform)
-      try {
-        const liftMesh = this._findMeshByName('Lift3');
-        if (liftMesh) {
-          lightningBorder2.attachToObject(liftMesh, { pointsAreWorld: true });
-          console.log('🔗 Lightning border 2 attached to Lift3');
-        } else {
-          console.warn('⚠️ Could not find Lift3 to attach lightning border 2; leaving in world space');
+      this.lightningBorderDefinitions = [
+        {
+          points: [
+            [-238.763533228934, 10.11297035217285, 111.259811281751],
+            [-212.91361619596836, 10.112970352172853, 111.22900955922275],
+            [-213.00662396063655, 10.112970352172853, 137.0766949209293],
+            [-238.7703527033764, 10.112970352172852, 137.02286907263107]
+          ],
+          color: 0xff0000,
+          attachTo: 'Lift2',
+          intensityMultiplier: 1.0
+        },
+        {
+          points: [
+            [-272.41684354930214, 10.112970352172852, 97.47242494779229],
+            [-246.45488604629878, 10.112970352172852, 97.43355490780569],
+            [-246.43497549870725, 10.112970352172852, 123.25671149236048],
+            [-272.36738205394096, 10.112970352172852, 123.28926191983044]
+          ],
+          color: 0x0000ff,
+          attachTo: 'Lift3',
+          intensityMultiplier: 1.1
+        },
+        {
+          points: [
+            [-505.6399060182645, 13.888110280036926, 182.74142004345708],
+            [-488.23234733923545, 13.888110280036926, 182.45399800223606],
+            [-488.0980752485533, 13.888110280036926, 207.92803835156283],
+            [-505.7311442743019, 13.888110280036926, 207.90950078013196]
+          ],
+          color: 0x00ff00,
+          attachTo: 'Lift',
+          intensityMultiplier: 1.15
         }
-      } catch (e) {
-        console.warn('⚠️ Failed to attach lightning border 2 to Lift3:', e);
-      }
-      this.lightningBorders.push(lightningBorder2);
+      ];
     }
 
-    // 4.z) Third lightning border attached to vertical Lift platform
-    if (this.data.id === 'level1A') {
-      const borderPoints3 = [
-        [-505.6399060182645, 13.888110280036926, 182.74142004345708], // bottom left
-        [-488.23234733923545, 13.888110280036926, 182.45399800223606], // bottom right
-        [-488.0980752485533, 13.888110280036926, 207.92803835156283], // top right
-        [-505.7311442743019, 13.888110280036926, 207.90950078013196]  // top left
-      ];
-      const lightningBorder3 = createLightningBorder(this.scene, {
-        points: borderPoints3,
-        color: 0x00ff00,
-        intensity: 3.0,
-        borderWidth: 0.15
-      });
-      if (lightningBorder3.mesh) {
-        lightningBorder3.mesh.frustumCulled = false;
-      }
-      try {
-        const liftMesh = this._findMeshByName('Lift');
-        if (liftMesh) {
-          lightningBorder3.attachToObject(liftMesh, { pointsAreWorld: true });
-          console.log('🔗 Lightning border 3 attached to Lift');
-        } else {
-          console.warn('⚠️ Could not find Lift to attach lightning border 3; leaving in world space');
-        }
-      } catch (e) {
-        console.warn('⚠️ Failed to attach lightning border 3 to Lift:', e);
-      }
-      this.lightningBorders.push(lightningBorder3);
-    }
+    // Apply quality-controlled features after definitions are prepared
+    this.applyQualitySettings(this.game?.qualitySettings || null);
 
     // 4) Enemies
     console.log('👾 Loading enemies...');
@@ -305,6 +223,131 @@ export class Level {
     console.log(`✅ Level build complete. GLTF loaded: ${this.gltfLoaded}. Visual objects: ${this.objects.length}. Physics bodies: ${this.physicsBodies.length}. Platforms: ${this.platforms.length}`);
   }
 
+  applyQualitySettings(qualitySettings = null) {
+    const resolved = qualitySettings || this.game?.qualitySettings || null;
+    this.qualitySettings = resolved;
+    this._applyBinaryScreensForQuality(resolved);
+    this._applyLightningBordersForQuality(resolved);
+  }
+
+  _applyBinaryScreensForQuality(qualitySettings) {
+    const flags = qualitySettings?.lightFeatureFlags || {};
+    const enableScreens = flags.binaryScreens !== false;
+    if (!enableScreens) {
+      this._clearBinaryScreens();
+      return;
+    }
+    if (!this.binaryScreenDefinitions || this.binaryScreenDefinitions.length === 0) {
+      return;
+    }
+
+    this._clearBinaryScreens();
+
+    for (const def of this.binaryScreenDefinitions) {
+      const options = { ...(def.options || {}) };
+      try {
+        const screen = createBinaryScreenFromExactCorners(this.scene, def.corners, options);
+        if (screen.mesh) {
+          screen.mesh.frustumCulled = false;
+        }
+        this.objects.push(screen.group);
+        this.binaryScreens.push(screen);
+      } catch (err) {
+        console.warn('⚠️ Failed to create binary screen for quality settings:', err);
+      }
+    }
+  }
+
+  _clearBinaryScreens() {
+    if (!this.binaryScreens || this.binaryScreens.length === 0) return;
+    for (const screen of this.binaryScreens) {
+      try {
+        screen.removeFromScene?.(this.scene);
+        screen.dispose?.();
+      } catch (err) {
+        console.warn('⚠️ Error disposing binary screen:', err);
+      }
+      const idx = this.objects.indexOf(screen.group);
+      if (idx !== -1) {
+        this.objects.splice(idx, 1);
+      }
+    }
+    this.binaryScreens = [];
+  }
+
+  _applyLightningBordersForQuality(qualitySettings) {
+    const flags = qualitySettings?.lightFeatureFlags || {};
+    const enableBorders = flags.lightningBorders !== false;
+    if (!enableBorders) {
+      this._clearLightningBorders();
+      return;
+    }
+    if (!this.lightningBorderDefinitions || this.lightningBorderDefinitions.length === 0) {
+      return;
+    }
+
+    this._clearLightningBorders();
+
+    const profile = qualitySettings?.lightningBorderProfile || {};
+    for (const def of this.lightningBorderDefinitions) {
+      const intensityBase = profile.intensity ?? 3.0;
+      const borderWidth = def.borderWidth ?? profile.borderWidth ?? 0.15;
+      const updateEvery = Math.max(1, Math.round(def.updateEvery ?? profile.updateEvery ?? 1));
+      const allowAdditive = profile.allowAdditive !== undefined ? profile.allowAdditive : true;
+      const intensity = intensityBase * (def.intensityMultiplier ?? 1.0);
+
+      try {
+        const border = createLightningBorder(this.scene, {
+          points: def.points,
+          color: def.color,
+          intensity,
+          borderWidth,
+          updateEvery,
+          allowAdditive,
+          quality: qualitySettings,
+          attachToMeshName: def.attachTo || null
+        });
+
+        if (!border || !border.mesh) {
+          continue;
+        }
+
+        border.mesh.frustumCulled = false;
+
+        if (def.attachTo) {
+          try {
+            const target = this._findMeshByName(def.attachTo);
+            if (target) {
+              const bind = this._initialWorldMatrices?.get?.(def.attachTo) || null;
+              border.attachToObject(target, { pointsAreWorld: true, bindMatrixWorld: bind });
+              console.log(`🔗 Lightning border attached to ${def.attachTo}`);
+            } else {
+              console.warn(`⚠️ Could not find ${def.attachTo} to attach lightning border; leaving in world space`);
+            }
+          } catch (attachErr) {
+            console.warn(`⚠️ Failed to attach lightning border to ${def.attachTo}:`, attachErr);
+          }
+        }
+
+        this.lightningBorders.push(border);
+      } catch (err) {
+        console.warn('⚠️ Failed to create lightning border for quality settings:', err);
+      }
+    }
+  }
+
+  _clearLightningBorders() {
+    if (!this.lightningBorders || this.lightningBorders.length === 0) return;
+    for (const border of this.lightningBorders) {
+      try {
+        border.dispose?.();
+      } catch (err) {
+        console.warn('⚠️ Error disposing lightning border:', err);
+      }
+    }
+    this.lightningBorders = [];
+  }
+
   async _loadGLTFGeometry(url) {
     console.log('🔄 Loading GLTF from:', url);
     const gltf = await loadGLTFModel(url);
@@ -325,6 +368,19 @@ export class Level {
       }
     });
   console.log(`🔍 Found ${meshesToProcess.length} meshes in GLTF`);
+
+    // Capture initial world matrices for robust re-attachment after quality changes
+    try {
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse((obj) => {
+        if (obj && obj.name) {
+          this._initialWorldMatrices.set(obj.name, obj.matrixWorld.clone());
+        }
+      });
+      console.log(`📌 Captured initial world matrices for ${this._initialWorldMatrices.size} objects`);
+    } catch (e) {
+      console.warn('⚠️ Failed to capture initial world matrices:', e);
+    }
 
     const hasManualColliders = Array.isArray(this.data.colliders) && this.data.colliders.length > 0;
 
@@ -953,6 +1009,17 @@ export class Level {
       if (!this._lightningElapsed) this._lightningElapsed = 0;
       this._lightningElapsed += delta * 1000;
       for (const lb of this.lightningBorders) {
+        // Lazy re-attach if quality switch recreated border before target was available
+        try {
+          if (lb && !lb._resolvedParent && lb.options && lb.options.attachToMeshName) {
+            const target = this._findMeshByName(lb.options.attachToMeshName);
+            if (target) {
+              const bind = this._initialWorldMatrices?.get?.(lb.options.attachToMeshName) || null;
+              lb.attachToObject(target, { pointsAreWorld: true, bindMatrixWorld: bind });
+              console.log(`🔗 (lazy) Lightning border attached to ${lb.options.attachToMeshName}`);
+            }
+          }
+        } catch (e) { /* ignore */ }
         lb.update(delta * 1000, this._lightningElapsed);
       }
     }
@@ -1002,6 +1069,10 @@ export class Level {
         this._disposeObject3DDeep(this.gltfScene);
         this.gltfScene = null;
       }
+
+      // Clear quality-controlled features
+      this._clearLightningBorders();
+      this._clearBinaryScreens();
 
       // Remove visual objects
       for (const obj of this.objects) {
