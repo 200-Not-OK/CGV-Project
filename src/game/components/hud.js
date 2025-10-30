@@ -168,6 +168,52 @@ export class HUD extends UIComponent {
     this.healthContainer.appendChild(this.healthText);
     
     this.root.appendChild(this.healthContainer);
+    
+    // Create node counter container (initially hidden, appears after talking to Richard)
+    this.nodeContainer = document.createElement('div');
+    this.nodeContainer.style.cssText = `
+      background: linear-gradient(145deg, #2a5298, #1e3a8a);
+      border: 3px solid #60a5fa;
+      border-radius: 20px;
+      padding: 12px 16px;
+      box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.3),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2);
+      position: relative;
+      margin-top: 12px;
+      backdrop-filter: blur(5px);
+      min-width: 150px;
+    `;
+    
+    this.nodeText = document.createElement('div');
+    this.nodeText.style.cssText = `
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 
+        2px 2px 0 #000000,
+        -2px -2px 0 #000000,
+        2px -2px 0 #000000,
+        -2px 2px 0 #000000,
+        0 2px 4px rgba(0, 0, 0, 0.5);
+      letter-spacing: 1px;
+    `;
+    this.nodeText.textContent = 'Nodes: 0/2';
+    
+    this.nodeContainer.appendChild(this.nodeText);
+    this.nodeContainer.style.display = 'none';
+    this.root.appendChild(this.nodeContainer);
+    
+    // Initialize node count
+    this.nodeCount = 0;
+    this.totalNodes = 2;
+  }
+
+  // Show or hide node counter
+  showNodeCounter(show) {
+    if (!this.nodeContainer) return;
+    this.nodeContainer.style.display = show ? 'block' : 'none';
   }
 
   setProps(props) {
@@ -310,6 +356,21 @@ export class HUD extends UIComponent {
       return true; // Successfully used potion
     }
     return false; // No potions available
+  }
+
+  updateNodeCount(count, total = 2) {
+    this.nodeCount = count;
+    this.totalNodes = total;
+    this.nodeText.textContent = `Nodes: ${count}/${total}`;
+    
+    // Change color based on progress
+    if (count >= total) {
+      this.nodeText.style.color = '#4caf50'; // Green when complete
+    } else if (count >= total / 2) {
+      this.nodeText.style.color = '#ff9800'; // Orange when halfway
+    } else {
+      this.nodeText.style.color = '#ffeb3b'; // Yellow when starting
+    }
   }
 
   update(delta, ctx) {

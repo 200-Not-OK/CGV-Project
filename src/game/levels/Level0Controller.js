@@ -21,6 +21,8 @@ export class Level0Controller {
     this.cloudIndicatorGroup = null;
     this.steveExclamationGroup = null;
     this._steveTrackingEnabled = false;
+  this._lookAtSteveRaf = null; // RAF id for camera lookAt tracking during Steve scene
+  this._lookAtPlayerRaf = null; // RAF id for camera lookAt tracking during Player focus
     
     // Door trigger tutorial flags
     this._doorTriggersEnabled = false;
@@ -46,11 +48,40 @@ export class Level0Controller {
       halfSize: new THREE.Vector3(15, 15, 15) // 30x30x30 units
     };
     
+    // Node interaction tracking
+    this.nodeMeshes = []; // Array of node meshes found in scene
+    this.collectedNodes = new Set(); // Track collected node names
+    this.currentInteractableNode = null; // Currently nearby node
+    this.nodeInteractionRange = 5.0; // Interaction range in units
+    this.eKeyPressed = false;
+    this.lastEKeyPress = 0;
+    this.nodeInteractionCooldown = 500; // ms
+
+  // DEBUG: force second-node flow for quick testing (set to false to restore normal behavior)
+  this._debugSecondNodeAlways = false;
+    
+    // Richard final interaction tracking
+    this.richardInteractionRange = 5.0; // Interaction range in units
+    this.richardInteractionCooldown = 500; // ms
+    this.lastRichardInteractionPress = 0;
+    this.richardInteractionActive = false; // Track if interaction is currently happening
+    this._finalBinaryChoiceEnabled = false; // Gate for Yes/No choice post-second-node
+    this._disableOpeningCutscene = false; // Enable opening cutscene
+    
+    // Preview flag disabled
+    this._forceSecondNodePreview = false;
+
     // Get references to NPCs once
     this._initializeNpcs();
     
     // Set up interaction system after initialization
     this._setupRichardInteraction();
+    
+    // Find and store node meshes
+    this._findNodeMeshes();
+    
+    // Set up E key listener for node interaction
+    this._setupNodeInteractionListener();
   }
 
   /**
@@ -74,9 +105,996 @@ export class Level0Controller {
   }
 
   /**
+   * Find node meshes in the level scene
+   */
+  _findNodeMeshes() {
+    if (!this.level || !this.level.gltfScene) {
+      console.warn('⚠️ [Level0Controller] Level or gltfScene not available for node search');
+      // Try again after a delay
+      setTimeout(() => this._findNodeMeshes(), 1000);
+      return;
+    }
+
+    const nodeNames = ['TreeNode1', 'TreeNode2'];
+    this.nodeMeshes = [];
+
+    this.level.gltfScene.traverse((obj) => {
+      if (obj.isMesh && nodeNames.includes(obj.name)) {
+        if (!this.collectedNodes.has(obj.name)) {
+          this.nodeMeshes.push(obj);
+          console.log(`🌳 [Level0Controller] Found node: ${obj.name}`);
+        }
+      }
+    });
+
+    if (this.nodeMeshes.length === 0) {
+      console.warn('⚠️ [Level0Controller] No node meshes found. Retrying...');
+      setTimeout(() => this._findNodeMeshes(), 1000);
+    } else {
+      console.log(`✅ [Level0Controller] Found ${this.nodeMeshes.length} node(s)`);
+    }
+  }
+
+  /**
+   * Set up E key listener for node interaction
+   */
+  _setupNodeInteractionListener() {
+    if (!this.game || !this.game.input) return;
+
+    // Check for E key in update loop instead of adding event listener
+    // This avoids conflicts with existing input handling
+  }
+
+  /**
+   * Check Richard final interaction proximity and handle E key press
+   */
+  _checkRichardFinalInteraction() {
+    if (!this.game || !this.game.player || !this.game.player.mesh) return;
+    if (!this.richard || !this.richard.mesh) return;
+    if (!this.exclamationGroup || !this.exclamationGroup.parent) return; // Exclamation mark must be present
+    if (!this._finalBinaryChoiceEnabled) return; // Only allow after second-node scene
+
+    const playerPos = this.game.player.mesh.position;
+    const richardPos = this.richard.mesh.position;
+    const distance = playerPos.distanceTo(richardPos);
+
+    // Check if player is within interaction range
+    if (distance < this.richardInteractionRange) {
+      // Check if E key is pressed
+      const currentTime = Date.now();
+      if (this.game.input && this.game.input.isKey('KeyE')) {
+        if (currentTime - this.lastRichardInteractionPress > this.richardInteractionCooldown) {
+          this.lastRichardInteractionPress = currentTime;
+          this._handleRichardFinalInteraction();
+        }
+      }
+    }
+  }
+
+  /**
+   * Handle Richard final interaction: show dialogue menu with Yes/No options
+   */
+  async _handleRichardFinalInteraction() {
+    if (!this.game || !this.game.player) return;
+    if (this.richardInteractionActive) return; // Already in interaction
+
+    this.richardInteractionActive = true;
+
+    // Lock player movement
+    this.game.player.lockMovement('RichardFinalInteraction');
+
+    // Make Richard face player
+    const playerPos = this.game.player.mesh.position;
+    await this._faceNpcTo(this.richard, playerPos);
+
+    // Show dialogue menu
+
+    
+    const choice = await this._showDialogueMenu('Are u ready to the binary tree?');
+
+    // Handle choice
+    if (choice === 'yes') {
+      // Teleport to boss room (placeholder)
+      await this._teleportToBossRoom();
+    } else if (choice === 'no') {
+      // Unlock movement, keep exclamation mark
+      this.game.player.unlockMovement();
+      // Exclamation mark stays visible - do nothing
+    }
+
+    this.richardInteractionActive = false;
+  }
+
+  /**
+   * Show dialogue menu with question and Yes/No options
+   * Returns 'yes' or 'no' based on player selection
+   */
+  async _showDialogueMenu(questionText) {
+    return new Promise((resolve) => {
+      // Create overlay
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: "Arial", sans-serif;
+      `;
+
+      // Create menu container
+      const menuContainer = document.createElement('div');
+      menuContainer.style.cssText = `
+        background: linear-gradient(145deg, #1a1a2e, #16213e);
+        border: 3px solid #60a5fa;
+        border-radius: 20px;
+        padding: 30px 40px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        min-width: 400px;
+        max-width: 600px;
+        text-align: center;
+      `;
+
+      // Create question text
+      const questionEl = document.createElement('div');
+      questionEl.textContent = questionText;
+      questionEl.style.cssText = `
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 30px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      `;
+
+      // Create button container
+      const buttonContainer = document.createElement('div');
+      buttonContainer.style.cssText = `
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+      `;
+
+      // Create Yes button
+      const yesButton = document.createElement('button');
+      yesButton.textContent = 'Yes';
+      yesButton.style.cssText = `
+        background: linear-gradient(145deg, #4caf50, #388e3c);
+        border: 2px solid #66bb6a;
+        border-radius: 10px;
+        padding: 15px 40px;
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      `;
+
+      yesButton.onmouseenter = () => {
+        yesButton.style.transform = 'scale(1.05)';
+        yesButton.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.5)';
+      };
+      yesButton.onmouseleave = () => {
+        yesButton.style.transform = 'scale(1)';
+        yesButton.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+      };
+
+      // Create No button
+      const noButton = document.createElement('button');
+      noButton.textContent = 'No';
+      noButton.style.cssText = `
+        background: linear-gradient(145deg, #f44336, #d32f2f);
+        border: 2px solid #ef5350;
+        border-radius: 10px;
+        padding: 15px 40px;
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      `;
+
+      noButton.onmouseenter = () => {
+        noButton.style.transform = 'scale(1.05)';
+        noButton.style.boxShadow = '0 6px 20px rgba(244, 67, 54, 0.5)';
+      };
+      noButton.onmouseleave = () => {
+        noButton.style.transform = 'scale(1)';
+        noButton.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+      };
+
+      // Button click handlers
+      const cleanup = () => {
+        document.body.removeChild(overlay);
+      };
+
+      yesButton.onclick = () => {
+        cleanup();
+        resolve('yes');
+      };
+
+      noButton.onclick = () => {
+        cleanup();
+        resolve('no');
+      };
+
+      // Keyboard support
+      const handleKeyPress = (e) => {
+        if (e.key === 'y' || e.key === 'Y' || (e.key === 'Enter' && document.activeElement === yesButton)) {
+          yesButton.click();
+        } else if (e.key === 'n' || e.key === 'N' || (e.key === 'Enter' && document.activeElement === noButton)) {
+          noButton.click();
+        } else if (e.key === 'Escape') {
+          noButton.click(); // Treat Escape as No
+        }
+      };
+
+      // Focus management - arrow keys
+      let selectedButton = yesButton;
+      yesButton.style.borderWidth = '3px';
+      
+      const handleArrowKeys = (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          selectedButton.style.borderWidth = '2px';
+          selectedButton = selectedButton === yesButton ? noButton : yesButton;
+          selectedButton.style.borderWidth = '3px';
+          selectedButton.focus();
+          e.preventDefault();
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyPress);
+      window.addEventListener('keydown', handleArrowKeys);
+
+      // Cleanup event listeners when menu closes
+      const originalYesClick = yesButton.onclick;
+      const originalNoClick = noButton.onclick;
+      
+      yesButton.onclick = () => {
+        window.removeEventListener('keydown', handleKeyPress);
+        window.removeEventListener('keydown', handleArrowKeys);
+        originalYesClick();
+      };
+      
+      noButton.onclick = () => {
+        window.removeEventListener('keydown', handleKeyPress);
+        window.removeEventListener('keydown', handleArrowKeys);
+        originalNoClick();
+      };
+
+      // Assemble menu
+      buttonContainer.appendChild(yesButton);
+      buttonContainer.appendChild(noButton);
+      menuContainer.appendChild(questionEl);
+      menuContainer.appendChild(buttonContainer);
+      overlay.appendChild(menuContainer);
+      document.body.appendChild(overlay);
+
+      // Focus first button for keyboard navigation
+      yesButton.focus();
+    });
+  }
+
+  /**
+   * Teleport to boss room (placeholder)
+   */
+  async _teleportToBossRoom() {
+    console.log('🚪 [Level0Controller] Teleporting to boss room (placeholder)');
+    
+    // Remove exclamation mark after teleport
+    if (this.exclamationGroup && this.richard && this.richard.mesh) {
+      try {
+        this.richard.mesh.remove(this.exclamationGroup);
+        this.exclamationGroup.traverse((child) => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(m => m.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
+        this.exclamationGroup = null;
+      } catch (e) {
+        console.warn('⚠️ [Level0Controller] Error removing exclamation mark', e);
+      }
+    }
+
+    // Unlock player movement
+    this.game.player.unlockMovement();
+
+    // TODO: Implement actual boss room teleportation
+    // This is a placeholder - actual boss room position and loading will be implemented later
+    // Example:
+    // const bossRoomPos = new THREE.Vector3(x, y, z);
+    // if (this.game.player.body) {
+    //   this.game.player.body.position.set(bossRoomPos.x, bossRoomPos.y, bossRoomPos.z);
+    // }
+    // if (this.game.player.mesh) {
+    //   this.game.player.mesh.position.copy(bossRoomPos);
+    // }
+  }
+
+  /**
+   * Check node proximity and handle interaction
+   */
+  _checkNodeProximity() {
+    if (!this.game || !this.game.player || !this.game.player.mesh) return;
+    if (this.cutsceneActive) return; // Don't allow node interaction during cutscenes
+
+    const playerPos = this.game.player.mesh.position;
+    this.currentInteractableNode = null;
+    let closestDistance = Infinity;
+
+    // Find closest interactable node
+    for (const nodeMesh of this.nodeMeshes) {
+      if (this.collectedNodes.has(nodeMesh.name)) continue; // Already collected
+
+      const distance = playerPos.distanceTo(nodeMesh.position);
+      if (distance < this.nodeInteractionRange && distance < closestDistance) {
+        this.currentInteractableNode = nodeMesh;
+        closestDistance = distance;
+      }
+    }
+
+    // Check if E key is pressed
+    const currentTime = Date.now();
+    if (this.game.input && this.game.input.isKey('KeyE')) {
+      if (currentTime - this.lastEKeyPress > this.nodeInteractionCooldown) {
+        this.lastEKeyPress = currentTime;
+        if (this.currentInteractableNode) {
+          this._handleNodePickup(this.currentInteractableNode);
+        }
+      }
+    }
+  }
+
+  /**
+   * Handle node pickup
+   */
+  async _handleNodePickup(nodeMesh) {
+    if (!nodeMesh || this.collectedNodes.has(nodeMesh.name)) return;
+    if (!this.game || !this.game.player) return;
+
+    console.log(`🎯 [Level0Controller] Player picked up node: ${nodeMesh.name}`);
+
+    // Mark node as collected
+    this.collectedNodes.add(nodeMesh.name);
+
+    // Update HUD node counter
+    const hud = this.game?.ui?.get('hud');
+    if (hud && hud.updateNodeCount) {
+      hud.updateNodeCount(this.collectedNodes.size, 2);
+    }
+
+    // Hide the node mesh (node disappears in the eye of the player)
+    nodeMesh.visible = false;
+    
+    // Remove from nodeMeshes array
+    this.nodeMeshes = this.nodeMeshes.filter(n => n !== nodeMesh);
+
+    // Check if this is the second node
+    if (this._debugSecondNodeAlways || this.collectedNodes.size === 2) {
+      // Second node - run consolidated special cutscene flow
+      await this._runSecondNodeCutscene();
+    } else {
+      // First node - run normal teleport sequence
+      await this._handleFirstNodeSequence();
+    }
+  }
+
+  /**
+   * Prelude before second-node cutscene: keep current camera, show short line, then fade to cutscene
+   */
+  async _handleSecondNodePreludeThenCutscene() {
+    // Backwards-compat entry point: delegate to the new unified flow
+    return this._runSecondNodeCutscene();
+  }
+
+  /**
+   * Prepare second-node cutscene: teleport actors and set initial camera during fade.
+   */
+  async _prepareSecondNodeCutsceneSetup(director) {
+    // Positions
+    const stevePos = new THREE.Vector3(0.63, 10.66, -16.99);
+    const playerPos = new THREE.Vector3(5.35, 10.66, -16.99);
+    const richardPos = new THREE.Vector3(11.91, 10.66, -7.58);
+    const lookAtTarget = new THREE.Vector3(0.06, 13.66, 2.85);
+
+    // Teleport player
+    if (this.game.player?.body) {
+      this.game.player.body.position.set(playerPos.x, playerPos.y, playerPos.z);
+      this.game.player.body.velocity.set(0, 0, 0);
+    }
+    if (this.game.player?.mesh) {
+      this.game.player.mesh.position.copy(playerPos);
+    }
+
+    // Teleport Steve
+    if (this.steve?.mesh) {
+      this.steve.mesh.position.copy(stevePos);
+      if (this.steve.body) {
+        this.steve.body.position.set(stevePos.x, stevePos.y, stevePos.z);
+        this.steve.body.velocity.set(0, 0, 0);
+        this.steve.body.angularVelocity.set(0, 0, 0);
+      }
+    }
+
+    // Teleport Richard
+    if (this.richard?.mesh) {
+      this.richard.mesh.position.copy(richardPos);
+      if (this.richard.body) {
+        this.richard.body.position.set(richardPos.x, richardPos.y, richardPos.z);
+        this.richard.body.velocity.set(0, 0, 0);
+        this.richard.body.angularVelocity.set(0, 0, 0);
+      }
+    }
+
+    // Orient NPCs toward target
+    await this._faceNpcTo(this.steve, lookAtTarget);
+    await this._faceNpcTo(this.richard, lookAtTarget);
+
+    // Set camera to initial shot
+    const camPos = [32.8985553459216, 29.19431675166226, -35.152627603733485];
+    const camLookAt = [20.00885268741525, 21.424375016482198, -21.981311389808575];
+    director.cutTo({ position: camPos, lookAt: camLookAt, fov: 60 });
+
+    // Sync freeCam yaw/pitch to shot
+    const la = new THREE.Vector3(...camLookAt);
+    const dir = la.clone().sub(new THREE.Vector3(...camPos)).normalize();
+    director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+    director.freeCam.yaw = Math.atan2(dir.x, dir.z);
+  }
+
+  /**
+   * New unified second-node cutscene flow:
+   * 1) Take control and show "Nice u got them both" (Enter to continue)
+   * 2) Fade out, teleport actors and set camera
+   * 3) Fade in and play dialogues (Enter-gated)
+   * 4) Fade out, clear overlay, release camera, restore gameplay
+   */
+  async _runSecondNodeCutscene() {
+    if (!this.level?.cinematicsManager || !this.game?.player) return;
+    const cm = this.level.cinematicsManager;
+    const director = cm.director;
+
+    try {
+      this.cutsceneActive = true;
+      // Lock player movement for whole sequence
+      this.game.player.lockMovement('SecondNodeCutscene');
+
+      // Take camera control
+      director.takeControl();
+
+      // Prelude caption
+      this._setupEnterKeyListener(director);
+      await this._showCaption('Nice u got them both', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Fade out to reposition actors + camera
+      console.log('🎬 [SecondNode] Fading out to reposition...');
+      await director.fadeOut({ ms: 800 });
+      console.log('🎬 [SecondNode] Fade out complete');
+
+      // Teleport actors and orient them
+      {
+        // Positions (control room)
+        const stevePos = new THREE.Vector3(0.63, 10.66, -16.99);
+        const playerPos = new THREE.Vector3(5.35, 10.66, -16.99);
+        const richardPos = new THREE.Vector3(11.91, 10.66, -7.58);
+        const lookAtTarget = new THREE.Vector3(0.06, 13.66, 2.85);
+        try {
+          // Teleport player
+          if (this.game.player?.body) {
+            this.game.player.body.position.set(playerPos.x, playerPos.y, playerPos.z);
+            this.game.player.body.velocity.set(0, 0, 0);
+          }
+          if (this.game.player?.mesh) {
+            this.game.player.mesh.position.copy(playerPos);
+          }
+
+          // Teleport Steve
+          if (this.steve?.mesh) {
+            this.steve.mesh.position.copy(stevePos);
+            if (this.steve.body) {
+              this.steve.body.position.set(stevePos.x, stevePos.y, stevePos.z);
+              this.steve.body.velocity.set(0, 0, 0);
+              this.steve.body.angularVelocity.set(0, 0, 0);
+            }
+          }
+
+          // Teleport Richard
+          if (this.richard?.mesh) {
+            this.richard.mesh.position.copy(richardPos);
+            if (this.richard.body) {
+              this.richard.body.position.set(richardPos.x, richardPos.y, richardPos.z);
+              this.richard.body.velocity.set(0, 0, 0);
+              this.richard.body.angularVelocity.set(0, 0, 0);
+            }
+          }
+
+          // Orient NPCs toward target (non-blocking immediate face to avoid hangs)
+          if (this.steve?.mesh) this._makeNpcFaceTarget(this.steve, lookAtTarget);
+          if (this.richard?.mesh) this._makeNpcFaceTarget(this.richard, lookAtTarget);
+
+          // Set camera to initial shot
+          const camPos = [32.8985553459216, 29.19431675166226, -35.152627603733485];
+          const camLookAt = [20.00885268741525, 21.424375016482198, -21.981311389808575];
+          director.cutTo({ position: camPos, lookAt: camLookAt, fov: 60 });
+
+          // Sync freeCam yaw/pitch to shot
+          const la = new THREE.Vector3(...camLookAt);
+          const dir = la.clone().sub(new THREE.Vector3(...camPos)).normalize();
+          director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+          director.freeCam.yaw = Math.atan2(dir.x, dir.z);
+        } catch (tpErr) {
+          console.error('❌ [SecondNode] Error during teleport/camera setup:', tpErr);
+        } finally {
+          // Always attempt to fade back in, even if teleport had issues
+          try {
+            await director.fadeIn({ ms: 600 });
+            console.log('🎬 [SecondNode] Fade in complete');
+          } catch (fiErr) {
+            console.warn('⚠️ [SecondNode] Fade in failed, forcing overlay clear');
+            try { await director.fadeIn({ ms: 0 }); } catch {}
+            if (director._fadeEl) director._fadeEl.style.opacity = '0';
+          }
+        }
+      }
+      await this._wait(200);
+
+      // Dialogues (Enter-gated)
+      // Steve: Richard its still red whats happening
+      this._setupEnterKeyListener(director);
+      await this._showCaption('Richard its still red whats happening', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Richard: this is bad
+      this._setupEnterKeyListener(director);
+      await this._showCaption('this is bad', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Richard: One infiltrated...
+      this._setupEnterKeyListener(director);
+      await this._showCaption('One infilitrated the tree, a big one, We wont be able to stop it', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Richard: I know you did a lot...
+      this._setupEnterKeyListener(director);
+      await this._showCaption('I know u did alot for us already but please', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Richard: if he cuts out connection...
+      this._setupEnterKeyListener(director);
+      await this._showCaption('if he cuts out connection to the main land this whole tree will collapse please help us', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Richard: when you decide...
+      this._setupEnterKeyListener(director);
+      await this._showCaption('when u decide what to do and is ready please come to me', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Conclude: fade out, set post-cutscene state
+      await director.fadeOut({ ms: 800 });
+
+      // Post-cutscene setup: move NPCs to static spots and show exclamation
+      {
+        // Richard static
+        const richardStaticPos = new THREE.Vector3(22.40, 10.66, -15.98);
+        if (this.richard?.mesh) {
+          this.richard.mesh.position.copy(richardStaticPos);
+          this.richard.mesh.rotation.y = 0; // face +X
+        }
+        if (this.richard?.body) {
+          this.richard.body.position.set(richardStaticPos.x, richardStaticPos.y, richardStaticPos.z);
+          this.richard.body.velocity.set(0, 0, 0);
+          this.richard.body.angularVelocity.set(0, 0, 0);
+        }
+        // Steve static
+        const steveStaticPos = new THREE.Vector3(28.91, 12.66, -1.21);
+        if (this.steve?.mesh) this.steve.mesh.position.copy(steveStaticPos);
+        if (this.steve?.body) {
+          this.steve.body.position.set(steveStaticPos.x, steveStaticPos.y, steveStaticPos.z);
+          this.steve.body.velocity.set(0, 0, 0);
+          this.steve.body.angularVelocity.set(0, 0, 0);
+        }
+        // Indicator
+        this._showExclamationMark();
+        // Enable final post-second-node choice
+        this._finalBinaryChoiceEnabled = true;
+      }
+
+      // Ensure overlay is cleared before releasing
+      try {
+        await director.fadeIn({ ms: 0 });
+        if (director._fadeEl) director._fadeEl.style.opacity = '0';
+      } catch {}
+
+      // Release camera and restore gameplay
+      await director.release();
+      if (this.game.thirdCameraObject) {
+        this.game.activeCamera = this.game.thirdCameraObject;
+      }
+      // Auto re-lock pointer after the scene
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      this.game.player.unlockMovement();
+      this.cutsceneActive = false;
+
+      console.log('✅ [Level0Controller] Second node cutscene complete');
+    } catch (e) {
+      console.error('❌ [Level0Controller] Error in second node cutscene flow:', e);
+      try { await cm.director.release(); } catch {}
+      // Auto re-lock pointer after the scene (error path)
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
+      this.game?.player?.unlockMovement?.();
+      this._resetFadeSafely(cm);
+      this.cutsceneActive = false;
+    }
+  }
+
+  /**
+   * Handle first node pickup sequence (normal teleport)
+   */
+  async _handleFirstNodeSequence() {
+    // Lock player movement
+    this.game.player.lockMovement('NodePickup');
+
+    // Wait a brief moment so player sees the node disappear
+    await this._wait(200);
+
+    // Teleport player to specific first-node vanish location
+    {
+      const teleportPos = new THREE.Vector3(-5.17192, 6.60477, 10.4465);
+      if (this.game.player.body) {
+        this.game.player.body.position.set(teleportPos.x, teleportPos.y, teleportPos.z);
+        this.game.player.body.velocity.set(0, 0, 0);
+      }
+      if (this.game.player.mesh) {
+        this.game.player.mesh.position.copy(teleportPos);
+      }
+    }
+    // Run the teleport sequence
+    await this._handleNodePickupSequence();
+  }
+
+  /**
+   * Handle second node pickup sequence: special cutscene with all characters
+   */
+  async _handleSecondNodeCutscene() {
+    if (!this.level?.cinematicsManager || !this.game?.player) return;
+    const cm = this.level.cinematicsManager;
+    const director = cm.director;
+
+    try {
+      this.cutsceneActive = true;
+      
+      // Lock player movement
+      this.game.player.lockMovement('SecondNodeCutscene');
+      
+      // Take camera control
+      director.takeControl();
+
+      // Prelude handled fadeOut/teleport/camera and we are already faded in here
+
+      // Steve dialogue: "Richard its still red whats happening"
+      this._setupEnterKeyListener(director);
+      await this._showCaption('Richard its still red whats happening', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Setup player and Steve to track Richard (during dialogue)
+      let trackingActive = true;
+      const trackInterval = setInterval(() => {
+        if (!trackingActive || !this.richard || !this.steve || !this.game.player) {
+          clearInterval(trackInterval);
+          return;
+        }
+        this._makeNpcFaceTarget(this.steve, this.richard.mesh.position);
+        // Player tracking will be handled manually if needed
+      }, 50); // Update every 50ms
+
+      await this._wait(500); // Brief pause
+
+      // Richard turns back (180 degrees) and moves to previous static position
+      // Richard's original static position (from pacing start): around 22.40, 10.66, -15.98
+      const richardStaticPos = new THREE.Vector3(22.40, 10.66, -15.98);
+      
+      // Calculate rotation to face positive X (0 radians)
+      const targetRotation = 0; // Facing positive X
+      
+      // Smoothly move Richard to static position
+      if (this.richard && this.richard.mesh) {
+        // Animate movement
+        const startPos = this.richard.mesh.position.clone();
+        const duration = 1500; // ms
+        const startTime = Date.now();
+        
+        await new Promise((resolve) => {
+          const moveRichard = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Smooth interpolation
+            const eased = progress < 0.5 
+              ? 2 * progress * progress 
+              : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            
+            this.richard.mesh.position.lerpVectors(startPos, richardStaticPos, eased);
+            if (this.richard.body) {
+              this.richard.body.position.set(
+                this.richard.mesh.position.x,
+                this.richard.mesh.position.y,
+                this.richard.mesh.position.z
+              );
+            }
+            
+            // Rotate to face positive X
+            const currentRot = this.richard.mesh.rotation.y;
+            let rotDiff = targetRotation - currentRot;
+            rotDiff = ((rotDiff + Math.PI) % (2 * Math.PI)) - Math.PI;
+            this.richard.mesh.rotation.y += rotDiff * 0.2;
+            
+            if (progress < 1) {
+              requestAnimationFrame(moveRichard);
+            } else {
+              resolve();
+            }
+          };
+          
+          moveRichard();
+        });
+      }
+
+      // Clear tracking interval
+      trackingActive = false;
+      clearInterval(trackInterval);
+
+      // Richard dialogue 1: "this is bad"
+      this._setupEnterKeyListener(director);
+      await this._showCaption('this is bad', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Richard dialogue 2: "One infilitrated the tree, a big one, We wont be able to stop it"
+      this._setupEnterKeyListener(director);
+      await this._showCaption('One infilitrated the tree, a big one, We wont be able to stop it', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Setup Richard and Steve to track the player
+      trackingActive = true;
+      const trackPlayerInterval = setInterval(() => {
+        if (!trackingActive || !this.richard || !this.steve || !this.game.player || !this.game.player.mesh) {
+          clearInterval(trackPlayerInterval);
+          return;
+        }
+        this._makeNpcFaceTarget(this.richard, this.game.player.mesh.position);
+        this._makeNpcFaceTarget(this.steve, this.game.player.mesh.position);
+      }, 50);
+
+      await this._wait(500);
+
+      // Richard dialogue 3: "I know u did alot for us already but please" (split long dialogue)
+      this._setupEnterKeyListener(director);
+      await this._showCaption('I know u did alot for us already but please', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Richard dialogue 4: "if he cuts out connection to the main land this whole tree will collapse please help us"
+      this._setupEnterKeyListener(director);
+      await this._showCaption('if he cuts out connection to the main land this whole tree will collapse please help us', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Richard dialogue 5: "when u decide what to do and is ready please come to me"
+      this._setupEnterKeyListener(director);
+      await this._showCaption('when u decide what to do and is ready please come to me', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Clear tracking
+      trackingActive = false;
+      clearInterval(trackPlayerInterval);
+
+      // Fade out to conclude, then clear overlay and release
+      await director.fadeOut({ ms: 800 });
+      try {
+        await director.fadeIn({ ms: 0 });
+        if (director._fadeEl) director._fadeEl.style.opacity = '0';
+      } catch (e) {}
+      await director.release();
+      if (this.game.thirdCameraObject) {
+        this.game.activeCamera = this.game.thirdCameraObject;
+      }
+      // Auto re-lock pointer after the scene
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      this.game.player.unlockMovement();
+      this.cutsceneActive = false;
+
+      // Move Richard to static position with exclamation mark
+      if (this.richard && this.richard.mesh) {
+        // Richard's static position (from pacing start)
+        const richardStaticPos = new THREE.Vector3(22.40, 10.66, -15.98);
+        // Already at static position, just ensure rotation is correct
+        this.richard.mesh.rotation.y = 0; // Face positive X
+        if (this.richard.body) {
+          this.richard.body.position.set(richardStaticPos.x, richardStaticPos.y, richardStaticPos.z);
+        }
+        // Show exclamation mark
+        this._showExclamationMark();
+      }
+
+      // Move Steve to static position (no exclamation mark)
+      if (this.steve && this.steve.mesh) {
+        // Steve's static position from initial cutscene: around 28.91, 12.66, -1.21
+        const steveStaticPos = new THREE.Vector3(28.91, 12.66, -1.21);
+        this.steve.mesh.position.copy(steveStaticPos);
+        if (this.steve.body) {
+          this.steve.body.position.set(steveStaticPos.x, steveStaticPos.y, steveStaticPos.z);
+        }
+        // Make Steve face appropriate direction
+        await this._faceNpcTo(this.steve, this.richard.mesh.position);
+      }
+
+      console.log('✅ [Level0Controller] Second node cutscene complete');
+      
+      // Enable final binary choice after second-node scene completes
+      this._finalBinaryChoiceEnabled = true;
+    } catch (e) {
+      console.error('❌ [Level0Controller] Error in second node cutscene:', e);
+      try { await cm.director.release(); } catch {}
+      // Auto re-lock pointer after the scene (error path)
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
+      this.game?.player?.unlockMovement?.();
+      this._resetFadeSafely(cm);
+      this.cutsceneActive = false;
+    }
+  }
+
+  /**
+   * Handle node pickup sequence: dialogue, fade out, teleport to control room, fade in
+   */
+  async _handleNodePickupSequence() {
+    if (!this.level?.cinematicsManager || !this.game?.player) return;
+    const cm = this.level.cinematicsManager;
+    const director = cm.director;
+
+    try {
+      this.cutsceneActive = true;
+      
+      // Take camera control
+      director.takeControl();
+
+      // Show Richard dialogue "Good Job"
+      this._setupEnterKeyListener(director);
+      await this._showCaption('Good Job', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+
+      // Fade out
+      await director.fadeOut({ ms: 800 });
+
+      // Teleport player to control room in front of Steve
+      if (!this.steve || !this.steve.mesh) {
+        console.error('❌ [Level0Controller] Steve not found for teleport');
+        // Fallback position
+        const fallbackPos = new THREE.Vector3(28.91, 10.66, -1.21);
+        if (this.game.player.body) {
+          this.game.player.body.position.set(fallbackPos.x, fallbackPos.y, fallbackPos.z);
+        }
+        if (this.game.player.mesh) {
+          this.game.player.mesh.position.copy(fallbackPos);
+        }
+      } else {
+        // Position player in front of Steve
+        const stevePos = this.steve.mesh.position;
+        // Position ~2-3 units in front of Steve (based on his rotation)
+        const steveRotation = this.steve.mesh.rotation.y;
+        const offsetX = Math.sin(steveRotation) * 3;
+        const offsetZ = Math.cos(steveRotation) * 3;
+        
+        const playerPos = new THREE.Vector3(
+          stevePos.x - offsetX,
+          stevePos.y, // Same height as Steve
+          stevePos.z - offsetZ
+        );
+
+        if (this.game.player.body) {
+          this.game.player.body.position.set(playerPos.x, playerPos.y, playerPos.z);
+          this.game.player.body.velocity.set(0, 0, 0);
+        }
+        if (this.game.player.mesh) {
+          this.game.player.mesh.position.copy(playerPos);
+        }
+      }
+
+      // Position camera to look at player and Steve
+      if (this.game.player.mesh && this.steve && this.steve.mesh) {
+        const playerPos = this.game.player.mesh.position;
+        const stevePos = this.steve.mesh.position;
+        const midPoint = new THREE.Vector3()
+          .addVectors(playerPos, stevePos)
+          .multiplyScalar(0.5);
+        
+        const cameraPos = new THREE.Vector3(
+          midPoint.x,
+          midPoint.y + 3,
+          midPoint.z + 5
+        );
+
+        director.cutTo({
+          position: [cameraPos.x, cameraPos.y, cameraPos.z],
+          lookAt: [midPoint.x, midPoint.y, midPoint.z],
+          fov: 60
+        });
+      }
+
+      // Fade in
+      await director.fadeIn({ ms: 600 });
+      await this._wait(300);
+
+      // Release camera and restore gameplay
+      await director.release();
+      if (this.game.thirdCameraObject) {
+        this.game.activeCamera = this.game.thirdCameraObject;
+      }
+      // Auto re-lock pointer after the scene
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      this.game.player.unlockMovement();
+      this.cutsceneActive = false;
+
+      console.log('✅ [Level0Controller] Node pickup sequence complete');
+    } catch (e) {
+      console.error('❌ [Level0Controller] Error in node pickup sequence:', e);
+      try { await cm.director.release(); } catch {}
+      // Auto re-lock pointer after the scene (error path)
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
+      this.game?.player?.unlockMovement?.();
+      this._resetFadeSafely(cm);
+      this.cutsceneActive = false;
+    }
+  }
+
+  /**
    * Main entry point - start the cutscene sequence
    */
   async startSequence() {
+    if (this._disableOpeningCutscene) {
+      console.log('⏭️  Opening cutscene disabled. Skipping startSequence.');
+      return;
+    }
     if (!this.isInitialized) {
       console.error('❌ [Level0Controller] Not initialized, cannot start sequence');
       return;
@@ -276,7 +1294,7 @@ export class Level0Controller {
         this.game.activeCamera = this.game.thirdCameraObject;
         if (this.game.input) {
           this.game.input.alwaysTrackMouse = true;
-          // Request pointer lock for third-person controls
+          // Auto re-lock pointer after the scene
           if (typeof document !== 'undefined' && !document.pointerLockElement) {
             document.body.requestPointerLock();
           }
@@ -299,6 +1317,11 @@ export class Level0Controller {
     } catch (error) {
       console.error('❌ [Level0Controller] Error during cutscene:', error);
       await director.release();
+      // Auto re-lock pointer after the scene (error path)
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      this._resetFadeSafely(cm);
       this.cutsceneActive = false;
     }
   }
@@ -337,6 +1360,22 @@ export class Level0Controller {
         }
       }, 100);
     });
+  }
+
+  /**
+   * Safely reset any active fade overlay to transparent to avoid stuck black screens.
+   */
+  _resetFadeSafely(cm) {
+    try {
+      if (cm?.director?.fadeIn) {
+        cm.director.fadeIn({ ms: 0 });
+      }
+      if (cm?.director?._fadeEl) {
+        cm.director._fadeEl.style.opacity = '0';
+      }
+    } catch (e) {
+      // no-op
+    }
   }
   
   /**
@@ -871,6 +1910,7 @@ export class Level0Controller {
         this.game.activeCamera = this.game.thirdCameraObject;
         if (this.game.input) {
           this.game.input.alwaysTrackMouse = true;
+          // Auto re-lock pointer after the scene
           if (typeof document !== 'undefined' && !document.pointerLockElement) {
             document.body.requestPointerLock();
           }
@@ -880,6 +1920,12 @@ export class Level0Controller {
       // Re-enable doors and other interactions
       this._disableRichardInteractionMode();
       
+      // Show node HUD below health after this dialogue completes
+      const hud = this.game?.ui?.get('hud');
+      if (hud && hud.showNodeCounter) {
+        hud.showNodeCounter(true);
+      }
+
       // Clear cutscene active flag
       this.cutsceneActive = false;
       
@@ -888,6 +1934,10 @@ export class Level0Controller {
     } catch (error) {
       console.error('❌ [Level0Controller] Error during interaction dialogue:', error);
       await director.release();
+      // Auto re-lock pointer after the scene (error path)
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
       if (this.game.thirdCameraObject) {
         this.game.activeCamera = this.game.thirdCameraObject;
       }
@@ -1192,36 +2242,50 @@ export class Level0Controller {
       this.cutsceneActive = true;
       // Freeze player movement
       this.game.player.lockMovement('StackToolTutorial');
+      // Disable input so FreeCamera doesn't react to mouse/keys during this cinematic
+      if (this.game.input?.setEnabled) this.game.input.setEnabled(false);
       
-      // Steve says "Wait" briefly, then fade out
-      await this._showCaption('Wait.', 800, 'Steve');
-      await this._wait(200);
+      // Steve says "Wait." and waits for player to press Enter, then fade out
+      this._setupEnterKeyListener(director);
+      await this._showCaption('Wait.', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
       await director.fadeOut({ ms: 700 });
       
-      // Teleport player in front of Steve and make both face each other
-      if (this.steve?.mesh && this.game.player?.setPosition) {
-        const stevePos = this.steve.mesh.position.clone();
-        const steveForward = new THREE.Vector3(Math.sin(this.steve.mesh.rotation.y), 0, Math.cos(this.steve.mesh.rotation.y));
-        const playerTarget = stevePos.clone().sub(steveForward.multiplyScalar(2.5));
-        playerTarget.y = this.game.player.body ? this.game.player.body.position.y : playerTarget.y;
+      // Teleport player to the specified position for this scene and face Steve
+      if (this.game.player?.setPosition) {
+        const playerTarget = new THREE.Vector3(2.05, 10.66, -30.47);
         this.game.player.setPosition(playerTarget);
-        
-        // Orient player toward Steve
-        const targetRot = Math.atan2(stevePos.x - playerTarget.x, stevePos.z - playerTarget.z);
-        this.game.player.mesh.rotation.y = targetRot;
+        // Orient player toward Steve if available
+        if (this.steve?.mesh) {
+          const stevePos = this.steve.mesh.position.clone();
+          const targetRot = Math.atan2(stevePos.x - playerTarget.x, stevePos.z - playerTarget.z);
+          if (this.game.player.mesh) this.game.player.mesh.rotation.y = targetRot;
+        }
       }
-      // Steve face player
+      // Make Steve face the player
       if (this.game.player?.mesh) {
         await this._faceNpcTo(this.steve, this.game.player.mesh.position);
       }
       
-      // Frame both: camera cut to midpoint and lookAt midpoint
-      const mid = new THREE.Vector3().addVectors(this.steve.mesh.position, this.game.player.mesh.position).multiplyScalar(0.5);
-      const camOffset = new THREE.Vector3(0, 2.2, 5.0); // Slightly above and back
-      const camPos = mid.clone().add(camOffset.applyAxisAngle(new THREE.Vector3(0,1,0), 0));
+      // Set camera to the requested shot (lookAt Player) AFTER teleport, then fade in
       director.takeControl();
-      director.cutTo({ position: [camPos.x, camPos.y, camPos.z], lookAt: [mid.x, mid.y + 1.2, mid.z], fov: 50 });
-      await director.fadeIn({ ms: 600 });
+      const playerLook = this.game?.player?.mesh?.position?.clone() || new THREE.Vector3(1.6618411501024597, 13.47878441577051, -35.69522380082998);
+      director.cutTo({
+        position: [1.209026225808091, 24.372258634347013, -18.92837621121],
+        lookAt: [playerLook.x, playerLook.y, playerLook.z],
+        fov: 60
+      });
+      // Sync freeCam yaw/pitch to the shot so its update() doesn't override the lookAt
+      {
+        const cam = director.cam;
+        const dir = playerLook.clone().sub(cam.position).normalize();
+        director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+        director.freeCam.yaw = Math.atan2(dir.x, dir.z);
+      }
+  await director.fadeIn({ ms: 600 });
+  // Continuously track the player's CURRENT position by aligning freeCam yaw/pitch each frame
+  this._startCameraLookAtPlayer(director);
       
       // Dialogue sequence with Enter to advance
       this._setupEnterKeyListener(director);
@@ -1269,12 +2333,18 @@ export class Level0Controller {
       // Cleanup overlays
       if (controlsEl && controlsEl.parentElement) controlsEl.parentElement.removeChild(controlsEl);
       
-      // Release camera and restore gameplay
+  // Release camera and restore gameplay
+  this._stopCameraLookAtPlayer();
       await director.release();
       if (this.game.thirdCameraObject) {
         this.game.activeCamera = this.game.thirdCameraObject;
       }
+      // Auto re-lock pointer after the scene
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
       this.game.player.unlockMovement();
+      if (this.game.input?.setEnabled) this.game.input.setEnabled(true);
       this.cutsceneActive = false;
       
       // Enable lift area trigger after Stack tool tutorial completes
@@ -1282,10 +2352,74 @@ export class Level0Controller {
       this._liftTriggerConsumed = false;
     } catch (e) {
       console.error('❌ [Level0Controller] Error in Stack tool tutorial:', e);
+  this._stopCameraLookAtPlayer();
       try { await cm.director.release(); } catch {}
+      // Auto re-lock pointer after the scene (error path)
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
       if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
       this.game?.player?.unlockMovement?.();
+  if (this.game.input?.setEnabled) this.game.input.setEnabled(true);
       this.cutsceneActive = false;
+    }
+  }
+
+  /**
+   * Continuously aim the cinematic camera at Steve's current world position during the Stack Tool tutorial.
+   */
+  _startCameraLookAtSteve(director) {
+    this._stopCameraLookAtSteve();
+    const loop = () => {
+      if (!this.cutsceneActive || !director || !this.steve?.mesh) {
+        this._lookAtSteveRaf = null;
+        return;
+      }
+      const target = this.steve.mesh.getWorldPosition(new THREE.Vector3());
+      try {
+        director.cam.lookAt(target);
+      } catch {}
+      this._lookAtSteveRaf = requestAnimationFrame(loop);
+    };
+    this._lookAtSteveRaf = requestAnimationFrame(loop);
+  }
+
+  _stopCameraLookAtSteve() {
+    if (this._lookAtSteveRaf) {
+      cancelAnimationFrame(this._lookAtSteveRaf);
+      this._lookAtSteveRaf = null;
+    }
+  }
+
+  /**
+   * Continuously aim the cinematic camera at Player's current world position during the Stack Tool tutorial.
+   */
+  _startCameraLookAtPlayer(director) {
+    this._stopCameraLookAtPlayer();
+    const loop = () => {
+      if (!this.cutsceneActive || !director || !this.game?.player?.mesh) {
+        this._lookAtPlayerRaf = null;
+        return;
+      }
+      const cam = director.cam;
+      const target = this.game.player.mesh.getWorldPosition(new THREE.Vector3());
+      try {
+        // Compute yaw/pitch from camera to the player's position so FreeCamera update cooperates
+        const dir = target.clone().sub(cam.position).normalize();
+        director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+        director.freeCam.yaw = Math.atan2(dir.x, dir.z);
+        // Optionally ensure exact lookAt for this frame
+        cam.lookAt(target);
+      } catch {}
+      this._lookAtPlayerRaf = requestAnimationFrame(loop);
+    };
+    this._lookAtPlayerRaf = requestAnimationFrame(loop);
+  }
+
+  _stopCameraLookAtPlayer() {
+    if (this._lookAtPlayerRaf) {
+      cancelAnimationFrame(this._lookAtPlayerRaf);
+      this._lookAtPlayerRaf = null;
     }
   }
 
@@ -1327,43 +2461,35 @@ export class Level0Controller {
       // Take camera control
       director.takeControl();
       
-      // Get player position for initial camera
-      const playerPos = this.game.player.mesh?.position || new THREE.Vector3(-233.48, 24.44, 88.47);
-      
-      // Start camera at player position, looking at player
-      director.cutTo({
-        position: [playerPos.x, playerPos.y + 2, playerPos.z + 3],
-        lookAt: [playerPos.x, playerPos.y, playerPos.z],
-        fov: 60
-      });
-      
-      // Camera Position 1: Smoothly zoom to first position
-      const cam1Pos = [-511.98492748550547, 59.054352677049046, 290.6290871046316];
-      const cam1LookAt = [-522.212259079078, 52.12130177488762, 306.3559588108277];
-      
-      // Move camera smoothly from player to first position (use moveTo if available, otherwise cutTo)
+      // Define zoom target shot (Camera Position 1)
+      const camZoomPos = [-511.8756225736736, 49.7759679695411, 322.2752098311713];
+      const camZoomLookAt = [-528.9163123265059, 50.37587797359102, 332.7277215262022];
+
+      // Compute a start position colinear with the zoom target for a smooth dolly-in
+      // Start further back along the same view ray so the move feels like a push-in rather than a big lateral jump
+      const zoomPosV = new THREE.Vector3(...camZoomPos);
+      const zoomLookV = new THREE.Vector3(...camZoomLookAt);
+      const backDir = zoomPosV.clone().sub(zoomLookV).normalize(); // from lookAt -> camera
+      const startDistance = 35; // tune this for speed/feel of the push-in
+      const camStartPosV = zoomPosV.clone().addScaledVector(backDir, startDistance);
+      const camStartPos = [camStartPosV.x, camStartPosV.y, camStartPosV.z];
+      const camStartLookAt = camZoomLookAt;
+
+      // Start camera aligned with the zoom target
+      director.cutTo({ position: camStartPos, lookAt: camStartLookAt, fov: 60 });
+
+      // Zoom/move from start to the next specified shot (push-in along the same line)
       if (director.moveTo) {
-        await director.moveTo({
-          position: cam1Pos,
-          lookAt: cam1LookAt,
-          fov: 60,
-          duration: 2500,
-          ease: 'quadOut'
-        });
+        await director.moveTo({ position: camZoomPos, lookAt: camZoomLookAt, fov: 60, duration: 2500, ease: 'quadOut' });
       } else {
-        // Fallback: cut to position (instant transition)
-        director.cutTo({
-          position: cam1Pos,
-          lookAt: cam1LookAt,
-          fov: 60
-        });
-        await this._wait(500); // Brief pause
+        director.cutTo({ position: camZoomPos, lookAt: camZoomLookAt, fov: 60 });
+        await this._wait(500);
       }
       
       // Sync freeCam yaw/pitch
-      const lookAtVec1 = new THREE.Vector3(...cam1LookAt);
+      const lookAtVec1 = new THREE.Vector3(...camZoomLookAt);
       const cam = director.cam;
-      const dir1 = lookAtVec1.clone().sub(new THREE.Vector3(...cam1Pos)).normalize();
+      const dir1 = lookAtVec1.clone().sub(new THREE.Vector3(...camZoomPos)).normalize();
       director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir1.y, -1, 1));
       director.freeCam.yaw = Math.atan2(dir1.x, dir1.z);
       
@@ -1471,6 +2597,10 @@ export class Level0Controller {
       if (this.game.thirdCameraObject) {
         this.game.activeCamera = this.game.thirdCameraObject;
       }
+      // Auto re-lock pointer after the scene
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
       this.game.player.unlockMovement();
       this.cutsceneActive = false;
       
@@ -1478,8 +2608,13 @@ export class Level0Controller {
     } catch (e) {
       console.error('❌ [Level0Controller] Error in lift area cutscene:', e);
       try { await cm.director.release(); } catch {}
+      // Auto re-lock pointer after the scene (error path)
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
       if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
       this.game?.player?.unlockMovement?.();
+      this._resetFadeSafely(cm);
       this.cutsceneActive = false;
     }
   }
@@ -1497,13 +2632,13 @@ export class Level0Controller {
       this.game.player.lockMovement('RightPathCutscene');
       director.takeControl();
       
-      // Camera Position A (cut)
-      const posA = [          473.7477219100351,
-        425.74556424108334,
-        -46.46995264207804];
-      const lookA = [          467.4625834298615,
-        410.9627146951916,
-        -34.55507145976787];
+      // Camera Position A (cut) - updated start shot
+      const posA = [342.2284256223885,
+        247.9397063711324,
+        -219.8648795638604];
+      const lookA = [340.8827021708668,
+        241.28882295335478,
+        -201.05119363698378];
       director.cutTo({ position: posA, lookAt: lookA, fov: 60 });
       
       // Sync freeCam
@@ -1515,13 +2650,13 @@ export class Level0Controller {
       }
       await this._wait(300);
       
-      // Zoom-in move to Position B (only position provided, keep current lookAt)
-      const posB = [          316.97099059777327,
-        26.65214080517854,
-        389.6782162464306];
-      const lookB = [          307.083892677723,
-        17.455672626394914,
-        404.4318689384238];
+      // Zoom-in move to Position B - updated target shot
+      const posB = [296.84255649635713,
+        23.632012223162562,
+        414.64549200598526];
+      const lookB = [295.49683304483545,
+        16.98112880538497,
+        433.4591779328619];
       if (director.moveTo) {
         await director.moveTo({ position: posB, lookAt: lookB, fov: 60, duration: 2500, ease: 'quadOut' });
       } else {
@@ -1591,6 +2726,10 @@ export class Level0Controller {
       if (this.game.thirdCameraObject) {
         this.game.activeCamera = this.game.thirdCameraObject;
       }
+      // Auto re-lock pointer after the scene
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
       this.game.player.unlockMovement();
       this.cutsceneActive = false;
       
@@ -1600,6 +2739,7 @@ export class Level0Controller {
       try { await cm.director.release(); } catch {}
       if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
       this.game?.player?.unlockMovement?.();
+      this._resetFadeSafely(cm);
       this.cutsceneActive = false;
     }
   }
@@ -1633,6 +2773,8 @@ export class Level0Controller {
    * Update method - should be called from game loop to track player with Steve
    */
   update(delta) {
+    // (Preview disabled)
+
     // Update Steve's rotation to track player
     if (this._steveTrackingEnabled && this.steve && this.steve.mesh && this.game && this.game.player && this.game.player.mesh) {
       const playerPos = this.game.player.mesh.position;
@@ -1701,6 +2843,14 @@ export class Level0Controller {
         this._rightPathTriggerEnabled = false;
         this._runRightPathCutscene().catch(err => console.error('❌ Right-path cutscene error', err));
       }
+    }
+    
+    // Check node proximity and handle interaction
+    this._checkNodeProximity();
+    
+    // Check Richard final interaction (when exclamation mark is present)
+    if (!this.richardInteractionActive && !this.cutsceneActive) {
+      this._checkRichardFinalInteraction();
     }
   }
 
