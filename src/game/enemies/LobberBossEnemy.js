@@ -54,9 +54,9 @@ export class LobberBossEnemy extends EnemyBase {
     const base = this.colliderSize || [3.6, 3.8, 3.6];
     const s = Math.max(0.5, this.modelScale || 1.0);
     const size = [
-      Math.min(base[0] * s, 6.0),
-      Math.min(base[1] * s, 6.0),
-      Math.min(base[2] * s, 6.0)
+      Math.max(base[0] * s, 20.0),
+      Math.max(base[1] * s, 20.0),
+      Math.max(base[2] * s, 20.0)
     ];
     const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
 
