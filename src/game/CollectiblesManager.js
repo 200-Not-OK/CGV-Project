@@ -578,6 +578,17 @@ export class CollectiblesManager {
   openChest(chestCollectible) {
     console.log(`📦 Opening chest containing: ${chestCollectible.contents}`);
 
+    // Immediately hide interaction prompt and clear currentInteractableChest
+    if (this.interactionPrompt && this.currentInteractableChest === chestCollectible) {
+      const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
+      const isShowingComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
+      if (!isShowingComputerPrompt && currentText.includes('chest')) {
+        console.log('🔇 Hiding chest interaction prompt (chest opened)');
+        this.interactionPrompt.hide();
+      }
+      this.currentInteractableChest = null;
+    }
+
     // Play chest opening sound
     if (this.game && this.game.soundManager) {
       this.game.soundManager.playSFX('chest', 0.8);
@@ -846,8 +857,8 @@ export class CollectiblesManager {
       // Chests remain static unless opening
       // No floating or spinning animation by default
       
-      // Check distance to player for interaction
-      if (this.playerRef && !collectible.mesh.userData.isAnimating) {
+      // Check distance to player for interaction (exclude collected chests)
+      if (this.playerRef && !collectible.collected && !collectible.mesh.userData.isAnimating) {
         const distance = collectible.mesh.position.distanceTo(this.playerRef.mesh.position);
         if (distance < 3.0 && distance < nearestDistance) { // Interaction radius for chests
           nearestChest = collectible;
@@ -876,12 +887,19 @@ export class CollectiblesManager {
     collectible.body.position.y = collectible.mesh.position.y;
   }
   
+  // Always set currentInteractableChest when a chest is nearby (needed for handleInteraction())
+  if (nearestChest) {
+    this.currentInteractableChest = nearestChest;
+  } else {
+    this.currentInteractableChest = null;
+  }
+  
   // FIXED: Better interaction prompt coordination
   if (this.interactionPrompt) {
     const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
     const isShowingComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
     
-    if (nearestChest) {
+    if (nearestChest && !nearestChest.collected) {
       // If we have a nearby chest and no computer prompt is showing
       if (!isShowingComputerPrompt) {
         if (!this.interactionPrompt.isVisible) {
@@ -894,14 +912,12 @@ export class CollectiblesManager {
             this.interactionPrompt.show(`to open chest (${nearestChest.contents})`);
           }
         }
-        this.currentInteractableChest = nearestChest;
       }
     } else {
       // Only hide if we were showing a chest prompt AND no computer prompt is active
       if (this.interactionPrompt.isVisible && this.currentInteractableChest && !isShowingComputerPrompt) {
         console.log(`❌ Hiding chest interaction prompt (no chest nearby)`);
         this.interactionPrompt.hide();
-        this.currentInteractableChest = null;
       }
     }
   }
@@ -920,12 +936,29 @@ shouldManagePrompt() {
    * Handle interaction key press (E)
    */
   handleInteraction() {
+    console.log('🔘 handleInteraction() called', {
+      hasCurrentChest: !!this.currentInteractableChest,
+      chestId: this.currentInteractableChest?.id,
+      chestCollected: this.currentInteractableChest?.collected,
+      isAnimating: this.currentInteractableChest?.mesh?.userData?.isAnimating
+    });
+    
     if (this.currentInteractableChest && 
         !this.currentInteractableChest.collected && 
         !this.currentInteractableChest.mesh.userData.isAnimating) {
+      console.log('✅ Opening chest:', this.currentInteractableChest.id);
       this.collectItem(this.currentInteractableChest.id);
       return true;
     }
+    
+    if (!this.currentInteractableChest) {
+      console.log('❌ No currentInteractableChest set');
+    } else if (this.currentInteractableChest.collected) {
+      console.log('❌ Chest already collected');
+    } else if (this.currentInteractableChest.mesh.userData.isAnimating) {
+      console.log('❌ Chest is already animating');
+    }
+    
     return false;
   }
 
