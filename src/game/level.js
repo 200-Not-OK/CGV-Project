@@ -902,6 +902,40 @@ export class Level {
     return null;
   }
 
+  _areAllLiftPlatesActive() {
+    // Check if all 3 required pressure plates have blocks snapped onto them
+    if (!this.interactiveObjectManager || !this.placeableBlockManager) {
+      return false;
+    }
+    
+    const plateIds = ['interactive_3', 'interactive_4', 'interactive_5'];
+    const allBlocks = this.placeableBlockManager.getAllBlocks();
+    
+    // Check each plate has at least one block snapped to it
+    for (const plateId of plateIds) {
+      const plate = this.interactiveObjectManager.getObjectById(plateId);
+      if (!plate || !plate.body) {
+        return false;
+      }
+      
+      // Check if any block is snapped to this plate
+      let hasBlock = false;
+      for (const block of allBlocks) {
+        if (block.snappedToPlate === plate.body) {
+          hasBlock = true;
+          break;
+        }
+      }
+      
+      if (!hasBlock) {
+        return false; // This plate doesn't have a block snapped to it
+      }
+    }
+    
+    // All plates have blocks snapped to them
+    return true;
+  }
+
   _updateAnimatedMeshes(delta) {
     this.animatedMeshes.forEach(mesh => {
       const anim = mesh.userData.animation;
@@ -960,6 +994,25 @@ export class Level {
     const loopBehavior = anim.data.loopBehavior || 'loop';
     
     if (!path || path.length < 2) return;
+
+    // Gate the "Lift" mesh: only move if all pressure plates are active
+    if (mesh.name === 'Lift') {
+      if (!this._areAllLiftPlatesActive()) {
+        // Keep lift at first waypoint if not all plates are active
+        const firstPoint = path[0];
+        if (mesh.position.distanceTo(new THREE.Vector3(firstPoint[0], firstPoint[1], firstPoint[2])) > 0.1) {
+          mesh.position.set(firstPoint[0], firstPoint[1], firstPoint[2]);
+          if (anim.physicsBody) {
+            anim.physicsBody.position.set(firstPoint[0], firstPoint[1], firstPoint[2]);
+            anim.physicsBody.velocity.set(0, 0, 0);
+          }
+        }
+        // Reset waypoint to start
+        anim.currentWaypoint = 0;
+        return; // Don't update movement
+      }
+      // All plates are active, continue with normal movement
+    }
 
     const currentPoint = path[anim.currentWaypoint];
     let nextWaypointIndex;

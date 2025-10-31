@@ -1016,10 +1016,10 @@ async loadLevel(index) {
 
   console.log('🚀 Loading level index:', index);
   
-  // === FIX: Use the original level loading pattern ===
-  // First get the level data to check for computer
-  const levelData = await this.levelManager.loadIndex(index);
-  this.currentLevelId = levelData.id;
+  // === Get level metadata without constructing it yet ===
+  // Read from the level registry directly to avoid constructing the level twice
+  const levelData = this.levelManager.levels[index];
+  this.currentLevelId = levelData?.id;
   
   console.log('📋 Level data loaded:', this.currentLevelId);
   console.log('📍 Computer location in data:', levelData.computerLocation);
@@ -1039,7 +1039,7 @@ async loadLevel(index) {
 
   this.levelManager.physicsWorld = this.physicsWorld;
   
-  // === FIX: Load the level properly to create colliders ===
+  // === Load the level once ===
   this.level = await this.levelManager.loadIndex(index);
 
   // === COMPUTER SETUP - CALL THIS AFTER LEVEL IS LOADED ===
@@ -1126,6 +1126,10 @@ async loadLevel(index) {
   // Position player at start position from level data
   const start = this.level.data.startPosition;
   this.player.setPosition(new THREE.Vector3(...start));
+  // Ensure player and input state are sane after level switch (in case previous level hid/locked them)
+  if (this.player?.mesh) this.player.mesh.visible = true;
+  if (this.input?.setEnabled) this.input.setEnabled(true);
+  if (this.input) this.input.alwaysTrackMouse = true;
   console.log(`🏃 Player spawned at position: [${start.join(', ')}] for level: ${this.level.data.name}`);
 
   // swap UI + lights first

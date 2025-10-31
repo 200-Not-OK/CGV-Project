@@ -3,7 +3,7 @@ export const levels = [
   {
     "id": "level1A",
     "name": "Level 1A",
-    "gltfUrl": "assets/levels/revamped/ControlRoom.gltf",
+    "gltfUrl": "assets/levels/revamped/Level1.gltf",
     "startPosition": [
       0,
       12,
@@ -338,9 +338,157 @@ export const levels = [
     ],
     "ui": [
       "hud",
-      "coordinates"
+            {
+        "type": "minimap",
+        "config": {
+          "zoom": 1.6
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 7,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍏",
+              "name": "Green Apples",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
     ],
-    "enemies": [],
+    "enemies": [
+      {
+        "type": "crawler",
+        "position": [
+          -425.5900434110422,
+          20.113008499145508,
+          274.669088469345
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 29
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -433.3701164361692,
+          20.113008499145515,
+          257.2399163600309
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 30
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -426.66473887928464,
+          20.113008499145515,
+          244.20925144592724
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 31
+      },
+      {
+        "type": "crawler",
+        "position": [
+          305.7826403923883,
+          20.027040152890915,
+          24.799900322963577
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 48
+      },
+      {
+        "type": "crawler",
+        "position": [
+          287.3535217944027,
+          20.959493637084961,
+          25.74999179342933
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 49
+      },
+      {
+        "type": "crawler",
+        "position": [
+          310.305134317053,
+          20.452826949471497,
+          122.30921272529777
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 50
+      },
+      {
+        "type": "crawler",
+        "position": [
+          291.14432266074226,
+          20.509656195663787,
+          121.99517109242474
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 51
+      },
+      {
+        "type": "crawler",
+        "position": [
+          319.51625700361103,
+          20.4860567378545575,
+          274.04694288437554
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 52
+      },
+      {
+        "type": "crawler",
+        "position": [
+          274.64077936042764,
+          20.741729019436846,
+          277.2949816103393
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 53
+      }
+    ],
     "npcs": [
       {
         "type": "yellow_bot",
@@ -533,6 +681,30 @@ export const levels = [
             ]
           ],
           "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "TreeNode2",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      },
+      {
+        "meshName": "TreeNode1",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
         }
       }
     ],
@@ -985,6 +1157,149 @@ export const levels = [
         }
       }
     ],
+    "collectibles": {
+      "chests": [
+        {
+          "id": "chest_32",
+          "position": [
+            -499.085311265958,
+            38.74439334869385,
+            334.06633057575175
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_33",
+          "position": [
+            -225.62864531854856,
+            9.651255130767824,
+            278.7988147172013
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_34",
+          "position": [
+            -237.44661100161906,
+            23.226380348205566,
+            -17.687950706826655
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_35",
+          "position": [
+            -238.27040579662082,
+            23.226380348205566,
+            -23.327350349487794
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_37",
+          "position": [
+            -237.8768482421618,
+            23.226380348205566,
+            -30.485315919861755
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_38",
+          "position": [
+            -169.3996665850923,
+            9.651255130767822,
+            -82.64101963921365
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_39",
+          "position": [
+            -26.238882996084904,
+            9.439203262329102,
+            -44.85368840875811
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_40",
+          "position": [
+            27.87669681671055,
+            9.439203262329102,
+            -45.742070533768135
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_41",
+          "position": [
+            563.1453318104104,
+            23.226380348205566,
+            46.48808928837561
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_42",
+          "position": [
+            567.1970196438438,
+            9.651255130767822,
+            429.1261757803478
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_43",
+          "position": [
+            317.9556895504127,
+            9.691577911376953,
+            402.88531324057374
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_44",
+          "position": [
+            274.4610301937911,
+            9.691577911376955,
+            406.2805544583855
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_45",
+          "position": [
+            272.8105836219984,
+            9.691577911376951,
+            417.24719695393435
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_46",
+          "position": [
+            319.2518496027569,
+            9.691577911376955,
+            417.44962917460015
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_47",
+          "position": [
+            275.60067626746354,
+            9.691577911376953,
+            -62.93518485094077
+          ],
+          "contents": "potion"
+        }
+      ],
+      "potions": [],
+      "coins": [],
+      "gems": [],
+      "keys": []
+    }
   },
   {
     "id": "level1",
@@ -11093,13 +11408,19 @@ export const levels = [
         "color": 7048739
       }
     ],
-
     "computerLocation": {
-    "position": [72, 9, -100], // Position in your level3 where computer is
-    "radius": 20.0, // How close player needs to be to interact
-    "requiredLLMs": ["llm_gpt", "llm_claude", "llm_gemini"] // LLMs needed to activate
+      "position": [
+        72,
+        9,
+        -100
+      ],
+      "radius": 20,
+      "requiredLLMs": [
+        "llm_gpt",
+        "llm_claude",
+        "llm_gemini"
+      ]
     },
-
     "colliders": [
       {
         "id": "collider_1",
@@ -19824,11 +20145,15 @@ export const levels = [
     }
   },
   {
-  "id": "level1_glitched",
-  "name": "GLITCHED: Level 1",
-  "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
-  "startPosition": [0, 10, 0], // Same as original level1
-  "colliders": [
+    "id": "level1_glitched",
+    "name": "GLITCHED: Level 1",
+    "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
+    "startPosition": [
+      0,
+      10,
+      0
+    ],
+    "colliders": [
       {
         "id": "terrain_collider",
         "type": "mesh",
@@ -21188,29 +21513,22 @@ export const levels = [
         ]
       }
     ],
-  "enemies": [
-    // ADD YOUR MODIFIED ENEMIES HERE - different positions, types, patrol points
-    // Example: { type: "snake", position: [15, 0.5, 12], ... }
-  ],
-  "collectibles": {
-    // "chests": [
-    //   // ADD YOUR GLITCHED COLLECTIBLES HERE - code snippets, assets, etc.
-    //   // Example: { id: "code_react", position: [10, 2, 10], contents: "code_react" }
-    // ],
-    // "apples": [],
-    // "potions": [],
-    // "coins": [],
-    // "gems": [],
-    // "keys": []
+    "enemies": [],
+    "collectibles": {},
+    "lights": [
+      "BasicLights"
+    ]
   },
-  "lights": ['BasicLights'] // Same as original or modify
-},
-{
-  "id": "level2_glitched",
-  "name": "GLITCHED: Level 2",
-  "gltfUrl": "assets/levels/Level2/Level2.gltf", // Same as original level1
-  "startPosition": [195, 6, -83], // Same as original level1
- "colliders": [
+  {
+    "id": "level2_glitched",
+    "name": "GLITCHED: Level 2",
+    "gltfUrl": "assets/levels/Level2/Level2.gltf",
+    "startPosition": [
+      195,
+      6,
+      -83
+    ],
+    "colliders": [
       {
         "id": "collider_20",
         "type": "box",
@@ -27491,22 +27809,9 @@ export const levels = [
         ]
       }
     ],
-  "enemies": [
-    // ADD YOUR MODIFIED ENEMIES HERE - different positions, types, patrol points
-    // Example: { type: "snake", position: [15, 0.5, 12], ... }
-  ],
-  "collectibles": {
-    // "chests": [
-    //   // ADD YOUR GLITCHED COLLECTIBLES HERE - code snippets, assets, etc.
-    //   // Example: { id: "code_react", position: [10, 2, 10], contents: "code_react" }
-    // ],
-    // "apples": [],
-    // "potions": [],
-    // "coins": [],
-    // "gems": [],
-    // "keys": []
-  },
-  "lights": [
+    "enemies": [],
+    "collectibles": {},
+    "lights": [
       {
         "key": "StarLight",
         "props": {
@@ -28562,6 +28867,6 @@ export const levels = [
           ]
         }
       }
-    ],
-}
+    ]
+  }
 ];
