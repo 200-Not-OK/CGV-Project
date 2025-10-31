@@ -2790,12 +2790,12 @@ export const levels = [
               {
                 "at": 10000,
                 "ms": 3500,
-                "text": "But beware—the snakes that guard them are not ordinary creatures;"
+                "text": "But beware—the snakes that guard them are not ordinary creatures."
               },
               {
                 "at": 14000,
                 "ms": 6000,
-                "text": "each one slithers with its own cunning, and if they catch you—well, let’s just say you won’t be making it out alive."
+                "text": "Each one slithers with its own cunning, and if they catch you—well, let's just say you won't be making it out alive."
               },
               {
                 "at": 21000,

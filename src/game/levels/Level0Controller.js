@@ -37,6 +37,10 @@ export class Level0Controller {
       { center: new THREE.Vector3( 36.67, 10.66, -29.51), halfSize: new THREE.Vector3(2, 2, 2) }
     ];
     
+    // Early door triggers (before Richard interaction)
+    this._earlyDoorTriggersEnabled = false;
+    this._lastEarlyDoorMessageTime = 0;
+    
     // Lift area trigger flags
     this._liftTriggerEnabled = false;
     this._liftTriggerConsumed = false;
@@ -211,7 +215,7 @@ export class Level0Controller {
     // Show dialogue menu
 
     
-    const choice = await this._showDialogueMenu('Are u ready to the binary tree?');
+    const choice = await this._showDialogueMenu('Are you ready for the binary tree?');
 
     // Handle choice
     if (choice === 'yes') {
@@ -550,13 +554,13 @@ export class Level0Controller {
       
       // Dialogue sequence (Richard and Steve not physically present, just dialogue)
       this._setupEnterKeyListener(director);
-      await this._showCaption('oh no your stack tool broke with the fall', 0, 'Richard');
+      await this._showCaption('Oh no! Your stack tool broke with the fall.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       await this._wait(200);
       
       this._setupEnterKeyListener(director);
-      await this._showCaption('thats the bugger becareful', 0, 'Steve');
+      await this._showCaption('That\'s the bugger. Be careful.', 0, 'Steve');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       await this._wait(200);
@@ -781,7 +785,7 @@ export class Level0Controller {
 
       // Prelude caption
       this._setupEnterKeyListener(director);
-      await this._showCaption('Nice u got them both', 0, 'Richard');
+      await this._showCaption('Nice! You got them both.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -860,7 +864,7 @@ export class Level0Controller {
       // Dialogues (Enter-gated)
       // Steve: Richard its still red whats happening
       this._setupEnterKeyListener(director);
-      await this._showCaption('Richard its still red whats happening', 0, 'Steve');
+      await this._showCaption('Richard, it\'s still red. What\'s happening?', 0, 'Steve');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -872,25 +876,25 @@ export class Level0Controller {
 
       // Richard: One infiltrated...
       this._setupEnterKeyListener(director);
-      await this._showCaption('One infilitrated the tree, a big one, We wont be able to stop it', 0, 'Richard');
+      await this._showCaption('One infiltrated the tree, a big one. We won\'t be able to stop it.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
       // Richard: I know you did a lot...
       this._setupEnterKeyListener(director);
-      await this._showCaption('I know u did alot for us already but please', 0, 'Richard');
+      await this._showCaption('I know you did a lot for us already, but please...', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
       // Richard: if he cuts out connection...
       this._setupEnterKeyListener(director);
-      await this._showCaption('if he cuts out connection to the main land this whole tree will collapse please help us', 0, 'Richard');
+      await this._showCaption('If he cuts out the connection to the mainland, this whole tree will collapse. Please help us.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
       // Richard: when you decide...
       this._setupEnterKeyListener(director);
-      await this._showCaption('when u decide what to do and is ready please come to me', 0, 'Richard');
+      await this._showCaption('When you decide what to do and are ready, please come to me.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -1003,7 +1007,7 @@ export class Level0Controller {
 
       // Steve dialogue: "Richard its still red whats happening"
       this._setupEnterKeyListener(director);
-      await this._showCaption('Richard its still red whats happening', 0, 'Steve');
+      await this._showCaption('Richard, it\'s still red. What\'s happening?', 0, 'Steve');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -1082,7 +1086,7 @@ export class Level0Controller {
 
       // Richard dialogue 2: "One infilitrated the tree, a big one, We wont be able to stop it"
       this._setupEnterKeyListener(director);
-      await this._showCaption('One infilitrated the tree, a big one, We wont be able to stop it', 0, 'Richard');
+      await this._showCaption('One infiltrated the tree, a big one. We won\'t be able to stop it.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -1101,19 +1105,19 @@ export class Level0Controller {
 
       // Richard dialogue 3: "I know u did alot for us already but please" (split long dialogue)
       this._setupEnterKeyListener(director);
-      await this._showCaption('I know u did alot for us already but please', 0, 'Richard');
+      await this._showCaption('I know you did a lot for us already, but please...', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
       // Richard dialogue 4: "if he cuts out connection to the main land this whole tree will collapse please help us"
       this._setupEnterKeyListener(director);
-      await this._showCaption('if he cuts out connection to the main land this whole tree will collapse please help us', 0, 'Richard');
+      await this._showCaption('If he cuts out the connection to the mainland, this whole tree will collapse. Please help us.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
       // Richard dialogue 5: "when u decide what to do and is ready please come to me"
       this._setupEnterKeyListener(director);
-      await this._showCaption('when u decide what to do and is ready please come to me', 0, 'Richard');
+      await this._showCaption('When you decide what to do and are ready, please come to me.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -1391,7 +1395,7 @@ export class Level0Controller {
       console.log('🎭 Fade element opacity:', director._fadeEl?.style.opacity);
       
       // Show dialogue and start pacing
-      await this._showCaption('Oh no oh no oh no what are we gonna do', 3000);
+      await this._showCaption('Oh no, oh no, oh no! What are we gonna do?', 3000);
       
       // Start pacing loop
       this._startPacingLoop(director);
@@ -1446,7 +1450,7 @@ export class Level0Controller {
       this._setupEnterKeyListener(director);
       
       // Richard dialogue - wait for Enter to continue
-      await this._showCaption('IF WE DO NOT GET THE NODES WE ARE SCREWD', 0); // No auto-hide
+      await this._showCaption('IF WE DO NOT GET THE NODES, WE ARE SCREWED!', 0); // No auto-hide
       await this._waitForEnter();
       
       // Clear caption and wait a moment
@@ -1513,6 +1517,10 @@ export class Level0Controller {
       
       // Enable Richard interaction and disable other interactions
       this._enableRichardInteractionMode();
+      
+      // Enable early door triggers to block player from doors until they speak to Richard
+      this._earlyDoorTriggersEnabled = true;
+      this._lastEarlyDoorMessageTime = 0;
       
       this.cutsceneActive = false;
       console.log('✅ [Level0Controller] Cutscene complete!');
@@ -1622,7 +1630,7 @@ export class Level0Controller {
         this.richard.mesh.rotation.y = targetRotation;
         
         // Show dialogue again (non-blocking so pacing continues)
-        this._showCaption('Oh no oh no oh no what are we gonna do', 3000).catch(() => {});
+        this._showCaption('Oh no, oh no, oh no! What are we gonna do?', 3000).catch(() => {});
       } else {
         // Move towards target
         const direction = new THREE.Vector3()
@@ -1899,44 +1907,8 @@ export class Level0Controller {
    * Enable interaction mode where only Richard can be interacted with
    */
   _enableRichardInteractionMode() {
-    // Store original interact handlers
-    if (!this._originalDoorInteract) {
-      this._originalDoorInteract = this.game.doorManager?.interactWithClosestDoor;
-    }
-    
-    // Override door interactions to check for Richard first
-    if (this.game.doorManager) {
-      this.game.doorManager.interactWithClosestDoor = (playerPos) => {
-        // Check if player is near Richard first
-        if (this._isPlayerNearRichard()) {
-          this._handleRichardInteraction();
-          return true; // Consumed the interaction
-        }
-        // Completely disable doors during this phase if not near Richard
-        console.log('🚪 Doors are disabled - interact with Richard first');
-        return false;
-      };
-    }
-    
-    // Disable collectible interactions during this phase
-    if (!this._originalCollectibleInteract) {
-      this._originalCollectibleInteract = this.game.collectiblesManager?.handleInteraction;
-    }
-    
-    if (this.game.collectiblesManager) {
-      this.game.collectiblesManager.handleInteraction = () => {
-        // Check if player is near Richard first
-        if (this._isPlayerNearRichard()) {
-          this._handleRichardInteraction();
-          return true; // Consumed the interaction
-        }
-        // Consume interaction even when not near Richard to block doors
-        // Player needs to go to Richard first
-        return true; // Consume to prevent doors from being checked
-      };
-    }
-    
-    console.log('🎬 [Level0Controller] Richard interaction mode enabled - doors and collectibles disabled');
+    // This method is kept for compatibility but no longer restricts interactions
+    console.log('🎬 [Level0Controller] Richard interaction mode enabled');
   }
 
   /**
@@ -2129,6 +2101,9 @@ export class Level0Controller {
       // Re-enable doors and other interactions
       this._disableRichardInteractionMode();
       
+      // Disable early door triggers - player has spoken to Richard, normal flow resumes
+      this._earlyDoorTriggersEnabled = false;
+      
       // Show node HUD below health after this dialogue completes
       const hud = this.game?.ui?.get('hud');
       if (hud && hud.showNodeCounter) {
@@ -2151,6 +2126,8 @@ export class Level0Controller {
         this.game.activeCamera = this.game.thirdCameraObject;
       }
       this._disableRichardInteractionMode();
+      // Disable early door triggers - player has spoken to Richard, normal flow resumes
+      this._earlyDoorTriggersEnabled = false;
       this.cutsceneActive = false;
     }
   }
@@ -2159,16 +2136,6 @@ export class Level0Controller {
    * Disable Richard-only interaction mode (restore normal interactions)
    */
   _disableRichardInteractionMode() {
-    // Restore door interactions
-    if (this.game.doorManager && this._originalDoorInteract) {
-      this.game.doorManager.interactWithClosestDoor = this._originalDoorInteract;
-    }
-    
-    // Restore collectible interactions
-    if (this.game.collectiblesManager && this._originalCollectibleInteract) {
-      this.game.collectiblesManager.handleInteraction = this._originalCollectibleInteract;
-    }
-    
     // Ensure any Richard prompt is hidden when disabling mode
     const prompt2 = this.game?.ui?.get('interactionPrompt');
     if (prompt2 && this._richardPromptActive) {
@@ -2176,7 +2143,7 @@ export class Level0Controller {
       this._richardPromptActive = false;
     }
     
-    console.log('🎬 [Level0Controller] Richard interaction mode disabled - normal interactions restored');
+    console.log('🎬 [Level0Controller] Richard interaction mode disabled');
   }
 
   /**
@@ -2542,7 +2509,7 @@ export class Level0Controller {
       cm._hideCaption?.(true);
       
       this._setupEnterKeyListener(director);
-      await this._showCaption('It should help you reach places hard to get to get to,also take this communitcator. Good luck.', 0, 'Steve');
+      await this._showCaption('It should help you reach places that are hard to get to. Also, take this communicator. Good luck.', 0, 'Steve');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       
@@ -2734,7 +2701,7 @@ export class Level0Controller {
       this._setupEnterKeyListener(director);
       
       // Richard: "Theres a node"
-      await this._showCaption('Theres a node', 0, 'Richard');
+      await this._showCaption('There\'s a node.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       
@@ -2822,7 +2789,7 @@ export class Level0Controller {
       this._setupEnterKeyListener(director);
       
       // Steve: "that should get the lift back up and running"
-      await this._showCaption('that should get the lift back up and running', 0, 'Steve');
+      await this._showCaption('That should get the lift back up and running.', 0, 'Steve');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       
@@ -2900,7 +2867,7 @@ export class Level0Controller {
       
       // Richard: there s the node
       this._setupEnterKeyListener(director);
-      await this._showCaption('theres the node', 0, 'Richard');
+      await this._showCaption('There\'s the node.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       
@@ -2923,12 +2890,12 @@ export class Level0Controller {
       
       // Dialogue: Steve then Richard
       this._setupEnterKeyListener(director);
-      await this._showCaption('how did they know to guard the shortest path', 0, 'Steve');
+      await this._showCaption('How did they know to guard the shortest path?', 0, 'Steve');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       
       this._setupEnterKeyListener(director);
-      await this._showCaption('nevermind that', 0, 'Richard');
+      await this._showCaption('Never mind that.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       
@@ -2951,7 +2918,7 @@ export class Level0Controller {
       
       // Richard: final guidance
       this._setupEnterKeyListener(director);
-      await this._showCaption('you have two ways to get to the node, Choose wisely', 0, 'Richard');
+      await this._showCaption('You have two ways to get to the node. Choose wisely.', 0, 'Richard');
       await this._waitForEnter();
       cm._hideCaption?.(true);
       
@@ -3053,6 +3020,41 @@ export class Level0Controller {
           if (hud && hud.update) {
             hud.update(controller.health, controller.maxHealth);
           }
+        }
+      }
+    }
+    
+    // Check early door triggers (before Richard interaction) - push player back and show message
+    if (this._earlyDoorTriggersEnabled && !this.interactionDialogueShown && this.game?.player?.body) {
+      const p = this.game.player.body.position; // CANNON.Vec3
+      
+      for (const box of this._doorTriggerBoxes) {
+        // Simple AABB check (ignore Y or include small vertical tolerance)
+        const inX = Math.abs(p.x - box.center.x) <= box.halfSize.x;
+        const inZ = Math.abs(p.z - box.center.z) <= box.halfSize.z;
+        // Y not critical, allow generous tolerance
+        if (inX && inZ) {
+          // Calculate direction away from door (push player back)
+          const doorCenter = new CANNON.Vec3(box.center.x, p.y, box.center.z);
+          const direction = new CANNON.Vec3();
+          p.vsub(doorCenter, direction); // Direction from door to player (push away from door)
+          direction.normalize();
+          
+          // Apply pushback force
+          const pushbackForce = 500; // Adjust force magnitude as needed
+          direction.scale(pushbackForce);
+          this.game.player.body.applyImpulse(direction, p);
+          
+          // Show message (throttled to avoid spam)
+          const currentTime = Date.now();
+          if (currentTime - this._lastEarlyDoorMessageTime > 3000) { // 3 seconds between messages
+            if (this.game.showMessage) {
+              this.game.showMessage('Speak to the distressed robot.', 3000);
+            }
+            this._lastEarlyDoorMessageTime = currentTime;
+          }
+          
+          break; // Only handle one trigger at a time
         }
       }
     }
