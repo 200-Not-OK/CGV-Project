@@ -45,43 +45,46 @@ export class LobberBossEnemy extends EnemyBase {
   }
 
   // Override: create a kinematic body
-  _createPhysicsBody() {
-    if (this.body) {
-      this.physicsWorld.removeBody(this.body);
-      this.body = null;
-    }
-    // Scale collider by model scale but clamp to sane bounds to avoid absurd overlap
-    const base = this.colliderSize || [3.6, 3.8, 3.6];
-    const s = Math.max(0.5, this.modelScale || 1.0);
-    const size = [
-      Math.max(base[0] * s, 20.0),
-      Math.max(base[1] * s, 20.0),
-      Math.max(base[2] * s, 20.0)
-    ];
-    const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
-
-    const body = new CANNON.Body({
-      mass: 0,
-      type: CANNON.Body.KINEMATIC,
-      material: this.physicsWorld.materials.enemy
-    });
-    body.addShape(shape);
-    body.position.set(this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
-    body.quaternion.set(0, 0, 0, 1);
-    body.fixedRotation = true;
-    body.updateMassProperties();
-    body.allowSleep = false;
-
-    body.userData = {
-      type: 'enemy',
-      isEnemy: true,
-      isBoss: true,
-      enemyType: this.enemyType
-    };
-
-    this.physicsWorld.addBody(body);
-    this.body = body;
+_createPhysicsBody() {
+  if (this.body) {
+    this.physicsWorld.removeBody(this.body);
+    this.body = null;
   }
+
+  // Calculate scaled collider size
+  const baseSize = this.colliderSize || [3.6, 3.8, 3.6];
+  const scale = this.modelScale || 1.0;
+  
+  const size = [
+    baseSize[0] * scale,
+    baseSize[1] * scale, 
+    baseSize[2] * scale
+  ];
+
+  const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
+
+  const body = new CANNON.Body({
+    mass: 0,
+    type: CANNON.Body.KINEMATIC,
+    material: this.physicsWorld.materials.enemy
+  });
+  body.addShape(shape);
+  body.position.set(this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
+  body.quaternion.set(0, 0, 0, 1);
+  body.fixedRotation = true;
+  body.updateMassProperties();
+  body.allowSleep = false;
+
+  body.userData = {
+    type: 'enemy',
+    isEnemy: true,
+    isBoss: true,
+    enemyType: this.enemyType
+  };
+
+  this.physicsWorld.addBody(body);
+  this.body = body;
+}
 
   // Show larger health bar for boss
   _createHealthBar() {
