@@ -120,6 +120,21 @@ export class PhysicsWorld {
       }
     );
     this.world.addContactMaterial(enemyGroundContact);
+
+    // Enemy-Platform contact: mirror ground for stability on boss arena
+    const enemyPlatformContact = new CANNON.ContactMaterial(
+      this.materials.enemy,
+      this.materials.platform,
+      {
+        friction: 0.3,
+        restitution: 0.0,
+        contactEquationStiffness: 5e5,
+        contactEquationRelaxation: 6,
+        frictionEquationStiffness: 1e5,
+        frictionEquationRelaxation: 6
+      }
+    );
+    this.world.addContactMaterial(enemyPlatformContact);
     
     // Ground-Ground contact: For placeable blocks colliding with level geometry
     const groundGroundContact = new CANNON.ContactMaterial(

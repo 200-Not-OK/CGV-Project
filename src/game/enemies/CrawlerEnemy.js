@@ -23,10 +23,11 @@ export class CrawlerEnemy extends EnemyBase {
     // Crawler-specific properties
     this.enemyType = 'crawler';
     this.attackRange = 7; // Close range attack
-    this.chaseRange = options.chaseRange ?? 6.0;
-    this.patrolSpeed = 1.2;
-    this.chaseSpeed = 3.0;
-    this.attackCooldown = 2500; // 2.5 seconds between attacks
+  // Aggression / movement tuning (more aggressive, faster, but same damage)
+  this.chaseRange = options.chaseRange ?? 9.0; // wider awareness
+  this.patrolSpeed = 1.6;
+  this.chaseSpeed = 4.5; // faster chase
+  this.attackCooldown = 1800; // shorter cooldown (more aggressive behavior, damage unchanged)
     this.lastAttackTime = 0;
     this.attackTargetLocked = false;
     
@@ -65,6 +66,26 @@ export class CrawlerEnemy extends EnemyBase {
     this.moveAnimations = ['move', 'move1', 'move2', 'move3'];
     
     console.log(`🕷️ CrawlerEnemy created with health: ${this.health}, speed: ${this.speed}`);
+
+  // --- Advanced AI tuning parameters ---
+  this.detectionAngle = Math.PI * 0.95; // nearly omnidirectional
+  this.hearingRange = 12; // can detect players by sound at this range
+  this.loseInterestTimeout = 5.0; // seconds to lose chase after losing sight
+  this._timeSinceLastSeen = 0.0;
+  this.lastKnownPlayerPos = null;
+  this.lastPlayerPos = null;
+  this.lastPlayerPosTime = Date.now();
+  this.interceptFactor = 0.9; // lead the player when intercepting
+  this.maxTurnRate = 0.25; // rotation smoothing factor
+  this.acceleration = 8.0; // how quickly desired speed is approached
+  // internal desired movement smoothing vector
+  this._smoothedDesired = new THREE.Vector3();
+
+  // Enforce sensible minimums if level data overrides are too low
+  // Some levels set very small chaseRange/speed; clamp to ensure chasing actually triggers
+  this.chaseRange = Math.max(this.chaseRange || 0, 12);
+  this.hearingRange = Math.max(this.hearingRange || 0, this.chaseRange + 6);
+  this.speed = Math.max(this.speed || 0, 2.2);
   }
 
   // Override physics body creation for ground-crawling behavior
@@ -324,6 +345,12 @@ if (Array.isArray(this.colliderSize) && this.colliderSize.length >= 3) {
     const distanceToPlayer = crawlerPosition.distanceTo(playerPosition);
 
     this.stateTimer += delta;
+
+    // track last known player position and time for velocity estimation when body not available
+    if (this.lastPlayerPos == null) {
+      this.lastPlayerPos = playerPosition.clone();
+      this.lastPlayerPosTime = Date.now();
+    }
     
     // Debug logging
     if (Math.floor(this.stateTimer) % 3 === 0 && this.stateTimer % 1 < delta) {
@@ -341,11 +368,15 @@ if (Array.isArray(this.colliderSize) && this.colliderSize.length >= 3) {
         this.handleAttackState(delta, player, distanceToPlayer);
         break;
     }
+
+    // update last player pos for next frame
+    this.lastPlayerPos = playerPosition.clone();
+    this.lastPlayerPosTime = Date.now();
   }
 
   handlePatrolState(delta, player, distanceToPlayer) {
-    // Check if player is within chase range
-    if (distanceToPlayer <= this.chaseRange) {
+    // Check if player is within chase or hearing range
+    if (distanceToPlayer <= this.chaseRange || distanceToPlayer <= this.hearingRange) {
       this.behaviorState = 'chase';
       this.stateTimer = 0;
       console.log('🕷️ Crawler detected player, switching to chase');
@@ -386,12 +417,16 @@ if (Array.isArray(this.colliderSize) && this.colliderSize.length >= 3) {
           console.log(`🕷️ Moving to next patrol point: ${this.currentPatrolIndex}`);
         }
       } else {
-        // Move towards patrol point
+        // Move towards patrol point with smoother acceleration
         direction.normalize();
-        const moveDirection = new THREE.Vector3(direction.x, 0, direction.z);
-        
-        this.setDesiredMovement(moveDirection.multiplyScalar(this.patrolSpeed));
-        
+        const moveDirection = new THREE.Vector3(direction.x, 0, direction.z).normalize();
+        const desired = moveDirection.multiplyScalar(this.patrolSpeed);
+
+        // Smoothly blend into desired movement
+        const blend = Math.min(1, delta * (this.acceleration / Math.max(this.patrolSpeed, 0.1)));
+        this._smoothedDesired.lerp(desired, blend);
+        this.setDesiredMovement(this._smoothedDesired);
+
         // Play movement animation when actually moving
         if (this.currentAction === this.crawlerAnimations.idle) {
           const moveAnim = this._getRandomMoveAnimation();
@@ -411,7 +446,7 @@ if (Array.isArray(this.colliderSize) && this.colliderSize.length >= 3) {
 
   handleChaseState(delta, player, distanceToPlayer) {
     // Check if player escaped
-    if (distanceToPlayer > this.chaseRange * 1.5) {
+    if (distanceToPlayer > this.chaseRange * 1.7) {
       this.behaviorState = 'patrol';
       this.stateTimer = 0;
       console.log('🕷️ Player escaped, returning to patrol');
@@ -420,7 +455,6 @@ if (Array.isArray(this.colliderSize) && this.colliderSize.length >= 3) {
       }
       return;
     }
-
     // Check if close enough to attack
     if (distanceToPlayer <= this.attackRange) {
       const currentTime = Date.now();
@@ -428,7 +462,7 @@ if (Array.isArray(this.colliderSize) && this.colliderSize.length >= 3) {
         this.behaviorState = 'attack';
         this.stateTimer = 0;
         this.lastAttackTime = currentTime;
-              this.attackTargetLocked = true;
+        this.attackTargetLocked = true;
         console.log('🕷️ Crawler attacking!');
         if (this.crawlerAnimations.attack) {
           this._playCrawlerAction(this.crawlerAnimations.attack);
@@ -437,14 +471,35 @@ if (Array.isArray(this.colliderSize) && this.colliderSize.length >= 3) {
       }
     }
 
-    // Chase the player
-    const playerPosition = player.mesh.position;
-    const crawlerPosition = this.mesh.position;
-    const direction = new THREE.Vector3().subVectors(playerPosition, crawlerPosition);
-    direction.y = 0; // Don't chase vertically
+    // Chase the player with predictive interception and smoothed acceleration
+    const playerPosition = player.mesh.position.clone();
+    // Estimate player velocity
+    let playerVel = new THREE.Vector3(0, 0, 0);
+    if (player.body && player.body.velocity) {
+      playerVel.set(player.body.velocity.x, player.body.velocity.y, player.body.velocity.z);
+    } else if (this.lastPlayerPos) {
+      const now = Date.now();
+      const dt = Math.max((now - this.lastPlayerPosTime) / 1000, 0.0001);
+      playerVel.copy(playerPosition).sub(this.lastPlayerPos).divideScalar(dt);
+    }
+
+    const crawlerPosition = this.mesh.position.clone();
+    const distance = crawlerPosition.distanceTo(playerPosition);
+
+    // Predict interception point
+    const timeToReach = Math.max(distance / (this.chaseSpeed + 0.001), 0.1);
+    const intercept = playerPosition.clone().add(playerVel.clone().multiplyScalar(timeToReach * this.interceptFactor));
+    const direction = intercept.sub(crawlerPosition);
+    direction.y = 0; // Keep on ground plane
+    if (direction.lengthSq() < 0.0001) return;
     direction.normalize();
 
-    this.setDesiredMovement(direction.multiplyScalar(this.chaseSpeed));
+    const desired = new THREE.Vector3(direction.x, 0, direction.z).multiplyScalar(this.chaseSpeed);
+
+    // Smoothly approach desired velocity using acceleration-scaled lerp
+    const blend = Math.min(1, delta * (this.acceleration / Math.max(this.chaseSpeed, 0.1)));
+    this._smoothedDesired.lerp(desired, blend);
+    this.setDesiredMovement(this._smoothedDesired);
 
     // Play movement animation while chasing
     if (this.currentAction !== this.crawlerAnimations.attack) {
