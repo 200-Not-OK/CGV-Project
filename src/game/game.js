@@ -1058,7 +1058,7 @@ async loadLevel(index) {
       if (sunLight) { sunLight.visible = false; sunLight.intensity = 0; sunLight.castShadow = false; }
       const topFill = this.scene.userData?.topFillLight;
       if (topFill) { 
-        topFill.intensity = 0.6; 
+        topFill.intensity = 1.0; // reduce to prevent washout
         topFill.position.set(0, -800, 0);
         // Update light target to point upward from ground
         if (topFill.target) {
@@ -1066,7 +1066,16 @@ async loadLevel(index) {
         }
       }
       const ambient = this.scene.userData?.ambientFill;
-      if (ambient) { ambient.intensity = 0.55; }
+      if (ambient) { ambient.intensity = 0.7; } // lower ambient for more contrast
+      // Slightly lower overall exposure to avoid white crush
+      if (this.renderer) { this.renderer.toneMappingExposure = 0.65; }
+      // Add a touch more cloud coverage for midtones if sky present
+      try {
+        const cloudMat = this.scene.userData?.sky?.light?.cloudMaterial;
+        if (cloudMat && cloudMat.uniforms?.uCoverage) {
+          cloudMat.uniforms.uCoverage.value = 0.56;
+        }
+      } catch (_) { /* non-fatal */ }
       // Fix shader sun direction to bottom-up for illumination from ground
       if (this.scene?.userData) {
         this.scene.userData.sunOverrideDir = new THREE.Vector3(0, 1, 0);
