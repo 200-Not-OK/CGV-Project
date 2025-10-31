@@ -704,8 +704,114 @@ export class ShaderSystem {
     if (!this._timeSec) this._timeSec = 0;
     this._timeSec += Math.max(0, (deltaTime || 0)) * 0.001;
     const cam = camera;
-    const sunData = scene && scene.userData ? scene.userData.sunEye : null;
-    const sunGroup = sunData && sunData.group ? sunData.group : (scene && scene.userData ? scene.userData.sun : null);
+    const levelId = scene && scene.userData ? scene.userData.levelId : null;
+    const isLevel3 = levelId === 'level3';
+    const levelIdKnown = typeof levelId === 'string' && levelId.length > 0;
+
+    // Hard guard: if not in level 3, ensure any leftover level-3-only sun/eye objects are removed.
+    // This prevents the eye-shaped dome or related lights from leaking into other levels.
+    if (levelIdKnown && !isLevel3 && scene && scene.userData) {
+      try {
+        // Remove eyeball rig/group if still present
+        if (scene.userData.sunEye && scene.userData.sunEye.group) {
+          const g = scene.userData.sunEye.group;
+          if (g.parent) g.parent.remove(g);
+          scene.userData.sunEye = null;
+        }
+        // Remove any object marked as sun
+        const toRemove = [];
+        scene.traverse((obj) => { if (obj && obj.userData && obj.userData.isSun) toRemove.push(obj); });
+        toRemove.forEach((obj) => { if (obj.parent) obj.parent.remove(obj); });
+        // Clear top/ambient fill references from level 3 preset if lingering
+        if (scene.userData.topFillLight) {
+          try {
+            const l = scene.userData.topFillLight;
+            if (l.parent) l.parent.remove(l);
+          } catch (_) {}
+          scene.userData.topFillLight = null;
+        }
+        if (scene.userData.ambientFill) {
+          try {
+            const a = scene.userData.ambientFill;
+            if (a.parent) a.parent.remove(a);
+          } catch (_) {}
+          scene.userData.ambientFill = null;
+        }
+        // Remove any stray eyelid meshes by name if they somehow persisted
+        try {
+          const eyelids = [];
+          scene.traverse((obj) => {
+            if (!obj || !obj.isMesh) return;
+            const n = (obj.name || '').toLowerCase();
+            if (n === 'topeyelist' || n === 'bottomeyelist' || n === 'topeyelid' || n === 'bottomeyelid') {
+              eyelids.push(obj);
+            }
+          });
+          eyelids.forEach((m) => { if (m.parent) m.parent.remove(m); });
+        } catch (_) {}
+        // Heuristic purge: remove large, opaque, pure-black MeshBasicMaterial meshes (typical of L3 eye/eyelids)
+        try {
+          const suspects = [];
+          scene.traverse((obj) => {
+            if (!obj || !obj.isMesh) return;
+            const lowerName = (obj.name || '').toLowerCase();
+            if (lowerName.includes('suneye') || lowerName.includes('sun_eye') || lowerName.includes('sun-eye')) {
+              suspects.push(obj);
+              return;
+            }
+            const mat = obj.material;
+            const isBlackBasic = (() => {
+              const check = (material) => {
+                if (!material || !material.isMeshBasicMaterial) return false;
+                if (!material.color) return false;
+                const c = material.color;
+                if (!(c.r === 0 && c.g === 0 && c.b === 0)) return false;
+                if (material.map) return false;
+                if (material.opacity !== undefined && material.opacity < 0.99) return false;
+                return true;
+              };
+              if (Array.isArray(mat)) {
+                return mat.some(check);
+              }
+              return check(mat);
+            })();
+            if (!isBlackBasic) return;
+            let radius = 0;
+            const s = obj.scale ? Math.max(obj.scale.x, obj.scale.y, obj.scale.z) : 1;
+            if (obj.geometry) {
+              const geom = obj.geometry;
+              if (!geom.boundingSphere) {
+                try { geom.computeBoundingSphere(); } catch (_) {}
+              }
+              if (geom.boundingSphere && isFinite(geom.boundingSphere.radius)) {
+                radius = Math.max(radius, geom.boundingSphere.radius * s);
+              }
+              if (!geom.boundingBox) {
+                try { geom.computeBoundingBox(); } catch (_) {}
+              }
+              if (geom.boundingBox) {
+                const sz = geom.boundingBox.getSize(new THREE.Vector3());
+                radius = Math.max(radius, Math.max(sz.x, sz.y, sz.z) * 0.5 * s);
+              }
+            }
+            if (radius >= 15) {
+              suspects.push(obj);
+            }
+          });
+          suspects.forEach((m) => {
+            if (m.parent) {
+              m.parent.remove(m);
+              console.log('🧹 Removed stray Level3 black mesh outside level3:', m.name || '(unnamed)');
+            }
+          });
+        } catch (_) {}
+      } catch (_) {
+        // non-fatal cleanup
+      }
+    }
+    // Only allow sun eye/group behavior in level 3
+    const sunData = isLevel3 && scene && scene.userData ? scene.userData.sunEye : null;
+    const sunGroup = isLevel3 && sunData && sunData.group ? sunData.group : (isLevel3 && scene && scene.userData ? scene.userData.sun : null);
     const defaultSunDir = new THREE.Vector3(0.6, 0.8, 0.2);
 
     if (!this._sunTmp) {
@@ -751,7 +857,7 @@ export class ShaderSystem {
 
     let radius = sunData && sunData.radius ? sunData.radius : 300;
 
-    if (anchorPos && sunGroup) {
+    if (isLevel3 && anchorPos && sunGroup) {
       const baseDistance = sunData && sunData.distance != null ? sunData.distance : 800;
       const distance = Math.max(baseDistance, radius + 200);
       tmp.desiredPos.copy(anchorPos).addScaledVector(forwardDir || defaultSunDir, distance);
@@ -763,12 +869,12 @@ export class ShaderSystem {
       }
     }
 
-    if (anchorPos && scene && scene.userData && scene.userData.sunTarget) {
+    if (isLevel3 && anchorPos && scene && scene.userData && scene.userData.sunTarget) {
       scene.userData.sunTarget.position.lerp(anchorPos, 0.25);
     }
 
     let sunDirection = defaultSunDir.clone();
-    if (sunGroup) {
+    if (isLevel3 && sunGroup) {
       sunGroup.getWorldPosition(tmp.sunPos);
       if (tmp.sunPos.lengthSq() > 0.0001) {
         sunDirection.copy(tmp.sunPos).normalize();
@@ -780,12 +886,12 @@ export class ShaderSystem {
           }
         }
       }
-    } else if (sunData && sunData.direction) {
+    } else if (isLevel3 && sunData && sunData.direction) {
       sunDirection.copy(sunData.direction).normalize();
     }
 
     // Allow scene to override sun direction (e.g., fixed top-down for Level 3)
-    if (scene && scene.userData && scene.userData.sunOverrideDir) {
+    if (isLevel3 && scene && scene.userData && scene.userData.sunOverrideDir) {
       const o = scene.userData.sunOverrideDir;
       if (o && typeof o.x === 'number') {
         sunDirection.copy(o).normalize();
@@ -802,7 +908,7 @@ export class ShaderSystem {
     const stableSunDir = this._smoothedSunDir;
     
     // Initialize eyeState if it doesn't exist yet (before the anchorPos check)
-    if (sunData && !sunData.eyeState) {
+    if (isLevel3 && sunData && !sunData.eyeState) {
       sunData.eyeState = {
         initialized: false,
         altUp: new THREE.Vector3(1, 0, 0),
@@ -866,7 +972,7 @@ export class ShaderSystem {
       sunData.lookOffset.lerp(tmp.tmpOffset.set(0, 0, 0), 0.12);
     }
 
-    if (anchorPos && sunData && sunData.rig) {
+    if (isLevel3 && anchorPos && sunData && sunData.rig) {
       try {
         const rig = sunData.rig;
         const lookTarget = tmp.lookTarget.copy(anchorPos);
@@ -906,6 +1012,7 @@ export class ShaderSystem {
             topEyelid.rotation.x = Math.PI / 2;
             topEyelid.renderOrder = 1000;
             topEyelid.name = 'topEyelid';
+            try { topEyelid.layers.set(2); } catch (_) {}
             
             const bottomEyelid = new THREE.Mesh(
               new THREE.PlaneGeometry(eyelidSize, eyelidSize),
@@ -915,6 +1022,7 @@ export class ShaderSystem {
             bottomEyelid.rotation.x = -Math.PI / 2;
             bottomEyelid.renderOrder = 1000;
             bottomEyelid.name = 'bottomEyelid';
+            try { bottomEyelid.layers.set(2); } catch (_) {}
             
             // Add to rig so they move with the eye
             sunData.rig.add(topEyelid);
