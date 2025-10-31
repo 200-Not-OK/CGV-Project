@@ -599,6 +599,142 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
   }
 }
 
+/**
+ * Load a panorama sky texture for a level
+ * Supports both HDR (.hdr) and regular image formats (.jpg, .png, etc.)
+ * @param {THREE.Scene} scene - The Three.js scene
+ * @param {THREE.WebGLRenderer} renderer - The renderer
+ * @param {string} textureUrl - URL to the panorama texture
+ * @param {object} options - Optional settings (radius, rotation, etc.)
+ * @returns {Promise} Resolves when sky is loaded
+ */
+export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
+  if (!scene || !textureUrl) {
+    console.warn('⚠️ loadPanoramaSky: Missing scene or textureUrl');
+    return Promise.reject(new Error('Missing scene or textureUrl'));
+  }
+
+  return new Promise((resolve, reject) => {
+    // Initialize sky userData if needed
+    if (!scene.userData.sky) {
+      scene.userData.sky = { far: null, near: null, preset: null, light: null, panorama: null };
+    }
+
+    const sky = scene.userData.sky;
+    
+    // Clean up existing sky meshes
+    if (sky.far && sky.far.parent) scene.remove(sky.far);
+    if (sky.near && sky.near.parent) scene.remove(sky.near);
+    if (sky.light) {
+      const lightEntry = sky.light;
+      if (lightEntry.group && lightEntry.group.parent) {
+        scene.remove(lightEntry.group);
+      }
+    }
+    if (sky.panorama && sky.panorama.parent) {
+      scene.remove(sky.panorama);
+    }
+
+    // Clear sky references
+    sky.far = null;
+    sky.near = null;
+    sky.light = null;
+    sky.panorama = null;
+    scene.environment = null;
+
+    // Determine if it's an HDR file or regular image
+    const isHDR = textureUrl.toLowerCase().endsWith('.hdr');
+    const radius = options.radius || 1000;
+    const rotation = options.rotation || 0;
+
+    if (isHDR) {
+      // Load HDR using RGBELoader
+      const rgbeLoader = new RGBELoader();
+      rgbeLoader.load(
+        textureUrl,
+        (texture) => {
+          texture.needsUpdate = true;
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+          texture.generateMipmaps = false;
+
+          const skyGeometry = new THREE.SphereGeometry(radius, 64, 32);
+          const skyMaterial = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide,
+            fog: false,
+            depthWrite: false,
+            depthTest: true
+          });
+
+          const skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
+          skyMesh.rotation.y = Math.PI + rotation;
+          skyMesh.renderOrder = -10;
+          skyMesh.frustumCulled = false;
+          
+          scene.add(skyMesh);
+          sky.panorama = skyMesh;
+          sky.preset = 'panorama';
+
+          console.log('🌌 Panorama sky loaded (HDR):', textureUrl);
+          resolve(skyMesh);
+        },
+        undefined,
+        (error) => {
+          console.error('❌ Error loading panorama HDR:', error);
+          reject(error);
+        }
+      );
+    } else {
+      // Load regular image using TextureLoader
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(
+        textureUrl,
+        (texture) => {
+          texture.needsUpdate = true;
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+
+          const skyGeometry = new THREE.SphereGeometry(radius, 64, 32);
+          const skyMaterial = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide,
+            fog: false,
+            depthWrite: false,
+            depthTest: true
+          });
+
+          const skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
+          skyMesh.rotation.y = Math.PI + rotation;
+          skyMesh.renderOrder = -10;
+          skyMesh.frustumCulled = false;
+          
+          scene.add(skyMesh);
+          sky.panorama = skyMesh;
+          sky.preset = 'panorama';
+
+          // Optionally set as environment map for reflections
+          if (options.useAsEnvironment !== false && renderer) {
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            pmremGenerator.compileEquirectangularShader();
+            scene.environment = pmremGenerator.fromEquirectangular(texture).texture;
+            pmremGenerator.dispose();
+          }
+
+          console.log('🌌 Panorama sky loaded (image):', textureUrl);
+          resolve(skyMesh);
+        },
+        undefined,
+        (error) => {
+          console.error('❌ Error loading panorama image:', error);
+          reject(error);
+        }
+      );
+    }
+  });
+}
+
 // Hide all lights except the eyeball sun for Level 3 light preset
 export function enforceOnlySunLight(scene) {
   if (!scene || !scene.userData) return;

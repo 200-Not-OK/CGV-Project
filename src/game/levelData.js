@@ -4,6 +4,8 @@ export const levels = [
     "id": "level1",
     "name": "Level 1",
     "gltfUrl": "assets/levels/revamped/Level1.gltf",
+    "panoramaSky": "assets/skies/Panorama_Sky_14-512x512.png",  // Simple format
+
     "startPosition": [
       0,
       12,
@@ -590,9 +592,9 @@ export const levels = [
           "speed": 10,
           "path": [
             [
-              -259.41,
-              10.11,
-              110.38
+              -223.34,
+              24.44,
+              94.46
             ],
             [
               -387.15,
