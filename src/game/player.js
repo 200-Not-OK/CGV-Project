@@ -11,8 +11,9 @@ export class Player {
     
     // Player settings
     this.speed = options.speed ?? 8;
-  this.jumpStrength = options.jumpStrength ?? 24; // Increased further for higher platformer-style jumps
+    this.jumpStrength = options.jumpStrength ?? 24; // Increased further for higher platformer-style jumps
     this.shortJumpStrength = options.shortJumpStrength ?? 12; // For tap jumps
+    this.jumpDistanceBoost = options.jumpDistanceBoost ?? 20; // Horizontal velocity boost when jumping to increase jump distance
     this.sprintMultiplier = options.sprintMultiplier ?? 1.6;
     this.health = options.health ?? 100;
   // Animation smoothing and hysteresis to avoid rapid start/stop flicker
@@ -112,6 +113,13 @@ export class Player {
     this.maxJumps = 2;                      // Maximum jumps allowed (1 = normal, 2 = double jump)
     this.doubleJumpStrength = 20;           // Slightly weaker than first jump
     this.canDoubleJump = true;              // Reset when landing
+
+    // Coyote time and jump buffer (platformer QoL features)
+    this.coyoteTime = options.coyoteTime ?? 0.15; // Window after leaving platform to still jump (seconds)
+    this.jumpBufferTime = options.jumpBufferTime ?? 0.1; // Window before landing where jump input is remembered (seconds)
+    this.timeSinceGrounded = 0; // Track time since last grounded state
+    this.jumpBufferTimer = 0; // Track time since jump input was pressed
+    this.hasBufferedJump = false; // Flag for buffered jump input
 
     // Sound state for footsteps
     this.footstepTimer = 0;
@@ -790,7 +798,33 @@ export class Player {
     }
     
     // Update ground detection
+    const wasGrounded = this.isGrounded;
     this.updateGroundDetection();
+    
+    // Update coyote time tracking
+    if (this.isGrounded) {
+      this.timeSinceGrounded = 0; // Reset when grounded
+    } else {
+      this.timeSinceGrounded += delta; // Increment when airborne
+    }
+    
+    // Update jump buffer timer
+    if (this.hasBufferedJump) {
+      this.jumpBufferTimer += delta;
+      // Clear buffer if expired
+      if (this.jumpBufferTimer > this.jumpBufferTime) {
+        this.hasBufferedJump = false;
+        this.jumpBufferTimer = 0;
+      }
+    }
+    
+    // Process buffered jump if player just landed
+    if (this.hasBufferedJump && !wasGrounded && this.isGrounded && this.jumpBufferTimer <= this.jumpBufferTime) {
+      // Execute buffered jump
+      this.executeJump();
+      this.hasBufferedJump = false;
+      this.jumpBufferTimer = 0;
+    }
     
     // Update jump hold timer
     if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
@@ -799,7 +833,7 @@ export class Player {
     
     // Apply additional downward force when airborne for faster falling
     if (!this.isGrounded) {
-      const extraGravityForce = -25; // Additional downward force (negative Y)
+      const extraGravityForce = -10; // Additional downward force (negative Y) - reduced for better float/hang time
       this.body.applyForce(new CANNON.Vec3(0, extraGravityForce, 0), this.body.position);
     }
     
@@ -1107,13 +1141,13 @@ export class Player {
         // When airborne, DON'T apply wall sliding to input
         // Let the player gain velocity, then applyWallSlidingPhysics will handle collision
         // This prevents "clinging" when jumping then pressing forward into wall
-        const airControl = 0.3; // Reduce air control compared to ground movement
+        const airControl = 0.65; // Improved air control for better platformer feel
         const currentVelX = this.body.velocity.x;
         const currentVelZ = this.body.velocity.z;
         
-        // Blend current velocity with target velocity for air control
-        this.body.velocity.x = THREE.MathUtils.lerp(currentVelX, targetVelX * airControl, 0.2);
-        this.body.velocity.z = THREE.MathUtils.lerp(currentVelZ, targetVelZ * airControl, 0.2);
+        // Blend current velocity with target velocity for air control - faster response for better feel
+        this.body.velocity.x = THREE.MathUtils.lerp(currentVelX, targetVelX * airControl, 0.45);
+        this.body.velocity.z = THREE.MathUtils.lerp(currentVelZ, targetVelZ * airControl, 0.45);
       }
       
       // Rotate player to face movement direction
@@ -1133,9 +1167,9 @@ export class Player {
           this.body.velocity.x *= 0.95;
           this.body.velocity.z *= 0.95;
         } else {
-          // Normal air resistance when not touching walls
-          this.body.velocity.x *= 0.8;
-          this.body.velocity.z *= 0.8;
+          // Normal air resistance when not touching walls - reduced for better momentum preservation
+          this.body.velocity.x *= 0.93;
+          this.body.velocity.z *= 0.93;
         }
       }
     }
@@ -1248,6 +1282,33 @@ export class Player {
     }
   }
 
+  /**
+   * Execute a jump (called when jump conditions are met)
+   */
+  executeJump() {
+    this.body.velocity.y = this.jumpStrength;
+    this.isJumping = true;
+    this.jumpCount = 1;
+    this.jumpHoldTime = 0;
+
+    // Apply horizontal velocity boost for increased jump distance
+    const horizontalVel = new THREE.Vector3(this.body.velocity.x, 0, this.body.velocity.z);
+    const horizontalSpeed = horizontalVel.length();
+    if (horizontalSpeed > 0.1) {
+      // Normalize and apply boost in movement direction
+      horizontalVel.normalize();
+      this.body.velocity.x += horizontalVel.x * this.jumpDistanceBoost;
+      this.body.velocity.z += horizontalVel.z * this.jumpDistanceBoost;
+    }
+
+    // Play jump sound
+    if (this.game && this.game.soundManager) {
+      this.game.soundManager.playSFX('jump', 0.5);
+    }
+    
+    console.log('🦘 First jump');
+  }
+
   handleJumpInput(input) {
     if (!input || !input.isKey) return;
     
@@ -1257,19 +1318,14 @@ export class Player {
     }
     
     if (input.isKey('Space')) {
-      // First jump (grounded)
-      if (this.isGrounded && this.jumpCount === 0) {
-        this.body.velocity.y = this.jumpStrength;
-        this.isJumping = true;
-        this.jumpCount = 1;
-        this.jumpHoldTime = 0;
-
-        // Play jump sound
-        if (this.game && this.game.soundManager) {
-          this.game.soundManager.playSFX('jump', 0.5);
-        }
-        
-        console.log('🦘 First jump');
+      // Check if we can jump using coyote time (within window after leaving platform)
+      const canCoyoteJump = this.timeSinceGrounded <= this.coyoteTime && this.jumpCount === 0;
+      
+      // First jump (grounded or coyote time)
+      if ((this.isGrounded || canCoyoteJump) && this.jumpCount === 0) {
+        this.executeJump();
+        this.hasBufferedJump = false; // Clear buffer since we jumped
+        this.jumpBufferTimer = 0;
       }
       // Double jump (airborne, haven't used double jump yet)
       else if (this.enableDoubleJump && !this.isGrounded && this.jumpCount === 1 && this.canDoubleJump) {
@@ -1279,12 +1335,27 @@ export class Player {
         this.canDoubleJump = false; // Prevent triple jump
         this.jumpHoldTime = 0;
 
+        // Apply horizontal velocity boost for increased jump distance
+        const horizontalVel = new THREE.Vector3(this.body.velocity.x, 0, this.body.velocity.z);
+        const horizontalSpeed = horizontalVel.length();
+        if (horizontalSpeed > 0.1) {
+          // Normalize and apply boost in movement direction
+          horizontalVel.normalize();
+          this.body.velocity.x += horizontalVel.x * this.jumpDistanceBoost;
+          this.body.velocity.z += horizontalVel.z * this.jumpDistanceBoost;
+        }
+
         // Play different sound for double jump (if available)
         if (this.game && this.game.soundManager) {
           this.game.soundManager.playSFX('jump', 0.7); // Slightly louder
         }
         
         console.log('🦘🦘 Double jump!');
+      }
+      // Buffer jump input if we can't jump yet (for jump buffer system)
+      else if (!this.isGrounded && this.timeSinceGrounded > this.coyoteTime && this.jumpCount === 0) {
+        this.hasBufferedJump = true;
+        this.jumpBufferTimer = 0; // Reset timer when buffering
       }
       // Variable jump height (hold space for higher jump)
       else if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
