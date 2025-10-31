@@ -1594,38 +1594,50 @@ async loadLevel(index) {
      =========================== */
 
   _onLevelComplete() {
-    console.log('🏁 Level complete event received');
+  console.log('🏁 Level complete event received');
 
-    // Temporarily disable input while we show cinematics/overlays
-    this.input?.setEnabled?.(false);
-
-    // Kick the level-complete cinematic if your level defines it
-    if (this.level?.triggerLevelCompleteCinematic) {
-      this.level.triggerLevelCompleteCinematic(this.activeCamera, this.player);
-    }
-
-    // Play success VO (pravesh_success_vo.mp3 should be registered as "vo-success")
-    if (this.soundManager?.sfx?.['vo-success']) {
-      this.playVoiceover('vo-success', 7000);
-      // Optional captions to go with the VO (simple sequenced bubbles)
-this._runCaptionSequence([
-  { at: 0,    text: "You made it—the apples are yours and the labyrinth is behind you." },
-  { at: 1700, text: "Not bad, knight." },
-  { at: 2600, text: "I’d say you’ve earned a break… but the next challenge won’t be so forgiving." },
-  { at: 4800, text: "Take a breath, sharpen your wits," },
-  { at: 6200, text: "and get ready—Level Four awaits." }
-]);
-
-    }
-
-    // Show the victory overlay a beat after the camera move starts
-setTimeout(() => {
-  this._showVictoryOverlay();  // already shows Replay + Go To Level
-  this._showLevelPicker();     // or pop the picker directly
-  this.input?.setEnabled?.(true);
-}, 3000); // after orbit; tweak to your taste
-
+  // 🚫 Skip victory sequence for level2_glitched
+  const currentLevelId = this.currentLevelId || this.level?.data?.id;
+  if (currentLevelId === 'level2_glitched') {
+    console.log('🚫 Victory sequence skipped for level2_glitched');
+    
+    // Just re-enable input and return without showing victory screen
+    this.input?.setEnabled?.(true);
+    
+    
+    
+    
+    return;
   }
+
+  // Temporarily disable input while we show cinematics/overlays
+  this.input?.setEnabled?.(false);
+
+  // Kick the level-complete cinematic if your level defines it
+  if (this.level?.triggerLevelCompleteCinematic) {
+    this.level.triggerLevelCompleteCinematic(this.activeCamera, this.player);
+  }
+
+  // Play success VO (pravesh_success_vo.mp3 should be registered as "vo-success")
+  if (this.soundManager?.sfx?.['vo-success']) {
+    this.playVoiceover('vo-success', 7000);
+    // Optional captions to go with the VO (simple sequenced bubbles)
+    this._runCaptionSequence([
+      { at: 0,    text: "You made it—the apples are yours and the labyrinth is behind you." },
+      { at: 1700, text: "Not bad, knight." },
+      { at: 2600, text: "I'd say you've earned a break… but the next challenge won't be so forgiving." },
+      { at: 4800, text: "Take a breath, sharpen your wits," },
+      { at: 6200, text: "and get ready—Level Four awaits." }
+    ]);
+  }
+
+  // Show the victory overlay a beat after the camera move starts
+  setTimeout(() => {
+    this._showVictoryOverlay();  // already shows Replay + Go To Level
+    this._showLevelPicker();     // or pop the picker directly
+    this.input?.setEnabled?.(true);
+  }, 3000); // after orbit; tweak to your taste
+}
 
   _runCaptionSequence(segments = []) {
     // Uses the same simple bubble you already use in showSimpleDialogue

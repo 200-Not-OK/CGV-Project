@@ -1672,7 +1672,7 @@ export const levels = [
   },
   {
     "id": "level2",
-    "name": "Level 3: The Serpent's Labyrinth",
+    "name": "Level 2: The Serpent's Labyrinth",
     "order": 0,
     "gltfUrl": "assets/levels/Level2/Level2.gltf",
     "startPosition": [
@@ -20065,6 +20065,40 @@ export const levels = [
       6,
       -83
     ],
+    "ui": [
+      "hud",
+      {
+        "type": "minimap",
+        "config": {
+          "zoom": 1.6
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 2,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🖥️",
+              "name": "Assets",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
+    ],
     "colliders": [
       {
         "id": "collider_20",
@@ -26346,24 +26380,2181 @@ export const levels = [
         ]
       }
     ],
-    "enemies": [],
+    "sounds": {
+      "music": {
+        "level2-theme": {
+          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
+          "loop": true
+        }
+      },
+      "sfx": {
+        "door": {
+          "url": "assets/audio/sfx/door.mp3",
+          "loop": false
+        },
+        "sword": {
+          "url": "assets/audio/sfx/sword.mp3",
+          "loop": false
+        },
+        "chest": {
+          "url": "assets/audio/sfx/chest_open.mp3",
+          "loop": false
+        },
+        "snake": {
+          "url": "assets/audio/sfx/snake.wav",
+          "loop": false
+        },
+        "potion": {
+          "url": "assets/audio/sfx/potion.wav",
+          "loop": false
+        },
+        "walk": {
+          "url": "assets/audio/sfx/walking.mp3",
+          "loop": false
+        },
+
+        "torch": {
+          "url": "assets/audio/ambient/torch.mp3",
+          "loop": false
+        },
+        "low-health": {
+          "url": "assets/audio/sfx/low_health.mp3",
+          "loop": false
+        },
+        "rumbling": {
+          "url": "assets/audio/sfx/rumbling.wav",
+          "loop": false
+        }
+      },
+      "ambient": {
+        "torch-ambient": {
+          "url": "assets/audio/ambient/torch.mp3",
+          "loop": true
+        }
+      },
+      "playMusic": "level2-theme",
+      "playVoiceover": null
+    },
+    "proximitySounds": [
+      {
+        "position": [
+          203,
+          3.7,
+          -66.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
+      },
+      {
+        "position": [
+          187.9,
+          3.7,
+          -66.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
+      },
+      {
+        "position": [
+          160.3,
+          4.6,
+          -36.1
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
+      },
+      {
+        "position": [
+          160.3,
+          4.6,
+          -25.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
+      }
+    ],
+    "enemies": [
+      {
+        "type": "snake",
+        "position": [
+          140,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            140,
+            1.4,
+            -30
+          ],
+          [
+            130,
+            1.4,
+            -20
+          ],
+          [
+            150,
+            1.4,
+            -20
+          ],
+          [
+            145,
+            1.4,
+            -35
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          140,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            140,
+            1.4,
+            -30
+          ],
+          [
+            130,
+            1.4,
+            -20
+          ],
+          [
+            150,
+            1.4,
+            -20
+          ],
+          [
+            145,
+            1.4,
+            -35
+          ]
+        ],
+        "health": 18,
+        "speed": 18,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          151.97,
+          1.4,
+          28.12
+        ],
+        "patrolPoints": [
+          [
+            151.97,
+            1.4,
+            28.12
+          ],
+          [
+            141.97,
+            1.4,
+            38.12
+          ],
+          [
+            161.97,
+            1.4,
+            38.12
+          ],
+          [
+            156.97,
+            1.4,
+            23.12
+          ]
+        ],
+        "health": 16,
+        "speed": 20,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          122.02,
+          1.4,
+          126.51
+        ],
+        "patrolPoints": [
+          [
+            122.02,
+            1.4,
+            126.51
+          ],
+          [
+            112.02,
+            1.4,
+            136.51
+          ],
+          [
+            132.02,
+            1.4,
+            136.51
+          ],
+          [
+            127.02,
+            1.4,
+            121.51
+          ]
+        ],
+        "health": 20,
+        "speed": 16,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          88.65,
+          1.4,
+          165.63
+        ],
+        "patrolPoints": [
+          [
+            88.65,
+            1.4,
+            165.63
+          ],
+          [
+            78.65,
+            1.4,
+            175.63
+          ],
+          [
+            98.65,
+            1.4,
+            175.63
+          ],
+          [
+            93.65,
+            1.4,
+            160.63
+          ]
+        ],
+        "health": 15,
+        "speed": 22,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          220.46,
+          1.4,
+          69.91
+        ],
+        "patrolPoints": [
+          [
+            220.46,
+            1.4,
+            69.91
+          ],
+          [
+            210.46,
+            1.4,
+            79.91
+          ],
+          [
+            230.46,
+            1.4,
+            79.91
+          ],
+          [
+            225.46,
+            1.4,
+            64.91
+          ]
+        ],
+        "health": 17,
+        "speed": 19,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          150,
+          1.4,
+          0
+        ],
+        "patrolPoints": [
+          [
+            150,
+            1.4,
+            0
+          ],
+          [
+            130,
+            1.4,
+            -20
+          ],
+          [
+            170,
+            1.4,
+            20
+          ],
+          [
+            140,
+            1.4,
+            40
+          ],
+          [
+            160,
+            1.4,
+            -40
+          ]
+        ],
+        "health": 19,
+        "speed": 17,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          85.9,
+          1.4,
+          100
+        ],
+        "patrolPoints": [
+          [
+            85,
+            1.4,
+            100
+          ],
+          [
+            80,
+            1.4,
+            120
+          ],
+          [
+            120,
+            1.4,
+            80
+          ],
+          [
+            90,
+            1.4,
+            90
+          ],
+          [
+            110,
+            1.4,
+            110
+          ]
+        ],
+        "health": 16,
+        "speed": 21,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          80,
+          1.4,
+          200
+        ],
+        "patrolPoints": [
+          [
+            80,
+            1.4,
+            200
+          ],
+          [
+            60,
+            1.4,
+            180
+          ],
+          [
+            100,
+            1.4,
+            220
+          ],
+          [
+            70,
+            1.4,
+            190
+          ],
+          [
+            90,
+            1.4,
+            210
+          ]
+        ],
+        "health": 22,
+        "speed": 15,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          238.9,
+          1.4,
+          70
+        ],
+        "patrolPoints": [
+          [
+            250,
+            1.4,
+            50
+          ],
+          [
+            230,
+            1.4,
+            30
+          ],
+          [
+            270,
+            1.4,
+            70
+          ],
+          [
+            240,
+            1.4,
+            60
+          ],
+          [
+            260,
+            1.4,
+            40
+          ]
+        ],
+        "health": 14,
+        "speed": 23,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          180.6,
+          1.4,
+          90.3
+        ],
+        "patrolPoints": [
+          [
+            180,
+            1.4,
+            100
+          ],
+          [
+            160,
+            1.4,
+            80
+          ],
+          [
+            200,
+            1.4,
+            120
+          ],
+          [
+            170,
+            1.4,
+            90
+          ],
+          [
+            190,
+            1.4,
+            110
+          ]
+        ],
+        "health": 18,
+        "speed": 18,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          300,
+          1.4,
+          120
+        ],
+        "patrolPoints": [
+          [
+            300,
+            1.4,
+            120
+          ],
+          [
+            280,
+            1.4,
+            100
+          ],
+          [
+            320,
+            1.4,
+            140
+          ],
+          [
+            290,
+            1.4,
+            130
+          ],
+          [
+            310,
+            1.4,
+            110
+          ]
+        ],
+        "health": 17,
+        "speed": 20,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          70,
+          1.4,
+          60
+        ],
+        "patrolPoints": [
+          [
+            70,
+            1.4,
+            40
+          ],
+          [
+            60,
+            1.4,
+            50
+          ],
+          [
+            80,
+            1.4,
+            30
+          ],
+          [
+            65,
+            1.4,
+            35
+          ],
+          [
+            75,
+            1.4,
+            45
+          ]
+        ],
+        "health": 16,
+        "speed": 21,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          198.7,
+          1.4,
+          -30.1
+        ],
+        "patrolPoints": [
+          [
+            200,
+            1.4,
+            -20
+          ],
+          [
+            190,
+            1.4,
+            -10
+          ],
+          [
+            210,
+            1.4,
+            -30
+          ],
+          [
+            195,
+            1.4,
+            -25
+          ],
+          [
+            205,
+            1.4,
+            -15
+          ]
+        ],
+        "health": 19,
+        "speed": 17,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          40,
+          1.4,
+          160
+        ],
+        "patrolPoints": [
+          [
+            40,
+            1.4,
+            160
+          ],
+          [
+            30,
+            1.4,
+            170
+          ],
+          [
+            50,
+            1.4,
+            150
+          ],
+          [
+            35,
+            1.4,
+            155
+          ],
+          [
+            45,
+            1.4,
+            165
+          ]
+        ],
+        "health": 15,
+        "speed": 22,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          108,
+          1.4,
+          75
+        ],
+        "patrolPoints": [
+          [
+            108,
+            1.4,
+            75
+          ],
+          [
+            104,
+            1.4,
+            78
+          ],
+          [
+            112,
+            1.4,
+            72
+          ],
+          [
+            106,
+            1.4,
+            82
+          ],
+          [
+            110,
+            1.4,
+            68
+          ]
+        ],
+        "health": 16,
+        "speed": 38,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          96,
+          1.4,
+          85
+        ],
+        "patrolPoints": [
+          [
+            96,
+            1.4,
+            85
+          ],
+          [
+            92,
+            1.4,
+            88
+          ],
+          [
+            100,
+            1.4,
+            82
+          ],
+          [
+            94,
+            1.4,
+            92
+          ],
+          [
+            98,
+            1.4,
+            78
+          ]
+        ],
+        "health": 18,
+        "speed": 36,
+        "chaseRange": 14,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          84,
+          1.4,
+          95
+        ],
+        "patrolPoints": [
+          [
+            84,
+            1.4,
+            95
+          ],
+          [
+            80,
+            1.4,
+            98
+          ],
+          [
+            88,
+            1.4,
+            92
+          ],
+          [
+            82,
+            1.4,
+            102
+          ],
+          [
+            86,
+            1.4,
+            88
+          ]
+        ],
+        "health": 20,
+        "speed": 34,
+        "chaseRange": 16,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          102,
+          1.4,
+          90
+        ],
+        "patrolPoints": [
+          [
+            102,
+            1.4,
+            90
+          ],
+          [
+            98,
+            1.4,
+            93
+          ],
+          [
+            106,
+            1.4,
+            87
+          ],
+          [
+            100,
+            1.4,
+            97
+          ],
+          [
+            104,
+            1.4,
+            83
+          ]
+        ],
+        "health": 17,
+        "speed": 37,
+        "chaseRange": 13,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          90,
+          1.4,
+          80
+        ],
+        "patrolPoints": [
+          [
+            90,
+            1.4,
+            80
+          ],
+          [
+            86,
+            1.4,
+            83
+          ],
+          [
+            94,
+            1.4,
+            77
+          ],
+          [
+            88,
+            1.4,
+            87
+          ],
+          [
+            92,
+            1.4,
+            73
+          ]
+        ],
+        "health": 19,
+        "speed": 35,
+        "chaseRange": 15,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          85,
+          1.4,
+          125
+        ],
+        "patrolPoints": [
+          [
+            85,
+            1.4,
+            125
+          ],
+          [
+            81,
+            1.4,
+            128
+          ],
+          [
+            89,
+            1.4,
+            122
+          ],
+          [
+            83,
+            1.4,
+            132
+          ],
+          [
+            87,
+            1.4,
+            118
+          ]
+        ],
+        "health": 15,
+        "speed": 40,
+        "chaseRange": 18,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          80,
+          1.4,
+          120
+        ],
+        "patrolPoints": [
+          [
+            80,
+            1.4,
+            120
+          ],
+          [
+            76,
+            1.4,
+            123
+          ],
+          [
+            84,
+            1.4,
+            117
+          ],
+          [
+            78,
+            1.4,
+            127
+          ],
+          [
+            82,
+            1.4,
+            113
+          ]
+        ],
+        "health": 22,
+        "speed": 32,
+        "chaseRange": 17,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          90,
+          1.4,
+          130
+        ],
+        "patrolPoints": [
+          [
+            90,
+            1.4,
+            130
+          ],
+          [
+            86,
+            1.4,
+            133
+          ],
+          [
+            94,
+            1.4,
+            127
+          ],
+          [
+            88,
+            1.4,
+            137
+          ],
+          [
+            92,
+            1.4,
+            123
+          ]
+        ],
+        "health": 21,
+        "speed": 33,
+        "chaseRange": 19,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          20,
+          1.4,
+          -50
+        ],
+        "patrolPoints": [
+          [
+            20,
+            1.4,
+            -50
+          ],
+          [
+            10,
+            1.4,
+            -60
+          ],
+          [
+            30,
+            1.4,
+            -40
+          ],
+          [
+            15,
+            1.4,
+            -45
+          ],
+          [
+            25,
+            1.4,
+            -55
+          ]
+        ],
+        "health": 15,
+        "speed": 35,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          50,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            -10,
+            1.4,
+            0
+          ],
+          [
+            -15,
+            1.4,
+            -10
+          ],
+          [
+            -5,
+            1.4,
+            10
+          ],
+          [
+            -12,
+            1.4,
+            5
+          ],
+          [
+            -8,
+            1.4,
+            -5
+          ]
+        ],
+        "health": 18,
+        "speed": 32,
+        "chaseRange": 15,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          50,
+          1.4,
+          -80
+        ],
+        "patrolPoints": [
+          [
+            50,
+            1.4,
+            -80
+          ],
+          [
+            40,
+            1.4,
+            -90
+          ],
+          [
+            60,
+            1.4,
+            -70
+          ],
+          [
+            45,
+            1.4,
+            -75
+          ],
+          [
+            55,
+            1.4,
+            -85
+          ]
+        ],
+        "health": 20,
+        "speed": 38,
+        "chaseRange": 14,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          100.4,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            100,
+            1.4,
+            -60
+          ],
+          [
+            90,
+            1.4,
+            -70
+          ],
+          [
+            110,
+            1.4,
+            -50
+          ],
+          [
+            95,
+            1.4,
+            -55
+          ],
+          [
+            105,
+            1.4,
+            -65
+          ]
+        ],
+        "health": 16,
+        "speed": 36,
+        "chaseRange": 13,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          180,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            180,
+            1.4,
+            -30
+          ],
+          [
+            170,
+            1.4,
+            -40
+          ],
+          [
+            190,
+            1.4,
+            -20
+          ],
+          [
+            175,
+            1.4,
+            -25
+          ],
+          [
+            185,
+            1.4,
+            -35
+          ]
+        ],
+        "health": 22,
+        "speed": 34,
+        "chaseRange": 16,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          240,
+          1.4,
+          10
+        ],
+        "patrolPoints": [
+          [
+            240,
+            1.4,
+            10
+          ],
+          [
+            230,
+            1.4,
+            0
+          ],
+          [
+            250,
+            1.4,
+            20
+          ],
+          [
+            235,
+            1.4,
+            15
+          ],
+          [
+            245,
+            1.4,
+            5
+          ]
+        ],
+        "health": 19,
+        "speed": 37,
+        "chaseRange": 11,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          200,
+          1.4,
+          85.2
+        ],
+        "patrolPoints": [
+          [
+            200,
+            1.4,
+            82.5
+          ],
+          [
+            190,
+            1.4,
+            90
+          ],
+          [
+            206.6,
+            1.4,
+            94
+          ],
+          [
+            195,
+            1.4,
+            90
+          ],
+          [
+            205,
+            1.4,
+            95
+          ]
+        ],
+        "health": 17,
+        "speed": 39,
+        "chaseRange": 17,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          150,
+          1.4,
+          150
+        ],
+        "patrolPoints": [
+          [
+            150,
+            1.4,
+            150
+          ],
+          [
+            140,
+            1.4,
+            140
+          ],
+          [
+            160,
+            1.4,
+            160
+          ],
+          [
+            145,
+            1.4,
+            155
+          ],
+          [
+            155,
+            1.4,
+            145
+          ]
+        ],
+        "health": 21,
+        "speed": 33,
+        "chaseRange": 18,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          80,
+          1.4,
+          180
+        ],
+        "patrolPoints": [
+          [
+            80,
+            1.4,
+            180
+          ],
+          [
+            70,
+            1.4,
+            170
+          ],
+          [
+            90,
+            1.4,
+            190
+          ],
+          [
+            75,
+            1.4,
+            185
+          ],
+          [
+            85,
+            1.4,
+            175
+          ]
+        ],
+        "health": 14,
+        "speed": 40,
+        "chaseRange": 19,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          30,
+          1.4,
+          120
+        ],
+        "patrolPoints": [
+          [
+            30,
+            1.4,
+            120
+          ],
+          [
+            20,
+            1.4,
+            110
+          ],
+          [
+            40,
+            1.4,
+            130
+          ],
+          [
+            25,
+            1.4,
+            125
+          ],
+          [
+            35,
+            1.4,
+            115
+          ]
+        ],
+        "health": 23,
+        "speed": 31,
+        "chaseRange": 20,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          27,
+          1.4,
+          40
+        ],
+        "patrolPoints": [
+          [
+            -5,
+            1.4,
+            80
+          ],
+          [
+            -10,
+            1.4,
+            70
+          ],
+          [
+            20,
+            1.4,
+            90
+          ],
+          [
+            24,
+            1.4,
+            20
+          ],
+          [
+            26,
+            1.4,
+            40
+          ]
+        ],
+        "health": 16,
+        "speed": 42,
+        "chaseRange": 14,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          116.7,
+          1.4,
+          70
+        ],
+        "patrolPoints": [
+          [
+            120,
+            1.4,
+            50
+          ],
+          [
+            110,
+            1.4,
+            40
+          ],
+          [
+            130,
+            1.4,
+            60
+          ],
+          [
+            115,
+            1.4,
+            55
+          ],
+          [
+            125,
+            1.4,
+            45
+          ]
+        ],
+        "health": 18,
+        "speed": 35,
+        "chaseRange": 16,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          220,
+          1.4,
+          180
+        ],
+        "patrolPoints": [
+          [
+            220,
+            1.4,
+            180
+          ],
+          [
+            210,
+            1.4,
+            170
+          ],
+          [
+            230,
+            1.4,
+            190
+          ],
+          [
+            215,
+            1.4,
+            185
+          ],
+          [
+            225,
+            1.4,
+            175
+          ]
+        ],
+        "health": 20,
+        "speed": 36,
+        "chaseRange": 15,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          10,
+          1.4,
+          -20
+        ],
+        "patrolPoints": [
+          [
+            10,
+            1.4,
+            -20
+          ],
+          [
+            0,
+            1.4,
+            -30
+          ],
+          [
+            20,
+            1.4,
+            -10
+          ],
+          [
+            5,
+            1.4,
+            -15
+          ],
+          [
+            15,
+            1.4,
+            -25
+          ]
+        ],
+        "health": 17,
+        "speed": 41,
+        "chaseRange": 13,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          190,
+          1.4,
+          30
+        ],
+        "patrolPoints": [
+          [
+            190,
+            1.4,
+            30
+          ],
+          [
+            180,
+            1.4,
+            20
+          ],
+          [
+            200,
+            1.4,
+            40
+          ],
+          [
+            185,
+            1.4,
+            35
+          ],
+          [
+            195,
+            1.4,
+            25
+          ]
+        ],
+        "health": 19,
+        "speed": 38,
+        "chaseRange": 17,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          151.97,
+          1.4,
+          28.12
+        ],
+        "patrolPoints": [
+          [
+            151.97,
+            1.4,
+            28.12
+          ],
+          [
+            141.97,
+            1.4,
+            38.12
+          ],
+          [
+            161.97,
+            1.4,
+            38.12
+          ],
+          [
+            156.97,
+            1.4,
+            23.12
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          122.02,
+          1.4,
+          126.51
+        ],
+        "patrolPoints": [
+          [
+            122.02,
+            1.4,
+            126.51
+          ],
+          [
+            112.02,
+            1.4,
+            136.51
+          ],
+          [
+            132.02,
+            1.4,
+            136.51
+          ],
+          [
+            127.02,
+            1.4,
+            121.51
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          88.65,
+          1.4,
+          165.63
+        ],
+        "patrolPoints": [
+          [
+            88.65,
+            1.4,
+            165.63
+          ],
+          [
+            78.65,
+            1.4,
+            175.63
+          ],
+          [
+            98.65,
+            1.4,
+            175.63
+          ],
+          [
+            93.65,
+            1.4,
+            160.63
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          179,
+          1.4,
+          48
+        ],
+        "patrolPoints": [
+          [
+            179,
+            1.4,
+            48
+          ],
+          [
+            169,
+            1.4,
+            58
+          ],
+          [
+            189,
+            1.4,
+            58
+          ],
+          [
+            184,
+            1.4,
+            43
+          ]
+        ],
+        "health": 18,
+        "speed": 36,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          179,
+          1.4,
+          48
+        ],
+        "patrolPoints": [
+          [
+            179,
+            1.4,
+            48
+          ],
+          [
+            169,
+            1.4,
+            58
+          ],
+          [
+            189,
+            1.4,
+            58
+          ],
+          [
+            184,
+            1.4,
+            43
+          ],
+          [
+            174,
+            1.4,
+            38
+          ]
+        ],
+        "health": 22,
+        "speed": 18,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          90.6,
+          1.4,
+          21
+        ],
+        "patrolPoints": [
+          [
+            93,
+            1.4,
+            31
+          ],
+          [
+            83,
+            1.4,
+            41
+          ],
+          [
+            103,
+            1.4,
+            41
+          ],
+          [
+            98,
+            1.4,
+            26
+          ]
+        ],
+        "health": 16,
+        "speed": 38,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          87.1,
+          1.4,
+          22.4
+        ],
+        "patrolPoints": [
+          [
+            93,
+            1.4,
+            31
+          ],
+          [
+            83,
+            1.4,
+            41
+          ],
+          [
+            103,
+            1.4,
+            41
+          ],
+          [
+            98,
+            1.4,
+            26
+          ],
+          [
+            88,
+            1.4,
+            21
+          ]
+        ],
+        "health": 20,
+        "speed": 20,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          239,
+          1.4,
+          42
+        ],
+        "patrolPoints": [
+          [
+            239,
+            1.4,
+            42
+          ],
+          [
+            229,
+            1.4,
+            52
+          ],
+          [
+            249,
+            1.4,
+            52
+          ],
+          [
+            244,
+            1.4,
+            37
+          ]
+        ],
+        "health": 19,
+        "speed": 35,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          239,
+          1.4,
+          42
+        ],
+        "patrolPoints": [
+          [
+            239,
+            1.4,
+            42
+          ],
+          [
+            229,
+            1.4,
+            52
+          ],
+          [
+            249,
+            1.4,
+            52
+          ],
+          [
+            244,
+            1.4,
+            37
+          ],
+          [
+            234,
+            1.4,
+            32
+          ]
+        ],
+        "health": 24,
+        "speed": 17,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          202,
+          1.4,
+          19
+        ],
+        "patrolPoints": [
+          [
+            202,
+            1.4,
+            19
+          ],
+          [
+            192,
+            1.4,
+            29
+          ],
+          [
+            212,
+            1.4,
+            29
+          ],
+          [
+            207,
+            1.4,
+            14
+          ]
+        ],
+        "health": 17,
+        "speed": 37,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          202,
+          1.4,
+          19
+        ],
+        "patrolPoints": [
+          [
+            202,
+            1.4,
+            19
+          ],
+          [
+            192,
+            1.4,
+            29
+          ],
+          [
+            212,
+            1.4,
+            29
+          ],
+          [
+            207,
+            1.4,
+            14
+          ],
+          [
+            197,
+            1.4,
+            9
+          ]
+        ],
+        "health": 21,
+        "speed": 19,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          239,
+          1.4,
+          5
+        ],
+        "patrolPoints": [
+          [
+            239,
+            1.4,
+            5
+          ],
+          [
+            229,
+            1.4,
+            15
+          ],
+          [
+            249,
+            1.4,
+            15
+          ],
+          [
+            244,
+            1.4,
+            0
+          ]
+        ],
+        "health": 15,
+        "speed": 40,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          239,
+          1.4,
+          5
+        ],
+        "patrolPoints": [
+          [
+            239,
+            1.4,
+            5
+          ],
+          [
+            229,
+            1.4,
+            15
+          ],
+          [
+            249,
+            1.4,
+            15
+          ],
+          [
+            244,
+            1.4,
+            0
+          ],
+          [
+            234,
+            1.4,
+            -5
+          ]
+        ],
+        "health": 19,
+        "speed": 21,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          220.46,
+          1.4,
+          69.91
+        ],
+        "patrolPoints": [
+          [
+            220.46,
+            1.4,
+            69.91
+          ],
+          [
+            210.46,
+            1.4,
+            79.91
+          ],
+          [
+            230.46,
+            1.4,
+            79.91
+          ],
+          [
+            225.46,
+            1.4,
+            64.91
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          -4.63,
+          1.4,
+          179.3
+        ],
+        "patrolPoints": [
+          [
+            -4.63,
+            1.4,
+            179.3
+          ],
+          [
+            -14.63,
+            1.4,
+            189.3
+          ],
+          [
+            5.37,
+            1.4,
+            189.3
+          ],
+          [
+            0.37,
+            1.4,
+            174.3
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          75.63,
+          1.4,
+          -7.35
+        ],
+        "patrolPoints": [
+          [
+            75.63,
+            1.4,
+            -7.35
+          ],
+          [
+            65.63,
+            1.4,
+            2.65
+          ],
+          [
+            85.63,
+            1.4,
+            2.65
+          ],
+          [
+            80.63,
+            1.4,
+            -12.35
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          30,
+          2,
+          -25
+        ],
+        "patrolPoints": [
+          [
+            30,
+            2,
+            -25
+          ],
+          [
+            25,
+            2,
+            -20
+          ],
+          [
+            35,
+            2,
+            -30
+          ],
+          [
+            40,
+            2,
+            -20
+          ],
+          [
+            25,
+            2,
+            -35
+          ]
+        ],
+        "health": 500,
+        "speed": 3,
+        "chaseRange": 12
+      }
+    ],
     "collectibles": {
       "chests": [
         {
-          "id": "chest_128",
+          "id": "chest_341",
           "position": [
-            192.01693453009963,
-            0.1613643113989074,
-            -78.07541833012476
+            102.83618171070033,
+            0.1245687627273453,
+            127.53572840599536
           ],
           "contents": "apple"
         },
         {
-          "id": "chest_129",
+          "id": "chest_342",
           "position": [
-            195.1854559214592,
-            0.1613643113989074,
-            -88.227192380506
+            179.49076303736004,
+            0.22766118299212934,
+            96.26284249506361
           ],
           "contents": "apple"
         }

@@ -36,21 +36,32 @@ window.addEventListener('load', () => {
   });
 
   // React to completion from either DOM custom event or internal bus
-  window.addEventListener('level:complete', () => {
-    // Pause input while showing the UI
-    game?.input?.setEnabled?.(false);
+ window.addEventListener('level:complete', (event) => {
+  // Get level ID from event detail or game instance
+  const levelId = event.detail?.levelId || game?.currentLevelId || game?.level?.data?.id;
+  
+  // 🚫 Skip victory sequence for level2_glitched
+  if (levelId === 'level2_glitched') {
+    console.log('🚫 Victory sequence skipped for level2_glitched in main.js');
+    return; // Exit early, no victory screen
+  }
 
-    // (a) trigger the level-complete cinematic if present
-    game?.level?.triggerLevelCompleteCinematic?.();
+  console.log('🏁 Level complete in main.js for level:', levelId);
 
-    // (b) play success VO quickly (if you prefer to wait for cinematic: set a timeout)
-    if (game?.soundManager?.sfx?.['vo-success']) {
-      game.playVoiceover('vo-success', 6000);
-    }
+  // Pause input while showing the UI
+  game?.input?.setEnabled?.(false);
 
-    // (c) show the overlay shortly after the camera move starts (feel-good timing)
-    setTimeout(() => overlay.show('Victory! The Great Serpent falls 🏆'), 1200);
-  });
+  // (a) trigger the level-complete cinematic if present
+  game?.level?.triggerLevelCompleteCinematic?.();
+
+  // (b) play success VO quickly (if you prefer to wait for cinematic: set a timeout)
+  if (game?.soundManager?.sfx?.['vo-success']) {
+    game.playVoiceover('vo-success', 6000);
+  }
+
+  // (c) show the overlay shortly after the camera move starts (feel-good timing)
+  setTimeout(() => overlay.show('Victory! The Great Serpent falls 🏆'), 1200);
+});
 
   if (game?.events?.on) {
     game.events.on('level:complete', () => {
