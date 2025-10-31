@@ -165,6 +165,12 @@ export const QualityPresets = {
             intensity: 2.0,
             borderWidth: 0.12,
             allowAdditive: false
+        },
+        // Toon/cartoon style flags
+        toon: {
+            enabled: false,
+            posterizeLevels: 0,
+            outlinePlayer: false
         }
     },
 
@@ -211,6 +217,12 @@ export const QualityPresets = {
             intensity: 2.6,
             borderWidth: 0.14,
             allowAdditive: true
+        },
+        // Toon/cartoon style flags
+        toon: {
+            enabled: true,
+            posterizeLevels: 5,
+            outlinePlayer: false
         }
     },
 
@@ -255,6 +267,12 @@ export const QualityPresets = {
             intensity: 3.2,
             borderWidth: 0.15,
             allowAdditive: true
+        },
+        // Toon/cartoon style flags
+        toon: {
+            enabled: true,
+            posterizeLevels: 6,
+            outlinePlayer: true
         }
     }
 };
