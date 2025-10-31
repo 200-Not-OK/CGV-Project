@@ -161,6 +161,68 @@ export class NpcBase {
 
       this.mesh.add(gltf.scene);
 
+      // Mark all NPC meshes to prevent shader application
+      this.mesh.traverse((child) => {
+        if (child.isMesh) {
+          if (!child.userData) child.userData = {};
+          child.userData.isNpc = true;
+        }
+      });
+
+      // Apply character shader to ALL submeshes after model loads
+      try {
+        const game = this.options.game;
+        const isLevel3 = game?.level?.data?.id === 'level3';
+        
+        if (game && game.shaderSystem && this.mesh) {
+          this.mesh.traverse((child) => {
+            if (child.isMesh && child.material) {
+              // For Level 3, use brighter material with emissive to prevent darkening
+              if (isLevel3) {
+                const originalMaterial = child.material;
+                const brightMaterial = new THREE.MeshStandardMaterial({
+                  map: originalMaterial.map,
+                  normalMap: originalMaterial.normalMap,
+                  color: originalMaterial.color ? originalMaterial.color.clone() : new THREE.Color(0xffffff),
+                  alphaMap: originalMaterial.alphaMap,
+                  aoMap: originalMaterial.aoMap,
+                  roughnessMap: originalMaterial.roughnessMap,
+                  metalnessMap: originalMaterial.metalnessMap,
+                  emissiveMap: originalMaterial.emissiveMap,
+                  roughness: 0.6,
+                  metalness: 0.1,
+                  // Add emissive to make NPCs visible in low light
+                  emissive: originalMaterial.color ? originalMaterial.color.clone().multiplyScalar(0.15) : new THREE.Color(0x222222),
+                  emissiveIntensity: 0.4,
+                  transparent: originalMaterial.transparent || false,
+                  opacity: originalMaterial.opacity !== undefined ? originalMaterial.opacity : 1.0,
+                });
+                child.material = brightMaterial;
+                child.castShadow = false;
+                child.receiveShadow = false;
+              } else {
+                game.shaderSystem.applyCharacterShader(child, {
+                  roughness: 0.6,
+                  metalness: 0.1,
+                  rimIntensity: 1.5
+                });
+              }
+            }
+          });
+        } else if (this.mesh) {
+          // Fallback: adjust material properties without emissive
+          this.mesh.traverse((child) => {
+            if (child.isMesh && child.material) {
+              const m = child.material;
+              if (m.isMeshStandardMaterial) {
+                m.roughness = Math.min(0.8, (m.roughness ?? 0.7));
+                m.metalness = Math.max(0.0, (m.metalness ?? 0.1));
+              }
+            }
+          });
+        }
+      } catch (e) { console.warn('NPC material enhancement failed', e); }
+
       // animations
       if (gltf.animations && gltf.animations.length > 0) {
         try {
