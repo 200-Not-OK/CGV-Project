@@ -15,6 +15,15 @@ export class Player {
     this.shortJumpStrength = options.shortJumpStrength ?? 12; // For tap jumps
     this.sprintMultiplier = options.sprintMultiplier ?? 1.6;
     this.health = options.health ?? 100;
+  // Animation smoothing and hysteresis to avoid rapid start/stop flicker
+  this.smoothedHorizontalSpeed = 0;
+  this.moveStartSpeed = options.moveStartSpeed ?? 0.35; // enter walk/sprint
+  this.moveStopSpeed = options.moveStopSpeed ?? 0.18;  // return to idle
+  this.minAnimStateMs = options.minAnimStateMs ?? 400; // min duration per state
+  this._lastAnimChangeAt = 0;
+  this.minAirborneForJumpMs = options.minAirborneForJumpMs ?? 80; // delay before jump state
+  this._airborneTimerSec = 0;
+
     
     // Stair climbing settings
     this.maxStepHeight = options.maxStepHeight ?? 2.5; // Maximum height to auto-climb (units) - reduced to avoid climbing minor slopes
@@ -62,7 +71,7 @@ export class Player {
     this.lastAnimationState = null; // Track animation state to avoid constant restarts
     
     // Mesh syncing smoothing (reduces jitter when moving)
-    this.meshSyncStrength = 0.15;      // Position lerp blending (0-1, lower = smoother)
+  this.meshSyncStrength = 0.12;      // Slightly slower blend for smoother visuals
     this.rotationSyncStrength = 0.1;   // Rotation slerp blending (0-1, lower = smoother)
     
     // Combat system
@@ -380,7 +389,7 @@ export class Player {
       mass: 80, // Realistic human mass
       position: new CANNON.Vec3(0, 10, 0),
       material: playerMaterial,
-      linearDamping: 0.05, // Reduced damping to prevent sticking in valleys
+      linearDamping: 0.06, // Slightly more damping to calm micro-bounces
       angularDamping: 1.0, // Prevent rotation
       fixedRotation: true, // Prevent tipping over
       sleepSpeedLimit: 1.0,
@@ -795,10 +804,10 @@ export class Player {
       // Handle weapon input
       this.weapon.handleInput(input);
       
-      // Check for stair climbing when grounded and moving
-      if (this.isGrounded && this.isMoving) {
-        this.handleStairClimbing(camOrientation, delta);
-      }
+      // Stair climbing removed
+        if (this.isGrounded && this.isMoving) {
+          this.handleStairClimbing(camOrientation, delta);
+        }
       
       // Anti-stuck detection - check if player is trying to move but stuck
       this.detectAndEscapeStuck(input, delta);
@@ -817,6 +826,13 @@ export class Player {
       if (this.body.velocity.y < -5.0) {
         this.body.velocity.y = Math.max(this.body.velocity.y, -5.0);
       }
+    }
+
+    // Clamp very small vertical oscillations when grounded on uneven mesh surfaces
+    if (this.isGrounded) {
+      const smallY = 0.6; // max allowed tiny vertical jitter
+      if (this.body.velocity.y >  smallY) this.body.velocity.y =  smallY;
+      if (this.body.velocity.y < -smallY) this.body.velocity.y = -smallY;
     }
     
     // Update weapon system
@@ -862,7 +878,15 @@ export class Player {
   updateGroundDetection() {
     // Use the physics world's ground detection
     const wasGrounded = this.isGrounded;
-    this.isGrounded = this.physicsWorld.isBodyGrounded(this.body, this.groundNormalThreshold);
+    const groundedNow = this.physicsWorld.isBodyGrounded(this.body, this.groundNormalThreshold);
+    // Debounce grounded state to avoid rapid toggling on mesh seams
+    if (groundedNow) {
+      this._lastGroundedTime = (this._lastGroundedTime || 0) + 1; // frames in this call pattern
+    } else {
+      this._lastGroundedTime = 0;
+    }
+    const debounceFrames = 2; // require a couple frames of contact
+    this.isGrounded = groundedNow || (wasGrounded && this._lastGroundedTime > 0);
     
     // Check if we're on a slope (for better physics handling)
     this.isOnSlope = this.checkIfOnSlope();
@@ -1105,10 +1129,10 @@ export class Player {
   }
 
   applyWallSlidingPhysics(delta) {
-    // Don't apply wall sliding if we just climbed a step
-    if (this.isClimbingStep) {
-      return;
-    }
+    // Stair climbing removed
+      if (this.isClimbingStep) {
+        return;
+      }
     
     // Apply wall sliding physics when touching walls (both grounded and airborne)
     if (!this.enableWallSliding || this.wallNormals.length === 0) {
@@ -1556,24 +1580,66 @@ export class Player {
     
     // Determine which animation to play based on current state
     const velocity = this.body.velocity;
-    const horizontalSpeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-    const isMoving = horizontalSpeed > 0.1;
+    const rawSpeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+    // Smooth speed to avoid rapid toggling of animations
+    const smoothing = 0.12;
+    this.smoothedHorizontalSpeed = THREE.MathUtils.lerp(this.smoothedHorizontalSpeed || 0, rawSpeed, smoothing * (delta * 60));
+    const startThreshold = this.moveStartSpeed ?? 0.25;
+    const stopThreshold = this.moveStopSpeed ?? 0.12;
+    if (this._animMoving) {
+      if (this.smoothedHorizontalSpeed < stopThreshold) this._animMoving = false;
+    } else {
+      if (this.smoothedHorizontalSpeed > startThreshold) this._animMoving = true;
+    }
+    const isMovingBySpeed = this._animMoving;
+    // Prefer input-intent for movement to avoid false idles while sprinting into obstacles
+    const isMovingByInput = !!this.isMoving; // set in handleMovementInput based on keys
+    const isMoving = isMovingByInput || isMovingBySpeed;
     
     // Determine target animation state (as string to prevent constant restarts)
     let targetState = 'idle';
     
     if (!this.isGrounded && this.actions.jump) {
-      targetState = 'jump';
+      // Require a tiny airborne delay before flipping to jump to avoid flicker on edges
+      this._airborneTimerSec = (this._airborneTimerSec || 0) + delta;
+      const airborneMs = this._airborneTimerSec * 1000;
+      if (airborneMs > this.minAirborneForJumpMs) {
+        targetState = 'jump';
+      }
     } else if (isMoving && this.isSprinting && this.actions.sprint) {
-      targetState = 'sprint';
+      // Slight buffer so small slowdowns don't pop us down to walk immediately
+      const sprintHoldBuffer = 0.2;
+      if (this.smoothedHorizontalSpeed > (this.moveStartSpeed + sprintHoldBuffer)) {
+        targetState = 'sprint';
+      } else if (this.actions.walk) {
+        targetState = 'walk';
+      }
     } else if (isMoving && this.actions.walk) {
       targetState = 'walk';
     }
     
+    // Never allow idle while sprint input is held unless the player actually stops input
+    // This prevents idle/run flicker when sprinting but momentarily slowed by slopes/collisions
+    if (targetState === 'idle' && this.isSprinting && isMovingByInput) {
+      if (this.actions.sprint) {
+        targetState = 'sprint';
+      } else if (this.actions.walk) {
+        targetState = 'walk';
+      }
+    }
+    
     // Only transition if animation state actually changed (reduces jitter from constant resets)
+    const now = performance.now();
+    if (this.isGrounded) this._airborneTimerSec = 0; // reset timer when grounded
+
     if (targetState !== this.lastAnimationState) {
-      this._transitionToAnimationState(targetState);
-      this.lastAnimationState = targetState;
+      // Enforce minimum time in a state to avoid rapid flip-flops
+      const elapsed = now - (this._lastAnimChangeAt || 0);
+      if (elapsed >= (this.minAnimStateMs || 0)) {
+        this._transitionToAnimationState(targetState);
+        this.lastAnimationState = targetState;
+        this._lastAnimChangeAt = now;
+      }
     }
   }
 
