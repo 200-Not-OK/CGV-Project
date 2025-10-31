@@ -9,3 +9,4 @@ export { SnakeEnemy } from './SnakeEnemy.js';
 export { SnakeBossEnemy } from './SnakeBossEnemy.js';
 export { MechBossEnemy } from './MechBossEnemy.js';
 export { CrawlerEnemy } from './CrawlerEnemy.js';
+export { LobberBossEnemy } from './LobberBossEnemy.js';
