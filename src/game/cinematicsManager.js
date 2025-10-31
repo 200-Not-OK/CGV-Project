@@ -31,12 +31,36 @@ export class CinematicsManager {
   }
 
   dispose() {
+    // Stop timers and UI
     this._clearTimers();
     this._hideCaption(true);
+    // Try to release cinematic camera control in case a cutscene was interrupted
+    try { this.director?.release?.(); } catch {}
+    // Ensure fade overlay (if any) is fully transparent
+    try {
+      if (this.director && this.director._fadeEl) {
+        this.director._fadeEl.style.transition = 'none';
+        this.director._fadeEl.style.opacity = '0';
+      }
+    } catch {}
+
+    // Restore input/camera defaults so next level starts clean
+    try {
+      if (this.game?.input?.setEnabled) this.game.input.setEnabled(true);
+      if (this.game?.input) this.game.input.alwaysTrackMouse = true;
+      if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
+    } catch {}
+
+    // Remove skip handler
     this.dialogueUI = null;
     if (this._skipKeyHandler) {
       window.removeEventListener('keydown', this._skipKeyHandler);
     }
+
+    // Reset state flags
+    this.isPlaying = false;
+    this.current = null;
+    this.skipRequested = false;
   }
 
   loadCinematics(cinematicsData) {

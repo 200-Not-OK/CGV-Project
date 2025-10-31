@@ -3051,6 +3051,21 @@ export class Level0Controller {
     // Check node proximity and handle interaction
     this._checkNodeProximity();
     
+    // Robust first-interaction handling with Richard: allow direct E key trigger when near
+    if (!this.interactionDialogueShown && !this.cutsceneActive) {
+      // If exclamation mark is present (first interaction ready)
+      const hasIndicator = !!(this.exclamationGroup && this.exclamationGroup.parent);
+      if (hasIndicator && this._isPlayerNearRichard(4.5)) {
+        const now = Date.now();
+        if (this.game.input && this.game.input.isKey('KeyE')) {
+          if (now - this.lastRichardInteractionPress > this.richardInteractionCooldown) {
+            this.lastRichardInteractionPress = now;
+            this._handleRichardInteraction();
+          }
+        }
+      }
+    }
+
     // Check Richard final interaction (when exclamation mark is present)
     if (!this.richardInteractionActive && !this.cutsceneActive) {
       this._checkRichardFinalInteraction();
@@ -3065,6 +3080,9 @@ export class Level0Controller {
     
     // Stop pacing and remove listeners
     this._stopPacingLoop();
+    // Ensure any cinematic look-at RAFs are stopped
+    this._stopCameraLookAtSteve();
+    this._stopCameraLookAtPlayer();
     
     // Stop pulsing animation
     if (this._pulseAnimationId) {
@@ -3119,6 +3137,11 @@ export class Level0Controller {
     this.steve = null;
     this.isInitialized = false;
     this.cutsceneActive = false;
+
+    // Restore any overridden interaction handlers (doors/collectibles)
+    try {
+      this._disableRichardInteractionMode();
+    } catch { /* ignore */ }
   }
 }
 
