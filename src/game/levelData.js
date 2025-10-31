@@ -1301,7 +1301,7 @@ export const levels = [
       "keys": []
     }
   },
-
+//////
   {
     "id": "intro",
     "name": "Intro Level",
@@ -18495,58 +18495,724 @@ export const levels = [
   {
     "id": "level1_glitched",
     "name": "GLITCHED: Level 1",
-    "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
+    "gltfUrl": "assets/levels/revamped/Level1.gltf",
     "startPosition": [
       0,
-      10,
+      12,
       0
     ],
+    "lights": [
+      {
+        "key": "TechLights",
+        "props": {
+          "position": [0, 0, 0]
+        }
+      },
+      {
+        "key": "BasicLights",
+        "props": {
+          "intensity": 0.6
+        }
+      },
+      {
+        "key": "PointLight",
+        "props": {
+          "position": [0, 22, 0],
+          "color": 0x88ccff,
+          "intensity": 3,
+          "distance": 0,
+          "decay": 0,
+          "castShadow": false
+        }
+      },
+      {
+        "key": "PointLight",
+        "props": {
+          "position": [0, 22, -25],
+          "color": 0x88ccff,
+          "intensity": 2.5,
+          "distance": 0,
+          "decay": 0,
+          "castShadow": false
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [12.912955239766767, 37.88715128438456, -0.6576220834419964],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.5,
+          "length": 18.0
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [12.944228948310343, 36.3885593052973, -0.7342901183469568],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.6,
+          "length": 16.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-12.771536745930266, 37.10794565203993, -0.2786261734922153],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.45,
+          "length": 20.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-12.786166101517708, 35.637551218443186, 0.09513458030733979],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.55,
+          "length": 17.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [11.918973319923648, 32.82629147937733, -0.5821365533665996],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.7,
+          "length": 15.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-12.380822352048272, 32.98950836127626, 0.30395344141215386],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.4,
+          "length": 22.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-7.066101073891365, 39.086951601572, -1.202468494343286],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.65,
+          "length": 19.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [-7.654338940706618, 39.1165865627044, 0.7016923973175011],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.52,
+          "length": 21.0,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [7.062490970189732, 38.89875358023083, -1.4657143172867606],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.48,
+          "length": 17.5,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [6.6347481289407355, 38.869158640436886, 1.324692383072716],
+          "color": 0x00FFFF,
+          "intensity": 4.5,
+          "strikeFrequency": 0.58,
+          "length": 19.5,
+          "branches": 5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.13807616959711, 19.463404294493557, -25.823032754301256],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.16909747940394, 19.463404294493557, -27.13562457148415],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.19859913312111, 19.463404294493557, -28.453574585960094],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.14985223550229, 19.463404294493557, -29.66304109539178],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.24519648095297, 19.463404294493557, -31.030929245129776],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.23451972231483, 19.463404294493557, -32.12921366927179],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [37.20699800401285, 19.463404294493557, -33.31666531646326],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.56784082247674, 19.463404294493557, -26.342960488002813],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.608876255091346, 19.463404294493557, -27.791121946094922],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.651721009570444, 19.463404294493557, -29.038673863085236],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.821846110202166, 19.463404294493557, -30.411332975256368],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.79240656912321, 19.463404294493557, -31.410144903763197],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.98665721682491, 19.463404294493557, -32.763087823485215],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [-37.77547883082075, 19.463404294493557, -33.87862076073715],
+          "width": 4.0,
+          "height": 10.0,
+          "color": 0x00d4ff,
+          "speed": 7.0,
+          "density": 12.0,
+          "brightness": 3.0,
+          "fallStrength": 0.5
+        }
+      }
+    ],
+    "ui": [
+      "hud",
+            {
+        "type": "minimap",
+        "config": {
+          "zoom": 1.6
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 7,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍏",
+              "name": "Green Apples",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
+    ],
+    "enemies": [
+      {
+        "type": "crawler",
+        "position": [
+          -425.5900434110422,
+          20.113008499145508,
+          274.669088469345
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 29
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -433.3701164361692,
+          20.113008499145515,
+          257.2399163600309
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 30
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -426.66473887928464,
+          20.113008499145515,
+          244.20925144592724
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 31
+      },
+      {
+        "type": "crawler",
+        "position": [
+          305.7826403923883,
+          20.027040152890915,
+          24.799900322963577
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 48
+      },
+      {
+        "type": "crawler",
+        "position": [
+          287.3535217944027,
+          20.959493637084961,
+          25.74999179342933
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 49
+      },
+      {
+        "type": "crawler",
+        "position": [
+          310.305134317053,
+          20.452826949471497,
+          122.30921272529777
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 50
+      },
+      {
+        "type": "crawler",
+        "position": [
+          291.14432266074226,
+          20.509656195663787,
+          121.99517109242474
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 51
+      },
+      {
+        "type": "crawler",
+        "position": [
+          319.51625700361103,
+          20.4860567378545575,
+          274.04694288437554
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 52
+      },
+      {
+        "type": "crawler",
+        "position": [
+          274.64077936042764,
+          20.741729019436846,
+          277.2949816103393
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 53
+      }
+    ],
+    "npcs": [
+      {
+        "type": "yellow_bot",
+        "position": [
+          6.350443774254943,
+          9.439203262329102,
+          -25.949882425660608
+        ],
+        "modelUrl": "assets/npc/yellow_bot/scene.gltf",
+        "patrolPoints": [],
+        "speed": 2,
+        "scale": 10,
+        "chaseRange": 0,
+        "id": 2
+      },
+      {
+        "type": "other_bot",
+        "position": [
+          13.563743283481266,
+          11.439203262329102,
+          -35.625234114583954
+        ],
+        "modelUrl": "assets/npc/other_bot/Mike.gltf",
+        "patrolPoints": [],
+        "speed": 2,
+        "scale": 1,
+        "chaseRange": 0,
+        "id": 3
+      }
+    ],
+    "platforms": [],
+    "interactiveObjects": [
+      {
+        "id": "interactive_3",
+        "objectType": "pressurePlate",
+        "position": [
+          -493.6651629419319,
+          10.113008499145508,
+          292.94097499910407
+        ],
+        "size": 10,
+        "activationWeight": 40,
+        "pressedHeight": -0.1,
+        "color": 65280
+      },
+      {
+        "id": "interactive_4",
+        "objectType": "pressurePlate",
+        "position": [
+          -494.145160650115,
+          10.113008499145508,
+          267.5963964375436
+        ],
+        "size": 10,
+        "activationWeight": 10,
+        "pressedHeight": -0.1,
+        "color": 65280
+      },
+      {
+        "id": "interactive_5",
+        "objectType": "pressurePlate",
+        "position": [
+          -493.6658502474449,
+          10.113008499145508,
+          247.13187696380177
+        ],
+        "size": 10,
+        "activationWeight": 40,
+        "pressedHeight": -0.1,
+        "color": 65280
+      }
+    ],
+    "triggers": [],
+    "meshAnimations": [
+      {
+        "meshName": "Lift2",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -225.86,
+              10.11,
+              124.18
+            ],
+            [
+              -229.68,
+              9.65,
+              254.86
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -259.41,
+              10.11,
+              110.38
+            ],
+            [
+              -387.15,
+              10.11,
+              184.13
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -496.88,
+              11.9,
+              195.35
+            ],
+            [
+              -506.55,
+              48.81,
+              192.95
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3001",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              344.83,
+              10.11,
+              -36.05
+            ],
+            [
+              544.8,
+              22.52,
+              -33.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3002",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              557.24,
+              10.11,
+              99.12
+            ],
+            [
+              558.04,
+              9.65,
+              405.84
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3003",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              525.43,
+              10.11,
+              419.27
+            ],
+            [
+              334.2,
+              9.69,
+              432.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "TreeNode2",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      },
+      {
+        "meshName": "TreeNode1",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      }
+    ],
     "colliders": [
-      {
-        "id": "terrain_collider",
-        "type": "mesh",
-        "meshName": "Plane",
-        "materialType": "ground",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "id": "terrain_collider1",
-        "type": "mesh",
-        "meshName": "Plane.002",
-        "materialType": "ground",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "id": "terrain_collider2",
-        "type": "mesh",
-        "meshName": "Plane.001",
-        "materialType": "ground",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
       {
         "id": "collider_2",
         "type": "box",
         "position": [
-          74.2805404663086,
-          7.5009472370147705,
-          -56.235137939453125
+          0,
+          8.439203262329102,
+          -10.976917266845703
         ],
         "size": [
-          19.902694702148438,
-          5.858898639678955,
-          10.625641107559204
+          74.21695709228516,
+          2.000000033833089,
+          74.21695709228516
         ],
         "rotation": [
           0,
@@ -18557,8 +19223,59 @@ export const levels = [
       },
       {
         "id": "collider_3",
+        "type": "box",
+        "position": [
+          0,
+          23.242176055908203,
+          -1.9201059341430664
+        ],
+        "size": [
+          2,
+          10.32878589630127,
+          2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_4",
+        "type": "box",
+        "position": [
+          0,
+          27.362017565243946,
+          -2.9135963916778564
+        ],
+        "size": [
+          20.964557647705078,
+          35.83751362866792,
+          10.630075931549072
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_5",
         "type": "mesh",
-        "meshName": "platform_slope_6x6x4_yellow",
+        "meshName": "Walls",
+        "materialType": "wall",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_6",
+        "type": "mesh",
+        "meshName": "Platform",
         "materialType": "ground",
         "rotation": [
           0,
@@ -18567,209 +19284,97 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_4",
-        "type": "box",
-        "position": [
-          5.5328874588012695,
-          6.560379505157471,
-          -39.361785888671875
-        ],
-        "size": [
-          4,
-          4,
-          4
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_5",
-        "type": "box",
-        "position": [
-          -0.7773474454879761,
-          7.7403247356414795,
-          -34.49150085449219
-        ],
-        "size": [
-          4,
-          6.359890460968018,
-          4
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_6",
-        "type": "box",
-        "position": [
-          -7.600991249084473,
-          7.39626932144165,
-          -39.86438751220703
-        ],
-        "size": [
-          4,
-          5.671779632568359,
-          4
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
         "id": "collider_7",
-        "type": "box",
-        "position": [
-          -0.9068508148193359,
-          6.942425727844238,
-          -44.346160888671875
-        ],
-        "size": [
-          4,
-          4.764092445373535,
-          4
-        ],
+        "type": "mesh",
+        "meshName": "Platform1",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_8",
-        "type": "box",
-        "position": [
-          23.03496217727661,
-          6.138877149025461,
-          -71.54387201368809
-        ],
-        "size": [
-          5.399998188018799,
-          1.5000004855794487,
-          0.6770776808261871
-        ],
+        "type": "mesh",
+        "meshName": "Platform1",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_9",
-        "type": "box",
-        "position": [
-          -7.70367431640625,
-          6.367399926582834,
-          -71.71390070021152
-        ],
-        "size": [
-          5.399998188018799,
-          1.5000004855794487,
-          0.6770776808261871
-        ],
+        "type": "mesh",
+        "meshName": "Platform2",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_10",
-        "type": "box",
-        "position": [
-          -104.65445419167133,
-          24.920733763746878,
-          -126.77250456817343
-        ],
-        "size": [
-          24.789909072596956,
-          48.51913720787156,
-          37.77458682674464
-        ],
+        "type": "mesh",
+        "meshName": "Platform3",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_11",
-        "type": "box",
-        "position": [
-          -104.98836456630886,
-          24.7562984799664,
-          -32.538482326040125
-        ],
-        "size": [
-          40.69060569251519,
-          41.743743810529345,
-          45.635473520354914
-        ],
+        "type": "mesh",
+        "meshName": "Platform8",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_12",
-        "type": "box",
-        "position": [
-          -29.94930589199066,
-          4.7365807592868805,
-          -102.64478647708893
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
+        "type": "mesh",
+        "meshName": "Platform4",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_13",
-        "type": "box",
-        "position": [
-          -31.322409987449646,
-          5.004567056894302,
-          -36.78919565677643
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
+        "type": "mesh",
+        "meshName": "Lift2",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
+      },
+      {
+        "id": "collider_14",
+        "type": "mesh",
+        "meshName": "Lift3",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
       },
       {
         "id": "collider_15",
         "type": "mesh",
-        "meshName": "Vert006",
+        "meshName": "Platform5",
         "materialType": "ground",
         "rotation": [
           0,
@@ -18780,7 +19385,7 @@ export const levels = [
       {
         "id": "collider_16",
         "type": "mesh",
-        "meshName": "Vert002",
+        "meshName": "Leaf",
         "materialType": "ground",
         "rotation": [
           0,
@@ -18790,981 +19395,30 @@ export const levels = [
       },
       {
         "id": "collider_17",
-        "type": "box",
-        "position": [
-          -46.52409362792969,
-          4.0269834995269775,
-          84.87931823730469
-        ],
-        "size": [
-          8.94277798516788,
-          3.9855432510375977,
-          7.869289272857088
-        ],
+        "type": "mesh",
+        "meshName": "Lift",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_18",
-        "type": "box",
-        "position": [
-          -34.94508361816406,
-          4.02698391581069,
-          86.84906005859375
-        ],
-        "size": [
-          14.279910634361954,
-          3.9855440836050224,
-          3.9855454667441563
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_19",
-        "type": "box",
-        "position": [
-          -36.979637145996094,
-          4.02698391581069,
-          82.81128692626953
-        ],
-        "size": [
-          9.923266372250481,
-          3.9855440836050224,
-          3.9855448813904957
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_20",
-        "type": "box",
-        "position": [
-          -29.958999633789062,
-          4.0269834995269775,
-          82.75906372070312
-        ],
-        "size": [
-          3.9855433485751703,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_21",
-        "type": "box",
-        "position": [
-          -26.888111114501953,
-          4.0269834995269775,
-          83.69717407226562
-        ],
-        "size": [
-          2.2308865622320866,
-          3.9855432510375977,
-          2.083818300131867
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_22",
-        "type": "box",
-        "position": [
-          -25.770734786987305,
-          4.0269834995269775,
-          86.76978302001953
-        ],
-        "size": [
-          3.9855433485751703,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_23",
         "type": "mesh",
-        "meshName": "platform_slope_4x2x2_blue",
+        "meshName": "Platform7",
         "materialType": "ground",
         "rotation": [
           0,
           0,
           0
         ]
-      },
-      {
-        "id": "collider_24",
-        "type": "box",
-        "position": [
-          -46.73193359375,
-          6.001815557479858,
-          101.48796844482422
-        ],
-        "size": [
-          8.94277798516788,
-          7.935207366943359,
-          7.869289272857088
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_25",
-        "type": "mesh",
-        "meshName": "platform_slope_4x2x2_blue001",
-        "materialType": "ground",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "id": "collider_26",
-        "type": "box",
-        "position": [
-          -30.733980178833008,
-          9.859891414642334,
-          101.45291137695312
-        ],
-        "size": [
-          5.322484835175285,
-          7.696027755737305,
-          7.869288786438716
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_27",
-        "type": "box",
-        "position": [
-          -31.817974090576172,
-          4.02698391581069,
-          101.37708282470703
-        ],
-        "size": [
-          20.877674104116707,
-          3.9855440836050224,
-          7.52411413326098
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_28",
-        "type": "box",
-        "position": [
-          -25.74932098388672,
-          15.232730125813676,
-          103.28273010253906
-        ],
-        "size": [
-          4.685793632511647,
-          3.3673119056800864,
-          4.144108051304386
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_29",
-        "type": "box",
-        "position": [
-          -30.733980178833008,
-          15.23272979259491,
-          101.45291137695312
-        ],
-        "size": [
-          5.322484835175285,
-          3.3673112392425537,
-          7.869288786438716
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_30",
-        "type": "box",
-        "position": [
-          -30.44427483276489,
-          15.312430476219935,
-          108.27524431529348
-        ],
-        "size": [
-          3.9855449380184496,
-          5.978316695494772,
-          5.978315656982744
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_31",
-        "type": "box",
-        "position": [
-          -14.110549926757812,
-          4.0269834995269775,
-          102.84857177734375
-        ],
-        "size": [
-          3.9855433485751686,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_32",
-        "type": "box",
-        "position": [
-          -14.122164726257324,
-          13.009011200694431,
-          102.91752624511719
-        ],
-        "size": [
-          3.188434726371515,
-          14.585986273232718,
-          3.1884347263715256
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_33",
-        "type": "box",
-        "position": [
-          -14.146226882934577,
-          20.500306248664856,
-          102.99749016675611
-        ],
-        "size": [
-          3.9855433485751686,
-          0.9963858127593994,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_34",
-        "type": "box",
-        "position": [
-          -8.02215766906739,
-          19.11698067188263,
-          97.57085442456861
-        ],
-        "size": [
-          3.9855433485751686,
-          0.9963858127593994,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_35",
-        "type": "box",
-        "position": [
-          -7.86309814453125,
-          12.353586613062383,
-          97.64027404785156
-        ],
-        "size": [
-          3.188434726371514,
-          13.029683234446525,
-          3.1884347263715256
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_36",
-        "type": "box",
-        "position": [
-          -7.850957870483398,
-          4.0269834995269775,
-          97.57080841064453
-        ],
-        "size": [
-          3.9855433485751677,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_37",
-        "type": "box",
-        "position": [
-          -4.458431243896492,
-          16.670228123664856,
-          89.85930657300611
-        ],
-        "size": [
-          3.985543348575168,
-          0.9963858127593994,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_38",
-        "type": "box",
-        "position": [
-          -4.6721954345703125,
-          11.069489429206854,
-          89.7857437133789
-        ],
-        "size": [
-          3.188434726371513,
-          10.706942658004747,
-          3.1884347263715256
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_39",
-        "type": "box",
-        "position": [
-          -4.536918640136719,
-          4.0269834995269775,
-          89.83826446533203
-        ],
-        "size": [
-          3.9855433485751686,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_40",
-        "type": "box",
-        "position": [
-          -8.270793318748474,
-          5.457823187112808,
-          69.70811879634857
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_41",
-        "type": "mesh",
-        "meshName": "arch_red",
-        "materialType": "wall",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "id": "collider_45",
-        "type": "box",
-        "position": [
-          -37.33783027153335,
-          7.128245829674199,
-          88.32971954345712
-        ],
-        "size": [
-          9.14948403796651,
-          1.9927721006325783,
-          1.6169295394491172
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_46",
-        "type": "box",
-        "position": [
-          -50.46330261230469,
-          10.865873812767461,
-          101.33258013597683
-        ],
-        "size": [
-          1.6169284505147061,
-          1.9927721006325783,
-          5.777126351934001
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_47",
-        "type": "box",
-        "position": [
-          -46.748661722949365,
-          10.865873812767461,
-          104.68184661865243
-        ],
-        "size": [
-          9.14948403796651,
-          1.9927721006325783,
-          1.6169295394491172
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_48",
-        "type": "box",
-        "position": [
-          -53.93143733102229,
-          7.372822283836797,
-          100.68596672925611
-        ],
-        "size": [
-          5.978314722415874,
-          5.978315351670176,
-          3.985543726151377
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_49",
-        "type": "box",
-        "position": [
-          -61.97539269924164,
-          5.164033800363541,
-          115.84091603755951
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_50",
-        "type": "box",
-        "position": [
-          -60.21644723415375,
-          4.969306379556656,
-          54.171818137168884
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_51",
-        "type": "box",
-        "position": [
-          -118.84523320315787,
-          6.904409887319858,
-          108.39310228749616
-        ],
-        "size": [
-          7.995287512733512,
-          4.980007726219667,
-          6.501294838309377
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_52",
-        "type": "box",
-        "position": [
-          -29.05535888671873,
-          15.842398285865784,
-          96.3176957509998
-        ],
-        "size": [
-          2.2368062784832468,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_53",
-        "type": "box",
-        "position": [
-          -29.126226425170877,
-          10.25213873386383,
-          96.34265150051152
-        ],
-        "size": [
-          2.2368062784832468,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_54",
-        "type": "box",
-        "position": [
-          -32.469535827636705,
-          7.317672371864319,
-          96.38854993801152
-        ],
-        "size": [
-          2.2368062784832503,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_55",
-        "type": "box",
-        "position": [
-          -28.985286712646463,
-          4.876017212867737,
-          96.39340986232793
-        ],
-        "size": [
-          2.2368062784832468,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_56",
-        "type": "box",
-        "position": [
-          -32.509208679199205,
-          12.825354218482971,
-          96.48574842433965
-        ],
-        "size": [
-          2.2368062784832503,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_57",
-        "type": "box",
-        "position": [
-          10.841623902320862,
-          5.492876440286636,
-          20.445183157920837
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_58",
-        "type": "box",
-        "position": [
-          43.22808914460377,
-          4.574681367888839,
-          40.76490444226124
-        ],
-        "size": [
-          9.462042692949481,
-          10.03342146480464,
-          8.647213375922696
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_59",
-        "type": "box",
-        "position": [
-          87.89673101902008,
-          5.614331632852554,
-          0.5184520483016968
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_60",
-        "type": "box",
-        "position": [
-          95.23290503025055,
-          6.082692056894302,
-          14.52939260005951
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_61",
-        "type": "box",
-        "position": [
-          71.97465586662292,
-          4.970793237909675,
-          -97.68993711471558
-        ],
-        "size": [
-          3.048760414123535,
-          1.8989749141037464,
-          2.479071617126465
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_62",
-        "type": "box",
-        "position": [
-          52.1449259519577,
-          5.038195177912712,
-          -108.86051398515701
-        ],
-        "size": [
-          3.4200847148895264,
-          2.3162826597690582,
-          3.476110100746155
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_63",
-        "type": "box",
-        "position": [
-          30.897358090377182,
-          8.231673354068612,
-          -85.75586883817252
-        ],
-        "size": [
-          3.4334573554441334,
-          3.011497134284019,
-          3.8811477836965054
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_64",
-        "type": "box",
-        "position": [
-          31.1728857755661,
-          12.895193926748135,
-          -95.57546734809875
-        ],
-        "size": [
-          2.000000238418579,
-          4.705846676925772,
-          10.714676141738892
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_65",
-        "type": "box",
-        "position": [
-          22.67157733440399,
-          12.040248847937999,
-          -95.22147369384766
-        ],
-        "size": [
-          2.000000238418579,
-          3.0000000458232208,
-          6
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_66",
-        "type": "box",
-        "position": [
-          -6.446720242500305,
-          12.040248847937999,
-          -95.43769836425781
-        ],
-        "size": [
-          2.000000238418579,
-          3.0000000458232208,
-          6
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_67",
-        "type": "box",
-        "position": [
-          -14.597328305244446,
-          12.895193926748135,
-          -94.67270398139954
-        ],
-        "size": [
-          2.000000238418579,
-          4.705846676925772,
-          10.714676141738892
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_15",
-        "type": "box",
-        "position": [
-          163.84441902652236,
-          -5.599573676390628,
-          -15.908546461952653
-        ],
-        "size": [
-          31.95752552951376,
-          21.4844456117798,
-          28.08303990475713
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_16",
-        "type": "box",
-        "position": [
-          237.98524773482995,
-          4.03463422337159,
-          -15.84718638467433
-        ],
-        "size": [
-          120.63033909266687,
-          1.44874830361303,
-          27.92981286864176
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
       },
       {
         "id": "collider_19",
         "type": "mesh",
-        "meshName": "Material2",
+        "meshName": "Elevated_Ground",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19773,9 +19427,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_20",
+        "id": "collider_2",
         "type": "mesh",
-        "meshName": "Material2001",
+        "meshName": "Platform001",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19784,9 +19438,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_21",
+        "id": "collider_3",
         "type": "mesh",
-        "meshName": "Material2002",
+        "meshName": "Platform002",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19795,9 +19449,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_22",
+        "id": "collider_4",
         "type": "mesh",
-        "meshName": "Material2003",
+        "meshName": "Platform3002",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19806,9 +19460,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_23",
+        "id": "collider_5",
         "type": "mesh",
-        "meshName": "Material2004",
+        "meshName": "Cube",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19817,9 +19471,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_24",
+        "id": "collider_6",
         "type": "mesh",
-        "meshName": "Material2005",
+        "meshName": "Lift3001",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19828,9 +19482,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_25",
+        "id": "collider_7",
         "type": "mesh",
-        "meshName": "Material2006",
+        "meshName": "Platform4001",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19839,9 +19493,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_26",
+        "id": "collider_8",
         "type": "mesh",
-        "meshName": "Material2007",
+        "meshName": "Platform3003",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19850,9 +19504,42 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_27",
+        "id": "collider_9",
         "type": "mesh",
-        "meshName": "Material3",
+        "meshName": "Lift3002",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_10",
+        "type": "mesh",
+        "meshName": "Platform3004",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_11",
+        "type": "mesh",
+        "meshName": "Lift3003",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_12",
+        "type": "mesh",
+        "meshName": "Platform3006",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19861,12 +19548,251 @@ export const levels = [
         ]
       }
     ],
-    "enemies": [],
-    "collectibles": {},
-    "lights": [
-      "BasicLights"
-    ]
-  },
+    "placeableBlocks": [
+      {
+        "id": "block_2",
+        "type": "placeableBlock",
+        "color": 16729156,
+        "colorName": "red",
+        "position": [
+          -452.98549867511366,
+          31,
+          278.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -452.98549867511366,
+          40,
+          278.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      },
+      {
+        "id": "block_3",
+        "type": "placeableBlock",
+        "color": 6448255,
+        "colorName": "blue",
+        "position": [
+          -438.98549867511366,
+          31,
+          252.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -438.98549867511366,
+          40,
+          252.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      },
+      {
+        "id": "block_4",
+        "type": "placeableBlock",
+        "color": 43520,
+        "colorName": "green",
+        "position": [
+          -456.98549867511366,
+          31,
+          265.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -456.98549867511366,
+          40,
+          265.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      }
+    ],
+    "collectibles": {
+      "chests": [
+        {
+          "id": "chest_32",
+          "position": [
+            -499.085311265958,
+            38.74439334869385,
+            334.06633057575175
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_33",
+          "position": [
+            -225.62864531854856,
+            9.651255130767824,
+            278.7988147172013
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_34",
+          "position": [
+            -237.44661100161906,
+            23.226380348205566,
+            -17.687950706826655
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_35",
+          "position": [
+            -238.27040579662082,
+            23.226380348205566,
+            -23.327350349487794
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_37",
+          "position": [
+            -237.8768482421618,
+            23.226380348205566,
+            -30.485315919861755
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_38",
+          "position": [
+            -169.3996665850923,
+            9.651255130767822,
+            -82.64101963921365
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_39",
+          "position": [
+            -26.238882996084904,
+            9.439203262329102,
+            -44.85368840875811
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_40",
+          "position": [
+            27.87669681671055,
+            9.439203262329102,
+            -45.742070533768135
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_41",
+          "position": [
+            563.1453318104104,
+            23.226380348205566,
+            46.48808928837561
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_42",
+          "position": [
+            567.1970196438438,
+            9.651255130767822,
+            429.1261757803478
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_43",
+          "position": [
+            317.9556895504127,
+            9.691577911376953,
+            402.88531324057374
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_44",
+          "position": [
+            274.4610301937911,
+            9.691577911376955,
+            406.2805544583855
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_45",
+          "position": [
+            272.8105836219984,
+            9.691577911376951,
+            417.24719695393435
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_46",
+          "position": [
+            319.2518496027569,
+            9.691577911376955,
+            417.44962917460015
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_47",
+          "position": [
+            275.60067626746354,
+            9.691577911376953,
+            -62.93518485094077
+          ],
+          "contents": "potion"
+        }
+      ],
+      "potions": [],
+      "coins": [],
+      "gems": [],
+      "keys": []
+    }
+  },//////////////////////////////////////////////////////////////////////////////////////////////////////////////
   {
     "id": "level2_glitched",
     "name": "GLITCHED: Level 2",
