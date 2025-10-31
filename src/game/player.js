@@ -1047,6 +1047,45 @@ export class Player {
     return false;
   }
 
+  /**
+   * Get the velocity of the platform the player is standing on
+   * Returns zero velocity if not on a moving platform
+   */
+  getGroundPlatformVelocity() {
+    const contacts = this.physicsWorld.getContactsForBody(this.body);
+    
+    for (const contact of contacts) {
+      // Get the contact normal to identify ground contact
+      let normalY;
+      let groundBody;
+      
+      if (contact.bi === this.body) {
+        // Player is body i, normal points from us to other body
+        normalY = -contact.ni.y;
+        groundBody = contact.bj;
+      } else {
+        // Player is body j, normal points from other body to us
+        normalY = contact.ni.y;
+        groundBody = contact.bi;
+      }
+      
+      // If this is a ground contact (normal Y > threshold)
+      if (normalY > this.groundNormalThreshold && groundBody) {
+        // Check if the platform is moving (has significant velocity)
+        const platformVel = groundBody.velocity;
+        const horizontalSpeed = Math.sqrt(platformVel.x * platformVel.x + platformVel.z * platformVel.z);
+        
+        // Return platform velocity if it's significant
+        if (horizontalSpeed > 0.01) {
+          return new THREE.Vector3(platformVel.x, platformVel.y, platformVel.z);
+        }
+      }
+    }
+    
+    // No moving platform detected
+    return new THREE.Vector3(0, 0, 0);
+  }
+
   handleMovementInput(input, camOrientation, delta) {
     if (!input || !input.isKey) {
       return;
@@ -1102,6 +1141,9 @@ export class Player {
       
       // Apply movement based on grounded state
       if (this.isGrounded) {
+        // Get platform velocity if standing on a moving platform
+        const platformVel = this.getGroundPlatformVelocity();
+        
         // Apply wall sliding to movement input for smooth wall movement
         if (this.enableWallSliding && this.wallNormals.length > 0) {
           const slidingVelocity = this.calculateSlidingVelocity(
@@ -1129,13 +1171,27 @@ export class Player {
             );
           }
           
+          // Add platform velocity to preserve movement on moving platforms
+          this.body.velocity.x += platformVel.x;
+          this.body.velocity.z += platformVel.z;
+          
           // Very gentle damping to prevent excessive speed without killing momentum
           this.body.velocity.x *= 0.95;
           this.body.velocity.z *= 0.95;
         } else {
-          // On flat ground, use direct velocity for stable movement
-          this.body.velocity.x = targetVelX;
-          this.body.velocity.z = targetVelZ;
+          // On flat ground, set velocity to player input plus platform velocity
+          // This allows player to move with moving platforms while preserving input
+          const platformSpeed = Math.sqrt(platformVel.x * platformVel.x + platformVel.z * platformVel.z);
+          
+          if (platformSpeed > 0.01) {
+            // On moving platform: player input relative to platform
+            this.body.velocity.x = targetVelX + platformVel.x;
+            this.body.velocity.z = targetVelZ + platformVel.z;
+          } else {
+            // On static ground: just player input
+            this.body.velocity.x = targetVelX;
+            this.body.velocity.z = targetVelZ;
+          }
         }
       } else {
         // When airborne, DON'T apply wall sliding to input
@@ -1158,8 +1214,19 @@ export class Player {
     } else {
       // Apply damping when not moving for quicker stops
       if (this.isGrounded) {
-        this.body.velocity.x *= 0.7;
-        this.body.velocity.z *= 0.7;
+        // Get platform velocity to preserve it
+        const platformVel = this.getGroundPlatformVelocity();
+        const platformSpeed = Math.sqrt(platformVel.x * platformVel.x + platformVel.z * platformVel.z);
+        
+        if (platformSpeed > 0.01) {
+          // On a moving platform - move exactly with the platform
+          this.body.velocity.x = platformVel.x;
+          this.body.velocity.z = platformVel.z;
+        } else {
+          // Not on a moving platform - apply damping to stop
+          this.body.velocity.x *= 0.7;
+          this.body.velocity.z *= 0.7;
+        }
       } else {
         // Reduced damping when airborne - let wall sliding handle this
         if (this.wallNormals.length > 0) {
