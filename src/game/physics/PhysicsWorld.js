@@ -19,16 +19,16 @@ export class PhysicsWorld {
     this.debugEnabled = false;
     
     // Configure solver for better stability
-    const sub = new CANNON.GSSolver();
-    sub.iterations = 12;      // bump to 12–15 if you still see jitter
-    sub.tolerance  = 1e-7;    // 1e-4 is good balance between accuracy and perf
+  const sub = new CANNON.GSSolver();
+  sub.iterations = 15;      // more iterations for stability on mesh edges
+  sub.tolerance  = 1e-4;    // relaxed tolerance reduces micro-oscillation
     this.world.solver = new CANNON.SplitSolver(sub); // smoother on many contacts
     
     // Use Sweep and Prune broadphase for better performance
     this.world.broadphase = new CANNON.SAPBroadphase(this.world);
     
     // Configure global contact settings
-    this.world.defaultContactMaterial.friction = 0.3;
+  this.world.defaultContactMaterial.friction = 0.25;
     this.world.defaultContactMaterial.restitution = 0.0;
     this.world.defaultContactMaterial.contactEquationStiffness = 1e8;
     this.world.defaultContactMaterial.contactEquationRelaxation = 3;
@@ -68,12 +68,12 @@ export class PhysicsWorld {
       this.materials.player,
       this.materials.ground,
       {
-        friction: 0.35,           // 0.3-0.5: reduce if micro-sticking, increase for traction
+        friction: 0.18,           // lower to reduce micro-sticking on Trimesh
         restitution: 0.0,         // No bounce
-        contactEquationStiffness: 5e5,   // Reduced for soft, forgiving contacts
-        contactEquationRelaxation: 6,    // Higher = more relaxed solving
-        frictionEquationStiffness: 1e5,  // Soft friction forces
-        frictionEquationRelaxation: 6    // Relaxed friction
+        contactEquationStiffness: 2e5,   // softer contacts reduce vibration
+        contactEquationRelaxation: 8,    // more relaxed solving
+        frictionEquationStiffness: 5e4,  // softer friction
+        frictionEquationRelaxation: 8    // more relaxed friction
       }
     );
     this.world.addContactMaterial(playerGroundContact);
@@ -83,12 +83,12 @@ export class PhysicsWorld {
       this.materials.player,
       this.materials.platform,
       {
-        friction: 0.35,
+        friction: 0.18,
         restitution: 0.0,
-        contactEquationStiffness: 5e5,
-        contactEquationRelaxation: 6,
-        frictionEquationStiffness: 1e5,
-        frictionEquationRelaxation: 6
+        contactEquationStiffness: 2e5,
+        contactEquationRelaxation: 8,
+        frictionEquationStiffness: 5e4,
+        frictionEquationRelaxation: 8
       }
     );
     this.world.addContactMaterial(playerPlatformContact);
@@ -204,8 +204,8 @@ export class PhysicsWorld {
   step(deltaTime) {
     // Use fixed timestep with substeps for stable, deterministic physics
     // This ensures collisions are resolved consistently regardless of frame rate
-    const fixedTimeStep = 1 / 60; // 60 Hz physics tick
-    const maxSubSteps = 3;        // Allow up to 3 substeps per frame
+  const fixedTimeStep = 1 / 60; // 60 Hz physics tick
+  const maxSubSteps = 4;        // Slightly more substeps for stability on mesh contacts
     
     // Clamp delta time to prevent physics explosions from large frame stalls
     const clampedDelta = Math.min(deltaTime, 1 / 10); // Cap at 100ms = 1/10s
@@ -287,12 +287,12 @@ export class PhysicsWorld {
 
       // Determine collision type based on mesh name or options
       // If useAccurateCollision is explicitly true, use Trimesh regardless of name
-      const shouldUseAccurate = useAccurateCollision || 
-                               (meshName.includes('trimesh') || 
-                                meshName.includes('terrain') ||
-                                meshName.includes('collider') ||
-                                meshName.includes('accurate') ||
-                                meshName.includes('complex')) &&
+  const shouldUseAccurate = useAccurateCollision || 
+           (meshName.includes('trimesh') || 
+            meshName.includes('terrain') ||
+            // meshName.includes('collider') // avoid defaulting to Trimesh just by name
+            meshName.includes('accurate') ||
+            meshName.includes('complex')) &&
                                !forceBoxCollider &&
                                !meshName.includes('box') && 
                                !meshName.includes('simple');
