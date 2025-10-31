@@ -96,7 +96,7 @@ export class Level {
     this.lightningBorderDefinitions = [];
 
     // 4.x) Matrix Binary Screen using four corner coordinates
-    if (this.data.id === 'level1A') {
+    if (this.data.id === 'level1') {
       this.binaryScreenDefinitions = [
         {
           corners: [
