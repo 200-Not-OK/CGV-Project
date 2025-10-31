@@ -332,7 +332,7 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
       depthWrite: false,
       uniforms: {
         topColor: { value: new THREE.Color(0x5fb7ff) },
-        bottomColor: { value: new THREE.Color(0xa0e7ff) },
+        bottomColor: { value: new THREE.Color(0x9bd6ee) },
         hazeColor: { value: new THREE.Color(0xf5faff) },
         sunDir: { value: sunDir.clone() }
       },
@@ -514,7 +514,7 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
       renderer.shadowMap.enabled = false;
     }
     if (renderer) {
-      renderer.toneMappingExposure = 0.75; // softer cartoon exposure
+      renderer.toneMappingExposure = 0.68; // softer cartoon exposure
     }
     // Add sun directional light and load eyeball model
     try {
