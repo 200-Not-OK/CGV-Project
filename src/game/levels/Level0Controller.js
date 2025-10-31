@@ -1,6 +1,8 @@
 // src/game/levels/Level0Controller.js
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { setupBossFight } from './BossFightIntegrationHelper.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class Level0Controller {
   constructor(game, level) {
@@ -23,6 +25,9 @@ export class Level0Controller {
     this._steveTrackingEnabled = false;
   this._lookAtSteveRaf = null; // RAF id for camera lookAt tracking during Steve scene
   this._lookAtPlayerRaf = null; // RAF id for camera lookAt tracking during Player focus
+    
+    // Boss fight system
+    this.bossFightSystem = null; // Store boss fight instance for updates
     
     // Door trigger tutorial flags
     this._doorTriggersEnabled = false;
@@ -60,6 +65,9 @@ export class Level0Controller {
   // DEBUG: force second-node flow for quick testing (set to false to restore normal behavior)
   this._debugSecondNodeAlways = false;
     
+    // DEBUG: enable final interaction immediately for quick boss fight testing (set to false to restore normal behavior)
+    this._debugFinalInteractionAlways = false; // Set to true to skip to boss fight immediately
+    
     // Richard final interaction tracking
     this.richardInteractionRange = 5.0; // Interaction range in units
     this.richardInteractionCooldown = 500; // ms
@@ -82,6 +90,18 @@ export class Level0Controller {
     
     // Set up E key listener for node interaction
     this._setupNodeInteractionListener();
+    
+    // DEBUG: Enable final interaction immediately if flag is set
+    if (this._debugFinalInteractionAlways) {
+      console.log('🔧 [Level0Controller] DEBUG: Final interaction enabled immediately for testing');
+      this._finalBinaryChoiceEnabled = true;
+      // Show exclamation mark after a brief delay to ensure Richard is initialized
+      setTimeout(() => {
+        if (this.richard && this.richard.mesh) {
+          this._showExclamationMark();
+        }
+      }, 1000);
+    }
   }
 
   /**
@@ -151,7 +171,8 @@ export class Level0Controller {
   _checkRichardFinalInteraction() {
     if (!this.game || !this.game.player || !this.game.player.mesh) return;
     if (!this.richard || !this.richard.mesh) return;
-    if (!this.exclamationGroup || !this.exclamationGroup.parent) return; // Exclamation mark must be present
+    // Skip exclamation mark check if debug flag is enabled
+    if (!this._debugFinalInteractionAlways && (!this.exclamationGroup || !this.exclamationGroup.parent)) return; // Exclamation mark must be present
     if (!this._finalBinaryChoiceEnabled) return; // Only allow after second-node scene
 
     const playerPos = this.game.player.mesh.position;
@@ -385,44 +406,200 @@ export class Level0Controller {
   }
 
   /**
-   * Teleport to boss room (placeholder)
+   * Teleport to boss room and start boss fight cutscene
    */
   async _teleportToBossRoom() {
-    console.log('🚪 [Level0Controller] Teleporting to boss room (placeholder)');
+    if (!this.level?.cinematicsManager || !this.game?.player) return;
+    const cm = this.level.cinematicsManager;
+    const director = cm.director;
+
+    console.log('🚪 [Level0Controller] Teleporting to boss room');
     
-    // Remove exclamation mark after teleport
-    if (this.exclamationGroup && this.richard && this.richard.mesh) {
-      try {
-        this.richard.mesh.remove(this.exclamationGroup);
-        this.exclamationGroup.traverse((child) => {
-          if (child.geometry) child.geometry.dispose();
-          if (child.material) {
-            if (Array.isArray(child.material)) {
-              child.material.forEach(m => m.dispose());
-            } else {
-              child.material.dispose();
+    try {
+      this.cutsceneActive = true;
+      
+      // Lock player movement
+      this.game.player.lockMovement('BossRoomTeleport');
+      
+      // Remove exclamation mark
+      if (this.exclamationGroup && this.richard && this.richard.mesh) {
+        try {
+          this.richard.mesh.remove(this.exclamationGroup);
+          this.exclamationGroup.traverse((child) => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) {
+              if (Array.isArray(child.material)) {
+                child.material.forEach(m => m.dispose());
+              } else {
+                child.material.dispose();
+              }
             }
-          }
-        });
-        this.exclamationGroup = null;
-      } catch (e) {
-        console.warn('⚠️ [Level0Controller] Error removing exclamation mark', e);
+          });
+          this.exclamationGroup = null;
+        } catch (e) {
+          console.warn('⚠️ [Level0Controller] Error removing exclamation mark', e);
+        }
       }
+
+      // Take camera control
+      director.takeControl();
+      
+      // Fade out
+      await director.fadeOut({ ms: 800 });
+      
+  // Boss arena placed far from level to avoid interference (high and offset)
+  const ARENA_ORIGIN = new THREE.Vector3(2000, 600, 2000);
+  const platformPos = { x: ARENA_ORIGIN.x, y: ARENA_ORIGIN.y, z: ARENA_ORIGIN.z };
+  // Use symmetric placement well within a 60x60 platform bounds (±30 half extents)
+  const playerPos = new THREE.Vector3(ARENA_ORIGIN.x, ARENA_ORIGIN.y + 8, ARENA_ORIGIN.z - 10);
+  const bossPos   = new THREE.Vector3(ARENA_ORIGIN.x, ARENA_ORIGIN.y + 12, ARENA_ORIGIN.z + 10);
+      
+      // Spawn boss enemy (lobber_boss)
+      let bossEnemy = null;
+      if (this.level && this.level.enemyManager) {
+        // Check if boss already exists
+        bossEnemy = this.level.enemyManager.enemies.find(e => e.enemyType === 'lobber_boss');
+        if (!bossEnemy) {
+          // Spawn new boss
+          bossEnemy = this.level.enemyManager.spawn('lobber_boss', {
+            position: [bossPos.x, bossPos.y, bossPos.z],
+            health: 500,
+            scale: 2.5,
+          });
+        } else {
+          // Reposition existing boss
+          bossEnemy.setPosition(bossPos);
+        }
+      }
+
+      // Setup boss fight system IMMEDIATELY so the platform exists before we place the player (prevents falling)
+      if (bossEnemy) {
+        const loader = new GLTFLoader();
+        this.bossFightSystem = setupBossFight({
+          bossEnemy,
+          scene: this.game.scene,
+          world: this.game.physicsWorld,
+          player: this.game.player,
+          thirdPersonCamera: this.game.thirdCam,
+          gltfLoader: loader,
+          options: {
+            platformPosition: platformPos,
+            platformSize: [60, 2, 60],
+            onMissileImpact: (damage) => {
+              // Invulnerability window at start of fight to prevent instant death
+              const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+              if (this._bossFightInvulnUntil && now < this._bossFightInvulnUntil) return;
+              if (this.game.player && this.game.player.takeDamage) {
+                this.game.player.takeDamage(Math.max(5, Math.min(20, damage)));
+              }
+            },
+          },
+        });
+      }
+
+      // Teleport player AFTER platform is created
+      if (this.game.player.body) {
+        this.game.player.body.position.set(playerPos.x, playerPos.y, playerPos.z);
+        this.game.player.body.velocity.set(0, 0, 0);
+      }
+      if (this.game.player.mesh) {
+        this.game.player.mesh.position.copy(playerPos);
+      }
+
+      // Wait briefly for boss assets to appear (non-blocking for platform collisions)
+      if (bossEnemy && !bossEnemy.mesh) {
+        await this._wait(400);
+      }
+      
+      // Set camera to boss view using camera rig settings (zoom in on boss)
+      // Camera positioned to show boss far in front within high-alt arena
+      const cameraPos = new THREE.Vector3(
+        playerPos.x - 6,
+        playerPos.y + 10,
+        playerPos.z - 10
+      );
+      const bossLookAt = bossPos.clone();
+      bossLookAt.y += 5; // Look at boss center
+      
+      director.cutTo({
+        position: [cameraPos.x, cameraPos.y, cameraPos.z],
+        lookAt: [bossLookAt.x, bossLookAt.y, bossLookAt.z],
+        fov: 60
+      });
+      
+      // Activate boss camera rig
+      if (this.bossFightSystem && this.bossFightSystem.cameraRig) {
+        this.bossFightSystem.cameraRig.activate();
+      }
+      
+      // Sync freeCam yaw/pitch
+      const cam = director.cam;
+      const dir = bossLookAt.clone().sub(cameraPos).normalize();
+      director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+      director.freeCam.yaw = Math.atan2(dir.x, dir.z);
+      
+      // Disable gameplay input during the cutscene to ensure camera control is respected
+      if (this.game?.input?.setEnabled) {
+        this.game.input.setEnabled(false);
+        this.game.input.alwaysTrackMouse = false;
+      }
+
+  // Fade in
+      await director.fadeIn({ ms: 600 });
+      await this._wait(300);
+      
+      // Dialogue sequence (Richard and Steve not physically present, just dialogue)
+      this._setupEnterKeyListener(director);
+      await this._showCaption('oh no your stack tool broke with the fall', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      await this._wait(200);
+      
+      this._setupEnterKeyListener(director);
+      await this._showCaption('thats the bugger becareful', 0, 'Steve');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      await this._wait(200);
+      
+      // Start boss fight
+      if (this.bossFightSystem && this.bossFightSystem.start) {
+        // brief invulnerability window from first missile impacts
+        this._bossFightInvulnUntil = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 4000;
+        this.bossFightSystem.start();
+        console.log('⚔️ [Level0Controller] Boss fight started');
+      }
+      
+      // Release camera and restore gameplay
+      await director.release();
+      if (this.game.thirdCameraObject) {
+        this.game.activeCamera = this.game.thirdCameraObject;
+      }
+      // Auto re-lock pointer after the scene
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      // Re-enable input now that gameplay resumes
+      if (this.game?.input?.setEnabled) {
+        this.game.input.setEnabled(true);
+        this.game.input.alwaysTrackMouse = true;
+      }
+      this.game.player.unlockMovement();
+      this.cutsceneActive = false;
+      
+      console.log('✅ [Level0Controller] Boss room teleport complete');
+      
+    } catch (e) {
+      console.error('❌ [Level0Controller] Error in boss room teleport:', e);
+      try { await cm.director.release(); } catch {}
+      // Auto re-lock pointer after the scene (error path)
+      if (typeof document !== 'undefined' && !document.pointerLockElement) {
+        document.body.requestPointerLock();
+      }
+      if (this.game?.thirdCameraObject) this.game.activeCamera = this.game.thirdCameraObject;
+      this.game?.player?.unlockMovement?.();
+      this._resetFadeSafely(cm);
+      this.cutsceneActive = false;
     }
-
-    // Unlock player movement
-    this.game.player.unlockMovement();
-
-    // TODO: Implement actual boss room teleportation
-    // This is a placeholder - actual boss room position and loading will be implemented later
-    // Example:
-    // const bossRoomPos = new THREE.Vector3(x, y, z);
-    // if (this.game.player.body) {
-    //   this.game.player.body.position.set(bossRoomPos.x, bossRoomPos.y, bossRoomPos.z);
-    // }
-    // if (this.game.player.mesh) {
-    //   this.game.player.mesh.position.copy(bossRoomPos);
-    // }
   }
 
   /**
@@ -1891,7 +2068,7 @@ export class Level0Controller {
       this._setupEnterKeyListener(director);
       
       // Dialogue 6: Richard - "Yes, please! The doors are unlocked! Hurry!"
-      await this._showCaption('Yes, please! The doors are unlocked! Hurry!', 0, 'Richard');
+      await this._showCaption('Yes, please! Hurry!', 0, 'Richard');
       await this._waitForEnter();
       
       // Clear caption
@@ -2795,6 +2972,32 @@ export class Level0Controller {
       
       // Smooth rotation
       this.steve.mesh.rotation.y += normalizedDiff * 0.1; // Adjust speed as needed
+    }
+    
+    // Update boss fight system if active
+    if (this.bossFightSystem) {
+      const { controller, spawner, hud } = this.bossFightSystem;
+      
+      if (controller && controller.update) {
+        controller.update(delta);
+      }
+      
+      if (spawner && spawner.update) {
+        spawner.update(delta);
+      }
+      
+      // Sync health between boss enemy and controller
+      if (controller && controller.syncHealth) {
+        // Find boss enemy
+        const bossEnemy = this.level?.enemyManager?.enemies?.find(e => e.enemyType === 'lobber_boss');
+        if (bossEnemy && bossEnemy.health !== undefined) {
+          controller.syncHealth(bossEnemy.health, bossEnemy.maxHealth || 500);
+          // Update on-screen HUD if present
+          if (hud && hud.update) {
+            hud.update(controller.health, controller.maxHealth);
+          }
+        }
+      }
     }
     
     // Check door trigger volumes to start Stack tool tutorial

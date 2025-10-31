@@ -338,9 +338,157 @@ export const levels = [
     ],
     "ui": [
       "hud",
-      "coordinates"
+            {
+        "type": "minimap",
+        "config": {
+          "zoom": 1.6
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 7,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍏",
+              "name": "Green Apples",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
     ],
-    "enemies": [],
+    "enemies": [
+      {
+        "type": "crawler",
+        "position": [
+          -425.5900434110422,
+          20.113008499145508,
+          274.669088469345
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 29
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -433.3701164361692,
+          20.113008499145515,
+          257.2399163600309
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 30
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -426.66473887928464,
+          20.113008499145515,
+          244.20925144592724
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 31
+      },
+      {
+        "type": "crawler",
+        "position": [
+          305.7826403923883,
+          20.027040152890915,
+          24.799900322963577
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 48
+      },
+      {
+        "type": "crawler",
+        "position": [
+          287.3535217944027,
+          20.959493637084961,
+          25.74999179342933
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 49
+      },
+      {
+        "type": "crawler",
+        "position": [
+          310.305134317053,
+          20.452826949471497,
+          122.30921272529777
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 50
+      },
+      {
+        "type": "crawler",
+        "position": [
+          291.14432266074226,
+          20.509656195663787,
+          121.99517109242474
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 51
+      },
+      {
+        "type": "crawler",
+        "position": [
+          319.51625700361103,
+          20.4860567378545575,
+          274.04694288437554
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 52
+      },
+      {
+        "type": "crawler",
+        "position": [
+          274.64077936042764,
+          20.741729019436846,
+          277.2949816103393
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 53
+      }
+    ],
     "npcs": [
       {
         "type": "yellow_bot",
@@ -900,335 +1048,12 @@ export const levels = [
         "id": "collider_12",
         "type": "mesh",
         "meshName": "Platform3006",
-<<<<<<< HEAD
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_4",
-        "type": "box",
-        "position": [
-          276.8880293795172,
-          10.996814174003951,
-          -73.9396409906447
-        ],
-        "size": [
-          64.49216878209612,
-          3.2354663557965324,
-          0.249976173766413
-        ],
-=======
         "materialType": "ground",
->>>>>>> 0615266a5e7fe59e9e5e3522b63ee628ad4ca7ed
         "rotation": [
           0,
           0,
           0
-<<<<<<< HEAD
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_6",
-        "type": "box",
-        "position": [
-          288.7530212402344,
-          10.70006275177002,
-          -63.36783218383789
-        ],
-        "size": [
-          6.52842684864504,
-          4.660901069641113,
-          6.528426848645061
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_7",
-        "type": "box",
-        "position": [
-          294.7952880859375,
-          10.70006275177002,
-          -62.11376953125
-        ],
-        "size": [
-          5.400139955073087,
-          4.660901069641113,
-          5.400139955073037
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_8",
-        "type": "box",
-        "position": [
-          299.35552978515625,
-          10.70006275177002,
-          -67.92805480957031
-        ],
-        "size": [
-          5.503345912205077,
-          4.660901069641113,
-          5.503345912205049
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_9",
-        "type": "box",
-        "position": [
-          301.7371826171875,
-          11.248753547668457,
-          -61.51356887817383
-        ],
-        "size": [
-          6.587116128094749,
-          4.660901069641113,
-          6.587116128094728
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_10",
-        "type": "box",
-        "position": [
-          304.37176513671875,
-          10.70006275177002,
-          -56.413490295410156
-        ],
-        "size": [
-          6.52842684864504,
-          4.660901069641113,
-          6.528426848645054
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_11",
-        "type": "box",
-        "position": [
-          593.7308448709202,
-          10.996814174003951,
-          -71.41085016770253
-        ],
-        "size": [
-          27.36974002233353,
-          3.2354663557965324,
-          0.24997118603916135
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_12",
-        "type": "box",
-        "position": [
-          558.5648902810765,
-          10.996814174003951,
-          431.21738469557874
-        ],
-        "size": [
-          27.36974002233353,
-          3.2354663557965324,
-          0.24997118603914714
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_13",
-        "type": "box",
-        "position": [
-          49.35910262238512,
-          10.996814174003951,
-          -46.44233667893299
-        ],
-        "size": [
-          27.36974002233361,
-          3.2354663557965324,
-          0.24997118603915425
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_14",
-        "type": "box",
-        "position": [
-          50.82069625031481,
-          10.996814174003951,
-          -23.731820702980844
-        ],
-        "size": [
-          27.36974002233361,
-          3.2354663557965324,
-          0.24997118603916135
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_15",
-        "type": "box",
-        "position": [
-          -50.94272385466565,
-          10.996814174003951,
-          -23.731820702980844
-        ],
-        "size": [
-          27.369740022333602,
-          3.2354663557965324,
-          0.24997118603916135
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_16",
-        "type": "box",
-        "position": [
-          -50.94272385466565,
-          10.996814174003951,
-          -46.44233667893299
-        ],
-        "size": [
-          27.369740022333602,
-          3.2354663557965324,
-          0.24997118603915425
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_17",
-        "type": "box",
-        "position": [
-          -158.80121384490002,
-          11.084471148796432,
-          -87.16539728684316
-        ],
-        "size": [
-          27.369740022333616,
-          3.2354663557965324,
-          0.24997118603916135
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_18",
-        "type": "box",
-        "position": [
-          -227.4301658712672,
-          11.084471148796432,
-          280.21616399245374
-        ],
-        "size": [
-          27.369740022333616,
-          3.2354663557965324,
-          0.24997118603914714
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_19",
-        "type": "box",
-        "position": [
-          -393.06401909044445,
-          17.685004156214546,
-          339.47382550479756
-        ],
-        "size": [
-          4.034518518952268,
-          1.8591362417886899,
-          1.9053478012843357
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_20",
-        "type": "box",
-        "position": [
-          -393.06352258927166,
-          14.031774424862878,
-          339.5168225256386
-        ],
-        "size": [
-          4.314744958594872,
-          9.165595704492027,
-          3.285870740667974
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-=======
         ]
->>>>>>> 0615266a5e7fe59e9e5e3522b63ee628ad4ca7ed
       }
     ],
     "placeableBlocks": [
@@ -1331,7 +1156,150 @@ export const levels = [
           "materialType": "ground"
         }
       }
-    ]
+    ],
+    "collectibles": {
+      "chests": [
+        {
+          "id": "chest_32",
+          "position": [
+            -499.085311265958,
+            38.74439334869385,
+            334.06633057575175
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_33",
+          "position": [
+            -225.62864531854856,
+            9.651255130767824,
+            278.7988147172013
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_34",
+          "position": [
+            -237.44661100161906,
+            23.226380348205566,
+            -17.687950706826655
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_35",
+          "position": [
+            -238.27040579662082,
+            23.226380348205566,
+            -23.327350349487794
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_37",
+          "position": [
+            -237.8768482421618,
+            23.226380348205566,
+            -30.485315919861755
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_38",
+          "position": [
+            -169.3996665850923,
+            9.651255130767822,
+            -82.64101963921365
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_39",
+          "position": [
+            -26.238882996084904,
+            9.439203262329102,
+            -44.85368840875811
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_40",
+          "position": [
+            27.87669681671055,
+            9.439203262329102,
+            -45.742070533768135
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_41",
+          "position": [
+            563.1453318104104,
+            23.226380348205566,
+            46.48808928837561
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_42",
+          "position": [
+            567.1970196438438,
+            9.651255130767822,
+            429.1261757803478
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_43",
+          "position": [
+            317.9556895504127,
+            9.691577911376953,
+            402.88531324057374
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_44",
+          "position": [
+            274.4610301937911,
+            9.691577911376955,
+            406.2805544583855
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_45",
+          "position": [
+            272.8105836219984,
+            9.691577911376951,
+            417.24719695393435
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_46",
+          "position": [
+            319.2518496027569,
+            9.691577911376955,
+            417.44962917460015
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_47",
+          "position": [
+            275.60067626746354,
+            9.691577911376953,
+            -62.93518485094077
+          ],
+          "contents": "potion"
+        }
+      ],
+      "potions": [],
+      "coins": [],
+      "gems": [],
+      "keys": []
+    }
   },
   {
     "id": "level1",
@@ -11440,13 +11408,19 @@ export const levels = [
         "color": 7048739
       }
     ],
-
     "computerLocation": {
-    "position": [72, 9, -100], // Position in your level3 where computer is
-    "radius": 20.0, // How close player needs to be to interact
-    "requiredLLMs": ["llm_gpt", "llm_claude", "llm_gemini"] // LLMs needed to activate
+      "position": [
+        72,
+        9,
+        -100
+      ],
+      "radius": 20,
+      "requiredLLMs": [
+        "llm_gpt",
+        "llm_claude",
+        "llm_gemini"
+      ]
     },
-
     "colliders": [
       {
         "id": "collider_1",
@@ -20171,11 +20145,15 @@ export const levels = [
     }
   },
   {
-  "id": "level1_glitched",
-  "name": "GLITCHED: Level 1",
-  "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
-  "startPosition": [0, 10, 0], // Same as original level1
-  "colliders": [
+    "id": "level1_glitched",
+    "name": "GLITCHED: Level 1",
+    "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
+    "startPosition": [
+      0,
+      10,
+      0
+    ],
+    "colliders": [
       {
         "id": "terrain_collider",
         "type": "mesh",
@@ -21535,29 +21513,22 @@ export const levels = [
         ]
       }
     ],
-  "enemies": [
-    // ADD YOUR MODIFIED ENEMIES HERE - different positions, types, patrol points
-    // Example: { type: "snake", position: [15, 0.5, 12], ... }
-  ],
-  "collectibles": {
-    // "chests": [
-    //   // ADD YOUR GLITCHED COLLECTIBLES HERE - code snippets, assets, etc.
-    //   // Example: { id: "code_react", position: [10, 2, 10], contents: "code_react" }
-    // ],
-    // "apples": [],
-    // "potions": [],
-    // "coins": [],
-    // "gems": [],
-    // "keys": []
+    "enemies": [],
+    "collectibles": {},
+    "lights": [
+      "BasicLights"
+    ]
   },
-  "lights": ['BasicLights'] // Same as original or modify
-},
-{
-  "id": "level2_glitched",
-  "name": "GLITCHED: Level 2",
-  "gltfUrl": "assets/levels/Level2/Level2.gltf", // Same as original level1
-  "startPosition": [195, 6, -83], // Same as original level1
- "colliders": [
+  {
+    "id": "level2_glitched",
+    "name": "GLITCHED: Level 2",
+    "gltfUrl": "assets/levels/Level2/Level2.gltf",
+    "startPosition": [
+      195,
+      6,
+      -83
+    ],
+    "colliders": [
       {
         "id": "collider_20",
         "type": "box",
@@ -27838,22 +27809,9 @@ export const levels = [
         ]
       }
     ],
-  "enemies": [
-    // ADD YOUR MODIFIED ENEMIES HERE - different positions, types, patrol points
-    // Example: { type: "snake", position: [15, 0.5, 12], ... }
-  ],
-  "collectibles": {
-    // "chests": [
-    //   // ADD YOUR GLITCHED COLLECTIBLES HERE - code snippets, assets, etc.
-    //   // Example: { id: "code_react", position: [10, 2, 10], contents: "code_react" }
-    // ],
-    // "apples": [],
-    // "potions": [],
-    // "coins": [],
-    // "gems": [],
-    // "keys": []
-  },
-  "lights": [
+    "enemies": [],
+    "collectibles": {},
+    "lights": [
       {
         "key": "StarLight",
         "props": {
@@ -28909,6 +28867,6 @@ export const levels = [
           ]
         }
       }
-    ],
-}
+    ]
+  }
 ];
