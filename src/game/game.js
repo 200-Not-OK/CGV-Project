@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows } from './scene.js';
+import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows, loadPanoramaSky } from './scene.js';
 import { InputManager } from './input.js';
 import { Player } from './player.js';
 import { LevelManager } from './levelManager.js';
@@ -1058,6 +1058,37 @@ async loadLevel(index) {
     }
     // Restore default sky elsewhere
     try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
+  }
+
+  // Load panorama sky if specified in level data
+  if (levelData.panoramaSky) {
+    try {
+      let textureUrl;
+      let options = {};
+      
+      if (typeof levelData.panoramaSky === 'string') {
+        // Simple string format: "panoramaSky": "path/to/texture.hdr"
+        textureUrl = levelData.panoramaSky;
+      } else if (typeof levelData.panoramaSky === 'object' && levelData.panoramaSky.url) {
+        // Object format: "panoramaSky": { "url": "path/to/texture.hdr", "radius": 1000, "rotation": 0 }
+        textureUrl = levelData.panoramaSky.url;
+        options = {
+          radius: levelData.panoramaSky.radius,
+          rotation: levelData.panoramaSky.rotation,
+          useAsEnvironment: levelData.panoramaSky.useAsEnvironment
+        };
+      } else {
+        console.warn('⚠️ Invalid panoramaSky format in level data, expected string or object with url property');
+        return;
+      }
+      
+      await loadPanoramaSky(this.scene, this.renderer, textureUrl, options);
+      console.log('✅ Panorama sky loaded for level:', this.currentLevelId);
+    } catch (error) {
+      console.warn('⚠️ Failed to load panorama sky:', error);
+      // Fallback to default sky preset on error
+      try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
+    }
   }
 
   // Position player at start position from level data
