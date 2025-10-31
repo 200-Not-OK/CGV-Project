@@ -92,6 +92,14 @@ export class Player {
     // Movement state
     this.isGrounded = false;
     this.isOnSlope = false; // Track if player is on a sloped surface
+  // Lock-on assist settings
+  this.lockOnEnabled = true;
+  this.lockOnRange = options.lockOnRange ?? 4.5; // Distance to auto-face nearest enemy
+  this.lockOnSmoothing = options.lockOnSmoothing ?? 0.18; // How quickly to rotate toward target
+  this._lockOnTarget = null; // Cached enemy target
+  this._lockOnHysteresis = 0.75; // Extra range to keep lock before dropping
+  this._lockOnCooldownMs = 150; // Min time between target switches to avoid flicker
+  this._lastLockSwitchAt = 0;
     this.isSprinting = false;
     this.isJumping = false;
     this.jumpHoldTime = 0; // Track how long jump button is held
@@ -812,6 +820,12 @@ export class Player {
       // Anti-stuck detection - check if player is trying to move but stuck
       this.detectAndEscapeStuck(input, delta);
     }
+
+    // Auto lock-on assist: rotate toward nearest enemy when close
+    if (playerActive && this.lockOnEnabled) {
+      this.updateLockOnTarget();
+      this.applyLockOnRotation(delta);
+    }
     
     // Apply wall sliding physics (works even without input)
     this.applyWallSlidingPhysics(delta);
@@ -846,6 +860,78 @@ export class Player {
 
     // Handle footstep sounds
     this.updateFootsteps(delta);
+  }
+
+  isLockOnActive() {
+    return !!this._lockOnTarget;
+  }
+
+  getLockOnTarget() {
+    return this._lockOnTarget;
+  }
+
+  updateLockOnTarget() {
+    try {
+      // Don't lock when movement is locked (e.g., cinematics)
+      if (this.movementLocked || !this.game || !this.game.level) {
+        this._lockOnTarget = null;
+        return;
+      }
+      const enemies = this.game.level.getEnemies ? this.game.level.getEnemies() : [];
+      if (!enemies || enemies.length === 0) { this._lockOnTarget = null; return; }
+
+      // Keep current target if still valid within hysteresis range to prevent flicker
+      const now = Date.now();
+      const keepRange = this.lockOnRange + this._lockOnHysteresis;
+      const playerPos = this.mesh.position;
+      const current = this._lockOnTarget;
+      if (current && current.alive !== false && current.mesh) {
+        const cpos = current.mesh.position;
+        const dist = playerPos.distanceTo(cpos);
+        if (dist <= keepRange) {
+          return; // keep current target
+        }
+      }
+
+      // Rate-limit switching
+      if (now - this._lastLockSwitchAt < this._lockOnCooldownMs) return;
+
+      // Find nearest enemy within lockOnRange
+      let nearest = null, nearestDist = Infinity;
+      for (const e of enemies) {
+        if (!e || e.alive === false) continue;
+        const pos = (e.body)
+          ? new THREE.Vector3(e.body.position.x, e.body.position.y, e.body.position.z)
+          : (e.mesh ? e.mesh.position : null);
+        if (!pos) continue;
+        const d = playerPos.distanceTo(pos);
+        if (d <= this.lockOnRange && d < nearestDist) { nearest = e; nearestDist = d; }
+      }
+      if (nearest !== this._lockOnTarget) {
+        this._lockOnTarget = nearest || null;
+        this._lastLockSwitchAt = now;
+      }
+    } catch (e) {
+      // If anything goes wrong, just clear the target
+      this._lockOnTarget = null;
+    }
+  }
+
+  applyLockOnRotation(delta) {
+    const target = this._lockOnTarget;
+    if (!target || !target.mesh) return;
+    const targetPos = target.mesh.position;
+    const selfPos = this.mesh.position;
+    // Compute horizontal direction to target
+    const dx = targetPos.x - selfPos.x;
+    const dz = targetPos.z - selfPos.z;
+    const desiredYaw = Math.atan2(dx, dz);
+    const currentYaw = this.mesh.rotation.y;
+    // Shortest angle difference
+    let diff = desiredYaw - currentYaw;
+    diff = ((diff + Math.PI) % (2 * Math.PI)) - Math.PI;
+    // Apply smoothing toward target
+    this.mesh.rotation.y = currentYaw + diff * this.lockOnSmoothing;
   }
 
   updateFootsteps(delta) {

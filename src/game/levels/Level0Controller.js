@@ -624,6 +624,25 @@ export class Level0Controller {
       }
     }
 
+    // Show/hide interaction prompt for node collection
+    const nodePrompt = this.game?.ui?.get('interactionPrompt');
+    if (nodePrompt) {
+      if (this.currentInteractableNode) {
+        // Only take control if prompt is not visible or we already own it
+        if (!nodePrompt.isVisible || this._nodePromptActive) {
+          const currentText = nodePrompt.getText ? nodePrompt.getText() : '';
+          const isComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
+          if (!isComputerPrompt) {
+            nodePrompt.show('to collect node');
+            this._nodePromptActive = true;
+          }
+        }
+      } else if (this._nodePromptActive && nodePrompt.isVisible) {
+        nodePrompt.hide();
+        this._nodePromptActive = false;
+      }
+    }
+
     // Check if E key is pressed
     const currentTime = Date.now();
     if (this.game.input && this.game.input.isKey('KeyE')) {
@@ -656,6 +675,13 @@ export class Level0Controller {
 
     // Hide the node mesh (node disappears in the eye of the player)
     nodeMesh.visible = false;
+    
+    // Hide node prompt if we were showing it
+    const np = this.game?.ui?.get('interactionPrompt');
+    if (np && this._nodePromptActive) {
+      np.hide();
+      this._nodePromptActive = false;
+    }
     
     // Remove from nodeMeshes array
     this.nodeMeshes = this.nodeMeshes.filter(n => n !== nodeMesh);
@@ -1941,6 +1967,12 @@ export class Level0Controller {
     if (this.exclamationGroup) {
       this.exclamationGroup.visible = false;
     }
+    // Hide Richard prompt if showing
+    const prompt = this.game?.ui?.get('interactionPrompt');
+    if (prompt && this._richardPromptActive) {
+      prompt.hide();
+      this._richardPromptActive = false;
+    }
     
     // Play the interaction dialogue sequence
     await this._playRichardInteractionDialogue();
@@ -2135,6 +2167,13 @@ export class Level0Controller {
     // Restore collectible interactions
     if (this.game.collectiblesManager && this._originalCollectibleInteract) {
       this.game.collectiblesManager.handleInteraction = this._originalCollectibleInteract;
+    }
+    
+    // Ensure any Richard prompt is hidden when disabling mode
+    const prompt2 = this.game?.ui?.get('interactionPrompt');
+    if (prompt2 && this._richardPromptActive) {
+      prompt2.hide();
+      this._richardPromptActive = false;
     }
     
     console.log('🎬 [Level0Controller] Richard interaction mode disabled - normal interactions restored');
@@ -3073,7 +3112,27 @@ export class Level0Controller {
     if (!this.interactionDialogueShown && !this.cutsceneActive) {
       // If exclamation mark is present (first interaction ready)
       const hasIndicator = !!(this.exclamationGroup && this.exclamationGroup.parent);
-      if (hasIndicator && this._isPlayerNearRichard(4.5)) {
+      const nearRichard = hasIndicator && this._isPlayerNearRichard(4.5);
+
+      // Show/hide prompt for Richard interaction only when interactable
+      const rPrompt = this.game?.ui?.get('interactionPrompt');
+      if (rPrompt) {
+        if (nearRichard) {
+          if (!rPrompt.isVisible || this._richardPromptActive) {
+            const currentText = rPrompt.getText ? rPrompt.getText() : '';
+            const isComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
+            if (!isComputerPrompt) {
+              rPrompt.show('to talk to Richard');
+              this._richardPromptActive = true;
+            }
+          }
+        } else if (this._richardPromptActive && rPrompt.isVisible) {
+          rPrompt.hide();
+          this._richardPromptActive = false;
+        }
+      }
+
+      if (nearRichard) {
         const now = Date.now();
         if (this.game.input && this.game.input.isKey('KeyE')) {
           if (now - this.lastRichardInteractionPress > this.richardInteractionCooldown) {

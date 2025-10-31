@@ -170,6 +170,7 @@ export class HUD extends UIComponent {
     this.root.appendChild(this.healthContainer);
     
     // Create node counter container (initially hidden, appears after talking to Richard)
+    // Note: We position this relative to the Collectibles UI so it always appears BELOW it.
     this.nodeContainer = document.createElement('div');
     this.nodeContainer.style.cssText = `
       background: linear-gradient(145deg, #2a5298, #1e3a8a);
@@ -179,10 +180,11 @@ export class HUD extends UIComponent {
       box-shadow: 
         0 6px 20px rgba(0, 0, 0, 0.3),
         inset 0 2px 0 rgba(255, 255, 255, 0.2);
-      position: relative;
-      margin-top: 12px;
+      position: absolute;
+      left: 20px;
       backdrop-filter: blur(5px);
       min-width: 150px;
+      z-index: 10;
     `;
     
     this.nodeText = document.createElement('div');
@@ -201,9 +203,13 @@ export class HUD extends UIComponent {
     `;
     this.nodeText.textContent = 'Nodes: 0/2';
     
-    this.nodeContainer.appendChild(this.nodeText);
-    this.nodeContainer.style.display = 'none';
-    this.root.appendChild(this.nodeContainer);
+  this.nodeContainer.appendChild(this.nodeText);
+  this.nodeContainer.style.display = 'none';
+  // Append to the HUD container's parent (so we can freely position it relative to the page)
+  (this.container || document.body).appendChild(this.nodeContainer);
+    
+  // Reposition on window resize (in case layout changes)
+  window.addEventListener('resize', () => this.positionNodeBelowCollectibles());
     
     // Initialize node count
     this.nodeCount = 0;
@@ -214,6 +220,34 @@ export class HUD extends UIComponent {
   showNodeCounter(show) {
     if (!this.nodeContainer) return;
     this.nodeContainer.style.display = show ? 'block' : 'none';
+    if (show) {
+      // Ensure it's placed below collectibles when shown
+      this.positionNodeBelowCollectibles();
+    }
+  }
+
+  // Position the node counter immediately below the collectibles UI box
+  positionNodeBelowCollectibles(spacing = 10) {
+    try {
+      const collectiblesEl = document.querySelector('.collectibles-ui');
+      if (collectiblesEl && this.nodeContainer) {
+        const rect = collectiblesEl.getBoundingClientRect();
+        const top = Math.round(window.scrollY + rect.bottom + spacing);
+        // Align left edge with collectibles (collectibles is at left: 20px already)
+        this.nodeContainer.style.top = `${top}px`;
+        this.nodeContainer.style.left = `${collectiblesEl.style.left || '20px'}`;
+      } else if (this.nodeContainer) {
+        // Fallback: place it under the health HUD
+        const healthTop = parseInt(this.root.style.top || '20', 10);
+        const fallbackTop = healthTop + (this.healthContainer?.offsetHeight || 100) + 60;
+        this.nodeContainer.style.top = `${fallbackTop}px`;
+        this.nodeContainer.style.left = this.root.style.left || '20px';
+      }
+    } catch (e) {
+      // Safe fallback if any error occurs
+      this.nodeContainer.style.top = '220px';
+      this.nodeContainer.style.left = '20px';
+    }
   }
 
   setProps(props) {
