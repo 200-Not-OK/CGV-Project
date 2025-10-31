@@ -94,6 +94,11 @@ export class InteractionPrompt extends UIComponent {
     this.isVisible = false;
   }
   
+  // Helper to read current text (used for coordination between systems)
+  getText() {
+    return this.message?.textContent || '';
+  }
+  
   update(delta, ctx) {
     // No per-frame updates needed for this component
   }
