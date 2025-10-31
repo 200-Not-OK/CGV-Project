@@ -245,7 +245,8 @@ export class Level {
     }
 
     // 6) Level-specific controllers (e.g., Level0Controller)
-    if (this.data.id === 'level1A') {
+    // Note: Previously gated on 'level1A'. Allow 'level1' as well to match levelData changes.
+    if (this.data.id === 'level1' || this.data.id === 'level1A') {
       console.log('🎬 Initializing Level0Controller...');
       this.controller = new Level0Controller(this.game, this);
       // Start sequence after a brief delay to ensure everything is settled
