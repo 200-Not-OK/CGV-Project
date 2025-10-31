@@ -7,6 +7,7 @@ import { SnakeEnemy } from './enemies/SnakeEnemy.js';
 import { SnakeBossEnemy } from './enemies/SnakeBossEnemy.js';
 import { MechBossEnemy } from './enemies/MechBossEnemy.js';
 import { CrawlerEnemy } from './enemies/CrawlerEnemy.js';
+import { LobberBossEnemy } from './enemies/LobberBossEnemy.js';
 
 export class EnemyManager {
   constructor(scene, physicsWorld) {
@@ -22,6 +23,7 @@ export class EnemyManager {
       snake_boss: SnakeBossEnemy,
       mech_boss: MechBossEnemy,
       crawler: CrawlerEnemy,
+      lobber_boss: LobberBossEnemy,
       // register more types here
     };
   }
