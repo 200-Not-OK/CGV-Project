@@ -13,7 +13,11 @@ export const levels = [
       {
         "key": "TechLights",
         "props": {
-          "position": [0, 0, 0]
+          "position": [
+            0,
+            0,
+            0
+          ]
         }
       },
       {
@@ -25,8 +29,12 @@ export const levels = [
       {
         "key": "PointLight",
         "props": {
-          "position": [0, 22, 0],
-          "color": 0x88ccff,
+          "position": [
+            0,
+            22,
+            0
+          ],
+          "color": 8965375,
           "intensity": 3,
           "distance": 0,
           "decay": 0,
@@ -36,8 +44,12 @@ export const levels = [
       {
         "key": "PointLight",
         "props": {
-          "position": [0, 22, -25],
-          "color": 0x88ccff,
+          "position": [
+            0,
+            22,
+            -25
+          ],
+          "color": 8965375,
           "intensity": 2.5,
           "distance": 0,
           "decay": 0,
@@ -47,95 +59,131 @@ export const levels = [
       {
         "key": "RedLightning",
         "props": {
-          "position": [12.912955239766767, 37.88715128438456, -0.6576220834419964],
-          "color": 0x00FFFF,
+          "position": [
+            12.912955239766767,
+            37.88715128438456,
+            -0.6576220834419964
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.5,
-          "length": 18.0
+          "length": 18
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [12.944228948310343, 36.3885593052973, -0.7342901183469568],
-          "color": 0x00FFFF,
+          "position": [
+            12.944228948310343,
+            36.3885593052973,
+            -0.7342901183469568
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.6,
-          "length": 16.0,
+          "length": 16,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.771536745930266, 37.10794565203993, -0.2786261734922153],
-          "color": 0x00FFFF,
+          "position": [
+            -12.771536745930266,
+            37.10794565203993,
+            -0.2786261734922153
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.45,
-          "length": 20.0,
+          "length": 20,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.786166101517708, 35.637551218443186, 0.09513458030733979],
-          "color": 0x00FFFF,
+          "position": [
+            -12.786166101517708,
+            35.637551218443186,
+            0.09513458030733979
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.55,
-          "length": 17.0,
+          "length": 17,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [11.918973319923648, 32.82629147937733, -0.5821365533665996],
-          "color": 0x00FFFF,
+          "position": [
+            11.918973319923648,
+            32.82629147937733,
+            -0.5821365533665996
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.7,
-          "length": 15.0,
+          "length": 15,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.380822352048272, 32.98950836127626, 0.30395344141215386],
-          "color": 0x00FFFF,
+          "position": [
+            -12.380822352048272,
+            32.98950836127626,
+            0.30395344141215386
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.4,
-          "length": 22.0,
+          "length": 22,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-7.066101073891365, 39.086951601572, -1.202468494343286],
-          "color": 0x00FFFF,
+          "position": [
+            -7.066101073891365,
+            39.086951601572,
+            -1.202468494343286
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.65,
-          "length": 19.0,
+          "length": 19,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-7.654338940706618, 39.1165865627044, 0.7016923973175011],
-          "color": 0x00FFFF,
+          "position": [
+            -7.654338940706618,
+            39.1165865627044,
+            0.7016923973175011
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.52,
-          "length": 21.0,
+          "length": 21,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [7.062490970189732, 38.89875358023083, -1.4657143172867606],
-          "color": 0x00FFFF,
+          "position": [
+            7.062490970189732,
+            38.89875358023083,
+            -1.4657143172867606
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.48,
           "length": 17.5,
@@ -145,8 +193,12 @@ export const levels = [
       {
         "key": "RedLightning",
         "props": {
-          "position": [6.6347481289407355, 38.869158640436886, 1.324692383072716],
-          "color": 0x00FFFF,
+          "position": [
+            6.6347481289407355,
+            38.869158640436886,
+            1.324692383072716
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.58,
           "length": 19.5,
@@ -156,189 +208,245 @@ export const levels = [
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.13807616959711, 19.463404294493557, -25.823032754301256],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.13807616959711,
+            19.463404294493557,
+            -25.823032754301256
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.16909747940394, 19.463404294493557, -27.13562457148415],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.16909747940394,
+            19.463404294493557,
+            -27.13562457148415
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.19859913312111, 19.463404294493557, -28.453574585960094],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.19859913312111,
+            19.463404294493557,
+            -28.453574585960094
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.14985223550229, 19.463404294493557, -29.66304109539178],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.14985223550229,
+            19.463404294493557,
+            -29.66304109539178
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.24519648095297, 19.463404294493557, -31.030929245129776],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.24519648095297,
+            19.463404294493557,
+            -31.030929245129776
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.23451972231483, 19.463404294493557, -32.12921366927179],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.23451972231483,
+            19.463404294493557,
+            -32.12921366927179
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.20699800401285, 19.463404294493557, -33.31666531646326],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.20699800401285,
+            19.463404294493557,
+            -33.31666531646326
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.56784082247674, 19.463404294493557, -26.342960488002813],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.56784082247674,
+            19.463404294493557,
+            -26.342960488002813
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.608876255091346, 19.463404294493557, -27.791121946094922],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.608876255091346,
+            19.463404294493557,
+            -27.791121946094922
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.651721009570444, 19.463404294493557, -29.038673863085236],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.651721009570444,
+            19.463404294493557,
+            -29.038673863085236
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.821846110202166, 19.463404294493557, -30.411332975256368],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.821846110202166,
+            19.463404294493557,
+            -30.411332975256368
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.79240656912321, 19.463404294493557, -31.410144903763197],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.79240656912321,
+            19.463404294493557,
+            -31.410144903763197
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.98665721682491, 19.463404294493557, -32.763087823485215],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.98665721682491,
+            19.463404294493557,
+            -32.763087823485215
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.77547883082075, 19.463404294493557, -33.87862076073715],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.77547883082075,
+            19.463404294493557,
+            -33.87862076073715
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       }
     ],
     "ui": [
       "hud",
-            {
+      {
         "type": "minimap",
         "config": {
           "zoom": 1.6
@@ -427,7 +535,7 @@ export const levels = [
         "type": "crawler",
         "position": [
           287.3535217944027,
-          20.959493637084961,
+          20.95949363708496,
           25.74999179342933
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
@@ -466,7 +574,7 @@ export const levels = [
         "type": "crawler",
         "position": [
           319.51625700361103,
-          20.4860567378545575,
+          20.486056737854557,
           274.04694288437554
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
@@ -1301,7 +1409,6 @@ export const levels = [
       "keys": []
     }
   },
-//////
   {
     "id": "intro",
     "name": "Intro Level",
@@ -9716,24 +9823,36 @@ export const levels = [
       {
         "type": "collectibles",
         "config": {
-          "applesTotal": 5,
-          "potionsStart": 5,
-          "pointsPerApple": 200,
+          "potionsStart": 3,
+          "llmGptTotal": 1,
+          "llmClaudeTotal": 1,
+          "llmGeminiTotal": 1,
           "collectibleTypes": {
-            "apples": {
-              "icon": "🍏",
-              "name": "Green Apples",
-              "color": "#51cf66",
-              "completeColor": "#ffd43b",
-              "completeIcon": "👑"
-            },
             "potions": {
               "icon": "🧪",
               "name": "Health Potions",
-              "color": "#9775fa",
-              "lowColor": "#ffd43b",
-              "emptyColor": "#ff6b6b",
+              "color": "#4caf50",
+              "lowColor": "#ff9800",
+              "emptyColor": "#f44336",
               "emptyIcon": "💔"
+            },
+            "llm_gpt": {
+              "icon": "🤖",
+              "name": "GPT",
+              "color": "#10a37f",
+              "collectedColor": "#51cf66"
+            },
+            "llm_claude": {
+              "icon": "🤖",
+              "name": "Claude",
+              "color": "#d4af37",
+              "collectedColor": "#51cf66"
+            },
+            "llm_gemini": {
+              "icon": "🤖",
+              "name": "Gemini",
+              "color": "#8b5cf6",
+              "collectedColor": "#51cf66"
             }
           }
         }
@@ -18482,14 +18601,50 @@ export const levels = [
             8.48471884994061,
             -29.347785283207585
           ],
-          "contents": "apple"
+          "contents": "llm_gpt"
+        },
+        {
+          "id": "chest_50",
+          "position": [
+            -39.65480021096708,
+            8.484719004213202,
+            -21.84767551499649
+          ],
+          "contents": "llm_gpt"
+        },
+        {
+          "id": "chest_51",
+          "position": [
+            -37.21339499373043,
+            8.484719158439216,
+            -26.239011888492335
+          ],
+          "contents": "llm_claude"
+        },
+        {
+          "id": "chest_57",
+          "position": [
+            -39.56207272365201,
+            8.484719009906973,
+            -9.094796585582616
+          ],
+          "contents": "llm_gemini"
+        },
+        {
+          "id": "chest_50",
+          "position": [
+            -3.2947757339090593,
+            0.7725098606259522,
+            -24.81898347315527
+          ],
+          "contents": "potion"
         }
       ],
       "apples": [],
       "potions": [],
-      "coins": [],
-      "gems": [],
-      "keys": []
+      "llm_gpt": [],
+      "llm_claude": [],
+      "llm_gemini": []
     }
   },
   {
@@ -18505,7 +18660,11 @@ export const levels = [
       {
         "key": "TechLights",
         "props": {
-          "position": [0, 0, 0]
+          "position": [
+            0,
+            0,
+            0
+          ]
         }
       },
       {
@@ -18517,8 +18676,12 @@ export const levels = [
       {
         "key": "PointLight",
         "props": {
-          "position": [0, 22, 0],
-          "color": 0x88ccff,
+          "position": [
+            0,
+            22,
+            0
+          ],
+          "color": 8965375,
           "intensity": 3,
           "distance": 0,
           "decay": 0,
@@ -18528,8 +18691,12 @@ export const levels = [
       {
         "key": "PointLight",
         "props": {
-          "position": [0, 22, -25],
-          "color": 0x88ccff,
+          "position": [
+            0,
+            22,
+            -25
+          ],
+          "color": 8965375,
           "intensity": 2.5,
           "distance": 0,
           "decay": 0,
@@ -18539,95 +18706,131 @@ export const levels = [
       {
         "key": "RedLightning",
         "props": {
-          "position": [12.912955239766767, 37.88715128438456, -0.6576220834419964],
-          "color": 0x00FFFF,
+          "position": [
+            12.912955239766767,
+            37.88715128438456,
+            -0.6576220834419964
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.5,
-          "length": 18.0
+          "length": 18
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [12.944228948310343, 36.3885593052973, -0.7342901183469568],
-          "color": 0x00FFFF,
+          "position": [
+            12.944228948310343,
+            36.3885593052973,
+            -0.7342901183469568
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.6,
-          "length": 16.0,
+          "length": 16,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.771536745930266, 37.10794565203993, -0.2786261734922153],
-          "color": 0x00FFFF,
+          "position": [
+            -12.771536745930266,
+            37.10794565203993,
+            -0.2786261734922153
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.45,
-          "length": 20.0,
+          "length": 20,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.786166101517708, 35.637551218443186, 0.09513458030733979],
-          "color": 0x00FFFF,
+          "position": [
+            -12.786166101517708,
+            35.637551218443186,
+            0.09513458030733979
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.55,
-          "length": 17.0,
+          "length": 17,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [11.918973319923648, 32.82629147937733, -0.5821365533665996],
-          "color": 0x00FFFF,
+          "position": [
+            11.918973319923648,
+            32.82629147937733,
+            -0.5821365533665996
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.7,
-          "length": 15.0,
+          "length": 15,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.380822352048272, 32.98950836127626, 0.30395344141215386],
-          "color": 0x00FFFF,
+          "position": [
+            -12.380822352048272,
+            32.98950836127626,
+            0.30395344141215386
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.4,
-          "length": 22.0,
+          "length": 22,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-7.066101073891365, 39.086951601572, -1.202468494343286],
-          "color": 0x00FFFF,
+          "position": [
+            -7.066101073891365,
+            39.086951601572,
+            -1.202468494343286
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.65,
-          "length": 19.0,
+          "length": 19,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-7.654338940706618, 39.1165865627044, 0.7016923973175011],
-          "color": 0x00FFFF,
+          "position": [
+            -7.654338940706618,
+            39.1165865627044,
+            0.7016923973175011
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.52,
-          "length": 21.0,
+          "length": 21,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [7.062490970189732, 38.89875358023083, -1.4657143172867606],
-          "color": 0x00FFFF,
+          "position": [
+            7.062490970189732,
+            38.89875358023083,
+            -1.4657143172867606
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.48,
           "length": 17.5,
@@ -18637,8 +18840,12 @@ export const levels = [
       {
         "key": "RedLightning",
         "props": {
-          "position": [6.6347481289407355, 38.869158640436886, 1.324692383072716],
-          "color": 0x00FFFF,
+          "position": [
+            6.6347481289407355,
+            38.869158640436886,
+            1.324692383072716
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.58,
           "length": 19.5,
@@ -18648,189 +18855,245 @@ export const levels = [
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.13807616959711, 19.463404294493557, -25.823032754301256],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.13807616959711,
+            19.463404294493557,
+            -25.823032754301256
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.16909747940394, 19.463404294493557, -27.13562457148415],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.16909747940394,
+            19.463404294493557,
+            -27.13562457148415
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.19859913312111, 19.463404294493557, -28.453574585960094],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.19859913312111,
+            19.463404294493557,
+            -28.453574585960094
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.14985223550229, 19.463404294493557, -29.66304109539178],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.14985223550229,
+            19.463404294493557,
+            -29.66304109539178
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.24519648095297, 19.463404294493557, -31.030929245129776],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.24519648095297,
+            19.463404294493557,
+            -31.030929245129776
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.23451972231483, 19.463404294493557, -32.12921366927179],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.23451972231483,
+            19.463404294493557,
+            -32.12921366927179
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.20699800401285, 19.463404294493557, -33.31666531646326],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.20699800401285,
+            19.463404294493557,
+            -33.31666531646326
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.56784082247674, 19.463404294493557, -26.342960488002813],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.56784082247674,
+            19.463404294493557,
+            -26.342960488002813
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.608876255091346, 19.463404294493557, -27.791121946094922],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.608876255091346,
+            19.463404294493557,
+            -27.791121946094922
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.651721009570444, 19.463404294493557, -29.038673863085236],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.651721009570444,
+            19.463404294493557,
+            -29.038673863085236
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.821846110202166, 19.463404294493557, -30.411332975256368],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.821846110202166,
+            19.463404294493557,
+            -30.411332975256368
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.79240656912321, 19.463404294493557, -31.410144903763197],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.79240656912321,
+            19.463404294493557,
+            -31.410144903763197
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.98665721682491, 19.463404294493557, -32.763087823485215],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.98665721682491,
+            19.463404294493557,
+            -32.763087823485215
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.77547883082075, 19.463404294493557, -33.87862076073715],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.77547883082075,
+            19.463404294493557,
+            -33.87862076073715
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       }
     ],
     "ui": [
       "hud",
-            {
+      {
         "type": "minimap",
         "config": {
           "zoom": 1.6
@@ -18919,7 +19182,7 @@ export const levels = [
         "type": "crawler",
         "position": [
           287.3535217944027,
-          20.959493637084961,
+          20.95949363708496,
           25.74999179342933
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
@@ -18958,7 +19221,7 @@ export const levels = [
         "type": "crawler",
         "position": [
           319.51625700361103,
-          20.4860567378545575,
+          20.486056737854557,
           274.04694288437554
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
@@ -19792,7 +20055,7 @@ export const levels = [
       "gems": [],
       "keys": []
     }
-  },//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  },
   {
     "id": "level2_glitched",
     "name": "GLITCHED: Level 2",

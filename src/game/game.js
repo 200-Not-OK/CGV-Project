@@ -14,6 +14,7 @@ import { FPS } from './components/fps.js';
 import { Crosshair } from './components/crosshair.js';
 import { Collectibles } from './components/collectibles.js';
 import { InteractionPrompt } from './components/interactionPrompt.js';
+import { CollectiblesLevel3 } from './components/CollectiblesLevel3.js';
 import { DeathMenu } from './components/deathMenu.js';
 import { VoiceoverCard } from './components/voiceoverCard.js';
 import { Coordinates } from './components/coordinates.js';
@@ -230,8 +231,12 @@ export class Game {
     this.soundManager = new SoundManager(this.thirdCameraObject);
 
     //glitch
-    this.glitchManager = new GlitchManager();
-    this.computerTerminal = null;
+  this.glitchManager = new GlitchManager(this);
+this.collectiblesManager = new CollectiblesManager(this.scene, this.physicsWorld, this);
+
+// Connect the CollectiblesManager to GlitchManager for LLM events
+this.setupLLMTracking();
+    
 
      // Setup LLM tracking
     this.setupLLMTracking();
@@ -1283,102 +1288,109 @@ async loadLevel(index) {
   }
 
   applyLevelUI(levelData) {
-    // Clear existing UI and re-add defaults according to level metadata
-    if (!this.ui) return;
-    
-    // Store global components that should persist across levels
-    const globalComponents = new Map();
-    if (this.ui.get('fps')) {
-      globalComponents.set('fps', this.ui.get('fps'));
-    }
-    if (this.ui.get('crosshair')) {
-      globalComponents.set('crosshair', this.ui.get('crosshair'));
-    }
-    if (this.ui.get('interactionPrompt')) {
-      globalComponents.set('interactionPrompt', this.ui.get('interactionPrompt'));
-    }
-    if (this.ui.get('voiceoverCard')) {
-      globalComponents.set('voiceoverCard', this.ui.get('voiceoverCard'));
-    }
-    if (this.ui.get('coordinates')) {
-      globalComponents.set('coordinates', this.ui.get('coordinates'));
-    }
-    
-    this.ui.clear();
-    
-    // Re-add global components first
-    for (const [key, component] of globalComponents) {
-      this.ui.components.set(key, component);
-      // Re-mount the component since it was unmounted during clear
-      if (component.mount) {
-        component.mount();
-      }
-    }
-    
-    const uiList = (levelData && levelData.ui) ? levelData.ui : ['hud'];
-    
-    for (const uiItem of uiList) {
-      // Handle both string format ("hud") and object format ({ type: "collectibles", config: {...} })
-      let key, config;
-      if (typeof uiItem === 'string') {
-        key = uiItem;
-        config = {};
-      } else if (typeof uiItem === 'object' && uiItem.type) {
-        key = uiItem.type;
-        config = uiItem.config || {};
-      } else {
-        console.warn('Invalid UI item format in level data:', uiItem);
-        continue;
-      }
-      
-      if (key === 'hud') {
-        this.ui.add('hud', HUD, { health: this.player.health ?? 100 });
-      } else if (key === 'minimap') {
-        const minimap = this.ui.add('minimap', Minimap, config);
-        // Set level data for minimap rendering
-        if (minimap && minimap.setLevelData) {
-          minimap.setLevelData(levelData);
-        }
-      } else if (key === 'objectives') {
-        this.ui.add('objectives', Objectives, { 
-          items: levelData.objectives ?? ['Reach the goal'],
-          ...config 
-        });
-      } else if (key === 'menu') {
-        this.ui.add('menu', SmallMenu, { 
-          onResume: () => this.setPaused(false),
-          onToggleShaders: () => {
-            if (this.shaderSystem) {
-              const newState = this.shaderSystem.toggleShaders();
-              return newState;
-            }
-            return true;
-          },
-          ...config 
-        });
-      } else if (key === 'collectibles') {
-        this.ui.add('collectibles', Collectibles, config);
-      } else if (key === 'fps') {
-        // FPS is already added as a global component, skip
-        continue;
-      } else if (key === 'coordinates') {
-        // Coordinates is already added as a global component, skip
-        continue;
-      } else {
-        console.warn('Unknown UI component type in level data:', key);
-      }
-    }
-    
-    // Set up collectibles manager references after UI is loaded
-    const collectiblesUI = this.ui.get('collectibles');
-    const interactionPrompt = this.ui.get('interactionPrompt');
-    if (collectiblesUI) {
-      this.collectiblesManager.setReferences(this.player, collectiblesUI);
-    }
-    if (interactionPrompt) {
-      this.collectiblesManager.setInteractionPrompt(interactionPrompt);
+  // Clear existing UI and re-add defaults according to level metadata
+  if (!this.ui) return;
+  
+  // Store global components that should persist across levels
+  const globalComponents = new Map();
+  if (this.ui.get('fps')) {
+    globalComponents.set('fps', this.ui.get('fps'));
+  }
+  if (this.ui.get('crosshair')) {
+    globalComponents.set('crosshair', this.ui.get('crosshair'));
+  }
+  if (this.ui.get('interactionPrompt')) {
+    globalComponents.set('interactionPrompt', this.ui.get('interactionPrompt'));
+  }
+  if (this.ui.get('voiceoverCard')) {
+    globalComponents.set('voiceoverCard', this.ui.get('voiceoverCard'));
+  }
+  if (this.ui.get('coordinates')) {
+    globalComponents.set('coordinates', this.ui.get('coordinates'));
+  }
+  
+  this.ui.clear();
+  
+  // Re-add global components first
+  for (const [key, component] of globalComponents) {
+    this.ui.components.set(key, component);
+    // Re-mount the component since it was unmounted during clear
+    if (component.mount) {
+      component.mount();
     }
   }
+  
+  const uiList = (levelData && levelData.ui) ? levelData.ui : ['hud'];
+  
+  for (const uiItem of uiList) {
+    // Handle both string format ("hud") and object format ({ type: "collectibles", config: {...} })
+    let key, config;
+    if (typeof uiItem === 'string') {
+      key = uiItem;
+      config = {};
+    } else if (typeof uiItem === 'object' && uiItem.type) {
+      key = uiItem.type;
+      config = uiItem.config || {};
+    } else {
+      console.warn('Invalid UI item format in level data:', uiItem);
+      continue;
+    }
+    
+    if (key === 'hud') {
+      this.ui.add('hud', HUD, { health: this.player.health ?? 100 });
+    } else if (key === 'minimap') {
+      const minimap = this.ui.add('minimap', Minimap, config);
+      // Set level data for minimap rendering
+      if (minimap && minimap.setLevelData) {
+        minimap.setLevelData(levelData);
+      }
+    } else if (key === 'objectives') {
+      this.ui.add('objectives', Objectives, { 
+        items: levelData.objectives ?? ['Reach the goal'],
+        ...config 
+      });
+    } else if (key === 'menu') {
+      this.ui.add('menu', SmallMenu, { 
+        onResume: () => this.setPaused(false),
+        onToggleShaders: () => {
+          if (this.shaderSystem) {
+            const newState = this.shaderSystem.toggleShaders();
+            return newState;
+          }
+          return true;
+        },
+        ...config 
+      });
+    } else if (key === 'collectibles') {
+      // USE CollectiblesLevel3 ONLY FOR LEVEL 3
+      if (levelData.id === 'level3') {
+        console.log('🎯 Using CollectiblesLevel3 for Level 3');
+        this.ui.add('collectibles', CollectiblesLevel3, config);
+      } else {
+        // Use regular Collectibles for other levels
+        this.ui.add('collectibles', Collectibles, config);
+      }
+    } else if (key === 'fps') {
+      // FPS is already added as a global component, skip
+      continue;
+    } else if (key === 'coordinates') {
+      // Coordinates is already added as a global component, skip
+      continue;
+    } else {
+      console.warn('Unknown UI component type in level data:', key);
+    }
+  }
+  
+  // Set up collectibles manager references after UI is loaded
+  const collectiblesUI = this.ui.get('collectibles');
+  const interactionPrompt = this.ui.get('interactionPrompt');
+  if (collectiblesUI) {
+    this.collectiblesManager.setReferences(this.player, collectiblesUI);
+  }
+  if (interactionPrompt) {
+    this.collectiblesManager.setInteractionPrompt(interactionPrompt);
+  }
+}
 
   async applyLevelSounds(levelData, opts = {}) {
     const { deferVoiceoverToCinematic = false } = opts;
@@ -1908,6 +1920,9 @@ setupComputerTerminal() {
 /**
  * Setup LLM collection tracking
  */
+/**
+ * Setup LLM collection tracking
+ */
 setupLLMTracking() {
   console.log('🔧 Setting up LLM tracking...');
   
@@ -1917,38 +1932,30 @@ setupLLMTracking() {
     return;
   }
   
-  // Override the chest collection handler to track LLMs
-  if (this.collectiblesManager.onChestCollected) {
-    const originalOnChestCollected = this.collectiblesManager.onChestCollected.bind(this.collectiblesManager);
+  // Listen for LLM collection events from CollectiblesManager
+  this.collectiblesManager.addEventListener('onLLMCollected', (data) => {
+    console.log('🎯 Game: Received LLM collection event for', data.type);
     
-    this.collectiblesManager.onChestCollected = (chestId, contents) => {
-      console.log('📦 Chest collected:', chestId, contents);
-      
-      // Call original handler first
-      originalOnChestCollected(chestId, contents);
-      
-      // Track LLMs in level 3
-      if (this.currentLevelId === 'level3' && contents && contents.startsWith('llm_')) {
-        // FIXED TYPO: was this.glatchManager, now this.glitchManager
-        this.glitchManager.collectedLLMs.add(contents);
-        console.log(`🧠 LLM Collected: ${contents}. Total: ${this.glitchManager.collectedLLMs.size}`);
-        
-        // Show collection message
-        if (this.showMessage) {
-          this.showMessage(`LLM Acquired: ${contents.toUpperCase()}! (${this.glitchManager.collectedLLMs.size}/3)`);
-        }
-      }
-      
-      // Check glitched level completion
-      if (this.currentLevelId && this.currentLevelId.includes('_glitched')) {
-        this.checkGlitchedLevelCompletion();
-      }
-    };
+    // Update GlitchManager
+    if (this.glitchManager && data.type) {
+      this.glitchManager.collectLLM(data.type);
+    } else {
+      console.error('❌ Missing glitchManager or LLM type:', { 
+        hasGlitchManager: !!this.glitchManager, 
+        dataType: data.type 
+      });
+    }
     
-    console.log('✅ LLM tracking setup complete');
-  } else {
-    console.error('❌ onChestCollected method not found in collectiblesManager');
-  }
+    // Also update UI if needed (CollectiblesManager should handle this, but double-check)
+    if (this.ui && this.ui.get('collectibles')) {
+      const collectiblesUI = this.ui.get('collectibles');
+      if (collectiblesUI && collectiblesUI.collectLLM) {
+        collectiblesUI.collectLLM(data.type);
+      }
+    }
+  });
+  
+  console.log('✅ LLM tracking setup complete');
 }
 
 /**
