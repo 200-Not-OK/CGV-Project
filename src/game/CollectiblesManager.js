@@ -595,7 +595,7 @@ export class CollectiblesManager {
     }
 
     // Play voiceover on first chest opened (Level 2 only)
-    if (!this._firstChestOpened && this.game.levelManager && this.game.levelManager.currentIndex === 1) {
+    if (!this._firstChestOpened && this.game?.level?.data?.id === 'level2') {
       console.log('🎤 First chest opened! Playing chest voiceover');
       this._firstChestOpened = true;
       setTimeout(() => {
@@ -604,6 +604,7 @@ export class CollectiblesManager {
         }
       }, 1000); // Play VO 1 second after chest sound
     }
+    
 
     // Mark chest as animating to prevent further interaction    
     // Lock player movement during chest animation
@@ -648,7 +649,7 @@ export class CollectiblesManager {
     this.triggerEvent('onCollectiblePickup', chestCollectible);
 
     // Check chest count (Level 2 only)
-    if (this.game && this.game.levelManager && this.game.levelManager.currentIndex === 1) {
+    if (this.game?.level?.data?.id === 'level2') {
       const allChests = Array.from(this.collectibles.values()).filter(c => c.type === 'chest');
       const collectedChests = allChests.filter(c => c.collected);
       const remainingChests = allChests.filter(c => !c.collected);

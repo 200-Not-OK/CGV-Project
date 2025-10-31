@@ -1570,6 +1570,7 @@ export const levels = [
     "name": "Level 3: The Serpent's Labyrinth",
     "order": 0,
     "gltfUrl": "assets/levels/Level2/Level2.gltf",
+    "panoramaSky": { "url": "assets/HDR_asteroid_field.hdr", "radius": 1000, "rotation": 0 },
     "startPosition": [
       195,
       6,
