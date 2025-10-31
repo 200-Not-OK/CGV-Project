@@ -233,6 +233,7 @@ export class Game {
     //glitch
   this.glitchManager = new GlitchManager(this);
 this.collectiblesManager = new CollectiblesManager(this.scene, this.physicsWorld, this);
+this.setupGlitchedLevelProgression();
 
 // Connect the CollectiblesManager to GlitchManager for LLM events
 this.setupLLMTracking();
@@ -486,7 +487,14 @@ debugInteractionPrompt() {
   this.debugInteractionPrompt();
 }else if (code === 'Key0') { // Zero key
   this.emergencyComputerDebug();
-}else if (code === 'KeyU') {
+} else if (code === 'KeyG') {
+  // DEBUG: Glitched level progress
+  this.debugGlitchedLevelProgress();
+} else if (code === 'KeyH') {
+  // DEBUG: Force complete current glitched level
+  this.forceCompleteGlitchedLevel();
+}
+else if (code === 'KeyU') {
   // DEBUG: Add all LLMs instantly
   console.log('🔧 DEBUG: Adding all LLMs');
   this.glitchManager.collectedLLMs.add('llm_gpt');
@@ -937,6 +945,9 @@ else if (code === 'KeyY') {
 async loadLevel(index) {
   if (this.level) this.level.dispose();
 
+   if (this.collectiblesManager) {
+    this.collectiblesManager.clearPersistentChests();
+  }
   // Preserve debug state before disposing old physics world
   const wasDebugEnabled = this.physicsWorld.isDebugEnabled();
 
@@ -1962,36 +1973,35 @@ setupLLMTracking() {
  * Check if enough collectibles are collected in glitched levels
  */
 checkGlitchedLevelCompletion() {
-  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
+  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) {
+    console.log('🔍 Not in glitched level, skipping completion check');
+    return;
+  }
   
-  const levelData = this.levelManager.getLevelData(this.currentLevelId);
-  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
+  console.log('🔍 Checking glitched level completion for:', this.currentLevelId);
   
-  const chests = levelData.collectibles.chests;
+  const requiredCount = this.glitchManager.requiredGlitchedCollectibles[this.currentLevelId] || 2;
+  const collectedCount = this.collectiblesManager.getCollectedChestCount();
   
-  // Count collected chests
-  const collectedCount = chests.filter(chest => {
-    return this.collectiblesManager.isChestCollected(chest.id);
-  }).length;
-  
-  const requiredCount = this.glitchManager.requiredGlitchedCollectibles[this.currentLevelId];
-  
-  console.log(`📊 Glitched level progress: ${collectedCount}/${requiredCount} collectibles`);
+  console.log(`📊 Glitched level progress: ${collectedCount}/${requiredCount} chests`);
   
   if (collectedCount >= requiredCount) {
-    console.log(`✅ Required collectibles collected in ${this.currentLevelId}!`);
+    console.log(`✅ Required ${requiredCount} chests collected in ${this.currentLevelId}!`);
     
     // Mark this glitched level as completed
     this.glitchManager.completeGlitchedLevel(this.currentLevelId);
     
     // Determine next level
     let nextLevel, message;
-    if (this.currentLevelId === 'level1_glitched' && !this.glitchManager.glitchedLevelsCompleted.level2_glitched) {
+    if (this.currentLevelId === 'level1_glitched') {
       nextLevel = 'level2_glitched';
       message = 'Level 1 Glitched completed! Moving to Level 2 Glitched.';
-    } else {
+    } else if (this.currentLevelId === 'level2_glitched') {
       nextLevel = 'level3';
       message = 'All glitched levels completed! Returning to Level 3.';
+    } else {
+      nextLevel = 'level3';
+      message = 'Glitched level completed! Returning to Level 3.';
     }
     
     // Show completion message
@@ -1999,6 +2009,7 @@ checkGlitchedLevelCompletion() {
     
     // Wait, then go to next level
     setTimeout(() => {
+      console.log('🚀 Auto-progressing to:', nextLevel);
       this.loadLevelByName(nextLevel);
     }, 3000);
   }
@@ -2048,35 +2059,18 @@ showMessage(message, duration = 3000) {
   }, duration);
 }
 
-checkGlitchedLevelCompletion() {
-  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
+setupGlitchedLevelProgression() {
+  console.log('🔧 Setting up glitched level progression...');
   
-  const levelData = this.levelManager.getLevelData(this.currentLevelId);
-  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
-  
-  const chests = levelData.collectibles.chests;
-  
-  // Check if ALL chests in this glitched level are collected
-  const allCollected = chests.every(chest => {
-    return this.collectiblesManager.isChestCollected(chest.id);
+  // Listen for collectible pickup events
+  this.collectiblesManager.addEventListener('onCollectiblePickup', (collectible) => {
+    if (collectible.type === 'chest') {
+      console.log('📦 Chest collected, checking glitched level completion...');
+      this.checkGlitchedLevelCompletion();
+    }
   });
   
-  if (allCollected) {
-    console.log('✅ All chests collected in glitched level!');
-    
-    // Mark this glitched level as completed
-    this.glitchManager.completeGlitchedLevel(this.currentLevelId);
-    
-    // Show completion message
-    this.showMessage(`Glitched level completed! Returning to Level 3.`);
-    
-    // Wait 2 seconds, then automatically return to Level 3
-    setTimeout(() => {
-      this.loadLevelByName('level3');
-    }, 2000);
-  }
+  console.log('✅ Glitched level progression setup complete');
 }
-
-
 
 }

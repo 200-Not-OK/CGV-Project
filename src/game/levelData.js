@@ -9823,10 +9823,10 @@ export const levels = [
       {
         "type": "collectibles",
         "config": {
-          "potionsStart": 3,
-          "llmGptTotal": 1,
-          "llmClaudeTotal": 1,
-          "llmGeminiTotal": 1,
+          "potionsStart": 2,
+          "llmGptTotal": 3,
+          "llmClaudeTotal": 3,
+          "llmGeminiTotal": 3,
           "collectibleTypes": {
             "potions": {
               "icon": "🧪",
@@ -26347,7 +26347,33 @@ export const levels = [
       }
     ],
     "enemies": [],
-    "collectibles": {},
+    "collectibles": {
+      "chests": [
+        {
+          "id": "chest_128",
+          "position": [
+            192.01693453009963,
+            0.1613643113989074,
+            -78.07541833012476
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_129",
+          "position": [
+            195.1854559214592,
+            0.1613643113989074,
+            -88.227192380506
+          ],
+          "contents": "apple"
+        }
+      ],
+      "apples": [],
+      "potions": [],
+      "llm_gpt": [],
+      "llm_claude": [],
+      "llm_gemini": []
+    },
     "lights": [
       {
         "key": "StarLight",
@@ -27404,6 +27430,157 @@ export const levels = [
           ]
         }
       }
-    ]
+    ],
+    "npcs": [],
+    "platforms": [],
+    "interactiveObjects": [],
+    "triggers": [],
+    "meshAnimations": [
+      {
+        "meshName": "Lift2",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -225.86,
+              10.11,
+              124.18
+            ],
+            [
+              -229.68,
+              9.65,
+              254.86
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -259.41,
+              10.11,
+              110.38
+            ],
+            [
+              -387.15,
+              10.11,
+              184.13
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -496.88,
+              11.9,
+              195.35
+            ],
+            [
+              -506.55,
+              48.81,
+              192.95
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3001",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              344.83,
+              10.11,
+              -36.05
+            ],
+            [
+              544.8,
+              22.52,
+              -33.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3002",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              557.24,
+              10.11,
+              99.12
+            ],
+            [
+              558.04,
+              9.65,
+              405.84
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3003",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              525.43,
+              10.11,
+              419.27
+            ],
+            [
+              334.2,
+              9.69,
+              432.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "TreeNode2",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      },
+      {
+        "meshName": "TreeNode1",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      }
+    ],
+    "placeableBlocks": []
   }
 ];

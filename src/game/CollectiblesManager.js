@@ -27,6 +27,7 @@ export class CollectiblesManager {
     this.collectibleMaterial = new CANNON.Material('collectible');
     this.collectibleMaterial.friction = 0.1;
     this.collectibleMaterial.restitution = 0.3;
+    this.persistentCollectedChests = new Set();
   }
 
   /**
@@ -602,6 +603,7 @@ collectItem(collectibleId) {
 openChest(chestCollectible) {
   console.log(`📦 Opening chest containing: ${chestCollectible.contents}`);
 
+  this.markChestAsCollected(chestCollectible.id);
   // Immediately hide interaction prompt and clear currentInteractableChest
   if (this.interactionPrompt && this.currentInteractableChest === chestCollectible) {
     const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
@@ -643,7 +645,7 @@ openChest(chestCollectible) {
   this.createPickupEffect(chestCollectible.mesh.position.clone());
   
   // Process the chest contents - UPDATED LLM HANDLING
-  console.log(`🎯 Processing chest contents: ${chestCollectible.contents}`);
+ console.log(`🎯 Processing chest contents: ${chestCollectible.contents}`);
   
   if (chestCollectible.contents === 'apple') {
     this.triggerEvent('onAppleCollected', chestCollectible);
@@ -663,14 +665,12 @@ openChest(chestCollectible) {
     
     this.triggerEvent('onLLMCollected', { type: llmType, chest: chestCollectible });
     
-    // IMPORTANT: Check if UI has collectLLM method and call it
     if (this.uiRef) {
       if (this.uiRef.collectLLM) {
         console.log(`🎯 Calling uiRef.collectLLM('${llmType}')`);
         this.uiRef.collectLLM(llmType);
       } else {
         console.warn('⚠️ UI reference exists but collectLLM method not found!');
-        console.log('UI methods:', Object.keys(this.uiRef));
       }
     } else {
       console.error('❌ No UI reference available for LLM collection!');
@@ -683,7 +683,7 @@ openChest(chestCollectible) {
 
   this.triggerEvent('onCollectiblePickup', chestCollectible);
   
-  // Remove from our tracking after a delay to allow animation
+  // Remove from active tracking after a delay to allow animation
   setTimeout(() => {
     // Unlock player movement when animation is complete
     if (this.playerRef && this.playerRef.unlockMovement) {
@@ -693,6 +693,8 @@ openChest(chestCollectible) {
     this.scene.remove(chestCollectible.mesh);
     this.physicsWorld.removeBody(chestCollectible.body);
     this.collectibles.delete(chestCollectible.id);
+    
+    console.log(`🗑️ Removed chest ${chestCollectible.id} from active tracking (still in persistent tracking)`);
   }, 2000);
 }
 
@@ -1191,4 +1193,54 @@ createLLMMesh(type) {
   
   return group;
 }
+
+/**
+ * Check if a chest is collected
+ */
+isChestCollected(chestId) {
+  const collectible = this.collectibles.get(chestId);
+  return collectible ? collectible.collected : false;
+}
+
+/**
+ * Get collected chest count for current level
+ */
+getCollectedChestCount() {
+  let count = 0;
+  for (const [id, collectible] of this.collectibles) {
+    if (collectible.type === 'chest' && collectible.collected) {
+      count++;
+    }
+  }
+  return count;
+}
+
+isChestCollected(chestId) {
+    return this.persistentCollectedChests.has(chestId);
+  }
+
+  /**
+   * Get collected chest count for current level (persistent)
+   */
+  getCollectedChestCount() {
+    return this.persistentCollectedChests.size;
+  }
+
+  /**
+   * Mark a chest as permanently collected
+   */
+  markChestAsCollected(chestId) {
+    this.persistentCollectedChests.add(chestId);
+    console.log(`📦 Marked chest ${chestId} as permanently collected. Total: ${this.persistentCollectedChests.size}`);
+  }
+
+  /**
+   * Clear persistent chest tracking (when changing levels)
+   */
+  clearPersistentChests() {
+    console.log('🧹 Clearing persistent chest tracking');
+    this.persistentCollectedChests.clear();
+  }
+
+
 }
