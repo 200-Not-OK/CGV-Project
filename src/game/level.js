@@ -450,18 +450,19 @@ export class Level {
             (m) => m.userData?.type === 'gltf' && !m.userData?.isNpc && !m.userData?.skipShader,
             {
             // Softer cartoon style - less bright and oversaturated
-            ambientColor: new THREE.Color(0xffffff).multiplyScalar(0.35),
-            saturationBoost: -0.15,
-            vibrance: -0.10,
-            shadowLift: 0.08,
-            exposure: 0.65,
+            ambientColor: new THREE.Color(0xffffff).multiplyScalar(0.55),
+            // Let overall colors breathe again while we clamp greens below
+            saturationBoost: 0.08,    // mild global boost
+            vibrance: 0.14,           // pop low-sat colors (flowers, signs)
+            shadowLift: 0.10, // Slightly reduced from 0.12
+            exposure: 0.85, // Slightly reduced from 0.95
             rimIntensity: 0.15,
             rimPower: 2.5,
             specIntensity: 0.25,
             specPower: 48.0,
             // Softer directional light
-            sunColor: new THREE.Color(0xffffff).multiplyScalar(2.0),
-            sunWrap: 0.65,
+            sunColor: new THREE.Color(0xffffff).multiplyScalar(2.6), // calmer key light
+            sunWrap: 0.62, // less wrap = more shape, fewer blown edges
             // Subtle toon look
             toonDiffuseSteps: toonEnabled ? 2.0 : 0.0,
             toonSpecSteps: toonEnabled ? 2.0 : 0.0,
@@ -481,15 +482,16 @@ export class Level {
             albedoLift: 0.005,
             darkTintColor: new THREE.Color(0xf0e6d0).multiplyScalar(0.15),
             darkTintStrength: 0.20,
-            // Selective enhancement: MASSIVE boost for red, pink, purple
-            hueDesatCenter: new THREE.Vector3(1.0, -0.5, -0.5).normalize(), // Red-pink-magenta axis
-            hueDesatWidth: 0.50,
-            hueDesatStrength: -0.65, // MASSIVE negative = huge saturation BOOST
-            hueDimStrength: 0.0,
-            // Yellow pop
-            hue2DesatCenter: new THREE.Vector3(1.0, 1.0, 0.0).normalize(), // Yellow axis
-            hue2DesatWidth: 0.45,
-            hue2DesatStrength: -0.35, // Negative = saturation BOOST
+            // Selective color control
+            // Band 1: directly tame green foliage (aim at green axis)
+            hueDesatCenter: new THREE.Vector3(-0.2, 1.0, -0.2).normalize(), // Green axis
+            hueDesatWidth: 0.55,
+            hueDesatStrength: 0.22,  // positive = desaturate greens
+            hueDimStrength: 0.08,    // slight darken to reduce neon
+            // Band 2: boost reds/magentas (flowers, accents)
+            hue2DesatCenter: new THREE.Vector3(1.0, -0.5, -0.5).normalize(), // Red-magenta axis
+            hue2DesatWidth: 0.50,
+            hue2DesatStrength: -0.25, // negative = saturation boost
             hue2DimStrength: 0.0,
             // Subtle white cleanup
             highlightWhiteBoost: 0.05,
