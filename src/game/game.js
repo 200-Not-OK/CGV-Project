@@ -18,6 +18,7 @@ import { CollectiblesLevel3 } from './components/CollectiblesLevel3.js';
 import { DeathMenu } from './components/deathMenu.js';
 import { VoiceoverCard } from './components/voiceoverCard.js';
 import { Coordinates } from './components/coordinates.js';
+import { TriggerPrompt } from './components/triggerPrompt.js';
 import { FirstPersonCamera } from './firstPersonCamera.js';
 import { LightManager } from './lightManager.js';
 import * as LightModules from './lights/index.js';
@@ -210,6 +211,10 @@ export class Game {
     this.ui.add('crosshair', Crosshair, { visible: true });
     // Add interaction prompt for chests
     this.ui.add('interactionPrompt', InteractionPrompt, { message: 'to interact' });
+    // Add trigger prompt for level teleporters
+    console.log('📝 Adding TriggerPrompt to UIManager');
+    this.ui.add('triggerPrompt', TriggerPrompt, {});
+    console.log('✅ TriggerPrompt added to UIManager');
     // Add voiceover card for character dialogues
     this.ui.add('voiceoverCard', VoiceoverCard, {
       characterName: 'Pravesh',
@@ -1501,6 +1506,9 @@ this.setupLLMTracking();
   if (this.ui.get('coordinates')) {
     globalComponents.set('coordinates', this.ui.get('coordinates'));
   }
+  if (this.ui.get('triggerPrompt')) {
+    globalComponents.set('triggerPrompt', this.ui.get('triggerPrompt'));
+  }
   
   this.ui.clear();
   
@@ -1510,6 +1518,10 @@ this.setupLLMTracking();
     // Re-mount the component since it was unmounted during clear
     if (component.mount) {
       component.mount();
+    }
+    // Hide trigger prompt when transitioning to a new level
+    if (key === 'triggerPrompt' && component.hide) {
+      component.hide();
     }
   }
   

@@ -8,6 +8,7 @@ import { CinematicsManager } from './cinematicsManager.js';
 import { Platform } from './components/Platform.js';
 import { InteractiveObjectManager } from './InteractiveObjectManager.js';
 import { PlaceableBlockManager } from './PlaceableBlockManager.js';
+import { TriggerManager } from './TriggerManager.js';
 import { Level0Controller } from './levels/Level0Controller.js';
 import { createBinaryScreenFromExactCorners } from './lights/binaryScreen.js';
 import { createLightningBorder } from './lights/lightningBorder.js';
@@ -47,6 +48,7 @@ export class Level {
     this.npcManager = new NpcManager(this.scene, this.physicsWorld);
     this.interactiveObjectManager = new InteractiveObjectManager(this.scene, this.physicsWorld, null);
     this.placeableBlockManager = new PlaceableBlockManager(this.scene, this.physicsWorld);
+    this.triggerManager = new TriggerManager(this.scene, this.physicsWorld, game);
 
     // Cinematics
     this.cinematicsManager = new CinematicsManager(this.game);
@@ -237,6 +239,10 @@ export class Level {
     // 4.95) Placeable Blocks
     console.log('📦 Loading placeable blocks...');
     await this._loadPlaceableBlocks();
+
+    // 4.97) Triggers
+    console.log('📍 Loading triggers...');
+    this._loadTriggers();
 
     // 5) Cinematics
     if (this.data.cinematics) {
@@ -886,6 +892,19 @@ export class Level {
     }
   }
 
+  _loadTriggers() {
+    if (!this.data.triggers || this.data.triggers.length === 0) {
+      console.log('ℹ️ No triggers defined in level data');
+      return;
+    }
+
+    try {
+      this.triggerManager.loadTriggers(this.data.triggers);
+    } catch (e) {
+      console.warn('❌ Failed to load triggers', e);
+    }
+  }
+
   _findMeshByName(meshName) {
     let foundMesh = null;
     
@@ -1156,6 +1175,11 @@ export class Level {
     if (this.interactiveObjectManager) {
       this.interactiveObjectManager.update(delta);
     }
+
+    // Update triggers
+    if (this.triggerManager && player) {
+      this.triggerManager.update(player.mesh.position, this.game?.input);
+    }
     
     // Update animated meshes
     this._updateAnimatedMeshes(delta);
@@ -1261,6 +1285,7 @@ export class Level {
       if (this.cinematicsManager) { this.cinematicsManager.dispose?.(); this.cinematicsManager = null; }
       if (this.interactiveObjectManager) { this.interactiveObjectManager.dispose?.(); this.interactiveObjectManager = null; }
       if (this.placeableBlockManager) { this.placeableBlockManager.dispose?.(); this.placeableBlockManager = null; }
+      if (this.triggerManager) { this.triggerManager.disposeTriggers?.(); this.triggerManager = null; }
       
       // Level-specific controllers
       if (this.controller) { this.controller.dispose?.(); this.controller = null; }

@@ -22,6 +22,31 @@ export const levels = [
         }
       }
     ],
+    "triggers": {
+      "levelLoaders": [
+        {
+          "id": "trigger_level1",
+          "position": [-1.5, 1.21, 28.5],
+          "radius": 3,
+          "poiText": "⚡ Level 1",
+          "targetLevel": "level1"
+        },
+        {
+          "id": "trigger_level2",
+          "position": [20.25, 1.21, 8.25],
+          "radius": 3,
+          "poiText": "🐍 Level 2",
+          "targetLevel": "level2"
+        },
+        {
+          "id": "trigger_level3",
+          "position": [-22.75, 1.21, 7.5],
+          "radius": 3,
+          "poiText": "🏰 Level 3",
+          "targetLevel": "level3"
+        }
+      ]
+    },
     "sounds": {
       "music": {
         "intro-theme": {

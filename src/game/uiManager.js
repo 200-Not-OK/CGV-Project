@@ -8,15 +8,24 @@ export class UIManager {
 
   // Register a component factory. factory should be a class (subclass of UIComponent) or a function returning an instance.
   add(key, factoryOrInstance, props) {
-    if (this.components.has(key)) return this.components.get(key);
+    console.log(`📝 UIManager.add("${key}", ...) called`);
+    
+    if (this.components.has(key)) {
+      console.log(`⚠️ Component "${key}" already exists, returning existing instance`);
+      return this.components.get(key);
+    }
+    
     let inst;
     if (typeof factoryOrInstance === 'function') {
+      console.log(`  Creating new instance of ${factoryOrInstance.name}`);
       inst = new factoryOrInstance(this.root, props);
     } else {
       inst = factoryOrInstance;
       if (props && inst.setProps) inst.setProps(props);
     }
+    
     if (inst.mount) {
+      console.log(`  Calling mount() on ${key}`);
       inst.mount();
       // Ensure the component root accepts pointer events so interactive elements work
       // BUT respect if the component specifically set pointerEvents to 'none'
@@ -26,7 +35,9 @@ export class UIManager {
         }
       } catch (e) { /* ignore */ }
     }
+    
     this.components.set(key, inst);
+    console.log(`✅ Component "${key}" added successfully`);
     return inst;
   }
 
@@ -56,6 +67,28 @@ export class UIManager {
     console.log('📋 All UI Components:');
     for (const [key, component] of this.components.entries()) {
       console.log(`  - ${key}:`, component, `visible: ${component.root.style.display !== 'none'}`);
+    }
+  }
+
+  // Update trigger prompt based on active trigger
+  updateTriggerPrompt(trigger) {
+    const triggerPrompt = this.get('triggerPrompt');
+    console.log('📱 UIManager.updateTriggerPrompt called:', {
+      hasTriggerPrompt: !!triggerPrompt,
+      trigger: trigger?.id || 'none'
+    });
+    
+    if (!triggerPrompt) {
+      console.warn('⚠️ TriggerPrompt component not found in UIManager');
+      return;
+    }
+
+    if (trigger) {
+      console.log('📱 Calling triggerPrompt.show() for:', trigger.id);
+      triggerPrompt.show(trigger);
+    } else {
+      console.log('📱 Calling triggerPrompt.hide()');
+      triggerPrompt.hide();
     }
   }
 }
