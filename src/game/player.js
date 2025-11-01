@@ -94,8 +94,8 @@ export class Player {
     this.isOnSlope = false; // Track if player is on a sloped surface
   // Lock-on assist settings
   this.lockOnEnabled = true;
-  this.lockOnRange = options.lockOnRange ?? 4.5; // Distance to auto-face nearest enemy
-  this.lockOnSmoothing = options.lockOnSmoothing ?? 0.18; // How quickly to rotate toward target
+  this.lockOnRange = options.lockOnRange ?? 5.5; // Distance to auto-face nearest enemy
+  this.lockOnSmoothing = options.lockOnSmoothing ?? 0.28; // How quickly to rotate toward target
   this._lockOnTarget = null; // Cached enemy target
   this._lockOnHysteresis = 0.75; // Extra range to keep lock before dropping
   this._lockOnCooldownMs = 150; // Min time between target switches to avoid flicker

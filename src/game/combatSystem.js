@@ -64,8 +64,8 @@ export class CombatSystem {
     }
     
     // Sword swing parameters
-    const swingRange = 2.5; // How far the sword reaches
-    const swingArc = Math.PI / 2; // 90 degree arc (45 degrees each side)
+    const swingRange = 4.5; // How far the sword reaches
+    const swingArc = Math.PI * 2/3; // 120 degree arc (60 degrees each side)
     const swingHeight = 2.5; // Increased vertical range to hit low enemies like snakes
     const swingLowReach = 2.0; // Increased downward reach to hit very low enemies like snakes
     
