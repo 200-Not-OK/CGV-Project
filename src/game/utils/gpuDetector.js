@@ -133,10 +133,10 @@ export const QualityPresets = {
             fireflies: 5     // A few more since they're just emissive (was 3)
         },
         plantFireflySize: 18.0,  // Slightly bigger for visibility (was 15)
-        plantLightCount: 0,      // NO point lights - objects glow themselves
-        plantLightIntensity: 0.0, // Not used (no lights)
-        plantLightDistance: 0,   // Not used (no lights)
-        plantLightDecay: 2.5,     // Not used (no lights)
+        plantLightCount: 0,      // No plant point lights on LOW
+        plantLightIntensity: 0.0, // Not used
+        plantLightDistance: 0,   // Not used
+        plantLightDecay: 2.5,     // Not used
         plantEmissiveBoost: 12.0, // STRONG emissive glow so objects are visible without point lights
         flameParticleCount: 0,   // 🔥 NO flame particles! Too expensive for LOW (was 3)
         flameGeometrySegments: { height: 12, radial: 8 }, // 🔥 ULTRA low poly flames!

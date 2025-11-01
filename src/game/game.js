@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows } from './scene.js';
+import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows, ensureGalaxyHDRSky } from './scene.js';
 import { InputManager } from './input.js';
 import { Player } from './player.js';
 import { LevelManager } from './levelManager.js';
@@ -27,6 +27,7 @@ import { CollectiblesManager } from './CollectiblesManager.js';
 import { SoundManager } from './soundManager.js';
 import { ProximitySoundManager } from './proximitySoundManager.js';
 import { PerformanceMonitor } from './performanceMonitor.js';
+import { SunEyeBlinker } from './lights/sunEyeBlinker.js';
 import { initGPUDetector } from './utils/gpuDetector.js';
 import { initQualityControls } from './utils/qualityControls.js';
 import { GlitchManager } from './GlitchManager.js';
@@ -980,6 +981,27 @@ else if (code === 'KeyY') {
     // update lights (allow dynamic lights to animate)
     if (this.lights) this.lights.update(delta);
 
+    // Ensure the sun eyelid blinker exists once the sun rig is ready
+    const su = this.scene?.userData;
+    if (su) {
+      if (!su.sunEyeBlinker && su.sunEye?.rig) {
+        try {
+          su.sunEyeBlinker = new SunEyeBlinker(su.sunEye, {
+            lidColor: 0x7a1a12,
+            feather: 0.06,
+            curve: 1.0,
+            maxDrop: 0.98,
+            tintOnClose: true,
+            debugVisible: false
+          });
+        } catch (_) { /* ignore instantiation issues */ }
+      }
+      const sunBlinker = su.sunEyeBlinker;
+      if (sunBlinker) {
+        try { sunBlinker.update(delta); } catch (_) { /* non-fatal eyelid animation error */ }
+      }
+    }
+
     // Update shaders with camera & sun info
     if (this.shaderSystem) {
       this.shaderSystem.update(delta, this.activeCamera, this.scene);
@@ -1046,7 +1068,7 @@ async loadLevel(index) {
   if (this.level.data.id === 'level3') {
     console.log('🎯 Setting up computer for level3');
     this.setupComputerTerminal();
-    // Light, complimentary sky for level 3
+    // Use light preset sky with the sun eye for plain level 3
     try { setSkyPreset(this.scene, this.renderer, 'light'); } catch (e) { console.warn('Sky preset failed', e); }
     // Ensure only the eyeball sun contributes light
     try { enforceOnlySunLight(this.scene); } catch (e) { console.warn('Light enforcement failed', e); }
@@ -1121,6 +1143,45 @@ async loadLevel(index) {
     } catch (e) {
       console.warn('Toon player outline failed:', e);
     }
+  } else if (this.level.data.id === 'level2') {
+    // Serpent level: clean up eye/sun from previous level, then ensure HDR galaxy skybox
+    // Remove eye/sun components from previous level (e.g., level3 plain)
+    if (this.scene.userData) {
+      if (this.scene.userData.sun && this.scene.userData.sun.parent) {
+        try { this.scene.remove(this.scene.userData.sun); } catch (e) { /* ignore */ }
+        this.scene.userData.sun = null;
+      }
+      if (this.scene.userData.sunEye && this.scene.userData.sunEye.group) {
+        try { this.scene.remove(this.scene.userData.sunEye.group); } catch (e) { /* ignore */ }
+        this.scene.userData.sunEye = null;
+      }
+      if (this.scene.userData.sunLight) {
+        try { this.scene.remove(this.scene.userData.sunLight); } catch (e) { /* ignore */ }
+        this.scene.userData.sunLight = null;
+      }
+      if (this.scene.userData.sunTarget) {
+        try { this.scene.remove(this.scene.userData.sunTarget); } catch (e) { /* ignore */ }
+        this.scene.userData.sunTarget = null;
+      }
+      if (this.scene.userData.topFillLight) {
+        try { this.scene.remove(this.scene.userData.topFillLight); } catch (e) { /* ignore */ }
+        this.scene.userData.topFillLight = null;
+      }
+      if (this.scene.userData.ambientFill) {
+        try { this.scene.remove(this.scene.userData.ambientFill); } catch (e) { /* ignore */ }
+        this.scene.userData.ambientFill = null;
+      }
+      if (this.scene.userData.sunEyeBlinker) {
+        try { this.scene.userData.sunEyeBlinker.dispose(); } catch (e) { /* ignore */ }
+        this.scene.userData.sunEyeBlinker = null;
+      }
+      // Also remove the light preset's sky group if it exists
+      if (this.scene.userData.sky && this.scene.userData.sky.light && this.scene.userData.sky.light.group) {
+        try { this.scene.remove(this.scene.userData.sky.light.group); } catch (e) { /* ignore */ }
+        this.scene.userData.sky.light = null;
+      }
+    }
+    try { ensureGalaxyHDRSky(this.scene, this.renderer); } catch (e) { console.warn('Ensure HDR sky failed', e); }
   } else {
     // Remove computer if switching away from level3
     if (this.computerTerminal) {

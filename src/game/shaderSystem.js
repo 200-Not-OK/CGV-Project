@@ -1052,115 +1052,7 @@ export class ShaderSystem {
       }
     }
     
-    // Eyeball blinking: Red for 2 seconds every other second (1s normal, 2s red, repeat)
-    if (sunData && sunData.rig) {
-      // Initialize on first run
-      if (!sunData._blinkState) {
-        sunData._blinkState = {
-          timer: 0,
-          originalColor: null,
-          originalMap: null,
-          initialized: false,
-          meshCount: 0
-        };
-        console.log('👁️ Initialized blink state for eyeball');
-      }
-      
-      const state = sunData._blinkState;
-      // deltaTime is in milliseconds from game loop
-      const dtSec = Math.max(0, (deltaTime || 0)) * 0.001;
-      state.timer += dtSec;
-      
-      // Initialize colors once - mesh is actually inside the rig
-      if (!state.initialized) {
-        let foundMeshes = 0;
-        state.originalMaterials = new Map(); // Store original materials per mesh
-        
-        sunData.rig.traverse((child) => {
-          if (child.isMesh && child.material) {
-            foundMeshes++;
-            // Store the ORIGINAL material completely so we can restore it
-            state.originalMaterials.set(child.uuid, child.material.clone());
-            
-            // Store original color - use white as fallback if no color
-            if (child.material.color) {
-              if (!state.originalColor) {
-                state.originalColor = child.material.color.clone();
-              }
-            } else {
-              if (!state.originalColor) {
-                state.originalColor = new THREE.Color(1, 1, 1);
-              }
-            }
-            if (child.material.map && !state.originalMap) {
-              state.originalMap = child.material.map;
-            }
-          }
-        });
-        state.meshCount = foundMeshes;
-        state.initialized = true;
-        console.log('👁️ Found', foundMeshes, 'eye meshes. Original color:', state.originalColor, 'has map:', !!state.originalMap);
-      }
-      
-      // Cycle: 0-1s = normal, 1-3s = dark red, repeat every 3 seconds
-      const cycleTime = state.timer % 3.0;
-      // Red phase: 1-3 seconds (2 seconds of red)
-      const isRed = cycleTime >= 1.0 && cycleTime < 3.0;
-      
-      // Debug: log state every 3 seconds to verify cycle
-      if (Math.floor(state.timer) > 0 && Math.floor(state.timer) % 3 === 0 && Math.abs(state.timer - Math.floor(state.timer)) < 0.1) {
-        console.log('👁️ Cycle check - Timer:', state.timer.toFixed(2), 'CycleTime:', cycleTime.toFixed(2), 'IsRed:', isRed);
-      }
-      
-      if (state.initialized && state.originalColor) {
-        let updatedCount = 0;
-        sunData.rig.traverse((child) => {
-          if (child.isMesh && child.material) {
-            updatedCount++;
-            if (isRed) {
-              // Turn dark red - FORCE pure dark red by replacing the entire material
-              // Create a new MeshBasicMaterial with pure dark red, no textures
-              const redMaterial = new THREE.MeshBasicMaterial({
-                color: new THREE.Color(0.6, 0.0, 0.0), // Pure dark red
-                toneMapped: false, // No tone mapping
-                side: child.material.side || THREE.FrontSide,
-                transparent: false,
-                opacity: 1.0,
-                depthTest: child.material.depthTest !== false,
-                depthWrite: child.material.depthWrite !== false
-              });
-              // Replace the material completely
-              child.material = redMaterial;
-              child.material.needsUpdate = true;
-            } else {
-              // Normal color (0-1 second) - FULLY restore original material
-              const originalMaterial = state.originalMaterials?.get(child.uuid);
-              if (originalMaterial) {
-                // Restore the original material completely
-                child.material = originalMaterial.clone();
-                child.material.needsUpdate = true;
-              } else {
-                // Fallback: just restore color if we don't have original material stored
-                child.material.color.copy(state.originalColor);
-                if (state.originalMap) {
-                  child.material.map = state.originalMap;
-                } else {
-                  child.material.map = null;
-                }
-                if (child.material.isMeshBasicMaterial) {
-                  child.material.toneMapped = false;
-                }
-                child.material.needsUpdate = true;
-              }
-            }
-          }
-        });
-        // Debug: log if meshes were found but not updated
-        if (updatedCount === 0 && state.meshCount > 0) {
-          console.warn('👁️ Warning: Found', state.meshCount, 'meshes but updated 0. Is rig in scene?');
-        }
-      }
-    } else if (sunData && !sunData.rig) {
+    if (sunData && !sunData.rig) {
       // Debug: sun eye exists but rig is missing
       if (!this._noSunRigWarned) {
         console.warn('👁️ Sun eye exists but rig is missing. sunData:', sunData);
@@ -1274,3 +1166,4 @@ export class ShaderSystem {
     });
   }
 }
+

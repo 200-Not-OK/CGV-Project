@@ -110,6 +110,7 @@ export function createSceneAndRenderer() {
   scene.userData.sunFill = null;
   scene.userData.sunTarget = null;
   scene.userData.sunEye = null;
+  scene.userData.sunEyeBlinker = null;
 
   // Renderer
 const renderer = new THREE.WebGLRenderer({ 
@@ -305,6 +306,10 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
   if (scene.userData && scene.userData.sunEye) {
     try { const g = scene.userData.sunEye.group; if (g && g.parent) scene.remove(g); } catch (e) { /* ignore */ }
     scene.userData.sunEye = null;
+  }
+  if (scene.userData && scene.userData.sunEyeBlinker) {
+    try { scene.userData.sunEyeBlinker.dispose(); } catch (e) { /* ignore */ }
+    scene.userData.sunEyeBlinker = null;
   }
   // Remove custom HDR sky meshes if switching to simple color
   if (sky) {
@@ -565,6 +570,11 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
           if (sunData.rotationOffset) {
             sunData.rig.quaternion.multiply(sunData.rotationOffset);
           }
+          // Defer creating SunEyeBlinker to the main game loop where camera/renderer exist.
+          if (scene.userData.sunEyeBlinker) {
+            try { scene.userData.sunEyeBlinker.dispose?.(); } catch (e) { /* ignore */ }
+            scene.userData.sunEyeBlinker = null;
+          }
         })
         .catch((error) => {
           console.warn('Sun eye model failed to attach:', error);
@@ -597,6 +607,85 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
   if (renderer) {
     renderer.toneMappingExposure = 0.6;
   }
+}
+
+// Ensure the dual-layer galaxy HDR skybox exists (moving stars) for serpent level
+export function ensureGalaxyHDRSky(scene, renderer) {
+  if (!scene) return;
+  if (!scene.userData) scene.userData = {};
+  if (!scene.userData.sky) scene.userData.sky = {};
+  const sky = scene.userData.sky;
+  // If already present, do nothing
+  if (sky.far && sky.near) return;
+
+  const rgbeLoader = new RGBELoader();
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  pmremGenerator.compileEquirectangularShader();
+
+  let loadedCount = 0;
+  const totalTextures = 2;
+
+  rgbeLoader.load(
+    'assets/HDR_blue_nebulae-1 (1).hdr',
+    (textureFar) => {
+      textureFar.needsUpdate = true;
+      textureFar.minFilter = THREE.LinearFilter;
+      textureFar.magFilter = THREE.LinearFilter;
+      textureFar.generateMipmaps = false;
+
+      const skyGeometryFar = new THREE.SphereGeometry(700, 24, 12);
+      const skyMaterialFar = new THREE.MeshBasicMaterial({
+        map: textureFar,
+        side: THREE.BackSide,
+        fog: false,
+        transparent: false,
+        depthWrite: false,
+        depthTest: true
+      });
+      const skyboxMeshFar = new THREE.Mesh(skyGeometryFar, skyMaterialFar);
+      skyboxMeshFar.rotation.y = Math.PI;
+      skyboxMeshFar.renderOrder = -3;
+      scene.add(skyboxMeshFar);
+      sky.far = skyboxMeshFar;
+
+      loadedCount++;
+      if (loadedCount === totalTextures) {
+        pmremGenerator.dispose();
+      }
+    }
+  );
+
+  rgbeLoader.load(
+    'assets/HDR_asteroid_field.hdr',
+    (textureNear) => {
+      textureNear.needsUpdate = true;
+      textureNear.minFilter = THREE.LinearFilter;
+      textureNear.magFilter = THREE.LinearFilter;
+      textureNear.generateMipmaps = false;
+
+      const skyGeometryNear = new THREE.SphereGeometry(350, 24, 12);
+      const skyMaterialNear = new THREE.MeshBasicMaterial({
+        map: textureNear,
+        side: THREE.BackSide,
+        fog: false,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+        depthTest: true,
+        blending: THREE.AdditiveBlending
+      });
+      const skyboxMeshNear = new THREE.Mesh(skyGeometryNear, skyMaterialNear);
+      skyboxMeshNear.rotation.y = Math.PI + 2.5;
+      skyboxMeshNear.renderOrder = -2;
+      scene.add(skyboxMeshNear);
+      sky.near = skyboxMeshNear;
+
+      loadedCount++;
+      if (loadedCount === totalTextures) {
+        pmremGenerator.dispose();
+      }
+    }
+  );
 }
 
 // Hide all lights except the eyeball sun for Level 3 light preset

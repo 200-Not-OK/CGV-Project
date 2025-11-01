@@ -292,7 +292,11 @@ export class FlameParticles extends LightComponent {
         this.createParticleSystem(scene);
 
         // --- ENHANCED REALISTIC LIGHTING FOR BETTER AMBIANCE ---
-        this.flameLight = new THREE.PointLight(0xFF8020, 200, 1000); // Increased intensity and range for much brighter effect
+        // Use conservative light on ultra-low particle budgets
+        const ultraLow = (this.quality.flameParticleCount !== undefined) && (this.quality.flameParticleCount <= 5);
+        this.flameLight = ultraLow
+            ? new THREE.PointLight(0xFF8020, 28, 140)
+            : new THREE.PointLight(0xFF8020, 200, 1000); // Increased intensity and range for much brighter effect
         this.flameLight.position.copy(this.basePosition).y += 1.2;
         
         // Enable shadows only if explicitly requested (to avoid GPU texture limit issues)

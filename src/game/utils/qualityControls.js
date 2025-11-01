@@ -377,7 +377,26 @@ export class QualityControls {
             this.ui.appendChild(this._toonPanel);
         }
 
-        const newSettings = QualityPresets[this.currentTier];
+        let newSettings = QualityPresets[this.currentTier];
+        // Serpent-specific LOW override: keep basic lights
+        try {
+            const isSerpent = (this.game.level?.data?.id === 'level2') || (/Serpent/i.test(this.game.level?.data?.name || ''));
+            if (this.currentTier === 'LOW' && isSerpent) {
+                const flags = newSettings.lightFeatureFlags || {};
+                newSettings = {
+                    ...newSettings,
+                    lightFeatureFlags: {
+                        ...flags,
+                        binaryScreens: true,
+                        techLights: true,
+                        flameParticles: true
+                    },
+                    enableParticles: true,
+                    flameParticleCount: Math.max(3, newSettings.flameParticleCount || 0),
+                    allowStarLightOnLow: true
+                };
+            }
+        } catch (_) { /* non-fatal */ }
         
         // Update renderer settings
         this.game.renderer.setPixelRatio(newSettings.pixelRatio);

@@ -78,10 +78,12 @@ export class StarLight extends LightComponent {
     // Position container slightly left and towards camera
     this.starContainer.position.set(pos[0] - 5, pos[1], pos[2] - 5);
 
-        // Create light if needed - SKIP for LOW quality (no point lights)
-        const isLowQuality = this.quality.pixelRatio <= 0.6 || this.quality.plantLightCount === 0;
+        // Create light if needed - normally skip for LOW, unless explicitly allowed
+        const lowByMetric = this.quality.pixelRatio <= 0.6 || this.quality.plantLightCount === 0;
+        const isLowButAllowed = lowByMetric && this.quality.allowStarLightOnLow === true;
+        const canCreateLight = createLight && (!lowByMetric || isLowButAllowed);
         
-        if (createLight && !isLowQuality) {
+        if (canCreateLight) {
             console.log('🌟 Creating PointLight for star at position:', pos);
             // Warm yellowish point light for castle ambiance
             const lightColor = this.props.lightColor ?? 0xFFF8DC; // Softer golden color
@@ -93,7 +95,13 @@ export class StarLight extends LightComponent {
             // Determine quality tier by checking multiple factors
             const isMediumQuality = this.quality.pixelRatio > 0.6 && this.quality.pixelRatio < 1.0;
             
-            if (isMediumQuality) {
+            if (isLowButAllowed) {
+                // LOW quality but explicitly allowed: conservative light
+                intensity = 18;  
+                distance = 220;  
+                shadowMapSize = 128;
+                decay = 1.9;
+            } else if (isMediumQuality) {
                 // MEDIUM quality: Subtle ambient lighting
                 intensity = 45;   // Reduced brightness (was 70)
                 distance = 350;   // Extended range

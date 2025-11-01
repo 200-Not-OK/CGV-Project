@@ -261,9 +261,34 @@ export class Level {
 
   applyQualitySettings(qualitySettings = null) {
     const resolved = qualitySettings || this.game?.qualitySettings || null;
-    this.qualitySettings = resolved;
-    this._applyBinaryScreensForQuality(resolved);
-    this._applyLightningBordersForQuality(resolved);
+    // For Level 3 (Serpent) on LOW, keep core light features enabled even if shaders are off
+    if (resolved) {
+      const tier = this.game?.gpuDetector?.tier || 'MEDIUM';
+      const isSerpent = this.data?.id === 'level2' || /Serpent/i.test(this.data?.name || '');
+      if (tier === 'LOW' && isSerpent) {
+        const flags = resolved.lightFeatureFlags || {};
+        this.qualitySettings = {
+          ...resolved,
+          lightFeatureFlags: {
+            ...flags,
+            binaryScreens: true,
+            techLights: true,
+            flameParticles: true
+          },
+          // Keep minimal particles/lights for visibility
+          enableParticles: true,
+          flameParticleCount: Math.max(3, resolved.flameParticleCount || 0),
+          // Allow star light creation on LOW with reduced intensity handled in component
+          allowStarLightOnLow: true
+        };
+      } else {
+        this.qualitySettings = resolved;
+      }
+    } else {
+      this.qualitySettings = resolved;
+    }
+    this._applyBinaryScreensForQuality(this.qualitySettings);
+    this._applyLightningBordersForQuality(this.qualitySettings);
   }
 
   _applyBinaryScreensForQuality(qualitySettings) {
