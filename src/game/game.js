@@ -341,66 +341,7 @@ this.setupLLMTracking();
     // Show level picker shortly after load-in (as requested)
     setTimeout(() => this._showLevelPicker(), 400);
   }
-  emergencyComputerDebug() {
-  console.log('🚨 EMERGENCY COMPUTER DEBUG 🚨');
-  
-  const playerPos = this.player.getPosition();
-  console.log('🎯 Player position:', playerPos);
-  
-  // Create computer right in front of player
-  const emergencyPos = [
-    playerPos.x + 5, 
-    playerPos.y, 
-    playerPos.z + 5
-  ];
-  
-  console.log('🔧 Creating emergency computer at:', emergencyPos);
-  
-  const emergencyComputerData = {
-    position: emergencyPos,
-    radius: 15.0,
-    requiredLLMs: ["llm_gpt", "llm_claude", "llm_gemini"]
-  };
-  
-  // Remove existing
-  if (this.computerTerminal) {
-    this.scene.remove(this.computerTerminal.mesh);
-  }
-  
-  // Create new
-  this.computerTerminal = new ComputerTerminal(emergencyComputerData, this.glitchManager, this);
-  this.scene.add(this.computerTerminal.mesh);
-  
-  console.log('✅ Emergency computer created');
-  this.showMessage('EMERGENCY: Computer created in front of you!');
-  
-  // Verify
-  setTimeout(() => {
-    this.debugComputerTerminal();
-  }, 100);
-}
 
-debugInteractionPrompt() {
-  console.log('🔍 === INTERACTION PROMPT DEBUG ===');
-  
-  const interactionPrompt = this.ui.get('interactionPrompt');
-  if (interactionPrompt) {
-    console.log('💬 Interaction prompt exists:', interactionPrompt);
-    console.log('👀 Prompt visible:', interactionPrompt.isVisible);
-    console.log('🎯 Computer terminal exists:', !!this.computerTerminal);
-    
-    if (this.computerTerminal) {
-      console.log('📍 Computer position:', this.computerTerminal.mesh.position.toArray());
-      console.log('🎯 Player position:', this.player.getPosition());
-      console.log('📏 Distance to computer:', this.computerTerminal.mesh.position.distanceTo(this.player.getPosition()));
-      console.log('🎯 Player in computer range:', this.computerTerminal.isPlayerInRange(this.player.getPosition()));
-    }
-  } else {
-    console.error('❌ No interaction prompt found in UI!');
-  }
-  
-  console.log('🔍 === END DEBUG ===');
-}
 
   _bindKeys() {
     window.addEventListener('keydown', (e) => {
@@ -482,84 +423,7 @@ debugInteractionPrompt() {
   if (!interacted) {
     console.log('❌ No interactable object found');
   }
-}else if (code === 'Key8') {
-  // DEBUG: Check interaction prompt
-  this.debugInteractionPrompt();
-}else if (code === 'Key0') { // Zero key
-  this.emergencyComputerDebug();
-} else if (code === 'KeyG') {
-  // DEBUG: Glitched level progress
-  this.debugGlitchedLevelProgress();
-} else if (code === 'KeyH') {
-  // DEBUG: Force complete current glitched level
-  this.forceCompleteGlitchedLevel();
-}
-else if (code === 'KeyU') {
-  // DEBUG: Add all LLMs instantly
-  console.log('🔧 DEBUG: Adding all LLMs');
-  this.glitchManager.collectedLLMs.add('llm_gpt');
-  this.glitchManager.collectedLLMs.add('llm_claude');
-  this.glitchManager.collectedLLMs.add('llm_gemini');
-  
-  if (this.showMessage) {
-    this.showMessage('DEBUG: All LLMs added! Computer should be active.');
-  }
-  console.log('✅ LLMs added:', this.glitchManager.collectedLLMs);
-}else if (code === 'KeyO') {
-  // DEBUG: Teleport to computer location from level data
-  console.log('🔧 DEBUG: Teleporting to computer location');
-  
-  if (this.level && this.level.data && this.level.data.computerLocation) {
-    const computerPos = this.level.data.computerLocation.position;
-    this.player.setPosition(new THREE.Vector3(computerPos[0], computerPos[1], computerPos[2]));
-    console.log('🚀 Teleported to computer at:', computerPos);
-    
-    if (this.showMessage) {
-      this.showMessage('DEBUG: Teleported to computer location');
-    }
-  } else {
-    console.error('❌ No computer location found in level data');
-  }
-}else if (code === 'KeyT') {
-  // DEBUG: Computer diagnostics
-  console.log('🔧 DEBUG: Running computer diagnostics');
-  this.debugComputerTerminal();
-  
-  if (this.computerTerminal) {
-    console.log('✅ Computer terminal exists');
-    console.log('🎯 Attempting to interact...');
-    this.computerTerminal.interact();
-  } else {
-    console.error('❌ No computer terminal found!');
-    
-    // Try to create it from level data
-    if (this.level?.data?.computerLocation) {
-      console.log('🔄 Attempting to create computer from level data...');
-      this.setupComputerTerminal();
-    }
-  }
-}
-else if (code === 'KeyY') {
-  // DEBUG: Create computer from level data
-  console.log('🔧 DEBUG: Creating computer from level data');
-  
-  if (this.level?.data?.computerLocation) {
-    console.log('🎯 Creating computer from level data at:', this.level.data.computerLocation.position);
-    this.setupComputerTerminal();
-    
-    // Verify creation
-    setTimeout(() => {
-      if (this.computerTerminal) {
-        console.log('✅ Computer created successfully');
-        this.debugComputerTerminal();
-      } else {
-        console.error('❌ Computer creation failed!');
-      }
-    }, 500);
-  } else {
-    console.error('❌ No computer location found in level data!');
-    console.log('Current level data:', this.level?.data);
-  }
+
 
 } else if (code === 'KeyF') {
         // toggle FPS counter visibility
