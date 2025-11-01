@@ -27,6 +27,7 @@ export class CollectiblesManager {
     this.collectibleMaterial = new CANNON.Material('collectible');
     this.collectibleMaterial.friction = 0.1;
     this.collectibleMaterial.restitution = 0.3;
+    this.persistentCollectedChests = new Set();
   }
 
   /**
@@ -136,48 +137,61 @@ export class CollectiblesManager {
    * Spawn collectibles for a level based on level data
    */
   async spawnCollectiblesForLevel(levelData) {
-    if (!levelData.collectibles) return;
-    
-    console.log('🍎 Spawning collectibles for level:', levelData.id);
-    console.log('🔍 Physics world status:', {
-      exists: !!this.physicsWorld,
-      hasAddBody: !!(this.physicsWorld && this.physicsWorld.addBody),
-      worldType: this.physicsWorld ? this.physicsWorld.constructor.name : 'null',
-      methods: this.physicsWorld ? Object.getOwnPropertyNames(Object.getPrototypeOf(this.physicsWorld)) : []
-    });
-    
-    // If physics world isn't ready, store level data for later
-    if (!this.physicsWorld || !this.physicsWorld.addBody) {
-      console.log('⏳ Physics world not ready, storing level data for later spawning...');
-      this.pendingLevelData = levelData;
-      return;
-    }
-    
-    // Clear any pending data since we're spawning now
-    this.pendingLevelData = null;
-    
-    // Spawn chests with collectibles
-    if (levelData.collectibles.chests) {
-      for (const chest of levelData.collectibles.chests) {
-        await this.spawnChest(chest.position, chest.id, chest.contents);
-      }
-    }
-    
-    // Legacy support for old apple/potion format
-    if (levelData.collectibles.apples) {
-      for (const apple of levelData.collectibles.apples) {
-        this.spawnApple(apple.position, apple.id || this.generateId('apple'));
-      }
-    }
-    
-    if (levelData.collectibles.potions) {
-      for (const potion of levelData.collectibles.potions) {
-        this.spawnHealingPotion(potion.position, potion.id || this.generateId('potion'));
-      }
-    }
-    
-    console.log(`✅ Spawned ${this.collectibles.size} collectibles`);
+  if (!levelData.collectibles) return;
+  
+  console.log('🍎 Spawning collectibles for level:', levelData.id);
+  
+  // If physics world isn't ready, store level data for later
+  if (!this.physicsWorld || !this.physicsWorld.addBody) {
+    console.log('⏳ Physics world not ready, storing level data for later spawning...');
+    this.pendingLevelData = levelData;
+    return;
   }
+  
+  // Clear any pending data since we're spawning now
+  this.pendingLevelData = null;
+  
+  // Spawn chests with collectibles
+  if (levelData.collectibles.chests) {
+    for (const chest of levelData.collectibles.chests) {
+      await this.spawnChest(chest.position, chest.id, chest.contents);
+    }
+  }
+  
+  // Spawn direct LLM collectibles
+  if (levelData.collectibles.llm_gpt) {
+    for (const llm of levelData.collectibles.llm_gpt) {
+      this.spawnLLM(llm.position, 'gpt', llm.id || this.generateId('llm_gpt'));
+    }
+  }
+  
+  if (levelData.collectibles.llm_claude) {
+    for (const llm of levelData.collectibles.llm_claude) {
+      this.spawnLLM(llm.position, 'claude', llm.id || this.generateId('llm_claude'));
+    }
+  }
+  
+  if (levelData.collectibles.llm_gemini) {
+    for (const llm of levelData.collectibles.llm_gemini) {
+      this.spawnLLM(llm.position, 'gemini', llm.id || this.generateId('llm_gemini'));
+    }
+  }
+  
+  // Legacy support for old apple/potion format
+  if (levelData.collectibles.apples) {
+    for (const apple of levelData.collectibles.apples) {
+      this.spawnApple(apple.position, apple.id || this.generateId('apple'));
+    }
+  }
+  
+  if (levelData.collectibles.potions) {
+    for (const potion of levelData.collectibles.potions) {
+      this.spawnHealingPotion(potion.position, potion.id || this.generateId('potion'));
+    }
+  }
+  
+  console.log(`✅ Spawned ${this.collectibles.size} collectibles`);
+}
 
   /**
    * Spawn an apple collectible at the given position
@@ -529,127 +543,160 @@ export class CollectiblesManager {
   /**
    * Handle collectible pickup when player touches a collectible or opens a chest
    */
-  collectItem(collectibleId) {
-    const collectible = this.collectibles.get(collectibleId);
-    if (!collectible || collectible.collected) return false;
-    
-    collectible.collected = true;
-    
-    // Handle chest opening
-    if (collectible.type === 'chest') {
-      this.openChest(collectible);
-      return true;
-    }
-    
-    // Handle direct collectible pickup (legacy)
-    // Create pickup effect
-    this.createPickupEffect(collectible.mesh.position.clone());
-    
-    // Remove from scene and physics world
-    this.scene.remove(collectible.mesh);
-    this.physicsWorld.removeBody(collectible.body);
-    
-    // Update UI and trigger events
-    if (collectible.type === 'apple') {
-      this.triggerEvent('onAppleCollected', collectible);
-      if (this.uiRef) {
-        this.uiRef.collectApple();
-      }
-      console.log('🍎 Apple collected!');
-    } else if (collectible.type === 'potion') {
-      this.triggerEvent('onPotionCollected', collectible);
-      if (this.uiRef) {
-        this.uiRef.addPotion();
-      }
-      console.log('🧪 Healing potion added to inventory!');
-    }
-    
-    this.triggerEvent('onCollectiblePickup', collectible);
-    
-    // Remove from our tracking
-    this.collectibles.delete(collectibleId);
-    
+  // In the CollectiblesManager class, update the collectItem method:
+
+collectItem(collectibleId) {
+  const collectible = this.collectibles.get(collectibleId);
+  if (!collectible || collectible.collected) return false;
+  
+  collectible.collected = true;
+  
+  // Handle chest opening
+  if (collectible.type === 'chest') {
+    this.openChest(collectible);
     return true;
   }
+  
+  // Handle direct collectible pickup (legacy)
+  // Create pickup effect
+  this.createPickupEffect(collectible.mesh.position.clone());
+  
+  // Remove from scene and physics world
+  this.scene.remove(collectible.mesh);
+  this.physicsWorld.removeBody(collectible.body);
+  
+  // Update UI and trigger events
+  if (collectible.type === 'apple') {
+    this.triggerEvent('onAppleCollected', collectible);
+    if (this.uiRef) {
+      this.uiRef.collectApple();
+    }
+    console.log('🍎 Apple collected!');
+  } else if (collectible.type === 'potion') {
+    this.triggerEvent('onPotionCollected', collectible);
+    if (this.uiRef) {
+      this.uiRef.addPotion();
+    }
+    console.log('🧪 Healing potion added to inventory!');
+  }
+  // ADD LLM HANDLING HERE - FIXED
+  else if (collectible.type.startsWith('llm_')) {
+    const llmType = collectible.type.replace('llm_', '');
+    this.triggerEvent('onLLMCollected', { 
+      type: llmType, 
+      collectible: collectible 
+    });
+    if (this.uiRef && this.uiRef.collectLLM) {
+      this.uiRef.collectLLM(llmType);
+    }
+    console.log(`🤖 ${collectible.type.toUpperCase()} collected!`);
+  }
+  
+  this.triggerEvent('onCollectiblePickup', collectible);
+  
+  // Remove from our tracking
+  this.collectibles.delete(collectibleId);
+  
+  return true;
+}
 
-  /**
-   * Open a chest and reveal its contents
-   */
-  openChest(chestCollectible) {
-    console.log(`📦 Opening chest containing: ${chestCollectible.contents}`);
+openChest(chestCollectible) {
+  console.log(`📦 Opening chest containing: ${chestCollectible.contents}`);
 
-    // Immediately hide interaction prompt and clear currentInteractableChest
-    if (this.interactionPrompt && this.currentInteractableChest === chestCollectible) {
-      const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
-      const isShowingComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
-      if (!isShowingComputerPrompt && currentText.includes('chest')) {
-        console.log('🔇 Hiding chest interaction prompt (chest opened)');
-        this.interactionPrompt.hide();
+  this.markChestAsCollected(chestCollectible.id);
+  // Immediately hide interaction prompt and clear currentInteractableChest
+  if (this.interactionPrompt && this.currentInteractableChest === chestCollectible) {
+    const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
+    const isShowingComputerPrompt = currentText.includes('GLITCHED') || currentText.includes('LLMs');
+    if (!isShowingComputerPrompt && currentText.includes('chest')) {
+      console.log('🔇 Hiding chest interaction prompt (chest opened)');
+      this.interactionPrompt.hide();
+    }
+    this.currentInteractableChest = null;
+  }
+
+  // Play chest opening sound
+  if (this.game && this.game.soundManager) {
+    this.game.soundManager.playSFX('chest', 0.8);
+  }
+
+  // Lock player movement during chest animation
+  if (this.playerRef && this.playerRef.lockMovement) {
+    this.playerRef.lockMovement('Chest Animation');
+  }
+
+  // Play player interact animation if available
+  if (this.playerRef && this.playerRef.performInteract) {
+    this.playerRef.performInteract();
+  }
+  
+  // Mark chest as collected and animating
+  chestCollectible.collected = true;
+  chestCollectible.isOpen = true;
+  chestCollectible.mesh.userData.isAnimating = true;
+
+  // Start the interaction animation (raise and spin)
+  this.animateChestInteraction(chestCollectible.mesh);
+
+  // Play chest opening animation (GLTF animation if available)
+  this.animateChestOpening(chestCollectible.mesh);
+  
+  // Create pickup effect at chest location
+  this.createPickupEffect(chestCollectible.mesh.position.clone());
+  
+  // Process the chest contents - UPDATED LLM HANDLING
+ console.log(`🎯 Processing chest contents: ${chestCollectible.contents}`);
+  
+  if (chestCollectible.contents === 'apple') {
+    this.triggerEvent('onAppleCollected', chestCollectible);
+    if (this.uiRef) {
+      this.uiRef.collectApple();
+    }
+    console.log('🍎 Found an apple in the chest! Marked as collected.');
+  } else if (chestCollectible.contents === 'potion') {
+    this.triggerEvent('onPotionCollected', chestCollectible);
+    if (this.uiRef) {
+      this.uiRef.addPotion();
+    }
+    console.log('🧪 Found a healing potion in the chest! Added to inventory.');
+  } else if (chestCollectible.contents.startsWith('llm_')) {
+    const llmType = chestCollectible.contents.replace('llm_', '');
+    console.log(`🤖 Processing LLM chest: ${llmType}`);
+    
+    this.triggerEvent('onLLMCollected', { type: llmType, chest: chestCollectible });
+    
+    if (this.uiRef) {
+      if (this.uiRef.collectLLM) {
+        console.log(`🎯 Calling uiRef.collectLLM('${llmType}')`);
+        this.uiRef.collectLLM(llmType);
+      } else {
+        console.warn('⚠️ UI reference exists but collectLLM method not found!');
       }
-      this.currentInteractableChest = null;
-    }
-
-    // Play chest opening sound
-    if (this.game && this.game.soundManager) {
-      this.game.soundManager.playSFX('chest', 0.8);
-    }
-
-    // Play voiceover on first chest opened (Level 2 only)
-    if (!this._firstChestOpened && this.game?.level?.data?.id === 'level2') {
-      console.log('🎤 First chest opened! Playing chest voiceover');
-      this._firstChestOpened = true;
-      setTimeout(() => {
-        if (this.game && this.game.playVoiceover) {
-          this.game.playVoiceover('vo-chest', 10000);
-        }
-      }, 1000); // Play VO 1 second after chest sound
+    } else {
+      console.error('❌ No UI reference available for LLM collection!');
     }
     
+    console.log(`🤖 Found ${llmType.toUpperCase()} LLM in the chest!`);
+  } else {
+    console.warn(`⚠️ Unknown chest contents: ${chestCollectible.contents}`);
+  }
 
-    // Mark chest as animating to prevent further interaction    
-    // Lock player movement during chest animation
-    if (this.playerRef && this.playerRef.lockMovement) {
-      this.playerRef.lockMovement('Chest Animation');
-    }
-
-    // Play player interact animation if available
-    if (this.playerRef && this.playerRef.performInteract) {
-      this.playerRef.performInteract();
+  this.triggerEvent('onCollectiblePickup', chestCollectible);
+  
+  // Remove from active tracking after a delay to allow animation
+  setTimeout(() => {
+    // Unlock player movement when animation is complete
+    if (this.playerRef && this.playerRef.unlockMovement) {
+      this.playerRef.unlockMovement();
     }
     
-    // Mark chest as collected and animating
-    chestCollectible.collected = true;
-    chestCollectible.isOpen = true;
-    chestCollectible.mesh.userData.isAnimating = true;
-
-    // Start the interaction animation (raise and spin)
-    this.animateChestInteraction(chestCollectible.mesh);
-
-    // Play chest opening animation (GLTF animation if available)
-    this.animateChestOpening(chestCollectible.mesh);
+    this.scene.remove(chestCollectible.mesh);
+    this.physicsWorld.removeBody(chestCollectible.body);
+    this.collectibles.delete(chestCollectible.id);
     
-    // Create pickup effect at chest location
-    this.createPickupEffect(chestCollectible.mesh.position.clone());
-    
-    // Process the chest contents
-    if (chestCollectible.contents === 'apple') {
-      this.triggerEvent('onAppleCollected', chestCollectible);
-      if (this.uiRef) {
-        this.uiRef.collectApple();
-      }
-      console.log('🍎 Found an apple in the chest! Marked as collected.');
-    } else if (chestCollectible.contents === 'potion') {
-      this.triggerEvent('onPotionCollected', chestCollectible);
-      if (this.uiRef) {
-        this.uiRef.addPotion();
-      }
-      console.log('🧪 Found a healing potion in the chest! Added to inventory.');
-    }
-
-    this.triggerEvent('onCollectiblePickup', chestCollectible);
-
-    // Check chest count (Level 2 only)
-    if (this.game?.level?.data?.id === 'level2') {
+    console.log(`🗑️ Removed chest ${chestCollectible.id} from active tracking (still in persistent tracking)`);
+  }, 2000);
+   if (this.game?.level?.data?.id === 'level2') {
       const allChests = Array.from(this.collectibles.values()).filter(c => c.type === 'chest');
       const collectedChests = allChests.filter(c => c.collected);
       const remainingChests = allChests.filter(c => !c.collected);
@@ -682,19 +729,20 @@ export class CollectiblesManager {
         }, 1000);
       }
     }
-    
-    // Remove from our tracking after a delay to allow animation
-    setTimeout(() => {
-      // Unlock player movement when animation is complete
-      if (this.playerRef && this.playerRef.unlockMovement) {
-        this.playerRef.unlockMovement();
-      }
-      
-      this.scene.remove(chestCollectible.mesh);
-      this.physicsWorld.removeBody(chestCollectible.body);
-      this.collectibles.delete(chestCollectible.id);
-    }, 2000);
+}
+
+
+
+// Add the new event listener for LLM collection
+addEventListener(eventType, callback) {
+  if (this.eventListeners[eventType]) {
+    this.eventListeners[eventType].push(callback);
+  } else if (eventType === 'onLLMCollected') {
+    // Create the event type if it doesn't exist
+    this.eventListeners[eventType] = [callback];
   }
+}
+
 
   /**
    * Animate chest opening
@@ -1007,34 +1055,73 @@ shouldManagePrompt() {
    * Get statistics about current collectibles
    */
   getStats() {
-    const stats = {
-      total: 0,
-      apples: { total: 0, collected: 0 },
-      potions: { total: 0, collected: 0 }
-    };
+  const stats = {
+    total: 0,
+    apples: { total: 0, collected: 0 },
+    potions: { total: 0, collected: 0 },
+    llms: { 
+      total: 0, 
+      collected: 0,
+      gpt: { total: 0, collected: 0 },
+      claude: { total: 0, collected: 0 },
+      gemini: { total: 0, collected: 0 }
+    }
+  };
+  
+  for (const [id, collectible] of this.collectibles) {
+    stats.total++;
     
-    for (const [id, collectible] of this.collectibles) {
-      stats.total++;
+    // Check if this is an apple collectible (direct apple or chest containing apple)
+    const isApple = collectible.type === 'apple' || 
+                   (collectible.type === 'chest' && collectible.contents === 'apple');
+    
+    // Check if this is a potion collectible (direct potion or chest containing potion)
+    const isPotion = collectible.type === 'potion' || 
+                    (collectible.type === 'chest' && collectible.contents === 'potion');
+    
+    // Check if this is an LLM collectible (direct LLM or chest containing LLM)
+    const isLLM = collectible.type.startsWith('llm_') || 
+                 (collectible.type === 'chest' && collectible.contents.startsWith('llm_'));
+    
+    if (isApple) {
+      stats.apples.total++;
+      if (collectible.collected) stats.apples.collected++;
+    } else if (isPotion) {
+      stats.potions.total++;
+      if (collectible.collected) stats.potions.collected++;
+    } else if (isLLM) {
+      stats.llms.total++;
+      if (collectible.collected) stats.llms.collected++;
       
-      // Check if this is an apple collectible (direct apple or chest containing apple)
-      const isApple = collectible.type === 'apple' || 
-                     (collectible.type === 'chest' && collectible.contents === 'apple');
+      // Track individual LLM types
+      const llmType = collectible.type.startsWith('llm_') 
+        ? collectible.type.replace('llm_', '')
+        : collectible.contents.replace('llm_', '');
       
-      // Check if this is a potion collectible (direct potion or chest containing potion)
-      const isPotion = collectible.type === 'potion' || 
-                      (collectible.type === 'chest' && collectible.contents === 'potion');
-      
-      if (isApple) {
-        stats.apples.total++;
-        if (collectible.collected) stats.apples.collected++;
-      } else if (isPotion) {
-        stats.potions.total++;
-        if (collectible.collected) stats.potions.collected++;
+      if (llmType === 'gpt') {
+        stats.llms.gpt.total++;
+        if (collectible.collected) stats.llms.gpt.collected++;
+      } else if (llmType === 'claude') {
+        stats.llms.claude.total++;
+        if (collectible.collected) stats.llms.claude.collected++;
+      } else if (llmType === 'gemini') {
+        stats.llms.gemini.total++;
+        if (collectible.collected) stats.llms.gemini.collected++;
       }
     }
-    
-    return stats;
   }
+  
+  return stats;
+}
+
+addEventListener(eventType, callback) {
+  if (this.eventListeners[eventType]) {
+    this.eventListeners[eventType].push(callback);
+  } else if (eventType === 'onLLMCollected') {
+    // Create the event type if it doesn't exist
+    this.eventListeners[eventType] = [callback];
+  }
+}
 
   /**
    * Get all collectibles (for minimap display)
@@ -1048,4 +1135,147 @@ shouldManagePrompt() {
     }
     return collectibles;
   }
+  /**
+ * Spawn an LLM collectible at the given position
+ */
+spawnLLM(position, type, id) {
+  // Safety check for physics world
+  if (!this.physicsWorld) {
+    console.warn('⚠️ Physics world is null/undefined');
+    return;
+  }
+  if (!this.physicsWorld.addBody) {
+    console.warn('⚠️ Physics world missing addBody method', this.physicsWorld);
+    return;
+  }
+
+  const llm = this.createLLMMesh(type);
+  llm.position.set(...position);
+  llm.userData.collectibleType = `llm_${type}`;
+  llm.userData.collectibleId = id;
+  
+  // Add floating animation
+  llm.userData.originalY = position[1];
+  llm.userData.floatPhase = Math.random() * Math.PI * 2;
+  
+  // Create physics body
+  const shape = new CANNON.Box(new CANNON.Vec3(0.4, 0.6, 0.4));
+  const body = new CANNON.Body({ 
+    mass: 0, // Static collectible
+    material: this.collectibleMaterial 
+  });
+  body.addShape(shape);
+  body.position.set(...position);
+  body.isTrigger = true; // Make it a trigger for pickup detection
+  body.userData = { collectibleType: `llm_${type}`, collectibleId: id, mesh: llm };
+  
+  this.scene.add(llm);
+  this.physicsWorld.addBody(body);
+  
+  this.collectibles.set(id, {
+    type: `llm_${type}`,
+    mesh: llm,
+    body: body,
+    id: id,
+    collected: false
+  });
+  
+  console.log(`🤖 Spawned LLM ${type} at position: [${position.join(', ')}]`);
+}
+
+/**
+ * Create the visual mesh for an LLM
+ */
+createLLMMesh(type) {
+  const group = new THREE.Group();
+  
+  // Different colors for each LLM type
+  const colors = {
+    gpt: 0x10a37f,    // Claude green
+    claude: 0xd4af37, // Gold
+    gemini: 0x8b5cf6  // Purple
+  };
+  
+  // Main body (cube)
+  const bodyGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.8);
+  const bodyMaterial = new THREE.MeshLambertMaterial({ 
+    color: colors[type] || 0x888888,
+    emissive: colors[type] || 0x222222
+  });
+  const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
+  group.add(bodyMesh);
+  
+  // Screen/display
+  const screenGeometry = new THREE.BoxGeometry(0.6, 0.4, 0.1);
+  const screenMaterial = new THREE.MeshLambertMaterial({ 
+    color: 0x000000,
+    emissive: 0x00ff00
+  });
+  const screenMesh = new THREE.Mesh(screenGeometry, screenMaterial);
+  screenMesh.position.set(0, 0.1, 0.45);
+  group.add(screenMesh);
+  
+  // Add glow effect
+  const glowGeometry = new THREE.BoxGeometry(1.0, 1.5, 1.0);
+  const glowMaterial = new THREE.MeshBasicMaterial({
+    color: colors[type] || 0x888888,
+    transparent: true,
+    opacity: 0.1,
+    side: THREE.BackSide
+  });
+  const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+  group.add(glowMesh);
+  
+  return group;
+}
+
+/**
+ * Check if a chest is collected
+ */
+isChestCollected(chestId) {
+  const collectible = this.collectibles.get(chestId);
+  return collectible ? collectible.collected : false;
+}
+
+/**
+ * Get collected chest count for current level
+ */
+getCollectedChestCount() {
+  let count = 0;
+  for (const [id, collectible] of this.collectibles) {
+    if (collectible.type === 'chest' && collectible.collected) {
+      count++;
+    }
+  }
+  return count;
+}
+
+isChestCollected(chestId) {
+    return this.persistentCollectedChests.has(chestId);
+  }
+
+  /**
+   * Get collected chest count for current level (persistent)
+   */
+  getCollectedChestCount() {
+    return this.persistentCollectedChests.size;
+  }
+
+  /**
+   * Mark a chest as permanently collected
+   */
+  markChestAsCollected(chestId) {
+    this.persistentCollectedChests.add(chestId);
+    console.log(`📦 Marked chest ${chestId} as permanently collected. Total: ${this.persistentCollectedChests.size}`);
+  }
+
+  /**
+   * Clear persistent chest tracking (when changing levels)
+   */
+  clearPersistentChests() {
+    console.log('🧹 Clearing persistent chest tracking');
+    this.persistentCollectedChests.clear();
+  }
+
+
 }

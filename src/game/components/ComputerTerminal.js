@@ -87,45 +87,51 @@ export class ComputerTerminal {
   }
 
   interact() {
-    console.log('💻 COMPUTER INTERACTION TRIGGERED!');
+  console.log('💻 COMPUTER INTERACTION TRIGGERED!');
+  
+  if (!this.canActivate) {
+    const collected = this.glitchManager.collectedLLMs.size;
+    const required = this.glitchManager.requiredLLMs.length;
+    const message = `Need ${required - collected} more LLMs to activate!`;
+    console.log('❌', message);
     
-    if (!this.canActivate) {
-      const collected = this.glitchManager.collectedLLMs.size;
-      const required = this.glitchManager.requiredLLMs.length;
-      const message = `Need ${required - collected} more LLMs to activate!`;
-      console.log('❌', message);
-      
-      if (this.game.showMessage) {
-        this.game.showMessage(message, 3000);
-      }
-      return { success: false, message: message };
+    if (this.game.showMessage) {
+      this.game.showMessage(message, 3000);
     }
-    
-    const result = this.glitchManager.activateComputer();
-    
-    if (result.success) {
-      console.log('🚀 Teleporting to:', result.level);
-      
-      if (this.game.showMessage) {
-        this.game.showMessage(result.message, 3000);
-      }
-      
-      // Load the glitched level
-      setTimeout(() => {
-        if (this.game.loadLevelByName) {
-          this.game.loadLevelByName(result.level);
-        } else {
-          console.error('❌ loadLevelByName method not found!');
-        }
-      }, 2000);
-    } else {
-      if (this.game.showMessage) {
-        this.game.showMessage(result.message, 3000);
-      }
-    }
-    
-    return result;
+    return { success: false, message: message };
   }
+  
+  console.log('✅ Computer can be activated! Calling glitchManager.activateComputer()');
+  const result = this.glitchManager.activateComputer();
+  console.log('📤 GlitchManager result:', result);
+  
+  if (result.success) {
+    console.log('🚀 Teleporting to:', result.level);
+    
+    if (this.game.showMessage) {
+      this.game.showMessage(result.message, 3000);
+    }
+    
+    // Load the glitched level - FIXED: Use the game's loadLevelByName method
+    setTimeout(() => {
+      console.log('⏰ Timeout completed, loading level:', result.level);
+      if (this.game && this.game.loadLevelByName) {
+        console.log('🎯 Calling game.loadLevelByName with:', result.level);
+        this.game.loadLevelByName(result.level);
+      } else {
+        console.error('❌ loadLevelByName method not found on game!');
+        console.log('Available methods on game:', Object.keys(this.game));
+      }
+    }, 2000);
+  } else {
+    console.log('❌ Computer activation failed:', result.message);
+    if (this.game.showMessage) {
+      this.game.showMessage(result.message, 3000);
+    }
+  }
+  
+  return result;
+}
 
   update(playerPosition) {
     this.animationTime += 0.02;

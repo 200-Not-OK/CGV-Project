@@ -15,7 +15,11 @@ export const levels = [
       {
         "key": "TechLights",
         "props": {
-          "position": [0, 0, 0]
+          "position": [
+            0,
+            0,
+            0
+          ]
         }
       },
       {
@@ -27,8 +31,12 @@ export const levels = [
       {
         "key": "PointLight",
         "props": {
-          "position": [0, 22, 0],
-          "color": 0x88ccff,
+          "position": [
+            0,
+            22,
+            0
+          ],
+          "color": 8965375,
           "intensity": 3,
           "distance": 0,
           "decay": 0,
@@ -38,8 +46,12 @@ export const levels = [
       {
         "key": "PointLight",
         "props": {
-          "position": [0, 22, -25],
-          "color": 0x88ccff,
+          "position": [
+            0,
+            22,
+            -25
+          ],
+          "color": 8965375,
           "intensity": 2.5,
           "distance": 0,
           "decay": 0,
@@ -49,95 +61,131 @@ export const levels = [
       {
         "key": "RedLightning",
         "props": {
-          "position": [12.912955239766767, 37.88715128438456, -0.6576220834419964],
-          "color": 0x00FFFF,
+          "position": [
+            12.912955239766767,
+            37.88715128438456,
+            -0.6576220834419964
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.5,
-          "length": 18.0
+          "length": 18
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [12.944228948310343, 36.3885593052973, -0.7342901183469568],
-          "color": 0x00FFFF,
+          "position": [
+            12.944228948310343,
+            36.3885593052973,
+            -0.7342901183469568
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.6,
-          "length": 16.0,
+          "length": 16,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.771536745930266, 37.10794565203993, -0.2786261734922153],
-          "color": 0x00FFFF,
+          "position": [
+            -12.771536745930266,
+            37.10794565203993,
+            -0.2786261734922153
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.45,
-          "length": 20.0,
+          "length": 20,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.786166101517708, 35.637551218443186, 0.09513458030733979],
-          "color": 0x00FFFF,
+          "position": [
+            -12.786166101517708,
+            35.637551218443186,
+            0.09513458030733979
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.55,
-          "length": 17.0,
+          "length": 17,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [11.918973319923648, 32.82629147937733, -0.5821365533665996],
-          "color": 0x00FFFF,
+          "position": [
+            11.918973319923648,
+            32.82629147937733,
+            -0.5821365533665996
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.7,
-          "length": 15.0,
+          "length": 15,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-12.380822352048272, 32.98950836127626, 0.30395344141215386],
-          "color": 0x00FFFF,
+          "position": [
+            -12.380822352048272,
+            32.98950836127626,
+            0.30395344141215386
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.4,
-          "length": 22.0,
+          "length": 22,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-7.066101073891365, 39.086951601572, -1.202468494343286],
-          "color": 0x00FFFF,
+          "position": [
+            -7.066101073891365,
+            39.086951601572,
+            -1.202468494343286
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.65,
-          "length": 19.0,
+          "length": 19,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [-7.654338940706618, 39.1165865627044, 0.7016923973175011],
-          "color": 0x00FFFF,
+          "position": [
+            -7.654338940706618,
+            39.1165865627044,
+            0.7016923973175011
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.52,
-          "length": 21.0,
+          "length": 21,
           "branches": 5
         }
       },
       {
         "key": "RedLightning",
         "props": {
-          "position": [7.062490970189732, 38.89875358023083, -1.4657143172867606],
-          "color": 0x00FFFF,
+          "position": [
+            7.062490970189732,
+            38.89875358023083,
+            -1.4657143172867606
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.48,
           "length": 17.5,
@@ -147,8 +195,12 @@ export const levels = [
       {
         "key": "RedLightning",
         "props": {
-          "position": [6.6347481289407355, 38.869158640436886, 1.324692383072716],
-          "color": 0x00FFFF,
+          "position": [
+            6.6347481289407355,
+            38.869158640436886,
+            1.324692383072716
+          ],
+          "color": 65535,
           "intensity": 4.5,
           "strikeFrequency": 0.58,
           "length": 19.5,
@@ -158,189 +210,245 @@ export const levels = [
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.13807616959711, 19.463404294493557, -25.823032754301256],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.13807616959711,
+            19.463404294493557,
+            -25.823032754301256
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.16909747940394, 19.463404294493557, -27.13562457148415],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.16909747940394,
+            19.463404294493557,
+            -27.13562457148415
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.19859913312111, 19.463404294493557, -28.453574585960094],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.19859913312111,
+            19.463404294493557,
+            -28.453574585960094
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.14985223550229, 19.463404294493557, -29.66304109539178],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.14985223550229,
+            19.463404294493557,
+            -29.66304109539178
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.24519648095297, 19.463404294493557, -31.030929245129776],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.24519648095297,
+            19.463404294493557,
+            -31.030929245129776
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.23451972231483, 19.463404294493557, -32.12921366927179],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.23451972231483,
+            19.463404294493557,
+            -32.12921366927179
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [37.20699800401285, 19.463404294493557, -33.31666531646326],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            37.20699800401285,
+            19.463404294493557,
+            -33.31666531646326
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.56784082247674, 19.463404294493557, -26.342960488002813],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.56784082247674,
+            19.463404294493557,
+            -26.342960488002813
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.608876255091346, 19.463404294493557, -27.791121946094922],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.608876255091346,
+            19.463404294493557,
+            -27.791121946094922
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.651721009570444, 19.463404294493557, -29.038673863085236],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.651721009570444,
+            19.463404294493557,
+            -29.038673863085236
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.821846110202166, 19.463404294493557, -30.411332975256368],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.821846110202166,
+            19.463404294493557,
+            -30.411332975256368
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.79240656912321, 19.463404294493557, -31.410144903763197],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.79240656912321,
+            19.463404294493557,
+            -31.410144903763197
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.98665721682491, 19.463404294493557, -32.763087823485215],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.98665721682491,
+            19.463404294493557,
+            -32.763087823485215
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       },
       {
         "key": "BinaryShader",
         "props": {
-          "position": [-37.77547883082075, 19.463404294493557, -33.87862076073715],
-          "width": 4.0,
-          "height": 10.0,
-          "color": 0x00d4ff,
-          "speed": 7.0,
-          "density": 12.0,
-          "brightness": 3.0,
+          "position": [
+            -37.77547883082075,
+            19.463404294493557,
+            -33.87862076073715
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
           "fallStrength": 0.5
         }
       }
     ],
     "ui": [
       "hud",
-            {
+      {
         "type": "minimap",
         "config": {
           "zoom": 1.6
@@ -429,7 +537,7 @@ export const levels = [
         "type": "crawler",
         "position": [
           287.3535217944027,
-          20.959493637084961,
+          20.95949363708496,
           25.74999179342933
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
@@ -468,7 +576,7 @@ export const levels = [
         "type": "crawler",
         "position": [
           319.51625700361103,
-          20.4860567378545575,
+          20.486056737854557,
           274.04694288437554
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
@@ -1303,7 +1411,6 @@ export const levels = [
       "keys": []
     }
   },
-
   {
     "id": "intro",
     "name": "Intro Level",
@@ -1567,7 +1674,7 @@ export const levels = [
   },
   {
     "id": "level2",
-    "name": "Level 3: The Serpent's Labyrinth",
+    "name": "Level 2: The Serpent's Labyrinth",
     "order": 0,
     "gltfUrl": "assets/levels/Level2/Level2.gltf",
     "panoramaSky": { "url": "assets/HDR_asteroid_field.hdr", "radius": 1000, "rotation": 0 },
@@ -9719,24 +9826,36 @@ export const levels = [
       {
         "type": "collectibles",
         "config": {
-          "applesTotal": 5,
-          "potionsStart": 5,
-          "pointsPerApple": 200,
+          "potionsStart": 2,
+          "llmGptTotal": 3,
+          "llmClaudeTotal": 3,
+          "llmGeminiTotal": 3,
           "collectibleTypes": {
-            "apples": {
-              "icon": "🍏",
-              "name": "Green Apples",
-              "color": "#51cf66",
-              "completeColor": "#ffd43b",
-              "completeIcon": "👑"
-            },
             "potions": {
               "icon": "🧪",
               "name": "Health Potions",
-              "color": "#9775fa",
-              "lowColor": "#ffd43b",
-              "emptyColor": "#ff6b6b",
+              "color": "#4caf50",
+              "lowColor": "#ff9800",
+              "emptyColor": "#f44336",
               "emptyIcon": "💔"
+            },
+            "llm_gpt": {
+              "icon": "🤖",
+              "name": "GPT",
+              "color": "#10a37f",
+              "collectedColor": "#51cf66"
+            },
+            "llm_claude": {
+              "icon": "🤖",
+              "name": "Claude",
+              "color": "#d4af37",
+              "collectedColor": "#51cf66"
+            },
+            "llm_gemini": {
+              "icon": "🤖",
+              "name": "Gemini",
+              "color": "#8b5cf6",
+              "collectedColor": "#51cf66"
             }
           }
         }
@@ -11618,7 +11737,7 @@ export const levels = [
         "type": "box",
         "position": [
           72.87,
-          11.16,
+          11.26,
           -66.36
         ],
         "size": [
@@ -11678,7 +11797,7 @@ export const levels = [
         "type": "box",
         "position": [
           1.18,
-          15.99,
+          15.89,
           -185.4
         ],
         "size": [
@@ -12317,17 +12436,17 @@ export const levels = [
         "id": "collider_128",
         "type": "box",
         "position": [
-          161.18165588378906,
-          -0.19309920072555542,
-          -155.77396392822266
+          161.18,
+          -0.39,
+          -155.77
         ],
         "size": [
           16.274251708984377,
-          2.8083125448226927,
+          1.4,
           22.595159301757814
         ],
         "rotation": [
-          0,
+          -6,
           0,
           0
         ],
@@ -12337,17 +12456,17 @@ export const levels = [
         "id": "collider_129",
         "type": "box",
         "position": [
-          160.86512756347656,
-          -2.704921007156372,
-          -178.07762908935547
+          160.97,
+          -2.6,
+          -178.08
         ],
         "size": [
-          16.274251708984377,
-          3.9336817359924314,
-          22.506231079101564
+          16.2,
+          0.4,
+          23.2
         ],
         "rotation": [
-          0,
+          -10,
           0,
           0
         ],
@@ -12357,17 +12476,17 @@ export const levels = [
         "id": "collider_130",
         "type": "box",
         "position": [
-          160.66148376464844,
-          -5.584710597991943,
-          -196.40837860107422
+          160.66,
+          -5.58,
+          -196.41
         ],
         "size": [
           16.05998779296875,
-          3.2884395217895506,
+          0.1,
           15.990636596679687
         ],
         "rotation": [
-          0,
+          -13,
           0,
           0
         ],
@@ -12457,9 +12576,9 @@ export const levels = [
         "id": "collider_135",
         "type": "box",
         "position": [
-          186.4341278076172,
-          5.7838099002838135,
-          -78.00699615478516
+          186.43,
+          4.98,
+          -78.01
         ],
         "size": [
           1.83183837890625,
@@ -12477,9 +12596,9 @@ export const levels = [
         "id": "collider_136",
         "type": "box",
         "position": [
-          194.94490814208984,
-          5.616837501525879,
-          -71.24152374267578
+          194.94,
+          4.82,
+          -71.24
         ],
         "size": [
           17.936834106445314,
@@ -12497,9 +12616,9 @@ export const levels = [
         "id": "collider_137",
         "type": "box",
         "position": [
-          200.57257080078125,
-          5.6322479248046875,
-          -81.6130142211914
+          200.57,
+          5.03,
+          -81.61
         ],
         "size": [
           5.84477783203125,
@@ -12517,9 +12636,9 @@ export const levels = [
         "id": "collider_138",
         "type": "box",
         "position": [
-          186.3959503173828,
-          5.790326118469238,
-          -93.3175277709961
+          186.4,
+          4.99,
+          -93.32
         ],
         "size": [
           1.0386865234375,
@@ -12537,9 +12656,9 @@ export const levels = [
         "id": "collider_139",
         "type": "box",
         "position": [
-          203.6738739013672,
-          5.623712778091431,
-          -90.02605819702148
+          203.67,
+          4.92,
+          -90.03
         ],
         "size": [
           1.050435791015625,
@@ -12557,9 +12676,9 @@ export const levels = [
         "id": "collider_140",
         "type": "box",
         "position": [
-          195.05843353271484,
-          5.790326118469238,
-          -101.33049774169922
+          195.06,
+          5.09,
+          -101.33
         ],
         "size": [
           18.41757751464844,
@@ -12577,9 +12696,9 @@ export const levels = [
         "id": "collider_141",
         "type": "box",
         "position": [
-          189.17237854003906,
-          3.466203212738037,
-          -87.18183135986328
+          189.17,
+          2.77,
+          -87.18
         ],
         "size": [
           4.59154296875,
@@ -12597,9 +12716,9 @@ export const levels = [
         "id": "collider_142",
         "type": "box",
         "position": [
-          199.95973205566406,
-          3.5564703941345215,
-          -99.49150848388672
+          199.96,
+          2.96,
+          -99.49
         ],
         "size": [
           6.1265771484375,
@@ -12637,9 +12756,9 @@ export const levels = [
         "id": "collider_144",
         "type": "box",
         "position": [
-          194.2770233154297,
-          4.132250785827637,
-          -99.76802444458008
+          194.28,
+          3.33,
+          -99.77
         ],
         "size": [
           4.130086669921875,
@@ -12657,9 +12776,9 @@ export const levels = [
         "id": "collider_145",
         "type": "box",
         "position": [
-          190.7998504638672,
-          1.507248878479004,
-          -58.031089782714844
+          190.8,
+          0.71,
+          -58.03
         ],
         "size": [
           8.42705322265625,
@@ -12677,9 +12796,9 @@ export const levels = [
         "id": "collider_146",
         "type": "box",
         "position": [
-          199.1013641357422,
-          1.507248878479004,
-          -58.046756744384766
+          199.1,
+          0.71,
+          -58.05
         ],
         "size": [
           8.42705322265625,
@@ -12697,9 +12816,9 @@ export const levels = [
         "id": "collider_147",
         "type": "box",
         "position": [
-          199.0853729248047,
-          1.507248878479004,
-          -66.52090454101562
+          199.09,
+          0.71,
+          -66.52
         ],
         "size": [
           8.42705322265625,
@@ -12717,9 +12836,9 @@ export const levels = [
         "id": "collider_148",
         "type": "box",
         "position": [
-          190.75283813476562,
-          1.507248878479004,
-          -66.50518035888672
+          190.75,
+          0.71,
+          -66.51
         ],
         "size": [
           8.42705322265625,
@@ -12737,9 +12856,9 @@ export const levels = [
         "id": "collider_149",
         "type": "box",
         "position": [
-          199.24444580078125,
-          1.507248878479004,
-          -77.44988250732422
+          199.24,
+          0.51,
+          -77.45
         ],
         "size": [
           8.43218017578125,
@@ -13018,18 +13137,18 @@ export const levels = [
         "type": "box",
         "position": [
           -24.4,
-          4.39,
+          4.09,
           3.8
         ],
         "size": [
-          13.9,
-          1,
+          14.9,
+          1.1,
           9.3
         ],
         "rotation": [
           0,
           0,
-          -32
+          -32.00061183531603
         ],
         "materialType": "ground"
       },
@@ -13057,9 +13176,9 @@ export const levels = [
         "id": "collider_165",
         "type": "box",
         "position": [
-          40.281625747680664,
-          8.331744194030762,
-          -91.09557723999023
+          40.28,
+          8.5,
+          -91.1
         ],
         "size": [
           10.47920394897461,
@@ -13617,14 +13736,14 @@ export const levels = [
         "id": "collider_193",
         "type": "box",
         "position": [
-          -10.688985824584961,
-          0.8740274310112,
-          -1.2726507186889648
+          -13.79,
+          0.87,
+          2.63
         ],
         "size": [
-          4.792764434814453,
+          10.8,
           0.11498499870300292,
-          19.494291076660158
+          27.3
         ],
         "rotation": [
           0,
@@ -18169,6 +18288,48 @@ export const levels = [
         ],
         "materialType": "ground",
         "meshName": null
+      },
+      {
+        "id": "collider_86",
+        "type": "box",
+        "position": [
+          160.53,
+          -7.56,
+          -174.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          15.2,
+          8.5,
+          15.7
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_87",
+        "type": "box",
+        "position": [
+          135,
+          1.6,
+          -234.58
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          35.4,
+          17.7,
+          42.6
+        ],
+        "materialType": "ground",
+        "meshName": null
       }
     ],
     "placeableBlocks": [],
@@ -18204,6 +18365,24 @@ export const levels = [
             149.9,
             1.5,
             -17.59,
+            0.5
+          ],
+          [
+            148.11,
+            1.5,
+            -37.88,
+            0.5
+          ],
+          [
+            9.19,
+            1.5,
+            -39.51,
+            0.5
+          ],
+          [
+            8.14,
+            1.5,
+            22.45,
             0.5
           ]
         ],
@@ -18266,6 +18445,48 @@ export const levels = [
             1.5,
             45.39,
             0.5
+          ],
+          [
+            35.94,
+            1.5,
+            24.95,
+            0.5
+          ],
+          [
+            10.29,
+            1.5,
+            24.87,
+            0.5
+          ],
+          [
+            9.53,
+            1.5,
+            -18.2,
+            0.5
+          ],
+          [
+            7.84,
+            1.5,
+            -38.47,
+            0.5
+          ],
+          [
+            -3.22,
+            1.5,
+            -39.06,
+            0.5
+          ],
+          [
+            -3.67,
+            1.5,
+            -48.73,
+            0.5
+          ],
+          [
+            -11.33,
+            1.5,
+            -48.44,
+            0.5
           ]
         ],
         "speed": 5,
@@ -18299,21 +18520,21 @@ export const levels = [
             0.5
           ],
           [
-            -3.8984774843700407,
-            0.5764805721511834,
-            -123.62926188341783,
+            -3.9,
+            2.58,
+            -123.63,
             0.5
           ],
           [
             -12.77,
-            2,
+            2.58,
             -118.26,
             0.5
           ],
           [
-            -31.60646880570716,
-            0.5764805721511834,
-            -98.61508998249177,
+            -31.61,
+            2.58,
+            -98.62,
             0.5
           ],
           [
@@ -18329,15 +18550,15 @@ export const levels = [
             0.5
           ],
           [
-            22.157590713570453,
-            0.5764805721511834,
-            -67.32930131752565,
+            22.16,
+            2.58,
+            -67.33,
             0.5
           ],
           [
-            39.88470638371517,
-            0.5764801123919643,
-            -68.94984145331685,
+            39.88,
+            2.58,
+            -68.95,
             0.5
           ]
         ],
@@ -18349,6 +18570,257 @@ export const levels = [
         "currentPatrolIndex": 0,
         "isMoving": true,
         "waitTime": 0.5
+      },
+      {
+        "type": "suitM",
+        "position": [
+          -42.02,
+          8.48,
+          -16.94
+        ],
+        "modelUrl": "assets/npc/BusinessMan.glb",
+        "patrolPoints": [
+          [
+            -42.12,
+            8.78,
+            -28.87,
+            2
+          ],
+          [
+            -42.02655876723237,
+            8.484718854585838,
+            -16.75121622059895,
+            2
+          ],
+          [
+            -42.22,
+            8.88,
+            -4.33,
+            2
+          ]
+        ],
+        "speed": 5,
+        "scale": 2.1,
+        "chaseRange": 0,
+        "id": 60,
+        "patrolBehavior": "random",
+        "currentPatrolIndex": 0,
+        "isMoving": true,
+        "waitTime": 2
+      },
+      {
+        "type": "casual",
+        "position": [
+          -42.53,
+          1.01,
+          -17.42
+        ],
+        "modelUrl": "assets/npc/CasualCharacter.glb",
+        "patrolPoints": [
+          [
+            -42.47,
+            1.01,
+            -29.25,
+            0.5
+          ],
+          [
+            -42.31,
+            1.01,
+            -6.4,
+            0.5
+          ],
+          [
+            -42.49,
+            1.01,
+            -16.56,
+            0.5
+          ]
+        ],
+        "speed": 5,
+        "scale": 2.1,
+        "chaseRange": 0,
+        "id": 223,
+        "patrolBehavior": "random",
+        "currentPatrolIndex": 0,
+        "isMoving": true,
+        "waitTime": 0.5
+      },
+      {
+        "type": "punk",
+        "position": [
+          40.74,
+          9.32,
+          -108.9
+        ],
+        "modelUrl": "assets/npc/Punk.glb",
+        "patrolPoints": [
+          [
+            40.08,
+            9.6,
+            -96.63,
+            2
+          ],
+          [
+            40.49,
+            9.6,
+            -96.78,
+            2
+          ],
+          [
+            40.9,
+            9.6,
+            -87.13,
+            2
+          ],
+          [
+            40.59,
+            9.6,
+            -75.41,
+            2
+          ],
+          [
+            40.41,
+            9.6,
+            -107.79,
+            2
+          ]
+        ],
+        "speed": 5,
+        "scale": 2.7,
+        "chaseRange": 0,
+        "id": 66,
+        "patrolBehavior": "loop",
+        "currentPatrolIndex": 0,
+        "isMoving": true,
+        "waitTime": 2
+      },
+      {
+        "type": "casual",
+        "position": [
+          51.11,
+          7.63,
+          -63.23
+        ],
+        "modelUrl": "assets/npc/CasualCharacter.glb",
+        "patrolPoints": [
+          [
+            50.52,
+            7.9,
+            -80.76,
+            2
+          ],
+          [
+            63.82,
+            7.9,
+            -79.93,
+            2
+          ],
+          [
+            65.06,
+            7.9,
+            -65.81,
+            2
+          ],
+          [
+            66.59,
+            7.9,
+            -60.94,
+            2
+          ],
+          [
+            52.50342917549759,
+            7.030829204528933,
+            -61.689326856756296,
+            2
+          ],
+          [
+            50.27,
+            7.9,
+            -79.49,
+            2
+          ]
+        ],
+        "speed": 5,
+        "scale": 2.6,
+        "chaseRange": 0,
+        "id": 303,
+        "patrolBehavior": "pingpong",
+        "currentPatrolIndex": 0,
+        "isMoving": true,
+        "waitTime": 2
+      },
+      {
+        "type": "suitM",
+        "position": [
+          51,
+          1.13,
+          -106.27
+        ],
+        "modelUrl": "assets/npc/BusinessMan.glb",
+        "patrolPoints": [
+          [
+            51.46,
+            1.33,
+            -113.43,
+            1.5
+          ],
+          [
+            52.18,
+            1.23,
+            -121.22,
+            1.5
+          ],
+          [
+            60.73,
+            1.13,
+            -122.15,
+            1.5
+          ],
+          [
+            59.8,
+            1.13,
+            -103.02,
+            1.5
+          ],
+          [
+            59.96,
+            1.13,
+            -93.77,
+            1.5
+          ],
+          [
+            60.42,
+            1.13,
+            -85.98,
+            1.5
+          ],
+          [
+            60.87,
+            1.13,
+            -63.57,
+            1.5
+          ],
+          [
+            50.02,
+            1.13,
+            -63.59,
+            1.5
+          ],
+          [
+            56.55,
+            1.13,
+            -106.52,
+            1.5
+          ]
+        ],
+        "speed": 2,
+        "scale": 2.4,
+        "chaseRange": 0,
+        "id": 659,
+        "patrolBehavior": "pingpong",
+        "currentPatrolIndex": 0,
+        "isMoving": true,
+        "waitTime": 1.5
       }
     ],
     "platforms": [],
@@ -18479,77 +18951,905 @@ export const levels = [
     "collectibles": {
       "chests": [
         {
-          "id": "chest_176",
+          "id": "chest_86",
           "position": [
-            -42.052131226448125,
-            8.48471884994061,
-            -29.347785283207585
+            71.16420118627303,
+            -5,
+            -201.56424490030776
           ],
-          "contents": "apple"
+          "contents": "potion"
+        },
+        {
+          "id": "chest_87",
+          "position": [
+            5.770222437023225,
+            6.4443113803863525,
+            -92.42821318120475
+          ],
+          "contents": "llm_gpt"
+        },
+        {
+          "id": "chest_88",
+          "position": [
+            189.01635770772984,
+            0.8330993056297311,
+            -95.5022284937324
+          ],
+          "contents": "llm_claude"
+        },
+        {
+          "id": "chest_97",
+          "position": [
+            92.82467252921622,
+            0.7183278165757656,
+            68.85705878163222
+          ],
+          "contents": "llm_gemini"
+        },
+        {
+          "id": "chest_98",
+          "position": [
+            84.65530251343915,
+            6.940662171029872,
+            -6.231125135330858
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_99",
+          "position": [
+            64.63794991764622,
+            0.7099524576481729,
+            -74.90677745355819
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_100",
+          "position": [
+            -20.165968969240608,
+            -5.921493202447892,
+            -179.7076945282295
+          ],
+          "contents": "potion"
         }
       ],
       "apples": [],
       "potions": [],
-      "coins": [],
-      "gems": [],
-      "keys": []
+      "llm_gpt": [],
+      "llm_claude": [],
+      "llm_gemini": []
     }
   },
   {
     "id": "level1_glitched",
     "name": "GLITCHED: Level 1",
-    "gltfUrl": "assets/levels/Level1/MapFinal.gltf",
+    "gltfUrl": "assets/levels/revamped/Level1.gltf",
     "startPosition": [
       0,
-      10,
+      12,
       0
     ],
+    "lights": [
+      {
+        "key": "TechLights",
+        "props": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "key": "BasicLights",
+        "props": {
+          "intensity": 0.6
+        }
+      },
+      {
+        "key": "PointLight",
+        "props": {
+          "position": [
+            0,
+            22,
+            0
+          ],
+          "color": 8965375,
+          "intensity": 3,
+          "distance": 0,
+          "decay": 0,
+          "castShadow": false
+        }
+      },
+      {
+        "key": "PointLight",
+        "props": {
+          "position": [
+            0,
+            22,
+            -25
+          ],
+          "color": 8965375,
+          "intensity": 2.5,
+          "distance": 0,
+          "decay": 0,
+          "castShadow": false
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            12.912955239766767,
+            37.88715128438456,
+            -0.6576220834419964
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.5,
+          "length": 18
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            12.944228948310343,
+            36.3885593052973,
+            -0.7342901183469568
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.6,
+          "length": 16,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            -12.771536745930266,
+            37.10794565203993,
+            -0.2786261734922153
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.45,
+          "length": 20,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            -12.786166101517708,
+            35.637551218443186,
+            0.09513458030733979
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.55,
+          "length": 17,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            11.918973319923648,
+            32.82629147937733,
+            -0.5821365533665996
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.7,
+          "length": 15,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            -12.380822352048272,
+            32.98950836127626,
+            0.30395344141215386
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.4,
+          "length": 22,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            -7.066101073891365,
+            39.086951601572,
+            -1.202468494343286
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.65,
+          "length": 19,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            -7.654338940706618,
+            39.1165865627044,
+            0.7016923973175011
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.52,
+          "length": 21,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            7.062490970189732,
+            38.89875358023083,
+            -1.4657143172867606
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.48,
+          "length": 17.5,
+          "branches": 5
+        }
+      },
+      {
+        "key": "RedLightning",
+        "props": {
+          "position": [
+            6.6347481289407355,
+            38.869158640436886,
+            1.324692383072716
+          ],
+          "color": 65535,
+          "intensity": 4.5,
+          "strikeFrequency": 0.58,
+          "length": 19.5,
+          "branches": 5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            37.13807616959711,
+            19.463404294493557,
+            -25.823032754301256
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            37.16909747940394,
+            19.463404294493557,
+            -27.13562457148415
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            37.19859913312111,
+            19.463404294493557,
+            -28.453574585960094
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            37.14985223550229,
+            19.463404294493557,
+            -29.66304109539178
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            37.24519648095297,
+            19.463404294493557,
+            -31.030929245129776
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            37.23451972231483,
+            19.463404294493557,
+            -32.12921366927179
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            37.20699800401285,
+            19.463404294493557,
+            -33.31666531646326
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            -37.56784082247674,
+            19.463404294493557,
+            -26.342960488002813
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            -37.608876255091346,
+            19.463404294493557,
+            -27.791121946094922
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            -37.651721009570444,
+            19.463404294493557,
+            -29.038673863085236
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            -37.821846110202166,
+            19.463404294493557,
+            -30.411332975256368
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            -37.79240656912321,
+            19.463404294493557,
+            -31.410144903763197
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            -37.98665721682491,
+            19.463404294493557,
+            -32.763087823485215
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      },
+      {
+        "key": "BinaryShader",
+        "props": {
+          "position": [
+            -37.77547883082075,
+            19.463404294493557,
+            -33.87862076073715
+          ],
+          "width": 4,
+          "height": 10,
+          "color": 54527,
+          "speed": 7,
+          "density": 12,
+          "brightness": 3,
+          "fallStrength": 0.5
+        }
+      }
+    ],
+    "ui": [
+      "hud",
+      {
+        "type": "minimap",
+        "config": {
+          "zoom": 1.6
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 7,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍏",
+              "name": "Green Apples",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
+    ],
+    "enemies": [
+      {
+        "type": "crawler",
+        "position": [
+          -425.5900434110422,
+          20.113008499145508,
+          274.669088469345
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 29
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -433.3701164361692,
+          20.113008499145515,
+          257.2399163600309
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 30
+      },
+      {
+        "type": "crawler",
+        "position": [
+          -426.66473887928464,
+          20.113008499145515,
+          244.20925144592724
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 31
+      },
+      {
+        "type": "crawler",
+        "position": [
+          305.7826403923883,
+          20.027040152890915,
+          24.799900322963577
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 48
+      },
+      {
+        "type": "crawler",
+        "position": [
+          287.3535217944027,
+          20.95949363708496,
+          25.74999179342933
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 49
+      },
+      {
+        "type": "crawler",
+        "position": [
+          310.305134317053,
+          20.452826949471497,
+          122.30921272529777
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 50
+      },
+      {
+        "type": "crawler",
+        "position": [
+          291.14432266074226,
+          20.509656195663787,
+          121.99517109242474
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 51
+      },
+      {
+        "type": "crawler",
+        "position": [
+          319.51625700361103,
+          20.486056737854557,
+          274.04694288437554
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 52
+      },
+      {
+        "type": "crawler",
+        "position": [
+          274.64077936042764,
+          20.741729019436846,
+          277.2949816103393
+        ],
+        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
+        "patrolPoints": [],
+        "speed": 1.5,
+        "chaseRange": 5,
+        "id": 53
+      }
+    ],
+    "npcs": [
+      {
+        "type": "yellow_bot",
+        "position": [
+          6.350443774254943,
+          9.439203262329102,
+          -25.949882425660608
+        ],
+        "modelUrl": "assets/npc/yellow_bot/scene.gltf",
+        "patrolPoints": [],
+        "speed": 2,
+        "scale": 10,
+        "chaseRange": 0,
+        "id": 2
+      },
+      {
+        "type": "other_bot",
+        "position": [
+          13.563743283481266,
+          11.439203262329102,
+          -35.625234114583954
+        ],
+        "modelUrl": "assets/npc/other_bot/Mike.gltf",
+        "patrolPoints": [],
+        "speed": 2,
+        "scale": 1,
+        "chaseRange": 0,
+        "id": 3
+      }
+    ],
+    "platforms": [],
+    "interactiveObjects": [
+      {
+        "id": "interactive_3",
+        "objectType": "pressurePlate",
+        "position": [
+          -493.6651629419319,
+          10.113008499145508,
+          292.94097499910407
+        ],
+        "size": 10,
+        "activationWeight": 40,
+        "pressedHeight": -0.1,
+        "color": 65280
+      },
+      {
+        "id": "interactive_4",
+        "objectType": "pressurePlate",
+        "position": [
+          -494.145160650115,
+          10.113008499145508,
+          267.5963964375436
+        ],
+        "size": 10,
+        "activationWeight": 10,
+        "pressedHeight": -0.1,
+        "color": 65280
+      },
+      {
+        "id": "interactive_5",
+        "objectType": "pressurePlate",
+        "position": [
+          -493.6658502474449,
+          10.113008499145508,
+          247.13187696380177
+        ],
+        "size": 10,
+        "activationWeight": 40,
+        "pressedHeight": -0.1,
+        "color": 65280
+      }
+    ],
+    "triggers": [],
+    "meshAnimations": [
+      {
+        "meshName": "Lift2",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -225.86,
+              10.11,
+              124.18
+            ],
+            [
+              -229.68,
+              9.65,
+              254.86
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -259.41,
+              10.11,
+              110.38
+            ],
+            [
+              -387.15,
+              10.11,
+              184.13
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -496.88,
+              11.9,
+              195.35
+            ],
+            [
+              -506.55,
+              48.81,
+              192.95
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3001",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              344.83,
+              10.11,
+              -36.05
+            ],
+            [
+              544.8,
+              22.52,
+              -33.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3002",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              557.24,
+              10.11,
+              99.12
+            ],
+            [
+              558.04,
+              9.65,
+              405.84
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3003",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              525.43,
+              10.11,
+              419.27
+            ],
+            [
+              334.2,
+              9.69,
+              432.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "TreeNode2",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      },
+      {
+        "meshName": "TreeNode1",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      }
+    ],
     "colliders": [
-      {
-        "id": "terrain_collider",
-        "type": "mesh",
-        "meshName": "Plane",
-        "materialType": "ground",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "id": "terrain_collider1",
-        "type": "mesh",
-        "meshName": "Plane.002",
-        "materialType": "ground",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "id": "terrain_collider2",
-        "type": "mesh",
-        "meshName": "Plane.001",
-        "materialType": "ground",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
       {
         "id": "collider_2",
         "type": "box",
         "position": [
-          74.2805404663086,
-          7.5009472370147705,
-          -56.235137939453125
+          0,
+          8.439203262329102,
+          -10.976917266845703
         ],
         "size": [
-          19.902694702148438,
-          5.858898639678955,
-          10.625641107559204
+          74.21695709228516,
+          2.000000033833089,
+          74.21695709228516
         ],
         "rotation": [
           0,
@@ -18560,8 +19860,59 @@ export const levels = [
       },
       {
         "id": "collider_3",
+        "type": "box",
+        "position": [
+          0,
+          23.242176055908203,
+          -1.9201059341430664
+        ],
+        "size": [
+          2,
+          10.32878589630127,
+          2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_4",
+        "type": "box",
+        "position": [
+          0,
+          27.362017565243946,
+          -2.9135963916778564
+        ],
+        "size": [
+          20.964557647705078,
+          35.83751362866792,
+          10.630075931549072
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "materialType": "wall"
+      },
+      {
+        "id": "collider_5",
         "type": "mesh",
-        "meshName": "platform_slope_6x6x4_yellow",
+        "meshName": "Walls",
+        "materialType": "wall",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_6",
+        "type": "mesh",
+        "meshName": "Platform",
         "materialType": "ground",
         "rotation": [
           0,
@@ -18570,209 +19921,97 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_4",
-        "type": "box",
-        "position": [
-          5.5328874588012695,
-          6.560379505157471,
-          -39.361785888671875
-        ],
-        "size": [
-          4,
-          4,
-          4
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_5",
-        "type": "box",
-        "position": [
-          -0.7773474454879761,
-          7.7403247356414795,
-          -34.49150085449219
-        ],
-        "size": [
-          4,
-          6.359890460968018,
-          4
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_6",
-        "type": "box",
-        "position": [
-          -7.600991249084473,
-          7.39626932144165,
-          -39.86438751220703
-        ],
-        "size": [
-          4,
-          5.671779632568359,
-          4
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
         "id": "collider_7",
-        "type": "box",
-        "position": [
-          -0.9068508148193359,
-          6.942425727844238,
-          -44.346160888671875
-        ],
-        "size": [
-          4,
-          4.764092445373535,
-          4
-        ],
+        "type": "mesh",
+        "meshName": "Platform1",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_8",
-        "type": "box",
-        "position": [
-          23.03496217727661,
-          6.138877149025461,
-          -71.54387201368809
-        ],
-        "size": [
-          5.399998188018799,
-          1.5000004855794487,
-          0.6770776808261871
-        ],
+        "type": "mesh",
+        "meshName": "Platform1",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_9",
-        "type": "box",
-        "position": [
-          -7.70367431640625,
-          6.367399926582834,
-          -71.71390070021152
-        ],
-        "size": [
-          5.399998188018799,
-          1.5000004855794487,
-          0.6770776808261871
-        ],
+        "type": "mesh",
+        "meshName": "Platform2",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_10",
-        "type": "box",
-        "position": [
-          -104.65445419167133,
-          24.920733763746878,
-          -126.77250456817343
-        ],
-        "size": [
-          24.789909072596956,
-          48.51913720787156,
-          37.77458682674464
-        ],
+        "type": "mesh",
+        "meshName": "Platform3",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_11",
-        "type": "box",
-        "position": [
-          -104.98836456630886,
-          24.7562984799664,
-          -32.538482326040125
-        ],
-        "size": [
-          40.69060569251519,
-          41.743743810529345,
-          45.635473520354914
-        ],
+        "type": "mesh",
+        "meshName": "Platform8",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_12",
-        "type": "box",
-        "position": [
-          -29.94930589199066,
-          4.7365807592868805,
-          -102.64478647708893
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
+        "type": "mesh",
+        "meshName": "Platform4",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_13",
-        "type": "box",
-        "position": [
-          -31.322409987449646,
-          5.004567056894302,
-          -36.78919565677643
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
+        "type": "mesh",
+        "meshName": "Lift2",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
+      },
+      {
+        "id": "collider_14",
+        "type": "mesh",
+        "meshName": "Lift3",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
       },
       {
         "id": "collider_15",
         "type": "mesh",
-        "meshName": "Vert006",
+        "meshName": "Platform5",
         "materialType": "ground",
         "rotation": [
           0,
@@ -18783,7 +20022,7 @@ export const levels = [
       {
         "id": "collider_16",
         "type": "mesh",
-        "meshName": "Vert002",
+        "meshName": "Leaf",
         "materialType": "ground",
         "rotation": [
           0,
@@ -18793,981 +20032,30 @@ export const levels = [
       },
       {
         "id": "collider_17",
-        "type": "box",
-        "position": [
-          -46.52409362792969,
-          4.0269834995269775,
-          84.87931823730469
-        ],
-        "size": [
-          8.94277798516788,
-          3.9855432510375977,
-          7.869289272857088
-        ],
+        "type": "mesh",
+        "meshName": "Lift",
+        "materialType": "ground",
         "rotation": [
           0,
           0,
           0
-        ],
-        "materialType": "ground"
+        ]
       },
       {
         "id": "collider_18",
-        "type": "box",
-        "position": [
-          -34.94508361816406,
-          4.02698391581069,
-          86.84906005859375
-        ],
-        "size": [
-          14.279910634361954,
-          3.9855440836050224,
-          3.9855454667441563
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_19",
-        "type": "box",
-        "position": [
-          -36.979637145996094,
-          4.02698391581069,
-          82.81128692626953
-        ],
-        "size": [
-          9.923266372250481,
-          3.9855440836050224,
-          3.9855448813904957
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_20",
-        "type": "box",
-        "position": [
-          -29.958999633789062,
-          4.0269834995269775,
-          82.75906372070312
-        ],
-        "size": [
-          3.9855433485751703,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_21",
-        "type": "box",
-        "position": [
-          -26.888111114501953,
-          4.0269834995269775,
-          83.69717407226562
-        ],
-        "size": [
-          2.2308865622320866,
-          3.9855432510375977,
-          2.083818300131867
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_22",
-        "type": "box",
-        "position": [
-          -25.770734786987305,
-          4.0269834995269775,
-          86.76978302001953
-        ],
-        "size": [
-          3.9855433485751703,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_23",
         "type": "mesh",
-        "meshName": "platform_slope_4x2x2_blue",
+        "meshName": "Platform7",
         "materialType": "ground",
         "rotation": [
           0,
           0,
           0
         ]
-      },
-      {
-        "id": "collider_24",
-        "type": "box",
-        "position": [
-          -46.73193359375,
-          6.001815557479858,
-          101.48796844482422
-        ],
-        "size": [
-          8.94277798516788,
-          7.935207366943359,
-          7.869289272857088
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_25",
-        "type": "mesh",
-        "meshName": "platform_slope_4x2x2_blue001",
-        "materialType": "ground",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "id": "collider_26",
-        "type": "box",
-        "position": [
-          -30.733980178833008,
-          9.859891414642334,
-          101.45291137695312
-        ],
-        "size": [
-          5.322484835175285,
-          7.696027755737305,
-          7.869288786438716
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_27",
-        "type": "box",
-        "position": [
-          -31.817974090576172,
-          4.02698391581069,
-          101.37708282470703
-        ],
-        "size": [
-          20.877674104116707,
-          3.9855440836050224,
-          7.52411413326098
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_28",
-        "type": "box",
-        "position": [
-          -25.74932098388672,
-          15.232730125813676,
-          103.28273010253906
-        ],
-        "size": [
-          4.685793632511647,
-          3.3673119056800864,
-          4.144108051304386
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_29",
-        "type": "box",
-        "position": [
-          -30.733980178833008,
-          15.23272979259491,
-          101.45291137695312
-        ],
-        "size": [
-          5.322484835175285,
-          3.3673112392425537,
-          7.869288786438716
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_30",
-        "type": "box",
-        "position": [
-          -30.44427483276489,
-          15.312430476219935,
-          108.27524431529348
-        ],
-        "size": [
-          3.9855449380184496,
-          5.978316695494772,
-          5.978315656982744
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_31",
-        "type": "box",
-        "position": [
-          -14.110549926757812,
-          4.0269834995269775,
-          102.84857177734375
-        ],
-        "size": [
-          3.9855433485751686,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_32",
-        "type": "box",
-        "position": [
-          -14.122164726257324,
-          13.009011200694431,
-          102.91752624511719
-        ],
-        "size": [
-          3.188434726371515,
-          14.585986273232718,
-          3.1884347263715256
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_33",
-        "type": "box",
-        "position": [
-          -14.146226882934577,
-          20.500306248664856,
-          102.99749016675611
-        ],
-        "size": [
-          3.9855433485751686,
-          0.9963858127593994,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_34",
-        "type": "box",
-        "position": [
-          -8.02215766906739,
-          19.11698067188263,
-          97.57085442456861
-        ],
-        "size": [
-          3.9855433485751686,
-          0.9963858127593994,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_35",
-        "type": "box",
-        "position": [
-          -7.86309814453125,
-          12.353586613062383,
-          97.64027404785156
-        ],
-        "size": [
-          3.188434726371514,
-          13.029683234446525,
-          3.1884347263715256
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_36",
-        "type": "box",
-        "position": [
-          -7.850957870483398,
-          4.0269834995269775,
-          97.57080841064453
-        ],
-        "size": [
-          3.9855433485751677,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_37",
-        "type": "box",
-        "position": [
-          -4.458431243896492,
-          16.670228123664856,
-          89.85930657300611
-        ],
-        "size": [
-          3.985543348575168,
-          0.9963858127593994,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_38",
-        "type": "box",
-        "position": [
-          -4.6721954345703125,
-          11.069489429206854,
-          89.7857437133789
-        ],
-        "size": [
-          3.188434726371513,
-          10.706942658004747,
-          3.1884347263715256
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_39",
-        "type": "box",
-        "position": [
-          -4.536918640136719,
-          4.0269834995269775,
-          89.83826446533203
-        ],
-        "size": [
-          3.9855433485751686,
-          3.9855432510375977,
-          3.9855433485751632
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_40",
-        "type": "box",
-        "position": [
-          -8.270793318748474,
-          5.457823187112808,
-          69.70811879634857
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_41",
-        "type": "mesh",
-        "meshName": "arch_red",
-        "materialType": "wall",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "id": "collider_45",
-        "type": "box",
-        "position": [
-          -37.33783027153335,
-          7.128245829674199,
-          88.32971954345712
-        ],
-        "size": [
-          9.14948403796651,
-          1.9927721006325783,
-          1.6169295394491172
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_46",
-        "type": "box",
-        "position": [
-          -50.46330261230469,
-          10.865873812767461,
-          101.33258013597683
-        ],
-        "size": [
-          1.6169284505147061,
-          1.9927721006325783,
-          5.777126351934001
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_47",
-        "type": "box",
-        "position": [
-          -46.748661722949365,
-          10.865873812767461,
-          104.68184661865243
-        ],
-        "size": [
-          9.14948403796651,
-          1.9927721006325783,
-          1.6169295394491172
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_48",
-        "type": "box",
-        "position": [
-          -53.93143733102229,
-          7.372822283836797,
-          100.68596672925611
-        ],
-        "size": [
-          5.978314722415874,
-          5.978315351670176,
-          3.985543726151377
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_49",
-        "type": "box",
-        "position": [
-          -61.97539269924164,
-          5.164033800363541,
-          115.84091603755951
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_50",
-        "type": "box",
-        "position": [
-          -60.21644723415375,
-          4.969306379556656,
-          54.171818137168884
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "wall"
-      },
-      {
-        "id": "collider_51",
-        "type": "box",
-        "position": [
-          -118.84523320315787,
-          6.904409887319858,
-          108.39310228749616
-        ],
-        "size": [
-          7.995287512733512,
-          4.980007726219667,
-          6.501294838309377
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_52",
-        "type": "box",
-        "position": [
-          -29.05535888671873,
-          15.842398285865784,
-          96.3176957509998
-        ],
-        "size": [
-          2.2368062784832468,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_53",
-        "type": "box",
-        "position": [
-          -29.126226425170877,
-          10.25213873386383,
-          96.34265150051152
-        ],
-        "size": [
-          2.2368062784832468,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_54",
-        "type": "box",
-        "position": [
-          -32.469535827636705,
-          7.317672371864319,
-          96.38854993801152
-        ],
-        "size": [
-          2.2368062784832503,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_55",
-        "type": "box",
-        "position": [
-          -28.985286712646463,
-          4.876017212867737,
-          96.39340986232793
-        ],
-        "size": [
-          2.2368062784832468,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_56",
-        "type": "box",
-        "position": [
-          -32.509208679199205,
-          12.825354218482971,
-          96.48574842433965
-        ],
-        "size": [
-          2.2368062784832503,
-          0.5592014789581299,
-          2.236806278483243
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_57",
-        "type": "box",
-        "position": [
-          10.841623902320862,
-          5.492876440286636,
-          20.445183157920837
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_58",
-        "type": "box",
-        "position": [
-          43.22808914460377,
-          4.574681367888839,
-          40.76490444226124
-        ],
-        "size": [
-          9.462042692949481,
-          10.03342146480464,
-          8.647213375922696
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_59",
-        "type": "box",
-        "position": [
-          87.89673101902008,
-          5.614331632852554,
-          0.5184520483016968
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_60",
-        "type": "box",
-        "position": [
-          95.23290503025055,
-          6.082692056894302,
-          14.52939260005951
-        ],
-        "size": [
-          3.2251484394073486,
-          2.2597965598106384,
-          2.9891364574432373
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_61",
-        "type": "box",
-        "position": [
-          71.97465586662292,
-          4.970793237909675,
-          -97.68993711471558
-        ],
-        "size": [
-          3.048760414123535,
-          1.8989749141037464,
-          2.479071617126465
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_62",
-        "type": "box",
-        "position": [
-          52.1449259519577,
-          5.038195177912712,
-          -108.86051398515701
-        ],
-        "size": [
-          3.4200847148895264,
-          2.3162826597690582,
-          3.476110100746155
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_63",
-        "type": "box",
-        "position": [
-          30.897358090377182,
-          8.231673354068612,
-          -85.75586883817252
-        ],
-        "size": [
-          3.4334573554441334,
-          3.011497134284019,
-          3.8811477836965054
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_64",
-        "type": "box",
-        "position": [
-          31.1728857755661,
-          12.895193926748135,
-          -95.57546734809875
-        ],
-        "size": [
-          2.000000238418579,
-          4.705846676925772,
-          10.714676141738892
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_65",
-        "type": "box",
-        "position": [
-          22.67157733440399,
-          12.040248847937999,
-          -95.22147369384766
-        ],
-        "size": [
-          2.000000238418579,
-          3.0000000458232208,
-          6
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_66",
-        "type": "box",
-        "position": [
-          -6.446720242500305,
-          12.040248847937999,
-          -95.43769836425781
-        ],
-        "size": [
-          2.000000238418579,
-          3.0000000458232208,
-          6
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_67",
-        "type": "box",
-        "position": [
-          -14.597328305244446,
-          12.895193926748135,
-          -94.67270398139954
-        ],
-        "size": [
-          2.000000238418579,
-          4.705846676925772,
-          10.714676141738892
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_15",
-        "type": "box",
-        "position": [
-          163.84441902652236,
-          -5.599573676390628,
-          -15.908546461952653
-        ],
-        "size": [
-          31.95752552951376,
-          21.4844456117798,
-          28.08303990475713
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
-      },
-      {
-        "id": "collider_16",
-        "type": "box",
-        "position": [
-          237.98524773482995,
-          4.03463422337159,
-          -15.84718638467433
-        ],
-        "size": [
-          120.63033909266687,
-          1.44874830361303,
-          27.92981286864176
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "materialType": "ground"
       },
       {
         "id": "collider_19",
         "type": "mesh",
-        "meshName": "Material2",
+        "meshName": "Elevated_Ground",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19776,9 +20064,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_20",
+        "id": "collider_2",
         "type": "mesh",
-        "meshName": "Material2001",
+        "meshName": "Platform001",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19787,9 +20075,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_21",
+        "id": "collider_3",
         "type": "mesh",
-        "meshName": "Material2002",
+        "meshName": "Platform002",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19798,9 +20086,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_22",
+        "id": "collider_4",
         "type": "mesh",
-        "meshName": "Material2003",
+        "meshName": "Platform3002",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19809,9 +20097,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_23",
+        "id": "collider_5",
         "type": "mesh",
-        "meshName": "Material2004",
+        "meshName": "Cube",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19820,9 +20108,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_24",
+        "id": "collider_6",
         "type": "mesh",
-        "meshName": "Material2005",
+        "meshName": "Lift3001",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19831,9 +20119,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_25",
+        "id": "collider_7",
         "type": "mesh",
-        "meshName": "Material2006",
+        "meshName": "Platform4001",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19842,9 +20130,9 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_26",
+        "id": "collider_8",
         "type": "mesh",
-        "meshName": "Material2007",
+        "meshName": "Platform3003",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19853,9 +20141,42 @@ export const levels = [
         ]
       },
       {
-        "id": "collider_27",
+        "id": "collider_9",
         "type": "mesh",
-        "meshName": "Material3",
+        "meshName": "Lift3002",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_10",
+        "type": "mesh",
+        "meshName": "Platform3004",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_11",
+        "type": "mesh",
+        "meshName": "Lift3003",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_12",
+        "type": "mesh",
+        "meshName": "Platform3006",
         "materialType": "ground",
         "rotation": [
           0,
@@ -19864,11 +20185,250 @@ export const levels = [
         ]
       }
     ],
-    "enemies": [],
-    "collectibles": {},
-    "lights": [
-      "BasicLights"
-    ]
+    "placeableBlocks": [
+      {
+        "id": "block_2",
+        "type": "placeableBlock",
+        "color": 16729156,
+        "colorName": "red",
+        "position": [
+          -452.98549867511366,
+          31,
+          278.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -452.98549867511366,
+          40,
+          278.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      },
+      {
+        "id": "block_3",
+        "type": "placeableBlock",
+        "color": 6448255,
+        "colorName": "blue",
+        "position": [
+          -438.98549867511366,
+          31,
+          252.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -438.98549867511366,
+          40,
+          252.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      },
+      {
+        "id": "block_4",
+        "type": "placeableBlock",
+        "color": 43520,
+        "colorName": "green",
+        "position": [
+          -456.98549867511366,
+          31,
+          265.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -456.98549867511366,
+          40,
+          265.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      }
+    ],
+    "collectibles": {
+      "chests": [
+        {
+          "id": "chest_32",
+          "position": [
+            -499.085311265958,
+            38.74439334869385,
+            334.06633057575175
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_33",
+          "position": [
+            -225.62864531854856,
+            9.651255130767824,
+            278.7988147172013
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_34",
+          "position": [
+            -237.44661100161906,
+            23.226380348205566,
+            -17.687950706826655
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_35",
+          "position": [
+            -238.27040579662082,
+            23.226380348205566,
+            -23.327350349487794
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_37",
+          "position": [
+            -237.8768482421618,
+            23.226380348205566,
+            -30.485315919861755
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_38",
+          "position": [
+            -169.3996665850923,
+            9.651255130767822,
+            -82.64101963921365
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_39",
+          "position": [
+            -26.238882996084904,
+            9.439203262329102,
+            -44.85368840875811
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_40",
+          "position": [
+            27.87669681671055,
+            9.439203262329102,
+            -45.742070533768135
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_41",
+          "position": [
+            563.1453318104104,
+            23.226380348205566,
+            46.48808928837561
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_42",
+          "position": [
+            567.1970196438438,
+            9.651255130767822,
+            429.1261757803478
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_43",
+          "position": [
+            317.9556895504127,
+            9.691577911376953,
+            402.88531324057374
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_44",
+          "position": [
+            274.4610301937911,
+            9.691577911376955,
+            406.2805544583855
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_45",
+          "position": [
+            272.8105836219984,
+            9.691577911376951,
+            417.24719695393435
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_46",
+          "position": [
+            319.2518496027569,
+            9.691577911376955,
+            417.44962917460015
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_47",
+          "position": [
+            275.60067626746354,
+            9.691577911376953,
+            -62.93518485094077
+          ],
+          "contents": "potion"
+        }
+      ],
+      "potions": [],
+      "coins": [],
+      "gems": [],
+      "keys": []
+    }
   },
   {
     "id": "level2_glitched",
@@ -19878,6 +20438,40 @@ export const levels = [
       195,
       6,
       -83
+    ],
+    "ui": [
+      "hud",
+      {
+        "type": "minimap",
+        "config": {
+          "zoom": 1.6
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 2,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🖥️",
+              "name": "Assets",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
     ],
     "colliders": [
       {
@@ -26160,8 +26754,2190 @@ export const levels = [
         ]
       }
     ],
-    "enemies": [],
-    "collectibles": {},
+    "sounds": {
+      "music": {
+        "level2-theme": {
+          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
+          "loop": true
+        }
+      },
+      "sfx": {
+        "door": {
+          "url": "assets/audio/sfx/door.mp3",
+          "loop": false
+        },
+        "sword": {
+          "url": "assets/audio/sfx/sword.mp3",
+          "loop": false
+        },
+        "chest": {
+          "url": "assets/audio/sfx/chest_open.mp3",
+          "loop": false
+        },
+        "snake": {
+          "url": "assets/audio/sfx/snake.wav",
+          "loop": false
+        },
+        "potion": {
+          "url": "assets/audio/sfx/potion.wav",
+          "loop": false
+        },
+        "walk": {
+          "url": "assets/audio/sfx/walking.mp3",
+          "loop": false
+        },
+        "torch": {
+          "url": "assets/audio/ambient/torch.mp3",
+          "loop": false
+        },
+        "low-health": {
+          "url": "assets/audio/sfx/low_health.mp3",
+          "loop": false
+        },
+        "rumbling": {
+          "url": "assets/audio/sfx/rumbling.wav",
+          "loop": false
+        }
+      },
+      "ambient": {
+        "torch-ambient": {
+          "url": "assets/audio/ambient/torch.mp3",
+          "loop": true
+        }
+      },
+      "playMusic": "level2-theme",
+      "playVoiceover": null
+    },
+    "proximitySounds": [
+      {
+        "position": [
+          203,
+          3.7,
+          -66.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
+      },
+      {
+        "position": [
+          187.9,
+          3.7,
+          -66.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
+      },
+      {
+        "position": [
+          160.3,
+          4.6,
+          -36.1
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
+      },
+      {
+        "position": [
+          160.3,
+          4.6,
+          -25.7
+        ],
+        "sound": "torch-ambient",
+        "radius": 10,
+        "volume": 0.7
+      }
+    ],
+    "enemies": [
+      {
+        "type": "snake",
+        "position": [
+          140,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            140,
+            1.4,
+            -30
+          ],
+          [
+            130,
+            1.4,
+            -20
+          ],
+          [
+            150,
+            1.4,
+            -20
+          ],
+          [
+            145,
+            1.4,
+            -35
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          140,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            140,
+            1.4,
+            -30
+          ],
+          [
+            130,
+            1.4,
+            -20
+          ],
+          [
+            150,
+            1.4,
+            -20
+          ],
+          [
+            145,
+            1.4,
+            -35
+          ]
+        ],
+        "health": 18,
+        "speed": 18,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          151.97,
+          1.4,
+          28.12
+        ],
+        "patrolPoints": [
+          [
+            151.97,
+            1.4,
+            28.12
+          ],
+          [
+            141.97,
+            1.4,
+            38.12
+          ],
+          [
+            161.97,
+            1.4,
+            38.12
+          ],
+          [
+            156.97,
+            1.4,
+            23.12
+          ]
+        ],
+        "health": 16,
+        "speed": 20,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          122.02,
+          1.4,
+          126.51
+        ],
+        "patrolPoints": [
+          [
+            122.02,
+            1.4,
+            126.51
+          ],
+          [
+            112.02,
+            1.4,
+            136.51
+          ],
+          [
+            132.02,
+            1.4,
+            136.51
+          ],
+          [
+            127.02,
+            1.4,
+            121.51
+          ]
+        ],
+        "health": 20,
+        "speed": 16,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          88.65,
+          1.4,
+          165.63
+        ],
+        "patrolPoints": [
+          [
+            88.65,
+            1.4,
+            165.63
+          ],
+          [
+            78.65,
+            1.4,
+            175.63
+          ],
+          [
+            98.65,
+            1.4,
+            175.63
+          ],
+          [
+            93.65,
+            1.4,
+            160.63
+          ]
+        ],
+        "health": 15,
+        "speed": 22,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          220.46,
+          1.4,
+          69.91
+        ],
+        "patrolPoints": [
+          [
+            220.46,
+            1.4,
+            69.91
+          ],
+          [
+            210.46,
+            1.4,
+            79.91
+          ],
+          [
+            230.46,
+            1.4,
+            79.91
+          ],
+          [
+            225.46,
+            1.4,
+            64.91
+          ]
+        ],
+        "health": 17,
+        "speed": 19,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          150,
+          1.4,
+          0
+        ],
+        "patrolPoints": [
+          [
+            150,
+            1.4,
+            0
+          ],
+          [
+            130,
+            1.4,
+            -20
+          ],
+          [
+            170,
+            1.4,
+            20
+          ],
+          [
+            140,
+            1.4,
+            40
+          ],
+          [
+            160,
+            1.4,
+            -40
+          ]
+        ],
+        "health": 19,
+        "speed": 17,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          85.9,
+          1.4,
+          100
+        ],
+        "patrolPoints": [
+          [
+            85,
+            1.4,
+            100
+          ],
+          [
+            80,
+            1.4,
+            120
+          ],
+          [
+            120,
+            1.4,
+            80
+          ],
+          [
+            90,
+            1.4,
+            90
+          ],
+          [
+            110,
+            1.4,
+            110
+          ]
+        ],
+        "health": 16,
+        "speed": 21,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          80,
+          1.4,
+          200
+        ],
+        "patrolPoints": [
+          [
+            80,
+            1.4,
+            200
+          ],
+          [
+            60,
+            1.4,
+            180
+          ],
+          [
+            100,
+            1.4,
+            220
+          ],
+          [
+            70,
+            1.4,
+            190
+          ],
+          [
+            90,
+            1.4,
+            210
+          ]
+        ],
+        "health": 22,
+        "speed": 15,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          238.9,
+          1.4,
+          70
+        ],
+        "patrolPoints": [
+          [
+            250,
+            1.4,
+            50
+          ],
+          [
+            230,
+            1.4,
+            30
+          ],
+          [
+            270,
+            1.4,
+            70
+          ],
+          [
+            240,
+            1.4,
+            60
+          ],
+          [
+            260,
+            1.4,
+            40
+          ]
+        ],
+        "health": 14,
+        "speed": 23,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          180.6,
+          1.4,
+          90.3
+        ],
+        "patrolPoints": [
+          [
+            180,
+            1.4,
+            100
+          ],
+          [
+            160,
+            1.4,
+            80
+          ],
+          [
+            200,
+            1.4,
+            120
+          ],
+          [
+            170,
+            1.4,
+            90
+          ],
+          [
+            190,
+            1.4,
+            110
+          ]
+        ],
+        "health": 18,
+        "speed": 18,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          300,
+          1.4,
+          120
+        ],
+        "patrolPoints": [
+          [
+            300,
+            1.4,
+            120
+          ],
+          [
+            280,
+            1.4,
+            100
+          ],
+          [
+            320,
+            1.4,
+            140
+          ],
+          [
+            290,
+            1.4,
+            130
+          ],
+          [
+            310,
+            1.4,
+            110
+          ]
+        ],
+        "health": 17,
+        "speed": 20,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          70,
+          1.4,
+          60
+        ],
+        "patrolPoints": [
+          [
+            70,
+            1.4,
+            40
+          ],
+          [
+            60,
+            1.4,
+            50
+          ],
+          [
+            80,
+            1.4,
+            30
+          ],
+          [
+            65,
+            1.4,
+            35
+          ],
+          [
+            75,
+            1.4,
+            45
+          ]
+        ],
+        "health": 16,
+        "speed": 21,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          198.7,
+          1.4,
+          -30.1
+        ],
+        "patrolPoints": [
+          [
+            200,
+            1.4,
+            -20
+          ],
+          [
+            190,
+            1.4,
+            -10
+          ],
+          [
+            210,
+            1.4,
+            -30
+          ],
+          [
+            195,
+            1.4,
+            -25
+          ],
+          [
+            205,
+            1.4,
+            -15
+          ]
+        ],
+        "health": 19,
+        "speed": 17,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          40,
+          1.4,
+          160
+        ],
+        "patrolPoints": [
+          [
+            40,
+            1.4,
+            160
+          ],
+          [
+            30,
+            1.4,
+            170
+          ],
+          [
+            50,
+            1.4,
+            150
+          ],
+          [
+            35,
+            1.4,
+            155
+          ],
+          [
+            45,
+            1.4,
+            165
+          ]
+        ],
+        "health": 15,
+        "speed": 22,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          108,
+          1.4,
+          75
+        ],
+        "patrolPoints": [
+          [
+            108,
+            1.4,
+            75
+          ],
+          [
+            104,
+            1.4,
+            78
+          ],
+          [
+            112,
+            1.4,
+            72
+          ],
+          [
+            106,
+            1.4,
+            82
+          ],
+          [
+            110,
+            1.4,
+            68
+          ]
+        ],
+        "health": 16,
+        "speed": 38,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          96,
+          1.4,
+          85
+        ],
+        "patrolPoints": [
+          [
+            96,
+            1.4,
+            85
+          ],
+          [
+            92,
+            1.4,
+            88
+          ],
+          [
+            100,
+            1.4,
+            82
+          ],
+          [
+            94,
+            1.4,
+            92
+          ],
+          [
+            98,
+            1.4,
+            78
+          ]
+        ],
+        "health": 18,
+        "speed": 36,
+        "chaseRange": 14,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          84,
+          1.4,
+          95
+        ],
+        "patrolPoints": [
+          [
+            84,
+            1.4,
+            95
+          ],
+          [
+            80,
+            1.4,
+            98
+          ],
+          [
+            88,
+            1.4,
+            92
+          ],
+          [
+            82,
+            1.4,
+            102
+          ],
+          [
+            86,
+            1.4,
+            88
+          ]
+        ],
+        "health": 20,
+        "speed": 34,
+        "chaseRange": 16,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          102,
+          1.4,
+          90
+        ],
+        "patrolPoints": [
+          [
+            102,
+            1.4,
+            90
+          ],
+          [
+            98,
+            1.4,
+            93
+          ],
+          [
+            106,
+            1.4,
+            87
+          ],
+          [
+            100,
+            1.4,
+            97
+          ],
+          [
+            104,
+            1.4,
+            83
+          ]
+        ],
+        "health": 17,
+        "speed": 37,
+        "chaseRange": 13,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          90,
+          1.4,
+          80
+        ],
+        "patrolPoints": [
+          [
+            90,
+            1.4,
+            80
+          ],
+          [
+            86,
+            1.4,
+            83
+          ],
+          [
+            94,
+            1.4,
+            77
+          ],
+          [
+            88,
+            1.4,
+            87
+          ],
+          [
+            92,
+            1.4,
+            73
+          ]
+        ],
+        "health": 19,
+        "speed": 35,
+        "chaseRange": 15,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          85,
+          1.4,
+          125
+        ],
+        "patrolPoints": [
+          [
+            85,
+            1.4,
+            125
+          ],
+          [
+            81,
+            1.4,
+            128
+          ],
+          [
+            89,
+            1.4,
+            122
+          ],
+          [
+            83,
+            1.4,
+            132
+          ],
+          [
+            87,
+            1.4,
+            118
+          ]
+        ],
+        "health": 15,
+        "speed": 40,
+        "chaseRange": 18,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          80,
+          1.4,
+          120
+        ],
+        "patrolPoints": [
+          [
+            80,
+            1.4,
+            120
+          ],
+          [
+            76,
+            1.4,
+            123
+          ],
+          [
+            84,
+            1.4,
+            117
+          ],
+          [
+            78,
+            1.4,
+            127
+          ],
+          [
+            82,
+            1.4,
+            113
+          ]
+        ],
+        "health": 22,
+        "speed": 32,
+        "chaseRange": 17,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          90,
+          1.4,
+          130
+        ],
+        "patrolPoints": [
+          [
+            90,
+            1.4,
+            130
+          ],
+          [
+            86,
+            1.4,
+            133
+          ],
+          [
+            94,
+            1.4,
+            127
+          ],
+          [
+            88,
+            1.4,
+            137
+          ],
+          [
+            92,
+            1.4,
+            123
+          ]
+        ],
+        "health": 21,
+        "speed": 33,
+        "chaseRange": 19,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          20,
+          1.4,
+          -50
+        ],
+        "patrolPoints": [
+          [
+            20,
+            1.4,
+            -50
+          ],
+          [
+            10,
+            1.4,
+            -60
+          ],
+          [
+            30,
+            1.4,
+            -40
+          ],
+          [
+            15,
+            1.4,
+            -45
+          ],
+          [
+            25,
+            1.4,
+            -55
+          ]
+        ],
+        "health": 15,
+        "speed": 35,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          50,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            -10,
+            1.4,
+            0
+          ],
+          [
+            -15,
+            1.4,
+            -10
+          ],
+          [
+            -5,
+            1.4,
+            10
+          ],
+          [
+            -12,
+            1.4,
+            5
+          ],
+          [
+            -8,
+            1.4,
+            -5
+          ]
+        ],
+        "health": 18,
+        "speed": 32,
+        "chaseRange": 15,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          50,
+          1.4,
+          -80
+        ],
+        "patrolPoints": [
+          [
+            50,
+            1.4,
+            -80
+          ],
+          [
+            40,
+            1.4,
+            -90
+          ],
+          [
+            60,
+            1.4,
+            -70
+          ],
+          [
+            45,
+            1.4,
+            -75
+          ],
+          [
+            55,
+            1.4,
+            -85
+          ]
+        ],
+        "health": 20,
+        "speed": 38,
+        "chaseRange": 14,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          100.4,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            100,
+            1.4,
+            -60
+          ],
+          [
+            90,
+            1.4,
+            -70
+          ],
+          [
+            110,
+            1.4,
+            -50
+          ],
+          [
+            95,
+            1.4,
+            -55
+          ],
+          [
+            105,
+            1.4,
+            -65
+          ]
+        ],
+        "health": 16,
+        "speed": 36,
+        "chaseRange": 13,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          180,
+          1.4,
+          -30
+        ],
+        "patrolPoints": [
+          [
+            180,
+            1.4,
+            -30
+          ],
+          [
+            170,
+            1.4,
+            -40
+          ],
+          [
+            190,
+            1.4,
+            -20
+          ],
+          [
+            175,
+            1.4,
+            -25
+          ],
+          [
+            185,
+            1.4,
+            -35
+          ]
+        ],
+        "health": 22,
+        "speed": 34,
+        "chaseRange": 16,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          240,
+          1.4,
+          10
+        ],
+        "patrolPoints": [
+          [
+            240,
+            1.4,
+            10
+          ],
+          [
+            230,
+            1.4,
+            0
+          ],
+          [
+            250,
+            1.4,
+            20
+          ],
+          [
+            235,
+            1.4,
+            15
+          ],
+          [
+            245,
+            1.4,
+            5
+          ]
+        ],
+        "health": 19,
+        "speed": 37,
+        "chaseRange": 11,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          200,
+          1.4,
+          85.2
+        ],
+        "patrolPoints": [
+          [
+            200,
+            1.4,
+            82.5
+          ],
+          [
+            190,
+            1.4,
+            90
+          ],
+          [
+            206.6,
+            1.4,
+            94
+          ],
+          [
+            195,
+            1.4,
+            90
+          ],
+          [
+            205,
+            1.4,
+            95
+          ]
+        ],
+        "health": 17,
+        "speed": 39,
+        "chaseRange": 17,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          150,
+          1.4,
+          150
+        ],
+        "patrolPoints": [
+          [
+            150,
+            1.4,
+            150
+          ],
+          [
+            140,
+            1.4,
+            140
+          ],
+          [
+            160,
+            1.4,
+            160
+          ],
+          [
+            145,
+            1.4,
+            155
+          ],
+          [
+            155,
+            1.4,
+            145
+          ]
+        ],
+        "health": 21,
+        "speed": 33,
+        "chaseRange": 18,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          80,
+          1.4,
+          180
+        ],
+        "patrolPoints": [
+          [
+            80,
+            1.4,
+            180
+          ],
+          [
+            70,
+            1.4,
+            170
+          ],
+          [
+            90,
+            1.4,
+            190
+          ],
+          [
+            75,
+            1.4,
+            185
+          ],
+          [
+            85,
+            1.4,
+            175
+          ]
+        ],
+        "health": 14,
+        "speed": 40,
+        "chaseRange": 19,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          30,
+          1.4,
+          120
+        ],
+        "patrolPoints": [
+          [
+            30,
+            1.4,
+            120
+          ],
+          [
+            20,
+            1.4,
+            110
+          ],
+          [
+            40,
+            1.4,
+            130
+          ],
+          [
+            25,
+            1.4,
+            125
+          ],
+          [
+            35,
+            1.4,
+            115
+          ]
+        ],
+        "health": 23,
+        "speed": 31,
+        "chaseRange": 20,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          27,
+          1.4,
+          40
+        ],
+        "patrolPoints": [
+          [
+            -5,
+            1.4,
+            80
+          ],
+          [
+            -10,
+            1.4,
+            70
+          ],
+          [
+            20,
+            1.4,
+            90
+          ],
+          [
+            24,
+            1.4,
+            20
+          ],
+          [
+            26,
+            1.4,
+            40
+          ]
+        ],
+        "health": 16,
+        "speed": 42,
+        "chaseRange": 14,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          116.7,
+          1.4,
+          70
+        ],
+        "patrolPoints": [
+          [
+            120,
+            1.4,
+            50
+          ],
+          [
+            110,
+            1.4,
+            40
+          ],
+          [
+            130,
+            1.4,
+            60
+          ],
+          [
+            115,
+            1.4,
+            55
+          ],
+          [
+            125,
+            1.4,
+            45
+          ]
+        ],
+        "health": 18,
+        "speed": 35,
+        "chaseRange": 16,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          220,
+          1.4,
+          180
+        ],
+        "patrolPoints": [
+          [
+            220,
+            1.4,
+            180
+          ],
+          [
+            210,
+            1.4,
+            170
+          ],
+          [
+            230,
+            1.4,
+            190
+          ],
+          [
+            215,
+            1.4,
+            185
+          ],
+          [
+            225,
+            1.4,
+            175
+          ]
+        ],
+        "health": 20,
+        "speed": 36,
+        "chaseRange": 15,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          10,
+          1.4,
+          -20
+        ],
+        "patrolPoints": [
+          [
+            10,
+            1.4,
+            -20
+          ],
+          [
+            0,
+            1.4,
+            -30
+          ],
+          [
+            20,
+            1.4,
+            -10
+          ],
+          [
+            5,
+            1.4,
+            -15
+          ],
+          [
+            15,
+            1.4,
+            -25
+          ]
+        ],
+        "health": 17,
+        "speed": 41,
+        "chaseRange": 13,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          190,
+          1.4,
+          30
+        ],
+        "patrolPoints": [
+          [
+            190,
+            1.4,
+            30
+          ],
+          [
+            180,
+            1.4,
+            20
+          ],
+          [
+            200,
+            1.4,
+            40
+          ],
+          [
+            185,
+            1.4,
+            35
+          ],
+          [
+            195,
+            1.4,
+            25
+          ]
+        ],
+        "health": 19,
+        "speed": 38,
+        "chaseRange": 17,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          151.97,
+          1.4,
+          28.12
+        ],
+        "patrolPoints": [
+          [
+            151.97,
+            1.4,
+            28.12
+          ],
+          [
+            141.97,
+            1.4,
+            38.12
+          ],
+          [
+            161.97,
+            1.4,
+            38.12
+          ],
+          [
+            156.97,
+            1.4,
+            23.12
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          122.02,
+          1.4,
+          126.51
+        ],
+        "patrolPoints": [
+          [
+            122.02,
+            1.4,
+            126.51
+          ],
+          [
+            112.02,
+            1.4,
+            136.51
+          ],
+          [
+            132.02,
+            1.4,
+            136.51
+          ],
+          [
+            127.02,
+            1.4,
+            121.51
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          88.65,
+          1.4,
+          165.63
+        ],
+        "patrolPoints": [
+          [
+            88.65,
+            1.4,
+            165.63
+          ],
+          [
+            78.65,
+            1.4,
+            175.63
+          ],
+          [
+            98.65,
+            1.4,
+            175.63
+          ],
+          [
+            93.65,
+            1.4,
+            160.63
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          179,
+          1.4,
+          48
+        ],
+        "patrolPoints": [
+          [
+            179,
+            1.4,
+            48
+          ],
+          [
+            169,
+            1.4,
+            58
+          ],
+          [
+            189,
+            1.4,
+            58
+          ],
+          [
+            184,
+            1.4,
+            43
+          ]
+        ],
+        "health": 18,
+        "speed": 36,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          179,
+          1.4,
+          48
+        ],
+        "patrolPoints": [
+          [
+            179,
+            1.4,
+            48
+          ],
+          [
+            169,
+            1.4,
+            58
+          ],
+          [
+            189,
+            1.4,
+            58
+          ],
+          [
+            184,
+            1.4,
+            43
+          ],
+          [
+            174,
+            1.4,
+            38
+          ]
+        ],
+        "health": 22,
+        "speed": 18,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          90.6,
+          1.4,
+          21
+        ],
+        "patrolPoints": [
+          [
+            93,
+            1.4,
+            31
+          ],
+          [
+            83,
+            1.4,
+            41
+          ],
+          [
+            103,
+            1.4,
+            41
+          ],
+          [
+            98,
+            1.4,
+            26
+          ]
+        ],
+        "health": 16,
+        "speed": 38,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          87.1,
+          1.4,
+          22.4
+        ],
+        "patrolPoints": [
+          [
+            93,
+            1.4,
+            31
+          ],
+          [
+            83,
+            1.4,
+            41
+          ],
+          [
+            103,
+            1.4,
+            41
+          ],
+          [
+            98,
+            1.4,
+            26
+          ],
+          [
+            88,
+            1.4,
+            21
+          ]
+        ],
+        "health": 20,
+        "speed": 20,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          239,
+          1.4,
+          42
+        ],
+        "patrolPoints": [
+          [
+            239,
+            1.4,
+            42
+          ],
+          [
+            229,
+            1.4,
+            52
+          ],
+          [
+            249,
+            1.4,
+            52
+          ],
+          [
+            244,
+            1.4,
+            37
+          ]
+        ],
+        "health": 19,
+        "speed": 35,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          239,
+          1.4,
+          42
+        ],
+        "patrolPoints": [
+          [
+            239,
+            1.4,
+            42
+          ],
+          [
+            229,
+            1.4,
+            52
+          ],
+          [
+            249,
+            1.4,
+            52
+          ],
+          [
+            244,
+            1.4,
+            37
+          ],
+          [
+            234,
+            1.4,
+            32
+          ]
+        ],
+        "health": 24,
+        "speed": 17,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          202,
+          1.4,
+          19
+        ],
+        "patrolPoints": [
+          [
+            202,
+            1.4,
+            19
+          ],
+          [
+            192,
+            1.4,
+            29
+          ],
+          [
+            212,
+            1.4,
+            29
+          ],
+          [
+            207,
+            1.4,
+            14
+          ]
+        ],
+        "health": 17,
+        "speed": 37,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          202,
+          1.4,
+          19
+        ],
+        "patrolPoints": [
+          [
+            202,
+            1.4,
+            19
+          ],
+          [
+            192,
+            1.4,
+            29
+          ],
+          [
+            212,
+            1.4,
+            29
+          ],
+          [
+            207,
+            1.4,
+            14
+          ],
+          [
+            197,
+            1.4,
+            9
+          ]
+        ],
+        "health": 21,
+        "speed": 19,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          239,
+          1.4,
+          5
+        ],
+        "patrolPoints": [
+          [
+            239,
+            1.4,
+            5
+          ],
+          [
+            229,
+            1.4,
+            15
+          ],
+          [
+            249,
+            1.4,
+            15
+          ],
+          [
+            244,
+            1.4,
+            0
+          ]
+        ],
+        "health": 15,
+        "speed": 40,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          239,
+          1.4,
+          5
+        ],
+        "patrolPoints": [
+          [
+            239,
+            1.4,
+            5
+          ],
+          [
+            229,
+            1.4,
+            15
+          ],
+          [
+            249,
+            1.4,
+            15
+          ],
+          [
+            244,
+            1.4,
+            0
+          ],
+          [
+            234,
+            1.4,
+            -5
+          ]
+        ],
+        "health": 19,
+        "speed": 21,
+        "chaseRange": 12,
+        "modelUrl": "assets/enemies/snake_boss/Snake_Angry.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          220.46,
+          1.4,
+          69.91
+        ],
+        "patrolPoints": [
+          [
+            220.46,
+            1.4,
+            69.91
+          ],
+          [
+            210.46,
+            1.4,
+            79.91
+          ],
+          [
+            230.46,
+            1.4,
+            79.91
+          ],
+          [
+            225.46,
+            1.4,
+            64.91
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          -4.63,
+          1.4,
+          179.3
+        ],
+        "patrolPoints": [
+          [
+            -4.63,
+            1.4,
+            179.3
+          ],
+          [
+            -14.63,
+            1.4,
+            189.3
+          ],
+          [
+            5.37,
+            1.4,
+            189.3
+          ],
+          [
+            0.37,
+            1.4,
+            174.3
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake",
+        "position": [
+          75.63,
+          1.4,
+          -7.35
+        ],
+        "patrolPoints": [
+          [
+            75.63,
+            1.4,
+            -7.35
+          ],
+          [
+            65.63,
+            1.4,
+            2.65
+          ],
+          [
+            85.63,
+            1.4,
+            2.65
+          ],
+          [
+            80.63,
+            1.4,
+            -12.35
+          ]
+        ],
+        "health": 35,
+        "speed": 15,
+        "chaseRange": 10,
+        "modelUrl": "assets/enemies/snake/scene.gltf"
+      },
+      {
+        "type": "snake_boss",
+        "position": [
+          30,
+          2,
+          -25
+        ],
+        "patrolPoints": [
+          [
+            30,
+            2,
+            -25
+          ],
+          [
+            25,
+            2,
+            -20
+          ],
+          [
+            35,
+            2,
+            -30
+          ],
+          [
+            40,
+            2,
+            -20
+          ],
+          [
+            25,
+            2,
+            -35
+          ]
+        ],
+        "health": 500,
+        "speed": 3,
+        "chaseRange": 12
+      }
+    ],
+    "collectibles": {
+      "chests": [
+        {
+          "id": "chest_341",
+          "position": [
+            102.83618171070033,
+            0.1245687627273453,
+            127.53572840599536
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_342",
+          "position": [
+            179.49076303736004,
+            0.22766118299212934,
+            96.26284249506361
+          ],
+          "contents": "apple"
+        }
+      ],
+      "apples": [],
+      "potions": [],
+      "llm_gpt": [],
+      "llm_claude": [],
+      "llm_gemini": []
+    },
     "lights": [
       {
         "key": "StarLight",
@@ -27218,6 +29994,157 @@ export const levels = [
           ]
         }
       }
-    ]
+    ],
+    "npcs": [],
+    "platforms": [],
+    "interactiveObjects": [],
+    "triggers": [],
+    "meshAnimations": [
+      {
+        "meshName": "Lift2",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -225.86,
+              10.11,
+              124.18
+            ],
+            [
+              -229.68,
+              9.65,
+              254.86
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -259.41,
+              10.11,
+              110.38
+            ],
+            [
+              -387.15,
+              10.11,
+              184.13
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift",
+        "animationType": "moving",
+        "data": {
+          "speed": 10,
+          "path": [
+            [
+              -496.88,
+              11.9,
+              195.35
+            ],
+            [
+              -506.55,
+              48.81,
+              192.95
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3001",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              344.83,
+              10.11,
+              -36.05
+            ],
+            [
+              544.8,
+              22.52,
+              -33.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3002",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              557.24,
+              10.11,
+              99.12
+            ],
+            [
+              558.04,
+              9.65,
+              405.84
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "Lift3003",
+        "animationType": "moving",
+        "data": {
+          "speed": 2,
+          "path": [
+            [
+              525.43,
+              10.11,
+              419.27
+            ],
+            [
+              334.2,
+              9.69,
+              432.04
+            ]
+          ],
+          "loopBehavior": "loop"
+        }
+      },
+      {
+        "meshName": "TreeNode2",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      },
+      {
+        "meshName": "TreeNode1",
+        "animationType": "rotating",
+        "data": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "speed": 1
+        }
+      }
+    ],
+    "placeableBlocks": []
   }
 ];
