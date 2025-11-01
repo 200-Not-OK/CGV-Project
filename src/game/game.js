@@ -2521,6 +2521,8 @@ checkGlitchedLevelCompletion() {
       this.loadLevelByName('level3');
     }, 2000); //comeback
   }
+}
+
 setupGlitchedLevelProgression() {
   console.log('🔧 Setting up glitched level progression...');
   
