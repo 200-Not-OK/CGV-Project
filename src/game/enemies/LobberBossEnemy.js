@@ -12,8 +12,8 @@ export class LobberBossEnemy extends EnemyBase {
   health: options.health ?? 500,
   // Visually larger baseline; actual mesh scale still controlled by options.scale
   size: options.size ?? [3.5, 4.2, 3.5],
-  // Start with a bigger collider; we'll also factor in modelScale when creating the body
-  colliderSize: options.colliderSize ?? [3.6, 3.8, 3.6],
+  // Collider dimensions: base size (14.130, 6.520, 13.355) / scale 3.5 = (4.037, 1.863, 3.816)
+  colliderSize: options.colliderSize ?? [4.037, 1.863, 3.816],
       modelUrl: options.modelUrl || 'assets/enemies/lobber_boss/lobber.gltf',
       scale: options.scale ?? 1.0,
       ...options
@@ -52,7 +52,7 @@ _createPhysicsBody() {
   }
 
   // Calculate scaled collider size
-  const baseSize = this.colliderSize || [3.6, 3.8, 3.6];
+  const baseSize = this.colliderSize || [4.037, 1.863, 3.816];
   const scale = this.modelScale || 1.0;
   
   const size = [
@@ -61,7 +61,12 @@ _createPhysicsBody() {
     baseSize[2] * scale
   ];
 
+  // Create box shape with half-extents (CANNON.Box uses half-extents)
   const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
+  
+  // Offset shape upward by half-height so bottom aligns with body position
+  // This makes the collider bottom-aligned instead of center-aligned
+  shape.offset = new CANNON.Vec3(0, size[1] / 2, 0);
 
   const body = new CANNON.Body({
     mass: 0,

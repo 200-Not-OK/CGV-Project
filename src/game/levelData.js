@@ -94,7 +94,7 @@ export const levels = [
       12,
       0
     ],
-    "lights": [
+ "lights": [
       {
         "key": "TechLights",
         "props": {
@@ -534,7 +534,41 @@ export const levels = [
       {
         "type": "minimap",
         "config": {
-          "zoom": 1.6
+          "zoom": 5.0,
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 7,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍏",
+              "name": "Green Apples",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
+    ],
+    "ui": [
+      "hud",
+            {
+        "type": "minimap",
+        "config": {
+          "zoom": 5,
         }
       },
       {
@@ -573,22 +607,9 @@ export const levels = [
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 29
-      },
-      {
-        "type": "crawler",
-        "position": [
-          -433.3701164361692,
-          20.113008499145515,
-          257.2399163600309
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 30
       },
       {
         "type": "crawler",
@@ -599,90 +620,51 @@ export const levels = [
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 31
       },
       {
         "type": "crawler",
         "position": [
-          305.7826403923883,
-          20.027040152890915,
-          24.799900322963577
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 48
-      },
-      {
-        "type": "crawler",
-        "position": [
-          287.3535217944027,
-          20.95949363708496,
+          300.3535217944027,
+          20.959493637084961,
           25.74999179342933
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 49
       },
       {
         "type": "crawler",
         "position": [
-          310.305134317053,
-          20.452826949471497,
-          122.30921272529777
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 50
-      },
-      {
-        "type": "crawler",
-        "position": [
-          291.14432266074226,
+          300.14432266074226,
           20.509656195663787,
           121.99517109242474
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 51
       },
       {
         "type": "crawler",
         "position": [
-          319.51625700361103,
-          20.486056737854557,
-          274.04694288437554
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 52
-      },
-      {
-        "type": "crawler",
-        "position": [
-          274.64077936042764,
+          285.64077936042764,
           20.741729019436846,
           277.2949816103393
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 53
       }
     ],
-    "npcs": [
+"npcs": [
       {
         "type": "yellow_bot",
         "position": [
@@ -901,7 +883,7 @@ export const levels = [
         }
       }
     ],
-    "colliders": [
+ "colliders": [
       {
         "id": "collider_2",
         "type": "box",
@@ -962,17 +944,17 @@ export const levels = [
         ],
         "materialType": "wall"
       },
-      {
-        "id": "collider_5",
-        "type": "mesh",
-        "meshName": "Walls",
-        "materialType": "wall",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
+    //   {
+    //     "id": "collider_5",
+    //     "type": "mesh",
+    //     "meshName": "Walls",
+    //     "materialType": "wall",
+    //     "rotation": [
+    //       0,
+    //       0,
+    //       0
+    //     ]
+    //   },
       {
         "id": "collider_6",
         "type": "mesh",
@@ -1249,7 +1231,7 @@ export const levels = [
         ]
       }
     ],
-    "placeableBlocks": [
+     "placeableBlocks": [
       {
         "id": "block_2",
         "type": "placeableBlock",
@@ -1494,6 +1476,8 @@ export const levels = [
       "keys": []
     }
   },
+
+
   {
     "id": "level2",
     "name": "Level 2: The Serpent's Labyrinth",
@@ -9631,7 +9615,7 @@ export const levels = [
     "gltfUrl": "assets/levels/Level3/level3.gltf",
     "startPosition": [
       -4,
-      15,
+      6,
       0
     ],
     "lights": [
@@ -9700,6 +9684,65 @@ export const levels = [
         "color": 7048739
       }
     ],
+        "cinematics": {
+  "onLevelStart": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "fadeOut", "ms": 300 },
+      { "type": "cut", "position": [-1, 7, -3], "lookAt": "player", "fov": 55 },
+      { "type": "fadeIn", "ms": 600 },
+      {
+        "type": "playVO",
+        "vo": "vo-l3-intro",
+        "fallbackMs": 23000,
+        "block": true,
+        "segments": [
+          { "at": 0, "ms": 2100, "text": "BRANDEN: Sir Knight. Eyes up. Yes, it is me—your favorite lecturer, now a giant floating eyeball. I am keeping an eye on you." },
+          { "at": 2400, "ms": 1800, "text": "PLAYER: Only you would turn into a sky-orb for office hours." },
+          { "at": 4400, "ms": 3900, "text": "BRANDEN: Your project theme is “Consequence.” You have three weeks. It counts for the majority of your grade. No use of AI." },
+          { "at": 8600, "ms": 2400, "text": "BRANDEN: Good luck. I will be watching." },
+          { "at": 11200, "ms": 4600, "text": "PLAYER (INTERNAL MONOLOGUE): Three weeks. Consequence. Everyone else is already panicking. But not me." },
+          { "at": 16200, "ms": 4300, "text": "PLAYER (INTERNAL MONOLOGUE): I have the ultimate advantage—ChatGPT, Claude, Gemini. I will be careful." },
+          { "at": 20700, "ms": 3000, "text": "BRANDEN: Time to collect those AIs and head to MSL." }
+        ],
+        "concurrent": [
+          { "type": "orbit", "center": "player", "radius": 7.5, "startDeg": 20, "endDeg": 55, "height": 4.8, "duration": 12000 },
+          { "type": "wait", "ms": 6200 },
+          { "type": "orbit", "center": [72, 9, -100], "radius": 2, "startDeg": 0, "endDeg": 60, "height": 4, "duration": 6000 }
+        ]
+      },
+      { "type": "fadeOut", "ms": 250 },
+      { "type": "releaseCamera" },
+      { "type": "fadeIn", "ms": 250 }
+    ]
+  },
+
+  // Small rumble beat before teleport to level1_glitched
+  "l3_p2_glitch": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "rumble", "sfx": "rumbling", "seconds": 1.2, "magnitude": 0.18, "volume": 0.8 },
+      { "type": "caption", "text": "System link engaged… hold steady.", "ms": 900 },
+      { "type": "fadeOut", "ms": 220 },
+      { "type": "releaseCamera" }
+    ]
+  },
+
+  // Finale already triggered by game.js when level3 completes
+  "l3_p4_graduation": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "fadeOut", "ms": 200 },
+      { "type": "cut", "position": [32, 6, -24], "lookAt": [30, 2, -25], "fov": 60 },
+      { "type": "fadeIn", "ms": 300 },
+      { "type": "caption", "text": "YOUR WORK IS YOUR SIGNATURE. MAKE IT LEGENDARY.", "ms": 2600 },
+      { "type": "orbit", "center": "player", "radius": 6, "startDeg": 10, "endDeg": 70, "height": 3.2, "duration": 2500 },
+      { "type": "fadeOut", "ms": 250 },
+      { "type": "releaseCamera" },
+      { "type": "fadeIn", "ms": 250 }
+    ]
+  }
+},
     "computerLocation": {
       "position": [
         72,
