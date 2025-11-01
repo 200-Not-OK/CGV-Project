@@ -722,11 +722,16 @@ export class Level {
 
     const size = 200;
     const groundGeom = new THREE.BoxGeometry(size, 2, size);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    const groundMat = new THREE.MeshStandardMaterial({ 
+      color: 0x333333,
+      transparent: true,
+      opacity: 0
+    });
     const ground = new THREE.Mesh(groundGeom, groundMat);
     ground.position.set(0, -1, 0);
     ground.receiveShadow = true;
     ground.userData.type = 'auto-ground';
+    ground.visible = false; // Hide safety net visually while keeping physics collider active
 
     this.scene.add(ground);
     this.objects.push(ground);

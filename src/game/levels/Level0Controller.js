@@ -29,6 +29,15 @@ export class Level0Controller {
     // Boss fight system
     this.bossFightSystem = null; // Store boss fight instance for updates
     
+    // Store initial spawn position for respawning
+    this.initialSpawnPosition = level?.data?.startPosition 
+      ? new THREE.Vector3(...level.data.startPosition) 
+      : new THREE.Vector3(0, 12, 0);
+    
+    // Player death tracking
+    this.lastPlayerHealth = null;
+    this.playerDeathHandler = null;
+    
     // Door trigger tutorial flags
     this._doorTriggersEnabled = false;
     this._doorTriggersConsumed = false;
@@ -106,6 +115,17 @@ export class Level0Controller {
         }
       }, 1000);
     }
+    
+    // Listen for level complete event (when boss is defeated)
+    this._levelCompleteHandler = (event) => {
+      const levelId = event?.detail?.levelId || event?.levelId;
+      if (levelId === 'level1') {
+        console.log('🏁 [Level0Controller] Level complete event received for level1');
+        // The game.js _onLevelComplete handler should handle showing the dialogue
+        // This is just to verify the event is being received
+      }
+    };
+    window.addEventListener('level:complete', this._levelCompleteHandler);
   }
 
   /**
@@ -3024,6 +3044,26 @@ export class Level0Controller {
       }
     }
     
+    // Check if player has fallen below -20 and respawn at initial spawn position
+    if (this.game?.player?.mesh?.position && this.game.player.mesh.position.y < -20) {
+      console.log('⚠️ [Level0Controller] Player fell below -20, respawning at initial spawn');
+      this._respawnPlayer(false); // false = not from death
+    }
+    
+    // Check for player death and respawn if needed
+    if (this.game?.player) {
+      const currentHealth = this.game.player.health;
+      
+      // Detect death (health was > 0, now <= 0)
+      if (this.lastPlayerHealth !== null && this.lastPlayerHealth > 0 && currentHealth <= 0) {
+        console.log('💀 [Level0Controller] Player died, respawning at initial spawn');
+        this._respawnPlayer(true); // true = from death
+      }
+      
+      // Update last known health
+      this.lastPlayerHealth = currentHealth;
+    }
+    
     // Check early door triggers (before Richard interaction) - push player back and show message
     if (this._earlyDoorTriggersEnabled && !this.interactionDialogueShown && this.game?.player?.body) {
       const p = this.game.player.body.position; // CANNON.Vec3
@@ -3152,6 +3192,85 @@ export class Level0Controller {
   }
 
   /**
+   * Respawn player at initial spawn position
+   * @param {boolean} fromDeath - true if respawning from death, false if from fall
+   */
+  _respawnPlayer(fromDeath) {
+    if (!this.game?.player) return;
+    
+    console.log(`🔄 [Level0Controller] Respawning player ${fromDeath ? '(from death)' : '(from fall)'}`);
+    
+    // Reset player position to initial spawn
+    if (this.game.player.body) {
+      this.game.player.body.position.set(
+        this.initialSpawnPosition.x,
+        this.initialSpawnPosition.y,
+        this.initialSpawnPosition.z
+      );
+      this.game.player.body.velocity.set(0, 0, 0);
+      this.game.player.body.angularVelocity.set(0, 0, 0);
+    }
+    if (this.game.player.mesh) {
+      this.game.player.mesh.position.copy(this.initialSpawnPosition);
+    }
+    
+    // If respawning from death
+    if (fromDeath) {
+      // Reset player health to max
+      if (this.game.player.maxHealth) {
+        this.game.player.health = this.game.player.maxHealth;
+      } else {
+        this.game.player.health = 100;
+      }
+      
+      // Update HUD if available
+      const hud = this.game?.ui?.get('hud');
+      if (hud && hud.setProps) {
+        hud.setProps({
+          health: this.game.player.health,
+          maxHealth: this.game.player.maxHealth || 100
+        });
+      }
+      
+      // If boss fight was active, reset boss fight state and enable Richard's final interaction
+      if (this.bossFightSystem !== null) {
+        console.log('🔄 [Level0Controller] Resetting boss fight state after death');
+        
+        // Clear boss fight system
+        this.bossFightSystem = null;
+        
+        // Re-enable Richard's final interaction
+        this._finalBinaryChoiceEnabled = true;
+        
+        // Show exclamation mark if Richard exists
+        if (this.richard && this.richard.mesh) {
+          this._showExclamationMark();
+        }
+        
+        // Find and remove/reset boss enemy if it exists
+        if (this.level?.enemyManager) {
+          const bossEnemy = this.level.enemyManager.enemies.find(e => e.enemyType === 'lobber_boss');
+          if (bossEnemy) {
+            // Remove boss enemy or reset it
+            const bossIndex = this.level.enemyManager.enemies.indexOf(bossEnemy);
+            if (bossIndex !== -1) {
+              try {
+                bossEnemy.dispose();
+              } catch (e) {
+                console.warn('⚠️ Error disposing boss enemy:', e);
+              }
+              this.level.enemyManager.enemies.splice(bossIndex, 1);
+            }
+          }
+        }
+      }
+    }
+    
+    // Progress is preserved (nodes, interactions, etc. are not reset)
+    console.log('✅ [Level0Controller] Player respawned, progress preserved');
+  }
+
+  /**
    * Dispose and cleanup
    */
   dispose() {
@@ -3209,6 +3328,12 @@ export class Level0Controller {
         if (child.geometry) child.geometry.dispose();
       });
       this.steveExclamationGroup = null;
+    }
+    
+    // Remove level complete event listener
+    if (this._levelCompleteHandler) {
+      window.removeEventListener('level:complete', this._levelCompleteHandler);
+      this._levelCompleteHandler = null;
     }
     
     // Clean up any timers or pending operations
