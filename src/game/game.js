@@ -2253,7 +2253,8 @@ showMessage(message, duration = 3000) {
   }, duration);
 }
 
-setupGlitchedLevelProgression() {
+
+  () {
   console.log('🔧 Setting up glitched level progression...');
   
   // Listen for collectible pickup events
