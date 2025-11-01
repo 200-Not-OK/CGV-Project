@@ -4,6 +4,8 @@ export const levels = [
     "id": "level1",
     "name": "Level 1",
     "gltfUrl": "assets/levels/revamped/Level1.gltf",
+    "panoramaSky": "assets/skies/Panorama_Sky_14-512x512.png",  // Simple format
+
     "startPosition": [
       0,
       12,
@@ -698,9 +700,9 @@ export const levels = [
           "speed": 10,
           "path": [
             [
-              -259.41,
-              10.11,
-              110.38
+              -223.34,
+              24.44,
+              94.46
             ],
             [
               -387.15,
@@ -1675,6 +1677,7 @@ export const levels = [
     "name": "Level 2: The Serpent's Labyrinth",
     "order": 0,
     "gltfUrl": "assets/levels/Level2/Level2.gltf",
+    "panoramaSky": { "url": "assets/HDR_asteroid_field.hdr", "radius": 1000, "rotation": 0 },
     "startPosition": [
       195,
       6,

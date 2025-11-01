@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows } from './scene.js';
+import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows, loadPanoramaSky } from './scene.js';
 import { InputManager } from './input.js';
 import { Player } from './player.js';
 import { LevelManager } from './levelManager.js';
@@ -69,6 +69,9 @@ export class Game {
 
     // Performance monitoring
     this.performanceMonitor = new PerformanceMonitor();
+    // Debug: center-screen ray probe (to identify unexpected occluders)
+    this._centerProbeEnabled = false;
+    this._centerProbeCooldown = 0;
 
     // Player
     this.player = new Player(this.scene, this.physicsWorld, {
@@ -144,7 +147,7 @@ export class Game {
                 // Play first voiceover with callback to play maze voiceover after
                 this.playVoiceover(voToPlay, 15000, () => {
                   // After levelstart VO finishes, play maze VO (Level 2 only)
-                  if (this.levelManager && this.levelManager.currentIndex === 1) {
+                  if (this.level?.data?.id === 'level2') {
                     console.log('🎤 Levelstart VO finished, playing maze VO next');
                     setTimeout(() => {
                       this.playVoiceover('vo-maze', 12000);
@@ -362,12 +365,16 @@ this.setupLLMTracking();
           this.input.alwaysTrackMouse = true;
           document.body.requestPointerLock();
           this.player.mesh.visible = true;
+          // Safety: outside level3, disable L1/L2 on newly active camera
+          try { if (this.level?.data?.id !== 'level3') { this.activeCamera.layers.disable(1); this.activeCamera.layers.disable(2); } } catch (_) {}
         } else if (this.activeCamera === this.thirdCameraObject) {
           // third -> first
           this.activeCamera = this.firstCameraObject;
           this.input.alwaysTrackMouse = true;
           document.body.requestPointerLock();
           this.player.mesh.visible = false; // hide model in first-person to avoid clipping
+          // Safety: outside level3, disable L1/L2 on newly active camera
+          try { if (this.level?.data?.id !== 'level3') { this.activeCamera.layers.disable(1); this.activeCamera.layers.disable(2); } } catch (_) {}
         } else {
           // first (or other) -> free
           this.freeCam.moveNearPlayer(this.player);
@@ -463,6 +470,11 @@ this.setupLLMTracking();
           console.log('🔊 Playing level2-theme directly');
           this.soundManager.playMusic('level2-theme', 0); // No fade for debugging
         }
+      }
+      // Toggle center probe
+      if (code === 'KeyB') {
+        this._centerProbeEnabled = !this._centerProbeEnabled;
+        console.log(`🔎 Center probe ${this._centerProbeEnabled ? 'ENABLED' : 'DISABLED'}`);
       }
     });
   }
@@ -752,7 +764,7 @@ this.setupLLMTracking();
     this.combatSystem.update(delta);
 
     // Check for final snake remaining (Level 2 only)
-    if (this.levelManager && this.levelManager.currentIndex === 1) { // Level 2
+    if (this.level?.data?.id === 'level2') {
       this.checkFinalSnake();
     }
 
@@ -790,6 +802,144 @@ this.setupLLMTracking();
       this.shaderSystem.update(delta, this.activeCamera, this.scene);
     }
 
+    // Optional: center-screen ray probe once per ~0.5s to find front-most occluder
+    if (this._centerProbeEnabled && this.activeCamera && this.level?.data?.id) {
+      this._centerProbeCooldown -= delta;
+      if (this._centerProbeCooldown <= 0) {
+        this._centerProbeCooldown = 500; // ms
+        try {
+          const ray = new THREE.Raycaster();
+          const origin = new THREE.Vector3();
+          const dir = new THREE.Vector3();
+          origin.copy(this.activeCamera.position);
+          this.activeCamera.getWorldDirection(dir);
+          ray.set(origin, dir);
+          const hits = ray.intersectObjects(this.scene.children, true);
+          const ignore = (obj) => {
+            const n = (obj.name || '').toLowerCase();
+            if (n.includes('sky') || n.includes('cloud')) return true;
+            if (obj.renderOrder !== undefined && obj.renderOrder < 0) return true;
+            return false;
+          };
+          let hit = null;
+          for (const h of hits) { if (!ignore(h.object)) { hit = h; break; } }
+          if (hit) {
+            const mat = hit.object.material;
+            const matName = Array.isArray(mat) ? mat.map((m)=>m && m.type).join(',') : (mat && mat.type);
+            console.log('🎯 Center hit:', {
+              level: this.level.data.id,
+              object: hit.object.name || '(unnamed)',
+              dist: Number(hit.distance.toFixed(2)),
+              layers: hit.object.layers ? hit.object.layers.mask : 'n/a',
+              material: matName
+            });
+          } else {
+            console.log('🎯 Center hit: none');
+          }
+        } catch (e) { /* ignore */ }
+      }
+    }
+
+    // Safety: outside Level 3, ensure the player-only character light never contributes and that
+    // Level 3-specific visuals stay disabled.
+    try {
+      if (this.level?.data?.id !== 'level3') {
+        if (this.player?.characterLight) {
+          this.player.characterLight.visible = false;
+          this.player.characterLight.intensity = 0;
+        }
+        if (this.player?.mesh?.userData?.__toonOutlined) {
+          const toRemove = [];
+          this.player.mesh.traverse((child) => {
+            if (!child) return;
+            if (child.userData && child.userData.__toonOutline) {
+              const om = child.userData.__toonOutline;
+              if (om && om.parent) om.parent.remove(om);
+              child.userData.__toonOutline = null;
+            }
+            if (child.name && typeof child.name === 'string' && child.name.endsWith('_toonOutline')) {
+              toRemove.push(child);
+            }
+          });
+          toRemove.forEach((m) => { if (m.parent) m.parent.remove(m); });
+          delete this.player.mesh.userData.__toonOutlined;
+        }
+        if (this.activeCamera?.layers) {
+          this.activeCamera.layers.disable(1);
+          this.activeCamera.layers.disable(2);
+        }
+      }
+    } catch (_) {}
+    // One-shot logging to identify suspicious black meshes outside Level 3
+    try {
+      if (this.level?.data?.id !== 'level3') {
+        if (!this._nonLevel3EyeLogged) {
+          this._nonLevel3EyeLogged = true;
+          const suspects = [];
+          const tmpSize = new THREE.Vector3();
+          this.scene.traverse((obj) => {
+            if (!obj || !obj.isMesh) return;
+            const lowerName = (obj.name || '').toLowerCase();
+            const matchesName = lowerName.includes('eye') || lowerName.includes('sun');
+            const mat = obj.material;
+            const checkMaterial = (material) => {
+              if (!material) return false;
+              if (material.isMeshBasicMaterial || material.isMeshStandardMaterial || material.isMeshPhongMaterial) {
+                if (!material.color) return false;
+                const c = material.color;
+                const nearlyBlack = c.r < 0.05 && c.g < 0.05 && c.b < 0.05;
+                if (!nearlyBlack) return false;
+                if (material.opacity !== undefined && material.opacity < 0.9) return false;
+                return true;
+              }
+              return false;
+            };
+            const hasBlackMaterial = Array.isArray(mat) ? mat.some(checkMaterial) : checkMaterial(mat);
+            if (!matchesName && !hasBlackMaterial) return;
+            let radius = 0;
+            const scaleMax = obj.scale ? Math.max(obj.scale.x, obj.scale.y, obj.scale.z) : 1;
+            if (obj.geometry) {
+              const geom = obj.geometry;
+              if (!geom.boundingSphere) {
+                try { geom.computeBoundingSphere(); } catch (_) {}
+              }
+              if (geom.boundingSphere && isFinite(geom.boundingSphere.radius)) {
+                radius = Math.max(radius, geom.boundingSphere.radius * scaleMax);
+              }
+              if (!geom.boundingBox) {
+                try { geom.computeBoundingBox(); } catch (_) {}
+              }
+              if (geom.boundingBox) {
+                geom.boundingBox.getSize(tmpSize);
+                radius = Math.max(radius, tmpSize.length() * 0.25 * scaleMax);
+              }
+            }
+            if (radius < 5) return;
+            // Immediately neutralize the suspect outside Level 3
+            try {
+              obj.visible = false;
+              if (obj.layers) { obj.layers.disable(2); obj.layers.disable(1); }
+              if (obj.parent) obj.parent.remove(obj);
+            } catch (_) {}
+            // Collect for log/debug
+            suspects.push({
+              name: obj.name || '(unnamed)',
+              material: Array.isArray(mat) ? mat.map((m) => m?.type || 'Material').join(',') : (mat?.type || 'Material'),
+              layers: obj.layers ? obj.layers.mask : 'n/a',
+              radius: Number(radius.toFixed(2))
+            });
+          });
+          if (suspects.length > 0) {
+            console.log('👁️ Non-Level3 eye suspects', suspects);
+          }
+        }
+      } else {
+        this._nonLevel3EyeLogged = false;
+      }
+    } catch (err) {
+      console.warn('⚠️ Non-level3 eye logging failed:', err);
+    }
+
     // End update timing
     this.performanceMonitor.endUpdate();
 
@@ -806,8 +956,8 @@ this.setupLLMTracking();
 
   // Load level by index and swap UI based on level metadata
   // Load level by index and swap UI based on level metadata
-async loadLevel(index) {
-  if (this.level) this.level.dispose();
+  async loadLevel(index) {
+    if (this.level) this.level.dispose();
 
    if (this.collectiblesManager) {
     this.collectiblesManager.clearPersistentChests();
@@ -817,12 +967,15 @@ async loadLevel(index) {
 
   // Clear existing physics bodies and recreate physics world
   this.physicsWorld.dispose();
-  this.physicsWorld = new PhysicsWorld(this.scene, {
-    useAccurateCollision: false,
-    debugMode: wasDebugEnabled
-  });
+    this.physicsWorld = new PhysicsWorld(this.scene, {
+      useAccurateCollision: false,
+      debugMode: wasDebugEnabled
+    });
 
-  console.log('🚀 Loading level index:', index);
+    // Reset per-level state trackers
+    this._nonLevel3EyeLogged = false;
+
+    console.log('🚀 Loading level index:', index);
   
   // === Get level metadata without constructing it yet ===
   // Read from the level registry directly to avoid constructing the level twice
@@ -831,6 +984,33 @@ async loadLevel(index) {
   
   console.log('📋 Level data loaded:', this.currentLevelId);
   console.log('📍 Computer location in data:', levelData.computerLocation);
+
+  // Set levelId and eye-allow flag ASAP so scene code gates correctly
+  try {
+    if (!this.scene.userData) this.scene.userData = {};
+    this.scene.userData.levelId = this.currentLevelId || null;
+    this.scene.userData.allowSunEye = (this.scene.userData.levelId === 'level3');
+  } catch (_) {}
+
+  // Immediate cleanup: remove any lingering Level 3 sun/eye groups before rendering next frame
+  try {
+    if (this.scene?.userData?.sunEye) {
+      const g = this.scene.userData.sunEye.group;
+      if (g && g.parent) g.parent.remove(g);
+      this.scene.userData.sunEye = null;
+    }
+    const toRemove = [];
+    this.scene.traverse((obj) => { if (obj?.userData?.isSun) toRemove.push(obj); });
+    toRemove.forEach((obj) => { if (obj.parent) obj.parent.remove(obj); });
+    if (this.scene?.userData?.topFillLight) {
+      const l = this.scene.userData.topFillLight; if (l.parent) l.parent.remove(l);
+      this.scene.userData.topFillLight = null;
+    }
+    if (this.scene?.userData?.ambientFill) {
+      const a = this.scene.userData.ambientFill; if (a.parent) a.parent.remove(a);
+      this.scene.userData.ambientFill = null;
+    }
+  } catch (_) { /* non-fatal cleanup */ }
 
   // Update references that depend on physics world
   this.player.physicsWorld = this.physicsWorld;
@@ -850,10 +1030,33 @@ async loadLevel(index) {
   // === Load the level once ===
   this.level = await this.levelManager.loadIndex(index);
 
+  // Store current level id on scene for shader/scoping before applying presets
+  try {
+    if (!this.scene.userData) this.scene.userData = {};
+    this.scene.userData.levelId = this.level?.data?.id || null;
+    // Explicit flag to allow sun eye only in level3
+    this.scene.userData.allowSunEye = (this.scene.userData.levelId === 'level3');
+  } catch (e) { /* ignore */ }
+
   // === COMPUTER SETUP - CALL THIS AFTER LEVEL IS LOADED ===
   if (this.level.data.id === 'level3') {
     console.log('🎯 Setting up computer for level3');
     this.setupComputerTerminal();
+    // TEMP: Completely disable the Level 3 eye to test Level 1 artifacts
+    try {
+      if (this.scene?.userData) {
+        this.scene.userData.allowSunEye = false; // do not allow sun/eye rig
+        // Remove any existing sun/eye groups if present
+        if (this.scene.userData.sunEye && this.scene.userData.sunEye.group) {
+          const g = this.scene.userData.sunEye.group; if (g.parent) g.parent.remove(g);
+        }
+        this.scene.userData.sunEye = null;
+        if (this.scene.userData.sun) { try { if (this.scene.userData.sun.parent) this.scene.remove(this.scene.userData.sun); } catch (_) {} this.scene.userData.sun = null; }
+        if (this.scene.userData.topFillLight) { try { if (this.scene.userData.topFillLight.parent) this.scene.remove(this.scene.userData.topFillLight); } catch (_) {} this.scene.userData.topFillLight = null; }
+        if (this.scene.userData.ambientFill) { try { if (this.scene.userData.ambientFill.parent) this.scene.remove(this.scene.userData.ambientFill); } catch (_) {} this.scene.userData.ambientFill = null; }
+        if (this.scene.userData.sunTarget) { try { if (this.scene.userData.sunTarget.parent) this.scene.remove(this.scene.userData.sunTarget); } catch (_) {} this.scene.userData.sunTarget = null; }
+      }
+    } catch (_) {}
     // Light, complimentary sky for level 3
     try { setSkyPreset(this.scene, this.renderer, 'light'); } catch (e) { console.warn('Sky preset failed', e); }
     // Ensure only the eyeball sun contributes light
@@ -899,6 +1102,8 @@ async loadLevel(index) {
           c.far = FAR_FOR_SKY;
           c.updateProjectionMatrix && c.updateProjectionMatrix();
         }
+        // Do NOT enable layer 2 while the eye is disabled
+        try { c.layers.disable(2); } catch (_) {}
       });
     } catch (e) { console.warn('Failed to extend camera far plane for sky', e); }
     // Apply player outline for toon style if GPU tier allows
@@ -936,8 +1141,121 @@ async loadLevel(index) {
       this.scene.remove(this.computerTerminal.mesh);
       this.computerTerminal = null;
     }
-    // Restore default sky elsewhere
-    try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
+    // Block sun eye usage for non-level3
+    if (this.scene?.userData) this.scene.userData.allowSunEye = false;
+    // Disable layer 1 and 2 on all cameras so any player-only or L3-only artifacts never render
+    try {
+      [this.thirdCameraObject, this.firstCameraObject, this.freeCameraObject].forEach((c)=>{ 
+        if (!c) return; 
+        c.layers.disable(1); // player/self illumination layer
+        c.layers.disable(2); // level-3 eye + fill lights layer
+      });
+    } catch (_) {}
+    // HARD PURGE: remove or hide any lingering Level 3 visuals from the scene graph
+    // Users reported a black circle in Level 1 caused by Level 3 assets leaking through.
+    try {
+      const L2_MASK = (1 << 2);
+      const toRemove = [];
+      this.scene.traverse((obj) => {
+        if (!obj || obj === this.scene) return;
+        // 1) Anything explicitly on layer 2 should not exist outside level 3
+        try {
+          if (obj.layers && (obj.layers.mask & L2_MASK)) {
+            obj.layers.disable(2);
+            // Hide aggressively to ensure no contribution
+            obj.visible = false;
+            // Collect leaf meshes/groups to remove if they are standalone L3 helpers
+            if (!obj.userData || !obj.userData.preserveOutsideLevel3) {
+              toRemove.push(obj);
+            }
+            return;
+          }
+        } catch (_) {}
+        // 2) Name heuristics for Level 3 sun/eye pieces that might not be on layer 2
+        const n = (obj.name || '').toLowerCase();
+        if (n.includes('sun') || n.includes('eye') || n.includes('eyelid') || n.includes('iris') || n.includes('pupil')) {
+          obj.visible = false;
+          if (!obj.userData || !obj.userData.preserveOutsideLevel3) {
+            toRemove.push(obj);
+          }
+        }
+        // 3) Material heuristic: large, opaque, nearly-black basic/standard meshes are likely eyelids
+        try {
+          const mat = obj.material;
+          const isBlackish = (m) => {
+            if (!m || !m.color) return false;
+            const c = m.color; return c.r < 0.05 && c.g < 0.05 && c.b < 0.05 && (m.opacity === undefined || m.opacity > 0.95);
+          };
+          const typeOk = (m) => m && (m.isMeshBasicMaterial || m.isMeshStandardMaterial || m.isMeshPhongMaterial);
+          const nearlyBlack = Array.isArray(mat) ? mat.some((m)=> typeOk(m) && isBlackish(m)) : (typeOk(mat) && isBlackish(mat));
+          if (nearlyBlack) {
+            obj.visible = false;
+            if (!obj.userData || !obj.userData.preserveOutsideLevel3) {
+              toRemove.push(obj);
+            }
+          }
+        } catch (_) {}
+      });
+      // Remove after traversal to avoid disrupting iteration
+      toRemove.forEach((obj) => { try { if (obj.parent) obj.parent.remove(obj); } catch (_) {} });
+    } catch (_) {}
+    // Strip any lingering toon outlines from player (added in level3)
+    try {
+      if (this.player?.mesh) {
+        const toRemove = [];
+        this.player.mesh.traverse((child) => {
+          if (!child) return;
+          if (child.userData && child.userData.__toonOutline) {
+            const om = child.userData.__toonOutline;
+            if (om && om.parent) om.parent.remove(om);
+            child.userData.__toonOutline = null;
+          }
+          if (child.name && typeof child.name === 'string' && child.name.endsWith('_toonOutline')) {
+            toRemove.push(child);
+          }
+        });
+        toRemove.forEach((m) => { if (m.parent) m.parent.remove(m); });
+        if (this.player.mesh.userData && this.player.mesh.userData.__toonOutlined) {
+          delete this.player.mesh.userData.__toonOutlined;
+        }
+      }
+    } catch (_) {}
+    // Restore sky when leaving level3. If the incoming level provides its own
+    // panoramaSky, don't force 'dark' here so the starry sky shows immediately.
+    if (!levelData?.panoramaSky) {
+      try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
+    }
+  }
+
+  // Load panorama sky if specified in level data
+  if (levelData.panoramaSky) {
+    try {
+      let textureUrl;
+      let options = {};
+      
+      if (typeof levelData.panoramaSky === 'string') {
+        // Simple string format: "panoramaSky": "path/to/texture.hdr"
+        textureUrl = levelData.panoramaSky;
+      } else if (typeof levelData.panoramaSky === 'object' && levelData.panoramaSky.url) {
+        // Object format: "panoramaSky": { "url": "path/to/texture.hdr", "radius": 1000, "rotation": 0 }
+        textureUrl = levelData.panoramaSky.url;
+        options = {
+          radius: levelData.panoramaSky.radius,
+          rotation: levelData.panoramaSky.rotation,
+          useAsEnvironment: levelData.panoramaSky.useAsEnvironment
+        };
+      } else {
+        console.warn('⚠️ Invalid panoramaSky format in level data, expected string or object with url property');
+        return;
+      }
+      
+      await loadPanoramaSky(this.scene, this.renderer, textureUrl, options);
+      console.log('✅ Panorama sky loaded for level:', this.currentLevelId);
+    } catch (error) {
+      console.warn('⚠️ Failed to load panorama sky:', error);
+      // Fallback to default sky preset on error
+      try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
+    }
   }
 
   // Position player at start position from level data
@@ -964,7 +1282,7 @@ async loadLevel(index) {
   await this.collectiblesManager.spawnCollectiblesForLevel(this.level.data);
 
   // Doors (Level 2 example)
-  if (index === 1) {
+  if (this.level?.data?.id === 'level2') {
     this.doorManager.spawn('model', {
       position: [25.9, 0, -4.5],
       preset: 'wooden',

@@ -696,7 +696,42 @@ openChest(chestCollectible) {
     
     console.log(`🗑️ Removed chest ${chestCollectible.id} from active tracking (still in persistent tracking)`);
   }, 2000);
+   if (this.game?.level?.data?.id === 'level2') {
+      const allChests = Array.from(this.collectibles.values()).filter(c => c.type === 'chest');
+      const collectedChests = allChests.filter(c => c.collected);
+      const remainingChests = allChests.filter(c => !c.collected);
+
+      // After 3rd chest is opened, play rumbling 5 times
+      if (collectedChests.length === 3 && !this._thirdChestRumblingPlayed) {
+        this._thirdChestRumblingPlayed = true;
+        setTimeout(() => {
+          if (this.game && this.game.soundManager && this.game.soundManager.sfx['rumbling']) {
+            // Play rumbling 5 times with 2 second delay between each
+            let playCount = 0;
+            const playRumbling = () => {
+              if (playCount < 5) {
+                this.game.soundManager.playSFX('rumbling', 0.7);
+                playCount++;
+                setTimeout(playRumbling, 2000); // 2 seconds between each rumble
+              }
+            };
+            playRumbling();
+          }
+        }, 1000);
+      }
+
+      // Last chest - play special voiceover
+      if (remainingChests.length === 0) {
+        setTimeout(() => {
+          if (this.game && this.game.playVoiceover) {
+            this.game.playVoiceover('vo-lastchest', 10000);
+          }
+        }, 1000);
+      }
+    }
 }
+
+
 
 // Add the new event listener for LLM collection
 addEventListener(eventType, callback) {
