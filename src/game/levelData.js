@@ -709,10 +709,10 @@ export const levels = [
     ],
     "ui": [
       "hud",
-      {
+            {
         "type": "minimap",
         "config": {
-          "zoom": 5.0,
+          "zoom": 5,
         }
       },
       {
