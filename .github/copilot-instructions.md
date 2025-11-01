@@ -1,155 +1,91 @@
-# CS Platformer v2 - AI Coding Instructions
+
+# CS Platformer v2 — AI Coding Agent Instructions
 
 ## Architecture Overview
 
-This is a **Three.js-based 3D platformer** with **Cannon.js physics engine**, dual editor system, and modular component architecture. The codebase follows ES6 modules with clear separation between visual rendering (Three.js) and physics simulation (Cannon.js).
+This project is a modular Three.js 3D platformer with Cannon.js physics, dual editor system, and a strong separation between visual and physics layers. Key boundaries:
 
-### Core System Boundaries
+- **Game Core** (`src/game/`): Main loop, player, physics, and state
+- **Physics Layer** (`src/game/physics/PhysicsWorld.js`): Cannon.js world, materials, debug
+- **Visual Layer**: Three.js scene, GLTF loading, rendering
+- **Editor Systems**: In-game (`src/game/editor/`) and standalone (`src/editor/`)
+- **Component Systems**: Enemies, Lights, UI, all with mount/unmount lifecycle
+- **Asset Pipeline**: GLTF models, JSON level data, fallback procedural geometry
+- **Cinematics**: Dialogue/cutscenes via `CinematicsManager`
 
-- **Game Core** (`src/game/`): Main game loop, physics integration, player controls
-- **Physics Layer** (`src/game/physics/PhysicsWorld.js`): Cannon.js physics world with materials and contact handling
-- **Visual Layer**: Three.js scene management, GLTF loading, and rendering
-- **Editor Systems**: Dual editors - in-game (`src/game/editor/`) and standalone (`src/editor/`)
-- **Component Systems**: Enemies, Lights, UI components with mount/unmount lifecycle
-- **Asset Pipeline**: GLTF models, JSON level data, physics body generation
-- **Cinematics System**: Level-specific dialogue and cutscenes via `CinematicsManager`
+## Developer Workflows
 
-## Critical Workflows
+- **Dev server:** `npm run dev` (game at `/`, editor at `/editor.html`)
+- **Build:** `npm run build`  |  **Preview:** `npm run preview`
+- **Physics debug:**
+  - `window.__GAME__` in console for live game instance
+  - `window.togglePhysicsDebug()` or 'L' key for Cannon.js wireframes
+  - `physicsWorld.enableDebugRenderer()` for green wireframes
+- **Editor:** Press 'E' in-game or open `/editor.html` for full editor
 
-### Development Commands
-```bash
-npm run dev      # Vite dev server (localhost:5173 for game, /editor.html for editor)  
-npm run build    # Production build
-npm run preview  # Preview built version
-```
+## Key Patterns & Conventions
 
-### Physics Debugging Patterns
-- `window.__GAME__` exposes game instance to console
-- `window.togglePhysicsDebug()` toggles Cannon.js physics wireframes
-- `physicsWorld.enableDebugRenderer()` shows Cannon.js physics bodies with green wireframes
-- Player physics debugging via extensive console logging in `player.js`
-- Level editor accessible via 'E' key in-game or standalone at `/editor.html`
-- Press 'L' in-game to toggle physics debug visualization
+- **Physics-Visual Separation:** Physics bodies drive visuals. Sync via `mesh.position.copy(body.position)`.
+- **Component Lifecycle:** All major systems (enemies, lights, UI) use `mount(scene)`, `unmount(scene)`, `update(delta)`.
+- **Level Data:** Hybrid GLTF + procedural schema in `src/game/levelData.js`. Fallback objects used if GLTF fails.
+- **Camera Modes:** Third-person (default), first-person, and free camera. Pointer lock managed automatically.
+- **Input:** `InputManager` tracks `keys[e.code]`, pointer lock, and mouse deltas.
+- **Asset Loading:**
+  - **Levels:** Place GLTFs in `public/assets/levels/`. Name collision meshes with "collision" or "collider" for auto-collision.
+  - **Doors:** Modular system in `public/assets/doors/` and `DoorManager.js`. Supports procedural and model-based doors, passcodes, and physics.
+  - **Collectibles:** Place chest GLTFs in `public/assets/collectables/chest/` (animations: "open", "close").
+  - **Enemies:** Place models/animations in `public/assets/enemies/`. See per-enemy README for animation and model specs.
+  - **Audio:** Place music, sfx, ambient in `public/assets/audio/`. Reference in `levelData.js`.
 
-## Key Architectural Patterns
+## Integration Points
 
-### Physics-Visual Separation Pattern
-The architecture maintains strict separation between physics simulation and visual representation:
-```javascript
-// Player class example - physics body drives visual mesh
-export class Player {
-  constructor(scene, physicsWorld) {
-    this.scene = scene;           // Three.js scene
-    this.physicsWorld = physicsWorld; // Cannon.js world
-    this.mesh = new THREE.Group(); // Visual representation
-    this.body = null;             // Physics body (created after model loads)
-  }
-  
-  syncMeshWithBody() {
-    // Copy position from physics to visual
-    this.mesh.position.copy(this.body.position);
-  }
-}
-```
+- **Physics-Movement:** Player uses direct velocity when grounded, forces when airborne.
+- **EnemyManager:** Centralizes enemy updates, async GLTF loading, bbox for collisions.
+- **LightManager:** Instantiates lights from `lights/index.js` per level config.
+- **UIManager:** Mounts/unmounts UI components on level load/unload.
+- **Procedural Fallback:** If GLTF fails, uses `fallbackObjects` from level data.
 
-### Component Lifecycle Pattern
-All game components (lights, enemies, UI) follow mount/unmount pattern:
-```javascript
-// Standard component structure
-export class MyComponent extends ComponentBase {
-  mount(scene) { /* Add to scene */ }
-  unmount(scene) { /* Clean up from scene */ }  
-  update(delta) { /* Per-frame updates */ }
-}
-```
+## Project Structure Highlights
 
-### Physics System Architecture
-- **Cannon.js Physics Engine**: Full rigid body dynamics with materials and contact resolution
-- **Custom Materials**: Ground, player, enemy materials with specific friction/restitution
-- **Model-First Physics**: Physics bodies created after GLTF model loads to match dimensions
-- **Ground Detection**: Contact normal analysis (`contact.ni.y > 0.5`) for reliable ground state
-- **Debug Physics**: Cannon-ES-Debugger integration for wireframe visualization
+- `src/game/enemies/`: Enemy classes (extend `EnemyBase`)
+- `src/game/lights/`: Light components (register in `lights/index.js`)
+- `src/game/components/`: UI (HUD, minimap, etc.)
+- `public/assets/levels/`: Level GLTFs (see README for Blender export/collision naming)
+- `public/assets/doors/`: Modular door system (see README for usage and extension)
+- `public/assets/collectables/chest/`: Chest models (see README for animation names)
+- `public/assets/enemies/`: Enemy models/animations (see README for requirements)
+- `public/assets/audio/`: Music, sfx, ambient (see README for config)
 
-### Level Data Structure
-Levels are stored in `src/game/levelData.js` with hybrid GLTF + procedural schema:
-```javascript
+## Examples
+
+**Level Data Example:**
+```js
 {
-  id: 'level_name',
-  name: 'Display Name',
-  gltfUrl: 'src/assets/levels/level.gltf', // Primary geometry from GLTF
-  startPosition: [x, y, z],
-  lights: ['BasicLights'], // Component names from lights/index.js
-  ui: ['hud'],             // UI component names  
-  enemies: [{ type: 'walker', position: [x,y,z], patrolPoints: [...] }],
-  cinematics: {            // Level-specific cutscenes and dialogue
-    onLevelStart: { type: 'dialogue', character: 'narrator', lines: [...] },
-    onEnemyDefeat: { type: 'cutscene', cameraPath: [...], dialogue: [...] }
-  },
-  fallbackObjects: [       // Procedural geometry if GLTF fails
-    { type: 'box', position: [x,y,z], size: [w,h,d], color: 0xcolor }
-  ]
+  id: 'level1',
+  gltfUrl: 'src/assets/levels/level1.gltf',
+  startPosition: [0,2,0],
+  lights: ['BasicLights'],
+  enemies: [{ type: 'walker', position: [1,0,2] }],
+  fallbackObjects: [ { type: 'box', position: [0,0,0], size: [2,1,2], color: 0x00ff00 } ]
 }
 ```
 
-### Camera System
-Three camera modes with pointer lock integration:
-- **ThirdPersonCamera**: Default, follows player with mouse look
-- **FirstPersonCamera**: FPS view attached to player
-- **FreeCamera**: WASD fly-cam for debugging/editing
+**Door Spawn Example:**
+```js
+doorManager.spawn('model', {
+  position: [5,0,8], width:2, height:4, depth:0.2,
+  modelUrl: 'src/assets/models/door.glb', passcode: '123'
+});
+```
 
-Camera switching automatically handles pointer lock acquisition/release and pause menu transitions.
-
-## Project-Specific Conventions
-
-### File Organization
-- `src/game/enemies/`: Enemy classes extend `EnemyBase` with GLTF model loading
-- `src/game/lights/`: Light components registered in `lights/index.js`
-- `src/game/components/`: UI components for HUD, minimap, objectives
-- Editor tools separated: in-game vs standalone with different capabilities
-
-### Asset Loading Patterns
-- **Level GLTF**: Primary level geometry loaded from `src/assets/levels/` with automatic collision detection
-- **Character GLTF**: Enemy/player models with bbox centering and scaling  
-- **Animations**: Three.js AnimationMixer with named actions (idle, walk, run, attack)
-- **Cinematics**: Level-specific dialogue and cutscenes via `CinematicsManager`
-- **Fallback System**: Procedural geometry when GLTF assets fail to load
-- **Async Level Loading**: `Level.create()` static factory pattern for GLTF + fallback loading
-
-### Input Handling
-`InputManager` class with:
-- Keyboard: `keys[e.code]` boolean tracking
-- Mouse: Automatic pointer lock detection with `mouseDelta` accumulation
-- State management: `enabled` flag for pause/resume scenarios
-
-### Editor Integration
-- **In-game editor**: Toggle with 'E', limited functionality, integrated with game loop
-- **Standalone editor**: Full-featured, independent Three.js scene, extensive UI panel
-- **Level export**: Multiple formats (JSON, levelData.js) with object merging utilities
-- **Pointer Lock Management**: Automatic acquisition for 3rd/1st person, pause menu on Esc
-
-## Critical Integration Points
-
-### Physics-Movement Integration
-Player movement uses hybrid approach based on ground state:
-```javascript
-// Grounded: direct velocity for stable movement
-if (this.isGrounded) {
-  this.body.velocity.x = targetVelX;
-  this.body.velocity.z = targetVelZ;
-} else {
-  // Airborne: forces for realistic physics
-  this.body.applyForce(new CANNON.Vec3(forceX, 0, forceZ), this.body.position);
+**Audio Config Example:**
+```js
+sounds: {
+  music: { 'main-theme': { url: 'src/assets/audio/music/main-theme.mp3', loop: true } },
+  sfx: { 'jump': { url: 'src/assets/audio/sfx/jump.wav', loop: false } },
+  playMusic: 'main-theme'
 }
 ```
 
-### Enemy-Level Communication
-Enemies receive patrol points from level data and register with `EnemyManager` for centralized updates. GLTF model loading is async with bbox calculation for collision setup.
-
-### Light-Scene Integration  
-Lights registered in `lights/index.js` are dynamically instantiated by `LightManager` based on level `lights` array. Custom lighting requires both component creation and registration.
-
-### UI-Game State Binding
-UI components subscribe to game state changes via props system. `UIManager` handles component lifecycle synchronized with level loading/unloading.
-
-### Physics Body Generation
-Level geometry automatically generates physics bodies from GLTF meshes. Fallback procedural objects also create corresponding Cannon.js bodies for collision.
+---
+**For more details, see per-asset README files in `public/assets/` and code comments in `src/game/` modules.**

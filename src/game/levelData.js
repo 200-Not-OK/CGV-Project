@@ -16,9 +16,9 @@ export const levels = [
     ],
     "lights": [
       {
-        "key": "BasicLights",
+        "key": "HubLights",
         "props": {
-          "intensity": 1
+          "intensity": 0.8
         }
       }
     ],
