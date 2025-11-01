@@ -1,0 +1,2756 @@
+[33mcommit a192e1836c506e8183c147d2ab7b76df004f4803[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32m011121[m[33m, [m[1;31morigin/bugfixes[m[33m)[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Sat Nov 1 19:12:43 2025 +0200
+
+    fix: level3 cinematics + HUD/minimap/enemy/player/scene updates
+
+[33mcommit 8c19850ce1bf682dffc01d78ac45591d0a44517e[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: 73164ae 0056a5b
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 20:24:19 2025 +0200
+
+    Merge pull request #72 from 200-Not-OK/Bugfix
+    
+    updated lobber boss collider
+
+[33mcommit 0056a5beca6bae35e3741760ba75e5d11c545ce6[m[33m ([m[1;31morigin/Bugfix[m[33m)[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 20:22:04 2025 +0200
+
+    updated lobber boss collider
+
+[33mcommit 73164aebee00904d28e3218d6785bb76ff8ac639[m
+Merge: 598921b ceb9eda
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 20:13:29 2025 +0200
+
+    Merge pull request #71 from 200-Not-OK/Bugfix
+    
+    Bugfix
+
+[33mcommit ceb9edaadce874570349b3f30304594cea94885e[m
+Merge: 9611bbb 5450614
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 20:12:02 2025 +0200
+
+    Merge branch 'Bugfix' of https://github.com/200-Not-OK/CGV-Project into Bugfix
+    merge
+
+[33mcommit 9611bbb1d88d51758d9bbf0a30e5086818ef0444[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 20:11:34 2025 +0200
+
+    made platform move closer
+
+[33mcommit 54506146f41c259ce9ef41b296154c4a417097fd[m
+Merge: e3cdf05 598921b
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 18:24:07 2025 +0200
+
+    Merge pull request #70 from 200-Not-OK/main
+    
+    Added a skybox loading system
+
+[33mcommit e3cdf054d374da52236b3a2c302f1a6df565ff71[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 18:21:46 2025 +0200
+
+    added sky
+
+[33mcommit 598921b722e3078fda9139da7f268dfe33c36145[m
+Merge: ca6ce86 57b8a4d
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 18:01:21 2025 +0200
+
+    Merge pull request #69 from 200-Not-OK/Bugfix
+    
+    fixed chest bug,and grammer etc
+
+[33mcommit 57b8a4d3d3156e1e0c214a616e4f82cf60122ef1[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 17:57:05 2025 +0200
+
+    fixed chest bug,and grammer etc
+
+[33mcommit ca6ce861e3f97e2a80eccf9822cea9964879697e[m
+Merge: 6ad90a6 8f3935b
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 14:25:12 2025 +0200
+
+    Merge pull request #68 from 200-Not-OK/Bugfix
+    
+    changed level1id
+
+[33mcommit 8f3935b713bf1c63b29a62e9a89aaa3106182bdb[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 14:23:58 2025 +0200
+
+    changed level1id
+
+[33mcommit 6ad90a6c98067733498186c7e7bfa393bd4c9d5b[m
+Merge: 5688c22 001f870
+Author: Arno Strauss <97600416+Stralb@users.noreply.github.com>
+Date:   Fri Oct 31 11:56:09 2025 +0200
+
+    Merge pull request #67 from 200-Not-OK/level3--eye-basic-shading
+    
+    feat level3 eye
+
+[33mcommit 5688c22c34524b5fa1b5ce94657142303d6f0f3e[m
+Merge: 105762d c478522
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 11:00:53 2025 +0200
+
+    Merge pull request #66 from 200-Not-OK/Fixes
+    
+    Fixes
+
+[33mcommit c4785227bf9d3809b561feaa88533b5cb75d5b8c[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 10:44:00 2025 +0200
+
+    hotfix
+
+[33mcommit 45fd53cc37b3f1a97a9e0b92e491cb2aefb746e5[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 10:33:05 2025 +0200
+
+    removed forest from levelData
+
+[33mcommit b534802a161a9e8e495b46f896f5228cf9d8f374[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 10:32:29 2025 +0200
+
+    fixed boss in level1a
+
+[33mcommit 5c606456d742e36da71db9e1fab4ae29ed8f8d45[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 09:05:23 2025 +0200
+
+    fixed jittering to the  best of my ability
+    Change author
+
+[33mcommit f17ad8f8a4eb65beb3bc910e73ffb8df0eee076c[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 08:24:47 2025 +0200
+
+    fixed zoom
+
+[33mcommit 105762d7165d9326ae2e7b222779737739522eaa[m
+Merge: 42e9d54 4da2908
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 10:45:42 2025 +0200
+
+    Merge pull request #65 from 200-Not-OK/Fixes
+    
+    hotfix
+
+[33mcommit 4da2908796ce7e3a96b4b0d7ed83a51b6cab4ca3[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 10:44:00 2025 +0200
+
+    hotfix
+
+[33mcommit 42e9d546eb42c5f7a9582d0c5a38a16acd047578[m
+Merge: e5face1 192ff0b
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 10:40:00 2025 +0200
+
+    Merge pull request #64 from 200-Not-OK/Fixes
+    
+    Fixes
+
+[33mcommit 192ff0b36af21fa2fafb66a69116fb71dcf3856f[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 10:33:05 2025 +0200
+
+    removed forest from levelData
+
+[33mcommit 6076feac8f2658b489ddc79d9b7fac60d1d1feca[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 10:32:29 2025 +0200
+
+    fixed boss in level1a
+
+[33mcommit 001f870fa165a063f7194792ee1c3636e14f060d[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Fri Oct 31 10:12:40 2025 +0200
+
+    feat level3 eye
+
+[33mcommit 49b9b01cc76a3b7917c65ed6bb4a7d472f0d2506[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 09:05:23 2025 +0200
+
+    fixed jittering to the  best of my ability
+
+[33mcommit 3147594198e283bab69eded0f7c72a9d0c4d0e47[m
+Author: Momo3945 <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 08:24:47 2025 +0200
+
+    fixed zoom
+
+[33mcommit e5face130db8adcf5fffb9f175331b04bdb05dcc[m
+Merge: 8554658 61919db
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 03:01:54 2025 +0200
+
+    Merge pull request #63 from 200-Not-OK/level1
+    
+    Level1
+
+[33mcommit 61919dbf1bf313aa01f09ec987bff63a8d9423bb[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 02:59:56 2025 +0200
+
+    fixed cinematic reset bug
+
+[33mcommit 01cbb3b0b318b57d552f0561d0bcb91cbdbae250[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 02:13:47 2025 +0200
+
+    added boss fight
+
+[33mcommit 2d976311f43a190645c6ff6a06929f9b33ba0fa5[m
+Merge: b052d1b 8554658
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 31 02:11:07 2025 +0200
+
+    Merge branch 'main' of https://github.com/200-Not-OK/CGV-Project into level1
+
+[33mcommit 8554658d530894cfafa70c6fb1c30e747435452d[m
+Merge: 381b9ca 69f9de1
+Author: Arno Strauss <97600416+Stralb@users.noreply.github.com>
+Date:   Fri Oct 31 00:20:59 2025 +0200
+
+    Merge pull request #62 from 200-Not-OK/level3--eye-basic-shading
+    
+    Level3  eye basic shading
+
+[33mcommit 69f9de112be648e2eda13fcb92c1bdbc1b3d2454[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Fri Oct 31 00:08:05 2025 +0200
+
+    feat level3 eye
+
+[33mcommit 1334a5a43e43e47e5d4db81504bcc3154b54c518[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 23:39:37 2025 +0200
+
+    feat level3 eye
+
+[33mcommit edf54a13c10925de68c1af3f42726ae6341a1bed[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 23:22:39 2025 +0200
+
+    feat level3 eye
+
+[33mcommit 44fbcec31730a2dfede399ffd6f51a799da5a994[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 23:17:40 2025 +0200
+
+    feat level3 eye
+
+[33mcommit b052d1b2ff8c04d1436449e1fd2037accb78d39c[m
+Merge: 95b22aa 381b9ca
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Thu Oct 30 21:30:53 2025 +0200
+
+    Resolve merge conflicts in src/game/levelData.js: choose consistent PointLight colors/intensities, fix collider_12 block, remove conflict markers.
+
+[33mcommit 9a4c3c2589f9d4a00a9fa9e7d63a859187faf67c[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 21:29:54 2025 +0200
+
+    feat level3 eye
+
+[33mcommit 95b22aa3cd32e3eb8fc809c00a9495532159b27c[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Thu Oct 30 21:23:17 2025 +0200
+
+    added cinematics
+
+[33mcommit 381b9ca519d6ecd6828b6eff7607001de0caae20[m
+Merge: fb69b3d d7c53ea
+Author: Arno Strauss <97600416+Stralb@users.noreply.github.com>
+Date:   Thu Oct 30 18:17:33 2025 +0200
+
+    Merge pull request #61 from 200-Not-OK/feature/gpu-detector-update
+    
+    Feature/gpu detector update
+
+[33mcommit d7c53ea0fb233dad23a25b306e781ac96be15388[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 18:17:04 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit 80fcf03816eddbe360c81abd2e43d45d8bddcb38[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 18:15:32 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit b827756cae9947594dace90bd6f90330c271edc5[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 18:09:21 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit 93b5980adbfc3f057a3d0d54d17214dac3e948c8[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 18:00:24 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit bfad129244d26af68821785317bb9b60270da493[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 17:34:32 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit 1ec9fdb2c97313c9c2987c30d5c69be6186e2113[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 17:29:08 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit fb69b3da5d25b3e4b77ab4a25b3bc9b56cb1e9c7[m
+Merge: bcea3e3 02c1e02
+Author: Rameez <69599800+RameezAtif@users.noreply.github.com>
+Date:   Thu Oct 30 16:40:00 2025 +0200
+
+    Merge pull request #60 from 200-Not-OK/level3-fix
+    
+    Level3 fix
+
+[33mcommit b3cb1bf6cb148ed31b42e4453a74dc897d0a2a63[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 16:38:20 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit 02c1e02126028bf465665e4c999492a1f8e5f429[m
+Merge: 94ab2ba bcea3e3
+Author: Rameez <69599800+RameezAtif@users.noreply.github.com>
+Date:   Thu Oct 30 16:35:56 2025 +0200
+
+    Merge branch 'main' into level3-fix
+
+[33mcommit 94ab2baedeb4e5d77b093a7d17dc089297eedc67[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Thu Oct 30 16:12:38 2025 +0200
+
+    fixed prompt not showing up
+
+[33mcommit 114e1f11db5ae60da6a73827601cd45f4bdb9eb4[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 16:11:38 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit 2b230ef19ac1b1fde9b76018b0205233876bc723[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Thu Oct 30 16:07:06 2025 +0200
+
+    added base glitch levels
+
+[33mcommit bcea3e3e2d23fafeecdd6b55511c0cbeaad0aca2[m
+Merge: 61e60ee 52e6c0b
+Author: Arno Strauss <97600416+Stralb@users.noreply.github.com>
+Date:   Thu Oct 30 13:30:10 2025 +0200
+
+    Merge pull request #59 from 200-Not-OK/feature/gpu-detector-update
+    
+    feat: basic lights for level 1a
+
+[33mcommit 52e6c0bb3377c56d4e37bac7e1593bf7cfd2ba6f[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 13:29:26 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit 61e60ee086b11698c1f560cd4bf14090ca8db8f3[m
+Merge: 4700ffa 0ef7c53
+Author: Arno Strauss <97600416+Stralb@users.noreply.github.com>
+Date:   Thu Oct 30 13:09:13 2025 +0200
+
+    Merge pull request #58 from 200-Not-OK/feature/gpu-detector-update
+    
+    Feature/gpu detector update
+
+[33mcommit e4854b65cae1609d365b72c7ff20429ae8cce825[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Thu Oct 30 10:09:14 2025 +0200
+
+    added collectibles in editor
+
+[33mcommit 0ef7c531be2641c5d0b6f613456dacc0f3ba61cf[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Thu Oct 30 02:19:10 2025 +0200
+
+    feat: basic lights for level 1a
+
+[33mcommit 6450daf9760b0a79aa2b89056ab7f9bdb944fa4d[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Thu Oct 30 01:36:20 2025 +0200
+
+    lift and block system working
+
+[33mcommit de06f277144a42a80142f8ea2bef1700eef803d8[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Wed Oct 29 23:26:19 2025 +0200
+
+    fixed npc movement
+
+[33mcommit 3c479201eea6497e7b32d0b85bd08bd0ae82f665[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Wed Oct 29 22:07:22 2025 +0200
+
+    added new npcs
+
+[33mcommit 57a2bfa06690cf14330df909aa4dbf99b5196e12[m
+Merge: 48842e9 4700ffa
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Wed Oct 29 19:21:49 2025 +0200
+
+    Merge branch 'main' into level3-fix
+
+[33mcommit 48842e9bb7925782c1788f6b0f569eff93a11f27[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Wed Oct 29 19:19:40 2025 +0200
+
+    refined level 3 colliders
+
+[33mcommit 70c6f2ca2d938bc4ad5f358f857aba4572ea6383[m
+Merge: 1472650 178c19d
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Wed Oct 29 18:56:34 2025 +0200
+
+    Merge remote-tracking branch 'origin/level1' into feature/gpu-detector-update
+
+[33mcommit 4700ffa618e9f1bd97ce2c1c07130d7ba4ef290c[m
+Merge: 0f29b33 1472650
+Author: Arno Strauss <97600416+Stralb@users.noreply.github.com>
+Date:   Wed Oct 29 18:34:51 2025 +0200
+
+    Merge pull request #57 from 200-Not-OK/feature/gpu-detector-update
+    
+    feat: light adaptation
+
+[33mcommit 1472650fdaee40024f840bf51d22795b23053922[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Wed Oct 29 18:34:12 2025 +0200
+
+    feat: light adaptation
+
+[33mcommit 178c19d430d6f8673cc61cc81c52a48ab26b5abe[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 29 17:53:01 2025 +0200
+
+    done
+
+[33mcommit 35cb1c5b644568fee01e2f2f42633af5ffa47bd8[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 29 17:41:55 2025 +0200
+
+    setup levelStart
+
+[33mcommit 0f29b3378bb6d4b85012adb1a8ebe8c1f1cc3390[m
+Merge: 2d9bfc4 aaf423c
+Author: Arno Strauss <97600416+Stralb@users.noreply.github.com>
+Date:   Wed Oct 29 15:53:06 2025 +0200
+
+    Merge pull request #56 from 200-Not-OK/feature/gpu-detector-update
+    
+    feat: light adaptation
+
+[33mcommit aaf423ceabfac81081edbbc97f217d4e6812ca9d[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Wed Oct 29 15:52:25 2025 +0200
+
+    feat: light adaptation
+
+[33mcommit 2d9bfc44f063e21d21dbde81558a12d5bf03ffea[m
+Merge: a143576 fd3d315
+Author: Arno Strauss <97600416+Stralb@users.noreply.github.com>
+Date:   Wed Oct 29 14:49:01 2025 +0200
+
+    Merge pull request #55 from 200-Not-OK/feature/gpu-detector-update
+    
+    feat: light adaptation
+
+[33mcommit fd3d315cda9859a197b120bb30c8939388eeb856[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Wed Oct 29 14:45:50 2025 +0200
+
+    feat: light adaptation
+
+[33mcommit 375e8693e749774409c55ac96a517fca462f6728[m
+Merge: 9a2b18b a143576
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 29 14:13:50 2025 +0200
+
+    Merge branch 'main' of https://github.com/200-Not-OK/CGV-Project into level1
+    Merge with main
+
+[33mcommit 9a2b18b256c1a0ea4b169ea39eaf53f4dc817c5f[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 29 14:13:33 2025 +0200
+
+    added point lights
+
+[33mcommit a143576970b9d60bd6a8b12b8ab04a1c1e5ad197[m
+Merge: d22a7fb 489f090
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 29 00:05:58 2025 +0200
+
+    Merge pull request #52 from 200-Not-OK/level1
+    
+    press P for in detail performance metrics
+
+[33mcommit 489f0902c12cbacb72357f22d6abd992bdf1de45[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Tue Oct 28 23:58:33 2025 +0200
+
+    added new level1
+
+[33mcommit 2f6770fa66f0a0e36cee39eeed3144269b5301a8[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Tue Oct 28 00:40:31 2025 +0200
+
+    added a bunch of new mechanics
+
+[33mcommit d22a7fb04a9a6413cf1c58c334ea94532b5947c4[m
+Merge: eb0e618 4ae7ddc
+Author: Rameez <69599800+RameezAtif@users.noreply.github.com>
+Date:   Mon Oct 27 12:40:27 2025 +0200
+
+    Merge pull request #54 from 200-Not-OK/level3-fix
+    
+    added level 3
+
+[33mcommit 4ae7ddc0e1cb7bb8abe174d84d5fc0515163cdb8[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Mon Oct 27 00:39:21 2025 +0200
+
+    added level 3
+
+[33mcommit 040de6658890a08516a56e0d8e2ca987dfd01050[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sun Oct 26 23:30:33 2025 +0200
+
+    press P for in detail performance metrics
+
+[33mcommit eb0e618628084afd3f4c811c61930e9b4e7f9cda[m
+Merge: 163f073 c2d37a1
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sun Oct 26 22:25:12 2025 +0200
+
+    Merge pull request #51 from 200-Not-OK/levelpicker
+    
+    Level 1
+
+[33mcommit c2d37a125e34619b7df0e7bc626ed3d865fcf0e9[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sun Oct 26 22:12:09 2025 +0200
+
+    fixed import errors
+
+[33mcommit b189c68da2ed56d8635f195e3e5e1d9d866edff8[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sun Oct 26 22:11:28 2025 +0200
+
+    update imports
+
+[33mcommit 8b25c4300472ec26f52afa0e7f48aa84f99767e9[m
+Merge: c7823c7 163f073
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sun Oct 26 22:09:59 2025 +0200
+
+    update imports
+
+[33mcommit 163f073f8eedacde51218a50d40b0ba00cd0ff03[m
+Merge: 8150b76 91f6f29
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 01:56:04 2025 +0200
+
+    Merge pull request #50 from 200-Not-OK/road-to-launch
+    
+    moop
+
+[33mcommit 91f6f29d54448a4c379dc2fd5b3a8a7a7a86940e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:55:29 2025 +0200
+
+    moop
+
+[33mcommit 8150b7645c71b0f1d809ad419b78e4027413132b[m
+Merge: 27135ae 961baa6
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 01:51:37 2025 +0200
+
+    Merge pull request #49 from 200-Not-OK/road-to-launch
+    
+    Refactor deployment workflow: remove temporary deploy folder and uplo…
+
+[33mcommit 961baa6c5082aa0863f2d59ff006ac88cf02fa31[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:50:42 2025 +0200
+
+    Refactor deployment workflow: remove temporary deploy folder and upload dist contents directly to LAMP
+
+[33mcommit 27135aeb50431ed08de3d7cf7461ce4e474e6398[m
+Merge: e76471c a0a97f6
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 01:41:19 2025 +0200
+
+    Merge pull request #48 from 200-Not-OK/road-to-launch
+    
+    Refactor deployment workflow: update upload steps to use a temporary …
+
+[33mcommit a0a97f67f34e574ac5e4db6d261dc9e875b38434[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:40:30 2025 +0200
+
+    Refactor deployment workflow: update upload steps to use a temporary deploy folder
+
+[33mcommit e76471c8a308cbfa3406094507b737618bc52595[m
+Merge: 137c5ca ad60930
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 01:31:24 2025 +0200
+
+    Merge pull request #47 from 200-Not-OK/road-to-launch
+    
+    try to remove nested dist
+
+[33mcommit ad60930d38cc15060d62d79b46bfc611741ff3f2[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:31:02 2025 +0200
+
+    try to remove nested dist
+
+[33mcommit 137c5ca2c454731cd8ff67693167b0ce6876a6db[m
+Merge: 8816b41 ef8c10f
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 01:28:07 2025 +0200
+
+    Merge pull request #46 from 200-Not-OK/road-to-launch
+    
+    Refactor deployment workflow: update upload step description and remo…
+
+[33mcommit ef8c10f3ba49e8549329180efdf9c18fe908ff6d[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:27:31 2025 +0200
+
+    Refactor deployment workflow: update upload step description and remove redundant asset upload step
+
+[33mcommit 8816b41db72f64c4077bd9cc7557de233af77a0a[m
+Merge: de4d933 9e79ac0
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 01:21:59 2025 +0200
+
+    Merge pull request #45 from 200-Not-OK/road-to-launch
+    
+    Road to launch
+
+[33mcommit 9e79ac0f59d98238b03084895d0f6c30ce3e116e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:21:09 2025 +0200
+
+    remove asset upload(redundent)
+
+[33mcommit 61bee57d7811e788e7b79a6901b2e552d9dd49b0[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:20:33 2025 +0200
+
+    Refactor deployment workflow to use ssh key
+
+[33mcommit de4d93326019d39ea8ef73770e3e40df6dd95fe0[m
+Merge: 49548e8 d7e68b0
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 01:08:37 2025 +0200
+
+    Merge pull request #44 from 200-Not-OK/road-to-launch
+    
+    Try fix for  Host key verification failed.
+
+[33mcommit d7e68b00d67298acb009b7df95cd50321cd0e4f4[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:07:58 2025 +0200
+
+    Try fix for  Host key verification failed.
+
+[33mcommit 49548e844a2717010e2308f8a8d381c98e43de59[m
+Merge: 7c1e228 303c0d9
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 01:01:14 2025 +0200
+
+    Merge pull request #43 from 200-Not-OK/road-to-launch
+    
+    Update node version in deploy workflow
+
+[33mcommit 303c0d9516733ee7edb9f6305165db07087f9866[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 01:00:36 2025 +0200
+
+    Update node version in deploy workflow
+
+[33mcommit 7c1e228305e8ea1bc950a59078359a1a383d05b3[m
+Merge: 087f5e6 3214bd7
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 25 00:59:04 2025 +0200
+
+    Merge pull request #42 from 200-Not-OK/road-to-launch
+    
+    Road to launch
+
+[33mcommit 3214bd718dfbae969b1e9b6e44a5c947aa238a92[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 00:57:27 2025 +0200
+
+    Add deployment workflow
+
+[33mcommit 128fe0d3d784dbccaedd9e1395a43bff5b4c8404[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 00:44:40 2025 +0200
+
+    Fixed absolute urls
+
+[33mcommit 6cae1c264dbe2e27420ddd60df2c9d4e646974a4[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 25 00:21:29 2025 +0200
+
+    Change most imports
+
+[33mcommit 8073347df2ab7219253113e0fe9a63ebe589b4e2[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 24 23:54:06 2025 +0200
+
+    Move assets to public
+
+[33mcommit 17972903b81262c6efbc5d1d323d5e9190108021[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 24 23:46:25 2025 +0200
+
+    Remove all readmes
+
+[33mcommit c7823c7e8552e4d359fd0eababa1fccd92325a4a[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Thu Oct 23 19:23:37 2025 +0200
+
+    added a boss and adjusted players collider
+
+[33mcommit 0601e485a6bb907ae194e0c7dcf299bc8607325e[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Thu Oct 23 10:28:47 2025 +0200
+
+    added NPC's
+
+[33mcommit bf77b22f725fb004a20e5cfa6fa562babfda6a05[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 22 19:59:50 2025 +0200
+
+    added new boss room
+
+[33mcommit 3abaca59d3718b1e7f784f460c979e7cc4e0090d[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 22 18:08:14 2025 +0200
+
+    added enemy
+
+[33mcommit a3bcadd542030c7986c275e3bb23ab1c3e2392ca[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 22 10:46:20 2025 +0200
+
+    added colliders to level1
+
+[33mcommit fa7d141fd6def7c808eb8983750fd78441ff182f[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Wed Oct 22 10:09:38 2025 +0200
+
+    fixed editor
+
+[33mcommit 3c6a10ba181a17797d1678145fe6cbb3b6c0910d[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Tue Oct 21 23:01:02 2025 +0200
+
+    fixed trimesh bugs and added more colliders
+
+[33mcommit f34724c8475150daaa342911a1d649ee990b6964[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Tue Oct 21 22:19:31 2025 +0200
+
+    made player run much smoother,however still jiterring
+
+[33mcommit fb94c215eec4ac837df472c09e50a12846bf3154[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Tue Oct 21 21:29:30 2025 +0200
+
+    removed visualizer
+
+[33mcommit 7b286f3b80ee641c8c1467486d3c39419d0d4cd4[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Tue Oct 21 17:22:15 2025 +0200
+
+    finally got mesh colliders to work
+
+[33mcommit 087f5e69961548f2725c82e18162f439d1f69839[m
+Merge: 83bfacc 26d33a0
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Sat Oct 11 15:08:29 2025 +0200
+
+    Merge pull request #40 from 200-Not-OK/upgrade
+    
+    adjusted SnakeEnemy attributes: increased attack cooldown and reduced…
+
+[33mcommit 26d33a0fe625c6e2a706fb8b67d17aeef796f845[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Sat Oct 11 15:07:54 2025 +0200
+
+    adjusted SnakeEnemy attributes: increased attack cooldown and reduced damage; updated level data for enemy speed and chase range
+
+[33mcommit 83bfacc31d0379a5dd64da014f7207397476f2d2[m
+Merge: 5553081 7541e94
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Sat Oct 11 14:46:43 2025 +0200
+
+    Merge pull request #39 from 200-Not-OK/fix
+    
+    added @wolffo/three-fire dependency to package.json and package-lock.…
+
+[33mcommit 7541e9410f4762fa9f3c5996d90ebec912e2a98f[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Sat Oct 11 14:46:09 2025 +0200
+
+    added @wolffo/three-fire dependency to package.json and package-lock.json
+
+[33mcommit 55530819818acdc8fa3a4941fe66438913a925df[m
+Merge: 697f3ae 5236e34
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Sat Oct 11 14:28:42 2025 +0200
+
+    Merge pull request #38 from 200-Not-OK/feature/doors-added-level2
+    
+    Feature/doors added level2
+
+[33mcommit 5236e34f7a1fccd95b78bccc89b3a1bdf0531b8d[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Sat Oct 11 01:08:20 2025 +0200
+
+    added initial optimized plant
+
+[33mcommit 169c74dabeea58cbfc5e8d033ac01ff30234bdf8[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Sat Oct 11 01:05:08 2025 +0200
+
+    fixed flames not animating integration bug
+
+[33mcommit 1f58e5f9d249b3ea22dd70e48206ae748fe4d290[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Sat Oct 11 01:00:39 2025 +0200
+
+    added key k skips huzis intro
+
+[33mcommit 00290da59859966ad7cc47475b6b44389862eb7a[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Sat Oct 11 00:53:47 2025 +0200
+
+    fixed lights
+
+[33mcommit 403e79008476849db13acea6bdacb3769e4b3517[m
+Merge: 9d53402 697f3ae
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Sat Oct 11 00:25:41 2025 +0200
+
+    feat integration with dialogue
+
+[33mcommit 697f3ae465aa22b05e986be11e649cea92041c88[m
+Merge: fe09d42 31b9cb9
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Fri Oct 10 22:18:58 2025 +0200
+
+    Merge pull request #37 from 200-Not-OK/revert/rollback-43b2221
+    
+    Revert "Merge pull request #36 from 200-Not-OK/feature-on-main"
+
+[33mcommit 31b9cb97d4f45a14fe136382dff74dc813564598[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Fri Oct 10 22:14:26 2025 +0200
+
+    Revert "Merge pull request #36 from 200-Not-OK/feature-on-main"
+    
+    This reverts commit 43b22215852c57aa2adccf1804fcef8bed64ae02, reversing
+    changes made to c930cfd1d95dcc7896b28ebe9f19d1f8d1550d97.
+
+[33mcommit fe09d42e0dfe9ffecc85037a48aaea189dd99655[m
+Merge: 9fdea0f a09cf39
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Tue Oct 7 14:54:55 2025 +0200
+
+    Merge pull request #36 from 200-Not-OK/feature-on-main
+    
+    feat: apply all changes from feature/doors-added-level2 on top of mai…
+
+[33mcommit a09cf39c0016450d3689eec3a416b58ba11a5a09[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Tue Oct 7 14:47:12 2025 +0200
+
+    feat: apply all changes from feature/doors-added-level2 on top of main (assets excluded)
+
+[33mcommit 9fdea0f2bbd9b88373c771d191aeef994e52a06a[m
+Merge: efafa97 3e8d6a5
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Tue Oct 7 14:30:27 2025 +0200
+
+    Merge pull request #35 from 200-Not-OK/level2-single-file
+    
+    feat(level2): update levelData only
+
+[33mcommit 3e8d6a5a9426e42c06481d293e85e8d5045c21d3[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Tue Oct 7 14:29:51 2025 +0200
+
+    feat(level2): update levelData only
+
+[33mcommit 9d53402a844133fb891ed84f595bb1c724cee1be[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Tue Oct 7 11:33:12 2025 +0200
+
+    Configure Git LFS for large assets like HDR files
+
+[33mcommit cec0789ccfd5630f687da4d0b5712336e26e05b5[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Tue Oct 7 11:24:46 2025 +0200
+
+    feat lights
+
+[33mcommit efafa97fa3f19f3db9a77f73a95d018313e2c667[m
+Merge: ca4de8f a87e2e0
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Tue Oct 7 11:24:34 2025 +0200
+
+    Merge pull request #34 from 200-Not-OK/levelpicker
+    
+    Add level picker and victory flow
+
+[33mcommit a87e2e0bf43e7343a92597bfae8780965381c688[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Tue Oct 7 11:21:43 2025 +0200
+
+    Add level picker and victory flow
+
+[33mcommit f566988ea21698037d7e277ac5cce3e6266ba5bb[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Tue Oct 7 11:10:57 2025 +0200
+
+    Add level picker and victory flow
+
+[33mcommit ca4de8faa3ba47d434c7cc696db3f3f8da2e46e2[m
+Merge: eb0b249 93033cf
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Tue Oct 7 10:07:43 2025 +0200
+
+    Merge pull request #33 from 200-Not-OK/feat/cinematic_intro
+
+[33mcommit 93033cf25072200581acc811c10dde1acaede55d[m
+Author: huziibee <mhbangie@gmail.com>
+Date:   Tue Oct 7 01:36:04 2025 +0200
+
+    cinematic intro added
+
+[33mcommit 0d16c5e92416332d327af44b55558bd902e614c4[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Mon Oct 6 23:57:33 2025 +0200
+
+    feat: merging before final shading
+
+[33mcommit a607b95e152a7c0f728f4d818340c18a281bdc4c[m
+Merge: 7cad9e3 8e3df00
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Mon Oct 6 23:53:40 2025 +0200
+
+    Merge branch 'main' of https://github.com/200-Not-OK/CGV-Project into feature/doors-added-level2
+
+[33mcommit 7cad9e32e9930c101db97ac560811aedfdf16ee2[m
+Merge: 49ac976 079b84e
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Mon Oct 6 23:50:36 2025 +0200
+
+    Merge branch 'Level2' of https://github.com/200-Not-OK/CGV-Project into feature/doors-added-level2
+
+[33mcommit eb0b249b0d5dfbc4298b82868ae723ef6ca795c0[m
+Merge: 3a93186 dc2d871
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Mon Oct 6 22:25:47 2025 +0200
+
+    Merge pull request #32 from 200-Not-OK/miniMap
+    
+    fixed boss bug
+
+[33mcommit 8e3df005820ba60528115d7122d55d4dbde7a3bb[m
+Merge: e8293d5 ce9612c
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Mon Oct 6 22:25:47 2025 +0200
+
+    Merge pull request #32 from 200-Not-OK/miniMap
+    
+    fixed boss bug
+
+[33mcommit dc2d871dfda90db42429b44454666015e75112f0[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Mon Oct 6 21:57:17 2025 +0200
+
+    fixed boss bug
+
+[33mcommit ce9612cef833b5eb20d9562f77763fce7ce05f8d[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Mon Oct 6 21:57:17 2025 +0200
+
+    fixed boss bug
+
+[33mcommit 3a931867005b16cde7a82397aed78d1a3dfcc6f5[m
+Merge: b1788ca 4a6fbd6
+Author: Rameez <69599800+RameezAtif@users.noreply.github.com>
+Date:   Mon Oct 6 16:40:21 2025 +0000
+
+    Merge pull request #31 from 200-Not-OK/bug-fix
+    
+    Bug fixes
+
+[33mcommit e8293d597ff4378887934a168e559bad21a64c78[m
+Merge: a405990 07fad16
+Author: Rameez <69599800+RameezAtif@users.noreply.github.com>
+Date:   Mon Oct 6 16:40:21 2025 +0000
+
+    Merge pull request #31 from 200-Not-OK/bug-fix
+    
+    Bug fixes
+
+[33mcommit b1788ca85ecab8b6c2b38023eb8621be3419aee2[m
+Merge: f93f4d2 0f98cc1
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:51:35 2025 +0200
+
+    Merge pull request #30 from 200-Not-OK/feature/add-snakes
+    
+    feat: added snakes
+
+[33mcommit a4059907aee5b003594e98405b2f2d224c3c0e24[m
+Merge: 447ce89 e135da8
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:51:35 2025 +0200
+
+    Merge pull request #30 from 200-Not-OK/feature/add-snakes
+    
+    feat: added snakes
+
+[33mcommit 0f98cc1668bc620a705ab3f268658e63098277dd[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:51:09 2025 +0200
+
+    feat: added snakes
+
+[33mcommit e135da882dd0740aa3a356848f4f056e52feebd1[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:51:09 2025 +0200
+
+    feat: added snakes
+
+[33mcommit f93f4d2cb410e170907b55c4b818d601ce9e5432[m
+Merge: b38d8cb 18e5da0
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:39:27 2025 +0200
+
+    Merge pull request #29 from 200-Not-OK/feature/sound-design-two
+    
+    feat: sounds
+
+[33mcommit 447ce8921dd61b1c7dca197ac221b4d5f1e0e34e[m
+Merge: d272bca 86da8ec
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:39:27 2025 +0200
+
+    Merge pull request #29 from 200-Not-OK/feature/sound-design-two
+    
+    feat: sounds
+
+[33mcommit 18e5da0ff61764ecfda3ec727b9a1ca496a78a64[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:38:43 2025 +0200
+
+    feat: sounds
+
+[33mcommit 86da8ec9444621604f5aeb0d8d3f563e45ed4e2a[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:38:43 2025 +0200
+
+    feat: sounds
+
+[33mcommit b38d8cb69e6870c316c471b6e19788c80d0d9d02[m
+Merge: 5f0c674 e812255
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:05:02 2025 +0200
+
+    Merge pull request #28 from 200-Not-OK/feature/sound-design
+    
+    Feature/sound design
+
+[33mcommit d272bca511d48a03c1cc00c2f303e7a044a68f2e[m
+Merge: 062e3e9 3a066bf
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:05:02 2025 +0200
+
+    Merge pull request #28 from 200-Not-OK/feature/sound-design
+    
+    Feature/sound design
+
+[33mcommit e8122559a4f9ba62e1e0e5b0eb01acbe13b05ea1[m
+Merge: ee4ca1b 5f0c674
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:04:33 2025 +0200
+
+    Merge branch 'main' into feature/sound-design
+
+[33mcommit 3a066bf66b2b947d2d26c0be51f244d08c1073c3[m
+Merge: a42c58b 062e3e9
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:04:33 2025 +0200
+
+    Merge branch 'main' into feature/sound-design
+
+[33mcommit ee4ca1bd5833417c35d3d90089404703cc81f690[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:01:40 2025 +0200
+
+    feat: more sound
+
+[33mcommit a42c58b9356e14d6fd5073cdd3759bc1fe2777bd[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 13:01:40 2025 +0200
+
+    feat: more sound
+
+[33mcommit d91e84b95e863120bbe510b0e0146dac4f4c0e3f[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 12:17:49 2025 +0200
+
+    feat: voiceovers
+
+[33mcommit 8904fee6751bfcdfb1976a0b08f4b767e7308adf[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Mon Oct 6 12:17:49 2025 +0200
+
+    feat: voiceovers
+
+[33mcommit 53762e45a3d1e7cb3158e6dcbed6d953b5b9ee32[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Sun Oct 5 22:32:12 2025 +0200
+
+    feat: more sounds
+
+[33mcommit 28768791a8aafdaf03ff1e6af6d11574fd9abb4c[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Sun Oct 5 22:32:12 2025 +0200
+
+    feat: more sounds
+
+[33mcommit 4a6fbd6b193ab4c0e8a9ce92f0f7a18575d3838c[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 23:01:35 2025 +0200
+
+    fix: Update material types from 'platform' to 'wall' in level data
+
+[33mcommit 07fad168075620c8bf97a22d5ac48f4fbc8f04eb[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 23:01:35 2025 +0200
+
+    fix: Update material types from 'platform' to 'wall' in level data
+
+[33mcommit 7b21465d1b831e3cc77bcaa13294afb1d8e5085f[m
+Merge: 5f2afd8 5f0c674
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 22:44:31 2025 +0200
+
+    Merge branch 'main' into bug-fix
+
+[33mcommit 862bf1719cf6b0f533720115e60bbbd4309bdd73[m
+Merge: d27a6a0 062e3e9
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 22:44:31 2025 +0200
+
+    Merge branch 'main' into bug-fix
+
+[33mcommit 5f2afd8cd1a278310341564c296b6982110a9ba3[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 22:43:35 2025 +0200
+
+    feat: Add new colliders for props
+
+[33mcommit d27a6a0284549c3c89e27d41fc90dec5f3c5f2f3[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 22:43:35 2025 +0200
+
+    feat: Add new colliders for props
+
+[33mcommit 5f0c6740998e8dbad32b8294d19b606fba0eb861[m
+Merge: ee53c9b b12b25b
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 22:16:42 2025 +0200
+
+    Merge pull request #27 from 200-Not-OK/miniMap
+    
+    Mini map
+
+[33mcommit 062e3e9318f2ec5bf2b13487b088ef69233ac636[m
+Merge: f240f95 855758e
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 22:16:42 2025 +0200
+
+    Merge pull request #27 from 200-Not-OK/miniMap
+    
+    Mini map
+
+[33mcommit 8ba1a24b41152ca95d3d8fc21731a72c33a33262[m
+Merge: 69db586 ee53c9b
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 20:08:59 2025 +0200
+
+    Merge branch 'main' into bug-fix
+
+[33mcommit 698b7b26441a1e519ca30d40c384eb510f467b08[m
+Merge: 3eaab7b f240f95
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 20:08:59 2025 +0200
+
+    Merge branch 'main' into bug-fix
+
+[33mcommit b12b25bb268e05d7c2bebd0064d6a6cfb2f7e7da[m
+Merge: 0817f75 ee53c9b
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 18:53:33 2025 +0200
+
+    Merge branch 'main' into miniMap - resolved player.js conflicts, combined wall sliding and slope handling
+
+[33mcommit 855758e0e1ac1cb37705a70ed1fa009915e9a744[m
+Merge: 66a7161 f240f95
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 18:53:33 2025 +0200
+
+    Merge branch 'main' into miniMap - resolved player.js conflicts, combined wall sliding and slope handling
+
+[33mcommit 69db5865aaaffa600724f6927c8ff2c6dfdc17b8[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 18:53:19 2025 +0200
+
+    fix: update wall collider positions and sizes
+
+[33mcommit 3eaab7b79c2a6e56f1e233e9a1aa5ad1e2997366[m
+Author: Rameez Atif <atiframeez7@gmail.com>
+Date:   Sat Oct 4 18:53:19 2025 +0200
+
+    fix: update wall collider positions and sizes
+
+[33mcommit 0817f7592f4a6c38566ccb9c4e6cbf8613379512[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 18:51:50 2025 +0200
+
+    removed boss
+
+[33mcommit 66a7161767f6855f98e5daee1851d85d83a2cd4c[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 18:51:50 2025 +0200
+
+    removed boss
+
+[33mcommit 590d74c50ba2732f76c9658996124a2299b7972e[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 18:48:29 2025 +0200
+
+    blank
+
+[33mcommit 9ef2bb12853f1e89735d1da6abe2104438f4d0c9[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 18:48:29 2025 +0200
+
+    blank
+
+[33mcommit deb45b0a2275e8ab987b84cd0d11233d86d46190[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Sat Oct 4 18:44:29 2025 +0200
+
+    feat: sound setup
+
+[33mcommit ff8914c62ecc4fae071acde81977298a8f5aeb10[m
+Author: Muaaz Bayat <76963273+MuaazBayat@users.noreply.github.com>
+Date:   Sat Oct 4 18:44:29 2025 +0200
+
+    feat: sound setup
+
+[33mcommit 281565e1b190d90fd76829fdd1fe2bf25790c568[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 18:38:11 2025 +0200
+
+    fixed wall slide bug and added snake boss
+
+[33mcommit 60a5660608aac9829ea77948bec9a09efb537e57[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 18:38:11 2025 +0200
+
+    fixed wall slide bug and added snake boss
+
+[33mcommit ee53c9bcafd5fc9d05c52b7b05e0eb64e3ce13be[m
+Merge: 51c624c 4624dcb
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 4 18:32:50 2025 +0200
+
+    Merge pull request #26 from 200-Not-OK/boss
+    
+    feat: Enhance collider functionality and player physics
+
+[33mcommit f240f95681b8d66f89d94f10366c921ffe03b976[m
+Merge: 6041584 7be29f4
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 4 18:32:50 2025 +0200
+
+    Merge pull request #26 from 200-Not-OK/boss
+    
+    feat: Enhance collider functionality and player physics
+
+[33mcommit 4624dcb67b9d765321c11049b6ec3040977b4095[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 18:32:08 2025 +0200
+
+    feat: Enhance collider functionality and player physics
+    
+    - Added rotation support for colliders in Level class, enabling more complex shapes.
+    - Introduced new colliders in level data with rotation attributes for better gameplay dynamics.
+    - Updated PhysicsWorld to handle rotation for static boxes and spheres, improving physics interactions.
+    - Implemented slope detection in Player class to enhance movement on inclined surfaces.
+    - Adjusted player movement mechanics to apply forces on slopes for better responsiveness and control.
+    - Improved contact material settings for smoother interactions on slopes and reduced friction.
+
+[33mcommit 7be29f44efc19f42b6519aaa92d5515c5bf4daee[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 18:32:08 2025 +0200
+
+    feat: Enhance collider functionality and player physics
+    
+    - Added rotation support for colliders in Level class, enabling more complex shapes.
+    - Introduced new colliders in level data with rotation attributes for better gameplay dynamics.
+    - Updated PhysicsWorld to handle rotation for static boxes and spheres, improving physics interactions.
+    - Implemented slope detection in Player class to enhance movement on inclined surfaces.
+    - Adjusted player movement mechanics to apply forces on slopes for better responsiveness and control.
+    - Improved contact material settings for smoother interactions on slopes and reduced friction.
+
+[33mcommit 51c624c901ead223de10c70232edbf8c70c1643b[m
+Merge: 65dbf35 8b96992
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 4 17:27:01 2025 +0200
+
+    Merge pull request #25 from 200-Not-OK/boss
+    
+    Boss
+
+[33mcommit 6041584861a7f66d01ce481d50fbf3b62a8fa1a3[m
+Merge: 1049416 9f8971f
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 4 17:27:01 2025 +0200
+
+    Merge pull request #25 from 200-Not-OK/boss
+    
+    Boss
+
+[33mcommit 8b969926c931ffd7a127499961fc8d65431a0ead[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 17:25:57 2025 +0200
+
+    Implement player movement locking during chest interactions and add unlock functionality
+
+[33mcommit 9f8971f936cababd8fbbf512937421d96bb7ab96[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 17:25:57 2025 +0200
+
+    Implement player movement locking during chest interactions and add unlock functionality
+
+[33mcommit 94c21da6f52ad8e091e6d0db8e123f899eb93d01[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 17:17:09 2025 +0200
+
+    Fix door panel rotation and collider checks in SnakeBossEnemy for improved interaction and collision alignment
+
+[33mcommit d761a0e446222de999156a964b01e6c24f8a22cf[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 17:17:09 2025 +0200
+
+    Fix door panel rotation and collider checks in SnakeBossEnemy for improved interaction and collision alignment
+
+[33mcommit 77675b32a44f55439d02e2be2084443b6c3ac82c[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 17:08:19 2025 +0200
+
+    added a boss snake
+
+[33mcommit a3d2a63664f3aaa2960ce9b542204cc0a56d625a[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 17:08:19 2025 +0200
+
+    added a boss snake
+
+[33mcommit eb255e0171a79329f4c1221f8add455dcf8b5f40[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 16:53:00 2025 +0200
+
+    Update collectibles management: mark chests as collected, adjust apple and potion checks, and modify level data for apple totals
+
+[33mcommit 6c26284ec06b2173bcf450a172923a32ce6b0b34[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 16:53:00 2025 +0200
+
+    Update collectibles management: mark chests as collected, adjust apple and potion checks, and modify level data for apple totals
+
+[33mcommit 65dbf35d67475769e4bdc9080c0485031a9be603[m
+Merge: 33920c5 de2d3c0
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 16:35:58 2025 +0200
+
+    Merge pull request #24 from 200-Not-OK/miniMap
+    
+    fixed miniMap bug
+
+[33mcommit 1049416a2538924b5df6b99e1712333e891699c2[m
+Merge: 387c6ca e60aa28
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 16:35:58 2025 +0200
+
+    Merge pull request #24 from 200-Not-OK/miniMap
+    
+    fixed miniMap bug
+
+[33mcommit de2d3c00acf460c6aa147f3799e3275bf58f3fd5[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 16:34:34 2025 +0200
+
+    fixed miniMap bug
+
+[33mcommit e60aa28905fa3356fb28b6c256ef4259241d0054[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 16:34:34 2025 +0200
+
+    fixed miniMap bug
+
+[33mcommit 8e3ea150d4ee1796c4ae20a342e8f219794d45a0[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 16:34:24 2025 +0200
+
+    Extend attack range in CombatSystem, add attack target lock in SnakeEnemy, and update level data for health potions and new snake boss
+
+[33mcommit f5593fb297a2e52aeccba82bf18dc24946e9c384[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 16:34:24 2025 +0200
+
+    Extend attack range in CombatSystem, add attack target lock in SnakeEnemy, and update level data for health potions and new snake boss
+
+[33mcommit 98fd5b20ed40d12fe218b353d479ea18940768fb[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 16:03:15 2025 +0200
+
+    Add SnakeBossEnemy to EnemyManager and level data
+
+[33mcommit 2a1c7c218354b19dc05a069c798191022a576ccb[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 16:03:15 2025 +0200
+
+    Add SnakeBossEnemy to EnemyManager and level data
+
+[33mcommit 33920c53f6577e303028b6e053b29dcae62a93e1[m
+Merge: 97bb4cb b263ef6
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Sat Oct 4 14:05:45 2025 +0200
+
+    Merge pull request #23 from 200-Not-OK/wallColiders
+    
+    Wall coliders
+
+[33mcommit 387c6ca2a9a388c6bf8834f5b1188cf85048e281[m
+Merge: 860a496 7edb0d4
+Author: Mohammed Bangie <124780347+huziibee@users.noreply.github.com>
+Date:   Sat Oct 4 14:05:45 2025 +0200
+
+    Merge pull request #23 from 200-Not-OK/wallColiders
+    
+    Wall coliders
+
+[33mcommit b263ef6a59c5a100c53b19ca630705c9d88d2aae[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 14:04:01 2025 +0200
+
+    added minimap to level2
+
+[33mcommit 7edb0d4705d8cbbca98c22cf5f02fc039f20f4a6[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 14:04:01 2025 +0200
+
+    added minimap to level2
+
+[33mcommit 49ac976f98381e4c2e473d72eaa902dd699f7a64[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Sat Oct 4 10:53:27 2025 +0200
+
+    feat: backup for doors
+
+[33mcommit ce6f123a438512bc986571d43e63b7eea5c28ddc[m
+Merge: a3b47ad 97bb4cb
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 10:39:59 2025 +0200
+
+    merge
+
+[33mcommit 70c01ec2ec14a29abee09fd34d46a9b288656cb5[m
+Merge: 28e1b2f 860a496
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 10:39:59 2025 +0200
+
+    merge
+
+[33mcommit a3b47add5a3d41b187072ffd57cd6bb7e30d2b46[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 10:35:22 2025 +0200
+
+    added wall colliders
+
+[33mcommit 28e1b2f0eeafa0c8d45909730a2c60bcf8f7728e[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Sat Oct 4 10:35:22 2025 +0200
+
+    added wall colliders
+
+[33mcommit 97bb4cb05795e99d1c64bd4bf2c8ffa6fdbd355a[m
+Merge: 8b98f01 de029f3
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 4 02:57:58 2025 +0200
+
+    Merge pull request #22 from 200-Not-OK/Level2
+    
+    Level2
+
+[33mcommit 860a496ddac1841a950657b4e4fa52a60eddd9dc[m
+Merge: 697bc8b 079b84e
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Sat Oct 4 02:57:58 2025 +0200
+
+    Merge pull request #22 from 200-Not-OK/Level2
+    
+    Level2
+
+[33mcommit 079b84e46b3f62537bcbf23ecd5695c21a3240e5[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 02:56:54 2025 +0200
+
+    feat: Enhance collectibles and combat mechanics; improve snake enemy behavior and physics stability
+
+[33mcommit de029f3ac45068d6e604f23ee441c041d733d705[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 02:56:54 2025 +0200
+
+    feat: Enhance collectibles and combat mechanics; improve snake enemy behavior and physics stability
+
+[33mcommit 96383f56b50174405f42821f1df94cae41a76792[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 01:36:06 2025 +0200
+
+    feat: Implement CollectiblesManager for spawning and managing collectibles
+    
+    - Added CollectiblesManager class to handle various collectible types including apples, healing potions, and chests.
+    - Implemented methods for spawning collectibles, handling pickups, and managing physics interactions.
+    - Introduced event system for collectible collection notifications.
+    - Added visual and physics components for collectibles, including animations and effects.
+    
+    feat: Create DeathMenu component for player death handling
+    
+    - Developed DeathMenu class to display a menu upon player death.
+    - Included respawn functionality and styled UI elements for better user experience.
+    - Added animations and hover effects for the respawn button.
+    
+    feat: Add InteractionPrompt component for user interaction feedback
+    
+    - Created InteractionPrompt class to show prompts for player interactions.
+    - Implemented pulsing animation and customizable messages for interaction prompts.
+    - Enhanced visibility and accessibility of interaction prompts during gameplay.
+
+[33mcommit fbfca2fb3f98fcb3c6a82d96d8f099678b3ef798[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Sat Oct 4 01:36:06 2025 +0200
+
+    feat: Implement CollectiblesManager for spawning and managing collectibles
+    
+    - Added CollectiblesManager class to handle various collectible types including apples, healing potions, and chests.
+    - Implemented methods for spawning collectibles, handling pickups, and managing physics interactions.
+    - Introduced event system for collectible collection notifications.
+    - Added visual and physics components for collectibles, including animations and effects.
+    
+    feat: Create DeathMenu component for player death handling
+    
+    - Developed DeathMenu class to display a menu upon player death.
+    - Included respawn functionality and styled UI elements for better user experience.
+    - Added animations and hover effects for the respawn button.
+    
+    feat: Add InteractionPrompt component for user interaction feedback
+    
+    - Created InteractionPrompt class to show prompts for player interactions.
+    - Implemented pulsing animation and customizable messages for interaction prompts.
+    - Enhanced visibility and accessibility of interaction prompts during gameplay.
+
+[33mcommit c171455885fd9809b554c4446d62d62dbfc5dfb2[m
+Merge: 7b719dc 8b98f01
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 3 23:14:05 2025 +0200
+
+    Merge branch 'main' of https://github.com/200-Not-OK/CGV-Project into Level2
+    Merge with main.
+
+[33mcommit 8ff4361e7b2ba2d8d0288bc1e4a25fb3a34d9333[m
+Merge: fc99681 697bc8b
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 3 23:14:05 2025 +0200
+
+    Merge branch 'main' of https://github.com/200-Not-OK/CGV-Project into Level2
+    Merge with main.
+
+[33mcommit 7b719dc67ccf18918e700d5135688f74d2788c8a[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 3 23:13:49 2025 +0200
+
+    removed unneeded file
+
+[33mcommit fc996812fecd6c1da48f6db3f1a74092ab9999fd[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 3 23:13:49 2025 +0200
+
+    removed unneeded file
+
+[33mcommit a7cfdf3bb08ded8b9a801019e622bb48d5b9151e[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 3 23:12:57 2025 +0200
+
+    modified levelEditor to work on laptops,and fixed some bugs
+
+[33mcommit 57eb40d6fab71fff3cfe38241e05f9af9b0b0df6[m
+Author: Muhammad Hoosen <125815271+Momo3945@users.noreply.github.com>
+Date:   Fri Oct 3 23:12:57 2025 +0200
+
+    modified levelEditor to work on laptops,and fixed some bugs
+
+[33mcommit 28b6d2d348434958e552043f9ea143dfb2493dba[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Fri Oct 3 20:35:57 2025 +0200
+
+    feat: added doors
+
+[33mcommit a9919ca0b7627058fd89b447ecc7fdea4e999154[m
+Author: Stralb <arnostrauss13@gmail.com>
+Date:   Fri Oct 3 20:35:57 2025 +0200
+
+    feat: added doors
+
+[33mcommit 8b98f01e75fac269bcf4039508ea85c121b939a6[m
+Merge: 018eeaa d547ada
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Fri Oct 3 18:41:24 2025 +0200
+
+    Merge pull request #20 from 200-Not-OK/Level2
+    
+    Level2
+
+[33mcommit 697bc8bb265ec1c69544c0c2a274688a817a3a37[m
+Merge: 6026736 0a886ca
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Fri Oct 3 18:41:24 2025 +0200
+
+    Merge pull request #20 from 200-Not-OK/Level2
+    
+    Level2
+
+[33mcommit 0a886ca5586769de69a71e068e2e9337231de0ec[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 18:40:25 2025 +0200
+
+    Add combat system
+
+[33mcommit d547ada2988d38e8057a37899adfced9eb088563[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 18:40:25 2025 +0200
+
+    Add combat system
+
+[33mcommit 1b47d22796c6f6b7c6ccbd0d1d7d9f00757a274b[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 17:03:06 2025 +0200
+
+    Implement interaction system: add blocking logic, animation handling, and timeout for interactions
+
+[33mcommit caa29b635db5bdec4a6bb4d2545d8fadaf7e07dd[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 17:03:06 2025 +0200
+
+    Implement interaction system: add blocking logic, animation handling, and timeout for interactions
+
+[33mcommit 2d1db1ab3b20f3a5d952cfb2ae6a1ad4dbf4d4a9[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 17:00:42 2025 +0200
+
+    Add combat debug visualization: implement toggle functionality and enhance sword swing attack logic
+
+[33mcommit 02a8324d854502eeaac2411b80cbc0661c2aa113[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 17:00:42 2025 +0200
+
+    Add combat debug visualization: implement toggle functionality and enhance sword swing attack logic
+
+[33mcommit 6817da0786e7925664e1bcf464780720ea01fbc5[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 16:35:00 2025 +0200
+
+    Implement health bar system for enemies: create, update, and manage visibility based on health status
+
+[33mcommit ae9c4f73504342e6c4f54ec2bdb6d31aeecd6236[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 16:35:00 2025 +0200
+
+    Implement health bar system for enemies: create, update, and manage visibility based on health status
+
+[33mcommit 738835f57411ca70fdc6398878cdf1787788e20b[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 16:26:58 2025 +0200
+
+    Add collectibles UI component and integrate into game levels; enhance HUD with modern styling and health management
+
+[33mcommit b2d65b75ddf4cba720218dab8affcac2c8d24f74[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 16:26:58 2025 +0200
+
+    Add collectibles UI component and integrate into game levels; enhance HUD with modern styling and health management
+
+[33mcommit 53c97a172fd145b1eed99695571f027334bedbc1[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 15:57:34 2025 +0200
+
+    Refactor player actions: adjust player speed, add sprint and interact actions, and implement death animation handling
+
+[33mcommit 0942dc0438d23eada71a70f32414f830af4e2b63[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 15:57:34 2025 +0200
+
+    Refactor player actions: adjust player speed, add sprint and interact actions, and implement death animation handling
+
+[33mcommit d10d6705cce6dcdc26d639f97034159af2c3532e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 15:45:33 2025 +0200
+
+    Enhance combat system: update attack logic for third-person aiming, improve attack feedback, and add visual debug ray for better targeting
+
+[33mcommit 14926491384ffffd0954ebbadfe2d41359df5644[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 15:45:33 2025 +0200
+
+    Enhance combat system: update attack logic for third-person aiming, improve attack feedback, and add visual debug ray for better targeting
+
+[33mcommit 4d0cedf3b5e23778c1b10690bd77c97eb9ce76ec[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 15:32:24 2025 +0200
+
+    Remove debug logging from Crosshair and UIManager components for cleaner code
+
+[33mcommit 36c1addc25a7d76876c2ee2b62da385decc69e08[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 15:32:24 2025 +0200
+
+    Remove debug logging from Crosshair and UIManager components for cleaner code
+
+[33mcommit 20e27277ce8b231c99321ae2d4e59af10a601ec3[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 15:29:46 2025 +0200
+
+    Implement combat system and crosshair UI component; enhance player and enemy health management
+
+[33mcommit 1bf5a2acb01627f791aa62131416ae7e4d648252[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 15:29:46 2025 +0200
+
+    Implement combat system and crosshair UI component; enhance player and enemy health management
+
+[33mcommit 219f0844bdc0489c5822b6de7861bbce5da816b3[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 00:26:49 2025 +0200
+
+    Refactor PhysicsWorld and Game.js: remove debug logging and global debug functions for cleaner code
+
+[33mcommit d7374830c4deaec5c968bc9d7bc7dcf8085794b7[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 00:26:49 2025 +0200
+
+    Refactor PhysicsWorld and Game.js: remove debug logging and global debug functions for cleaner code
+
+[33mcommit 3d0371f58870fbfa037761e6381a39e41f383bad[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 00:14:04 2025 +0200
+
+    Enhance player collider functionality: added collider offset options and updated sync logic for mesh and physics body positioning.
+
+[33mcommit 5d250606d8397291239b83174104d7c0b1dfb223[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Oct 3 00:14:04 2025 +0200
+
+    Enhance player collider functionality: added collider offset options and updated sync logic for mesh and physics body positioning.
+
+[33mcommit 1c16926e3a79a4f3e57a150b1c2594e03b7fec76[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Oct 2 22:46:49 2025 +0200
+
+    semi final level2 visuals
+
+[33mcommit 8015503b8e3139fbe8fa46b6fc19fb5bf022cc12[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Oct 2 22:46:49 2025 +0200
+
+    semi final level2 visuals
+
+[33mcommit b2ae198832b2e05de9f27d129e4114169882be90[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Oct 2 21:38:49 2025 +0200
+
+    Level2 v1.0
+
+[33mcommit 322791da4b55ef527a956bbce61a51dcdedb9254[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Oct 2 21:38:49 2025 +0200
+
+    Level2 v1.0
+
+[33mcommit ea3361d720bb5366d5b8341718b4753e0faa4cd6[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Oct 2 19:44:37 2025 +0200
+
+    fix 1 hole in the wall
+
+[33mcommit 1293a72f254e9255a71bd3d02779fec023e80f61[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Oct 2 19:44:37 2025 +0200
+
+    fix 1 hole in the wall
+
+[33mcommit 0d2a757fc13834d62eb4bb8139805ee5eebc6635[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Oct 2 19:37:05 2025 +0200
+
+    updated level 2 map with all walls
+
+[33mcommit 94cc57d7aabaceb32e2280d27f3a5bdb3eb0b556[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Oct 2 19:37:05 2025 +0200
+
+    updated level 2 map with all walls
+
+[33mcommit 5e4009d08e0e1fddbb712fca9d6b1c38b300172e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 22:30:48 2025 +0200
+
+    Refactor level 2 data structure: updated enemy configurations, added colliders, and adjusted start position. Improved formatting for patrol points and fallback objects.
+
+[33mcommit 9d8d1506531d44c8e6c692e5647ea2eceadd88e2[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 22:30:48 2025 +0200
+
+    Refactor level 2 data structure: updated enemy configurations, added colliders, and adjusted start position. Improved formatting for patrol points and fallback objects.
+
+[33mcommit c4cd59e0efb0689855a425dbedf3c44611090551[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 18:23:15 2025 +0200
+
+    Enhance real-time property updates in StandaloneLevelEditor
+    
+    - Added onkeydown, oninput, and onchange event handlers to input fields for speed, chase range, position, rotation, and collider size to enable immediate visual updates as the user types.
+    - Implemented _onPropertyInputChange method to update the visual representation of selected objects in real-time without applying changes to the data arrays.
+    - Introduced _updateColliderVisualSize helper method to update collider geometry dynamically based on user input, ensuring accurate visual representation.
+    - Improved patrol point connection updates when properties are modified.
+
+[33mcommit 67fecbcc2d6b5c30dda274589201db9c11eaca6d[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 18:23:15 2025 +0200
+
+    Enhance real-time property updates in StandaloneLevelEditor
+    
+    - Added onkeydown, oninput, and onchange event handlers to input fields for speed, chase range, position, rotation, and collider size to enable immediate visual updates as the user types.
+    - Implemented _onPropertyInputChange method to update the visual representation of selected objects in real-time without applying changes to the data arrays.
+    - Introduced _updateColliderVisualSize helper method to update collider geometry dynamically based on user input, ensuring accurate visual representation.
+    - Improved patrol point connection updates when properties are modified.
+
+[33mcommit 018eeaa20f80652df97e332970d2bdb0a9c50301[m
+Merge: 4fd26f7 3d862b4
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Wed Oct 1 14:59:38 2025 +0200
+
+    Merge pull request #19 from 200-Not-OK/Level2
+    
+    Level2-Base
+
+[33mcommit 60267362a900511087081aee7d4362d24275ace0[m
+Merge: bd5f265 5e94077
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Wed Oct 1 14:59:38 2025 +0200
+
+    Merge pull request #19 from 200-Not-OK/Level2
+    
+    Level2-Base
+
+[33mcommit 3d862b43042e101fdf3fc59e308c1be0c24ac897[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 14:57:43 2025 +0200
+
+    feat: Enhance enemy wall sliding detection and player collision handling
+
+[33mcommit 5e94077629f57e33aaf98734ecdd7a47d5e58495[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 14:57:43 2025 +0200
+
+    feat: Enhance enemy wall sliding detection and player collision handling
+
+[33mcommit 7b372cbdbf3a45031bf81fdfd8c3944093a9c02b[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 14:35:17 2025 +0200
+
+    refactor: Clean up debug logging and improve collider handling in level loading
+
+[33mcommit 80227a2f6e2cac063c9652c77da4d446fef76873[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 14:35:17 2025 +0200
+
+    refactor: Clean up debug logging and improve collider handling in level loading
+
+[33mcommit 74cabd168b799296b0076478a47084085d89b782[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 13:51:15 2025 +0200
+
+    feat: Implement manual collider system in level editor and game
+    
+    - Added support for manual colliders in level data structure, allowing for precise collision control.
+    - Enhanced Level class to load manual colliders if defined, otherwise fallback to auto-generated colliders.
+    - Introduced new methods in PhysicsWorld for creating static colliders (box, sphere, capsule).
+    - Updated level data to include colliders with properties such as type, position, size, and associated mesh name.
+    - Enhanced editor functionality for selecting meshes and creating/editing colliders with real-time updates.
+    - Improved user interface for collider management, including visual representation and property editing.
+
+[33mcommit fa7c13b0c079cbbe5c80bbc5e39b1eb5e4211b4f[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 13:51:15 2025 +0200
+
+    feat: Implement manual collider system in level editor and game
+    
+    - Added support for manual colliders in level data structure, allowing for precise collision control.
+    - Enhanced Level class to load manual colliders if defined, otherwise fallback to auto-generated colliders.
+    - Introduced new methods in PhysicsWorld for creating static colliders (box, sphere, capsule).
+    - Updated level data to include colliders with properties such as type, position, size, and associated mesh name.
+    - Enhanced editor functionality for selecting meshes and creating/editing colliders with real-time updates.
+    - Improved user interface for collider management, including visual representation and property editing.
+
+[33mcommit 404f9da06320899b01ead17e327e653743056b28[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 13:16:23 2025 +0200
+
+    feat: Implement improved collision detection and wall sliding system
+    
+    - Removed duplicate physics body creation to prevent player falling through meshes.
+    - Enhanced collision detection logic with intelligent type selection based on mesh names.
+    - Defaulted to box collision for better performance, with options for accurate Trimesh collision.
+    - Added debugging commands for collision information and mesh inspection.
+    - Implemented a wall sliding system allowing smooth movement along walls and enemies.
+    - Introduced configurable settings for wall sliding, including smoothness and enable/disable options.
+    - Updated level data paths to match file structure.
+
+[33mcommit 9620975e29db837be6742789cd7e923dbeafca57[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 13:16:23 2025 +0200
+
+    feat: Implement improved collision detection and wall sliding system
+    
+    - Removed duplicate physics body creation to prevent player falling through meshes.
+    - Enhanced collision detection logic with intelligent type selection based on mesh names.
+    - Defaulted to box collision for better performance, with options for accurate Trimesh collision.
+    - Added debugging commands for collision information and mesh inspection.
+    - Implemented a wall sliding system allowing smooth movement along walls and enemies.
+    - Introduced configurable settings for wall sliding, including smoothness and enable/disable options.
+    - Updated level data paths to match file structure.
+
+[33mcommit 4f86b06ff0f11a69ee967132f40e10725684fc44[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 01:02:43 2025 +0200
+
+    Adjust player collider scaling factors for improved collision detection
+
+[33mcommit 01116ae34ea203c2a83386654b7ad3234cac655a[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 01:02:43 2025 +0200
+
+    Adjust player collider scaling factors for improved collision detection
+
+[33mcommit 58ca87c061f071e1ee740bd85de1e9bb3011eb2a[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 00:55:08 2025 +0200
+
+    Add Knight model and texture assets
+    
+    - Added Knight.gltf model file with a size of approximately 2.8 MB.
+    - Added knight_texture.png texture file with a size of approximately 14.2 KB.
+
+[33mcommit b5937d4bce3c64dddfa8bdee441fea94d06b5b16[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 00:55:08 2025 +0200
+
+    Add Knight model and texture assets
+    
+    - Added Knight.gltf model file with a size of approximately 2.8 MB.
+    - Added knight_texture.png texture file with a size of approximately 14.2 KB.
+
+[33mcommit d285b131cca0676a68c4a3eca9f4216de8854e63[m
+Merge: bda8bc0 4fd26f7
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 00:47:07 2025 +0200
+
+    Merge branch 'main' of https://github.com/SufyaanMahomed/cs-platformerTest into Level2
+
+[33mcommit 32e82f8979062e6097e360088caf4593ddac24bf[m
+Merge: 8ad5259 bd5f265
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 00:47:07 2025 +0200
+
+    Merge branch 'main' of https://github.com/SufyaanMahomed/cs-platformerTest into Level2
+
+[33mcommit 4fd26f7741e259cfcb23a5c0709a1daa81b3f7ed[m
+Merge: 4bcedd6 189c448
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Wed Oct 1 00:41:17 2025 +0200
+
+    Merge pull request #17 from 200-Not-OK/feat/new-physics-engine
+    
+    Feat/new physics engine
+
+[33mcommit bd5f2657c30044c7fe10284d438e50f62603d680[m
+Merge: 1d29648 2cd05a9
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Wed Oct 1 00:41:17 2025 +0200
+
+    Merge pull request #17 from 200-Not-OK/feat/new-physics-engine
+    
+    Feat/new physics engine
+
+[33mcommit 189c4489102911faf8d6ba19dabe200678e18bf5[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 00:10:08 2025 +0200
+
+    Refactor enemy physics and collider handling; remove unused collider helper, implement dynamic body creation for enemies, and enhance wall sticking prevention logic. Update level data to include enemy configurations with adjusted speeds.
+
+[33mcommit 2cd05a9881a67a71ab20d2053cc160f03b12ea48[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Oct 1 00:10:08 2025 +0200
+
+    Refactor enemy physics and collider handling; remove unused collider helper, implement dynamic body creation for enemies, and enhance wall sticking prevention logic. Update level data to include enemy configurations with adjusted speeds.
+
+[33mcommit 404113ec7847af2f2a8658ee170aa5385685edda[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 23:39:24 2025 +0200
+
+    Add FPS component and integrate into UI; update level data to include FPS display, enhance UIManager for component management, and implement FPS calculation and display logic.
+
+[33mcommit 45c680670a38c2596212cadd9800ae16f834c022[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 23:39:24 2025 +0200
+
+    Add FPS component and integrate into UI; update level data to include FPS display, enhance UIManager for component management, and implement FPS calculation and display logic.
+
+[33mcommit ca50d553b3d7a457aa1ae0dad2616a4fc5bbea06[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 23:19:46 2025 +0200
+
+    Enhance player collider options and improve physics interactions; added configurable collider scaling factors, implemented wall sticking prevention, and adjusted player movement dynamics for better responsiveness.
+
+[33mcommit 6da127cb0713b50a2d199ac380de23f1d1b6f97d[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 23:19:46 2025 +0200
+
+    Enhance player collider options and improve physics interactions; added configurable collider scaling factors, implemented wall sticking prevention, and adjusted player movement dynamics for better responsiveness.
+
+[33mcommit dffd23dfb7a01f716536308359be660919aa55e3[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 23:03:07 2025 +0200
+
+    Rebuild physics system using Cannon.js; complete rewrite of PhysicsWorld.js, Player.js, and Level.js for improved collision handling and player movement. Added debug tools and optimized performance settings. Removed legacy player code and ensured model-first physics body creation.
+
+[33mcommit 94b1511338dd305852a14a71198a33af5c916387[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 23:03:07 2025 +0200
+
+    Rebuild physics system using Cannon.js; complete rewrite of PhysicsWorld.js, Player.js, and Level.js for improved collision handling and player movement. Added debug tools and optimized performance settings. Removed legacy player code and ensured model-first physics body creation.
+
+[33mcommit a09bde8c7a965b32dfc79808cf7bade272fafb63[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 21:52:52 2025 +0200
+
+    more debug options
+
+[33mcommit a10afaed894443ec7cc9dd446f89da497dfa831a[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 21:52:52 2025 +0200
+
+    more debug options
+
+[33mcommit ce6f274519673b838945b143ae9625abb1b92519[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 21:48:13 2025 +0200
+
+    still minor bounce
+
+[33mcommit 37ab6cec9e1f5c3a92a7bca131a1cc208b23a9f4[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 21:48:13 2025 +0200
+
+    still minor bounce
+
+[33mcommit 2f70057d9f555412b96d0f3ad9b521eff3a71926[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 19:06:23 2025 +0200
+
+    still minor bounce. Added collider debug mode "G"
+
+[33mcommit 1d9c58dae96e80896883e4f3224755c8c52a3b8f[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 19:06:23 2025 +0200
+
+    still minor bounce. Added collider debug mode "G"
+
+[33mcommit 6b222a95a716076735ad920d91351ef39453457c[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 18:21:28 2025 +0200
+
+    No longer falls through mesh
+
+[33mcommit 2b0f9ad3a0103853eda28c1b6a451c3b6945f552[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 18:21:28 2025 +0200
+
+    No longer falls through mesh
+
+[33mcommit 0ecb0a1c217ba2b035e78c2441e7ba8bdc9b7df4[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 18:19:13 2025 +0200
+
+    feat: implement player class with physics, movement, and animation handling
+    
+    - Added Player class to manage player character functionality.
+    - Integrated THREE.js for 3D rendering and CANNON.js for physics simulation.
+    - Implemented model loading using GLTFLoader.
+    - Added movement controls, including sprinting and jumping.
+    - Implemented collision detection and response with platforms.
+    - Added animation handling with AnimationMixer for idle, walk, and jump actions.
+    - Included debugging features for collision visualization and gravity checks.
+    - Provided methods for setting position and collider size.
+    - Implemented resource cleanup on disposal.
+
+[33mcommit 8fb126a81ab8ba2fd5d62f67de77667a2fe8efdc[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 18:19:13 2025 +0200
+
+    feat: implement player class with physics, movement, and animation handling
+    
+    - Added Player class to manage player character functionality.
+    - Integrated THREE.js for 3D rendering and CANNON.js for physics simulation.
+    - Implemented model loading using GLTFLoader.
+    - Added movement controls, including sprinting and jumping.
+    - Implemented collision detection and response with platforms.
+    - Added animation handling with AnimationMixer for idle, walk, and jump actions.
+    - Included debugging features for collision visualization and gravity checks.
+    - Provided methods for setting position and collider size.
+    - Implemented resource cleanup on disposal.
+
+[33mcommit fd1389f36fc3e8a856b8420947e4c181466137da[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 14:31:52 2025 +0200
+
+    feat: integrate cannon-es for physics simulation
+    
+    - Added cannon-es as a dependency for physics handling.
+    - Implemented PhysicsWorld class to manage physics simulation and interactions.
+    - Updated Player, EnemyBase, and enemy classes to utilize physics bodies for movement and collision detection.
+    - Enhanced Game and LevelManager to initialize and manage physics world.
+    - Refactored player and enemy movement logic to apply forces and impulses instead of direct position manipulation.
+    - Added methods for creating static and dynamic physics bodies for players and enemies.
+    - Implemented ground detection and jumping mechanics using raycasting.
+    - Updated level data to include new enemy types and behaviors.
+
+[33mcommit 36101ffa66601b95cb8e9690bc549daf581d5d9b[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 14:31:52 2025 +0200
+
+    feat: integrate cannon-es for physics simulation
+    
+    - Added cannon-es as a dependency for physics handling.
+    - Implemented PhysicsWorld class to manage physics simulation and interactions.
+    - Updated Player, EnemyBase, and enemy classes to utilize physics bodies for movement and collision detection.
+    - Enhanced Game and LevelManager to initialize and manage physics world.
+    - Refactored player and enemy movement logic to apply forces and impulses instead of direct position manipulation.
+    - Added methods for creating static and dynamic physics bodies for players and enemies.
+    - Implemented ground detection and jumping mechanics using raycasting.
+    - Updated level data to include new enemy types and behaviors.
+
+[33mcommit bda8bc084fae853a962bcea15edce37027c5c69f[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 13:02:25 2025 +0200
+
+    Update level 2 mesh
+
+[33mcommit 8ad5259a7fc9a80cfd728031903443daaed00e1c[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 13:02:25 2025 +0200
+
+    Update level 2 mesh
+
+[33mcommit 49581a566a89965f819cdd79833f391a5a2b2e8e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 10:02:42 2025 +0200
+
+    Refactor code structure for improved readability and maintainability
+
+[33mcommit ccb908d0d6f2b4fd7adbce48971feee44c4a9a82[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 10:02:42 2025 +0200
+
+    Refactor code structure for improved readability and maintainability
+
+[33mcommit 90249b66c7df8a9e20aa0ee1d8d28974430331bd[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 10:02:08 2025 +0200
+
+    feat: Add GLTF scene tracking for proper cleanup in Level class
+
+[33mcommit 443c0a3ae1e43ef7a81729317cc75ff2a1db4be1[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 30 10:02:08 2025 +0200
+
+    feat: Add GLTF scene tracking for proper cleanup in Level class
+
+[33mcommit 4bcedd6df0675b85a66bbc1bdcda66b0babcdfcc[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 23:13:32 2025 +0200
+
+    Implement code changes to enhance functionality and improve performance
+
+[33mcommit 1d296480988240a0cbb4aea153916d5ef0c63b08[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 23:13:32 2025 +0200
+
+    Implement code changes to enhance functionality and improve performance
+
+[33mcommit ac07e7da5acd3760b62edae40060be783752625b[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 23:11:58 2025 +0200
+
+    Remove Level Editor functionality from the game
+    
+    - Deleted the LevelEditor class from levelEditor.js, removing all associated functionality for level editing.
+    - Removed instantiation of LevelEditor in game.js, including its initialization and update calls.
+
+[33mcommit efd8baf490909195716cd3f57573869c18479a8e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 23:11:58 2025 +0200
+
+    Remove Level Editor functionality from the game
+    
+    - Deleted the LevelEditor class from levelEditor.js, removing all associated functionality for level editing.
+    - Removed instantiation of LevelEditor in game.js, including its initialization and update calls.
+
+[33mcommit f731ae49afc869e0f374b98003d5f577d5b8a087[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 22:56:06 2025 +0200
+
+    fix: Update editor mode to default to 'select', prevent context menu on UI panel, and invert zoom controls
+
+[33mcommit 3d28095f1373c0ca14a25e519b33b82e16fd510d[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 22:56:06 2025 +0200
+
+    fix: Update editor mode to default to 'select', prevent context menu on UI panel, and invert zoom controls
+
+[33mcommit c3aeb0d20830acefa5203a58f331a9096ca216f6[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 22:51:34 2025 +0200
+
+    Refactor code structure for improved readability and maintainability
+
+[33mcommit 34365eca6c48c883d2678c88bfb1cd0e12d0ad6f[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 22:51:34 2025 +0200
+
+    Refactor code structure for improved readability and maintainability
+
+[33mcommit 4d67e3c3f690ce0987a08a1d4df948e4abc65817[m
+Merge: c315340 3ffdd35
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Fri Sep 26 22:03:37 2025 +0200
+
+    Merge pull request #2 from 200-Not-OK/newLevelSystem
+    
+    New level system
+
+[33mcommit 787418051e8a937147afde3f36fd09ca120a8ac3[m
+Merge: cf71a30 d8a28b6
+Author: SufyaanMahomed <151067964+SufyaanMahomed@users.noreply.github.com>
+Date:   Fri Sep 26 22:03:37 2025 +0200
+
+    Merge pull request #2 from 200-Not-OK/newLevelSystem
+    
+    New level system
+
+[33mcommit 3ffdd35ffaec15a27b5a3ca23e701f81e11c2ddd[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 21:59:28 2025 +0200
+
+    Refactor: Remove unused level backup, simple collision system, and simple slope collider
+    
+    - Deleted `level_backup.js` as it was a redundant backup file.
+    - Removed `simpleCollisionSystem.js` and `simpleSlopeCollider.js` to streamline collision handling.
+    - Updated `player.js` to use the existing collision resolution methods without slope handling.
+    - Adjusted player movement logic to reflect the removal of slope collision handling.
+
+[33mcommit d8a28b6a9df27fd49a3b092c750aa17feeb725dd[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 21:59:28 2025 +0200
+
+    Refactor: Remove unused level backup, simple collision system, and simple slope collider
+    
+    - Deleted `level_backup.js` as it was a redundant backup file.
+    - Removed `simpleCollisionSystem.js` and `simpleSlopeCollider.js` to streamline collision handling.
+    - Updated `player.js` to use the existing collision resolution methods without slope handling.
+    - Adjusted player movement logic to reflect the removal of slope collision handling.
+
+[33mcommit 4bfeba54af82d6e39fce625e4fa5e5b0a5850c45[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 21:46:31 2025 +0200
+
+    Add introLevel.gltf asset with initial scene and collider meshes
+
+[33mcommit c1f5475e818a7e3a449ac224ad0c258e074dcb77[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 21:46:31 2025 +0200
+
+    Add introLevel.gltf asset with initial scene and collider meshes
+
+[33mcommit c5e48612d8e4c37ae1539902a6573989d856ce79[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 20:52:00 2025 +0200
+
+    feat: Revamp level system to support GLTF geometry and cinematics, enhancing storytelling and fallback options
+
+[33mcommit 419702c3c8a5f2e4370524882c9936b7352ce7a1[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 20:52:00 2025 +0200
+
+    feat: Revamp level system to support GLTF geometry and cinematics, enhancing storytelling and fallback options
+
+[33mcommit c31534056f04f80e4c0916f6d5df7dace5562677[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 20:35:15 2025 +0200
+
+    docs: Add AI coding instructions for CS RPG, detailing architecture, workflows, and integration points
+
+[33mcommit cf71a30e8a4cda8b8f83a9fdf14443ac4aea34fd[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 20:35:15 2025 +0200
+
+    docs: Add AI coding instructions for CS RPG, detailing architecture, workflows, and integration points
+
+[33mcommit 66c91d4e4701277149b3a1baae5dcaef97e34e77[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 02:21:18 2025 +0200
+
+    docs: Add comprehensive developer guide for CS Platformer v2, covering setup, architecture, level editing, and advanced features
+
+[33mcommit 404fe0b34413bcca05a7bf134cf118aa502cb566[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 02:21:18 2025 +0200
+
+    docs: Add comprehensive developer guide for CS Platformer v2, covering setup, architecture, level editing, and advanced features
+
+[33mcommit 0824be9009c39982cd78ceb3c8032a3cf0074693[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 00:36:16 2025 +0200
+
+    feat: Improve slope collision handling with enhanced tolerance and smoother transitions
+
+[33mcommit 8080205af82ac3d796a6ec39aba89e277d89ab94[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Fri Sep 26 00:36:16 2025 +0200
+
+    feat: Improve slope collision handling with enhanced tolerance and smoother transitions
+
+[33mcommit 5e84a9df026175daacfb3dcae7639d0800a79700[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 23:50:46 2025 +0200
+
+    feat: Enhance collision system with slope handling and improve player movement resolution
+
+[33mcommit a29d02ef67305ef9958b3b01b5f350cb40b43927[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 23:50:46 2025 +0200
+
+    feat: Enhance collision system with slope handling and improve player movement resolution
+
+[33mcommit dec6c5905692a6922f4a0bc5b123eaa86649bfcf[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 23:21:20 2025 +0200
+
+    Implement Simple Collision System and Simple Slope Collider for enhanced movement and slope handling
+    
+    - Added SimpleCollisionSystem class to manage player movement with collision detection against platforms and slopes.
+    - Implemented horizontal and vertical movement resolution, including ground detection and snapping to ground height.
+    - Introduced SimpleSlopeCollider class to handle slope collision detection using raycasting for accurate surface height retrieval.
+    - Added methods for checking if a player can stand on a slope and if horizontal movement should be blocked by steep slopes.
+
+[33mcommit dd2672eb33a503791796934318150da408b64eba[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 23:21:20 2025 +0200
+
+    Implement Simple Collision System and Simple Slope Collider for enhanced movement and slope handling
+    
+    - Added SimpleCollisionSystem class to manage player movement with collision detection against platforms and slopes.
+    - Implemented horizontal and vertical movement resolution, including ground detection and snapping to ground height.
+    - Introduced SimpleSlopeCollider class to handle slope collision detection using raycasting for accurate surface height retrieval.
+    - Added methods for checking if a player can stand on a slope and if horizontal movement should be blocked by steep slopes.
+
+[33mcommit fc1dbb8f1d3b7df474cbf1340fda0a88a460ac02[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 19:02:45 2025 +0200
+
+    feat: Add slope creation and management features to Standalone Level Editor; include zoom controls and updated camera movement
+
+[33mcommit 9601eedb1bcf89686a8002ebbbc37af79a36de33[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 19:02:45 2025 +0200
+
+    feat: Add slope creation and management features to Standalone Level Editor; include zoom controls and updated camera movement
+
+[33mcommit 238095ee54a241b0ebf44fd71bd1cda36411930e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 18:12:08 2025 +0200
+
+    Add custom level configuration with extensive object placement
+
+[33mcommit 947782e60a8bd4611b0c08989920f2ab06d3826e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 18:12:08 2025 +0200
+
+    Add custom level configuration with extensive object placement
+
+[33mcommit 04acc3743b8ba1214477086cb9ff51c10a13c592[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 15:20:38 2025 +0200
+
+    feat: Enhance Standalone Level Editor with clipboard functionality for copy/paste, improved lighting, and mode shortcuts
+
+[33mcommit a9abb8732079218dbf59e4bf19cf64430fba06f9[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 15:20:38 2025 +0200
+
+    feat: Enhance Standalone Level Editor with clipboard functionality for copy/paste, improved lighting, and mode shortcuts
+
+[33mcommit da86887ec6c2e15fea9f4fae6840a5ea0dafefe9[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 00:35:36 2025 +0200
+
+    feat: Implement standalone Level Editor with full scene management, UI for object creation, and JSON import/export functionality
+
+[33mcommit 74778093d1ebc20519c6d8b41f5d0bac3a441517[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Thu Sep 25 00:35:36 2025 +0200
+
+    feat: Implement standalone Level Editor with full scene management, UI for object creation, and JSON import/export functionality
+
+[33mcommit 8b3596eef8b1cdac17e09961062a629faf164c17[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 23:31:49 2025 +0200
+
+    feat: Update player model and adjust player spawn logic; increase speed and implement delayed positioning based on level data
+
+[33mcommit c4ec329698f65cf6bdf8ce9bafb1a34545ada959[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 23:31:49 2025 +0200
+
+    feat: Update player model and adjust player spawn logic; increase speed and implement delayed positioning based on level data
+
+[33mcommit 1f6514ea66112676b78a6d8ac9b6c61c079b0e47[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 23:11:41 2025 +0200
+
+    feat: Implement modular Level Editor; add UI for editing platforms, enemies, and lights with patrol point management
+
+[33mcommit 40f58f244e02c37ed2aed123a5e9e8d1b09e14d1[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 23:11:41 2025 +0200
+
+    feat: Implement modular Level Editor; add UI for editing platforms, enemies, and lights with patrol point management
+
+[33mcommit 689b4a4b9072ec0debafeeddc245f9a28a4af25c[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 21:13:23 2025 +0200
+
+    feat: Expand enemy types; add RunnerEnemy, JumperEnemy, and FlyerEnemy classes with respective behaviors and level data integration
+
+[33mcommit 325a912b26fbba1fa2be74a6b6c9049b1ec87deb[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 21:13:23 2025 +0200
+
+    feat: Expand enemy types; add RunnerEnemy, JumperEnemy, and FlyerEnemy classes with respective behaviors and level data integration
+
+[33mcommit 1a936dd5ccdb571c0e230fbb40497cd9721470f9[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 21:00:23 2025 +0200
+
+    feat: Add enemy spawning and behavior; implement EnemyManager and WalkerEnemy classes for dynamic gameplay
+
+[33mcommit b5b8469eedca1bf763cf78ab4e02c231abac9ccb[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 21:00:23 2025 +0200
+
+    feat: Add enemy spawning and behavior; implement EnemyManager and WalkerEnemy classes for dynamic gameplay
+
+[33mcommit 2600ce2028de8ee6b032b6fe7d809a8b1bed4b6d[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 19:58:45 2025 +0200
+
+    feat: Implement sprinting functionality; adjust player speed based on Shift key input
+
+[33mcommit e22ec70433ac29e9a4da9e8dece356a3f1756b3e[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 19:58:45 2025 +0200
+
+    feat: Implement sprinting functionality; adjust player speed based on Shift key input
+
+[33mcommit 6cfed4c2ed1a316eafa0790d96b33d3dd677caee[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 02:58:20 2025 +0200
+
+    feat: Enhance collision resolution logic; implement two-phase movement resolver and debug options for improved player control
+
+[33mcommit 4aad561b69931de1ac8a03fae200deca21687cba[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 02:58:20 2025 +0200
+
+    feat: Enhance collision resolution logic; implement two-phase movement resolver and debug options for improved player control
+
+[33mcommit ce59f7620e8d7ee14e40197dfa682d9b7ea0e3c4[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 02:21:49 2025 +0200
+
+    feat: Refactor movement and collision handling; improve horizontal movement resolution and ground detection logic
+
+[33mcommit 9276e0bcd9ee792e2e4c6891464a7309cfb3bd10[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 02:21:49 2025 +0200
+
+    feat: Refactor movement and collision handling; improve horizontal movement resolution and ground detection logic
+
+[33mcommit 65efbde97e2789380651fea76d9b743e96125746[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 02:11:14 2025 +0200
+
+    feat: Add collision debugging tools and movement resolution system; enhance player collider handling and ground snapping logic
+
+[33mcommit 551e872aeb2a4639a65fbbf20f509dfdcc1abcee[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 02:11:14 2025 +0200
+
+    feat: Add collision debugging tools and movement resolution system; enhance player collider handling and ground snapping logic
+
+[33mcommit b9affa4470e28b783138aaaf96a083aee28ae35f[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 00:49:53 2025 +0200
+
+    feat: Implement modular lighting system with LightManager and LightComponent classes; update level data to support dynamic lighting
+
+[33mcommit 5b4f66043d36ddf8b0456422a18230a02a6f9e53[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 00:49:53 2025 +0200
+
+    feat: Implement modular lighting system with LightManager and LightComponent classes; update level data to support dynamic lighting
+
+[33mcommit 5c8fe7dbc9b962ec03cf5c17eedd762fd07a7a64[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 00:32:17 2025 +0200
+
+    feat: Enhance player collider size and snapping logic; update minimap position display to include Y coordinate
+
+[33mcommit 0ea7df28ee43723749a25e6516b16f29013f7328[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Wed Sep 24 00:32:17 2025 +0200
+
+    feat: Enhance player collider size and snapping logic; update minimap position display to include Y coordinate
+
+[33mcommit 295f758e39a40a2507be3250384e95187eb3d121[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 23:40:11 2025 +0200
+
+    feat: Implement horizontal movement smoothing for improved player control
+
+[33mcommit 95caf1b4f25772a44bddfbb26daf6fb1d5a44d8f[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 23:40:11 2025 +0200
+
+    feat: Implement horizontal movement smoothing for improved player control
+
+[33mcommit 81b47556f5ab584807571b9a33c2c2db5822b312[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 23:31:47 2025 +0200
+
+    fix: Improve player ground snapping logic to prevent teleportation and enhance collision handling with platforms
+
+[33mcommit 877081559f3a5740193710e1f34e90ac7726e5aa[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 23:31:47 2025 +0200
+
+    fix: Improve player ground snapping logic to prevent teleportation and enhance collision handling with platforms
+
+[33mcommit c52f203c5b724797b1e97c22a7473abf91845ca9[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 23:24:26 2025 +0200
+
+    feat:Implement modular UI system with HUD, Minimap, Objectives, and SmallMenu components; enhance level data to support dynamic UI loading
+
+[33mcommit eb9dbee81dfdfdbfcaf2d795bd2a46feab8edf24[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 23:24:26 2025 +0200
+
+    feat:Implement modular UI system with HUD, Minimap, Objectives, and SmallMenu components; enhance level data to support dynamic UI loading
+
+[33mcommit 26712eccafbb572bb55307622b750b86c958c526[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 22:39:15 2025 +0200
+
+    feat:Add animations and Refactor code structure for improved readability and maintainability
+
+[33mcommit e7faf140c61767c2bdad8c5d8be763b5ea63629f[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 22:39:15 2025 +0200
+
+    feat:Add animations and Refactor code structure for improved readability and maintainability
+
+[33mcommit e03f0088aa6e746a652ad2981ef2cf3c657dff5b[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 21:55:37 2025 +0200
+
+    Enhance camera input handling: improve pointer lock requests and prevent conflicts with pause menu interactions
+
+[33mcommit 6ad29103c64d24b1422dc8539596256d61ca084b[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 21:55:37 2025 +0200
+
+    Enhance camera input handling: improve pointer lock requests and prevent conflicts with pause menu interactions
+
+[33mcommit 93ad1fc46eed134f62e4ea9a7006ae437b6edfc3[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 21:47:01 2025 +0200
+
+    Implement pause menu and input handling: add pause functionality with UI, camera state management, and input suppression when paused.
+
+[33mcommit 0c1effb147f0161a540e3ef0648367ed3690a5c3[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 21:47:01 2025 +0200
+
+    Implement pause menu and input handling: add pause functionality with UI, camera state management, and input suppression when paused.
+
+[33mcommit 9d68bfc61a770b1b1c1b182fd25a93a7f9b7701b[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 21:14:17 2025 +0200
+
+    Add first-person camera implementation and integrate with game: enable camera switching and visibility management for player model.
+
+[33mcommit ea3177b97476e95eea321c82978038f1e2c48566[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 21:14:17 2025 +0200
+
+    Add first-person camera implementation and integrate with game: enable camera switching and visibility management for player model.
+
+[33mcommit d77676d361804ac7ed4b07e9e70e18e859c4dac9[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 21:04:11 2025 +0200
+
+    Enhance player rotation and collider helper: add yaw offset and smooth rotation to align with camera; update helper to support rotation.
+
+[33mcommit 040d41a15150653ac39e235390dfb7ce01755439[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 21:04:11 2025 +0200
+
+    Enhance player rotation and collider helper: add yaw offset and smooth rotation to align with camera; update helper to support rotation.
+
+[33mcommit e61265ca00d33fc8b206c76761e12dc568d3f9cd[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 19:23:20 2025 +0200
+
+    Refactor camera initialization and player positioning; enhance player ground snapping logic
+
+[33mcommit 67aaef23971d8c60392a4ad063dd7f4869cf0f11[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 19:23:20 2025 +0200
+
+    Refactor camera initialization and player positioning; enhance player ground snapping logic
+
+[33mcommit 2f71749c432e89a1525b1983687fcf816bc866fd[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 17:11:42 2025 +0200
+
+    Add GLTF model loading functionality to Player class and create utility for loading GLTF models
+
+[33mcommit 586f66c2d0942d2e6cd1b65a17113205f095fa23[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 17:11:42 2025 +0200
+
+    Add GLTF model loading functionality to Player class and create utility for loading GLTF models
+
+[33mcommit cdf16c345b7e9439de8464e1b42c2b9b121086af[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 17:04:43 2025 +0200
+
+    Add low poly scout girl apocalypse model and texture
+    
+    - Added GLTF model file for the low poly scout girl apocalypse character, including accessors, animations, materials, and nodes.
+    - Included base color texture image for the model.
+
+[33mcommit fdde3a9130bac7d36e58bed74b8822ae35013eba[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 17:04:43 2025 +0200
+
+    Add low poly scout girl apocalypse model and texture
+    
+    - Added GLTF model file for the low poly scout girl apocalypse character, including accessors, animations, materials, and nodes.
+    - Included base color texture image for the model.
+
+[33mcommit 06d7ef3c37efad9d2c00f01068de8d9a1db03966[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 16:14:54 2025 +0200
+
+    Enhance camera and input management: enable alwaysTrackMouse for third-person camera, adjust player update method to include active state, and simplify third-person camera rotation logic.
+
+[33mcommit 5c1ee6194f68be14048caa2e502786f752804213[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 16:14:54 2025 +0200
+
+    Enhance camera and input management: enable alwaysTrackMouse for third-person camera, adjust player update method to include active state, and simplify third-person camera rotation logic.
+
+[33mcommit f4afedf6bb957ab98dcc7c109e6f299cc4b2cd4d[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 15:59:40 2025 +0200
+
+    first commit
+
+[33mcommit ccb670ae9b79971eb90ab243e36742cedc6f8b84[m
+Author: SufyaanMahomed <sufyaan.mahomed77@gmail.com>
+Date:   Tue Sep 23 15:59:40 2025 +0200
+
+    first commit

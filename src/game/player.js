@@ -9,6 +9,7 @@ export class Player {
     this.physicsWorld = physicsWorld;
     this.game = game;
     
+    
     // Player settings
     this.speed = options.speed ?? 8;
   this.jumpStrength = options.jumpStrength ?? 24; // Increased further for higher platformer-style jumps
@@ -75,6 +76,9 @@ export class Player {
     this.rotationSyncStrength = 0.1;   // Rotation slerp blending (0-1, lower = smoother)
     
     // Combat system
+    // ↓ Add this in the constructor after health setup
+    this.alive = true; // single-shot death guard
+
     this.maxHealth = 100;
     this.health = this.maxHealth;
     this.isAttacking = false;
@@ -660,9 +664,13 @@ export class Player {
       }
     }
 
-    if (this.health <= 0) {
-      this.onDeath();
+    if (this.health <= 0 && this.alive) {
+      this.alive = false;              // guard: only trigger once
+      this.onDeath();                  // play anim etc.
+      // Tell the game a death happened
+      try { window.dispatchEvent(new Event('player:death')); } catch (e) {}
     }
+
 
     return this.health;
   }
@@ -675,10 +683,12 @@ export class Player {
 
   onDeath() {
     console.log('💀 Player has died!');
+    // this.lockMovement?.('Death');
     // Play death animation if available
     if (this.actions.death) {
       this.playAction(this.actions.death, 0.2, false);
     }
+    
     // Can trigger game over, respawn, etc.
   }
 
