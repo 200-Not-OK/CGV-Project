@@ -28,21 +28,21 @@ export const levels = [
           "id": "trigger_level1",
           "position": [-1.5, 1.21, 28.5],
           "radius": 3,
-          "poiText": "⚡ Level 1",
+          "poiText": "Level 1",
           "targetLevel": "level1"
         },
         {
           "id": "trigger_level2",
           "position": [20.25, 1.21, 8.25],
           "radius": 3,
-          "poiText": "🐍 Level 2",
+          "poiText": "Level 2",
           "targetLevel": "level2"
         },
         {
           "id": "trigger_level3",
           "position": [-22.75, 1.21, 7.5],
           "radius": 3,
-          "poiText": "🏰 Level 3",
+          "poiText": "Level 3",
           "targetLevel": "level3"
         }
       ]
@@ -57,18 +57,6 @@ export const levels = [
       "sfx": {
         "sword": {
           "url": "assets/audio/sfx/sword.mp3",
-          "loop": false
-        },
-        "chest": {
-          "url": "assets/audio/sfx/chest_open.mp3",
-          "loop": false
-        },
-        "snake": {
-          "url": "assets/audio/sfx/snake.wav",
-          "loop": false
-        },
-        "potion": {
-          "url": "assets/audio/sfx/potion.wav",
           "loop": false
         },
         "walk": {
