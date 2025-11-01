@@ -2562,9 +2562,20 @@ setupGlitchedLevelProgression() {
     }
   });
   
-  console.log('✅ Glitched level progression setup complete');
+  if (allCollected) {
+    console.log('✅ All chests collected in glitched level!');
+    
+    // Mark this glitched level as completed
+    this.glitchManager.completeGlitchedLevel(this.currentLevelId);
+    
+    // Show completion message
+    this.showMessage(`Glitched level completed! Returning to Level 3.`);
+
+    // Wait 2 seconds, then automatically return to Level 3
+    setTimeout(() => {
+      this.loadLevelByName('level3');
+    }, 2000); //comeback
+  }
 }
-
-
 
 }
