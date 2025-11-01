@@ -21,15 +21,15 @@ export class StandaloneLevelEditor {
     this.levelGeometry = new THREE.Group(); // Holds GLTF geometry
     this.scene.add(this.levelGeometry);
 //collectibles
-    this.collectibleTypes = ["apple", "potion", "coin", "gem", "key"];
+    this.collectibleTypes = ["apple", "potion","llm_gpt", "llm_claude", "llm_gemini"];
     this.collectibleMeshes = []; // Visual representations
     this.collectibles = {
       chests: [],
       apples: [],
       potions: [],
-      coins: [],
-      gems: [],
-      keys: [],
+      llm_gpt: [],
+      llm_claude: [],
+      llm_gemini: [],
     };
 
     // Data storage (current level's editable data)
@@ -1979,7 +1979,8 @@ if (addCollectibleBtn) {
         </div>
       </div>
 
-      <div id="collectible-controls" style="display: ${this.mode === 'collectible' ? 'block' : 'none'};">
+     // In the collectible controls section, replace with:
+<div id="collectible-controls" style="display: ${this.mode === 'collectible' ? 'block' : 'none'};">
   <h4>Collectibles Controls</h4>
   
   <label>Collectible Type:</label><br>
@@ -1987,9 +1988,9 @@ if (addCollectibleBtn) {
     <option value="chest">Chest</option>
     <option value="apple">Apple</option>
     <option value="potion">Healing Potion</option>
-    <option value="coin">Coin</option>
-    <option value="gem">Gem</option>
-    <option value="key">Key</option>
+    <option value="llm_gpt">LLM GPT</option>
+    <option value="llm_claude">LLM Claude</option>
+    <option value="llm_gemini">LLM Gemini</option>
   </select>
   
   <div id="chest-contents" style="margin-bottom: 10px;">
@@ -1997,9 +1998,9 @@ if (addCollectibleBtn) {
     <select id="chest-contents-type" style="width: 100%; padding: 5px;">
       <option value="apple">Apple</option>
       <option value="potion">Healing Potion</option>
-      <option value="coin">Coin</option>
-      <option value="gem">Gem</option>
-      <option value="key">Key</option>
+      <option value="llm_gpt">LLM GPT</option>
+      <option value="llm_claude">LLM Claude</option>
+      <option value="llm_gemini">LLM Gemini</option>
     </select>
   </div>
   
@@ -2011,9 +2012,9 @@ if (addCollectibleBtn) {
       <div>📦 Chests: ${this.collectibles.chests.length}</div>
       <div>🍎 Apples: ${this.collectibles.apples.length}</div>
       <div>🧪 Potions: ${this.collectibles.potions.length}</div>
-      <div>🪙 Coins: ${this.collectibles.coins.length}</div>
-      <div>💎 Gems: ${this.collectibles.gems.length}</div>
-      <div>🔑 Keys: ${this.collectibles.keys.length}</div>
+      <div>🤖 LLM GPT: ${this.collectibles.llm_gpt.length}</div>
+      <div>🤖 LLM Claude: ${this.collectibles.llm_claude.length}</div>
+      <div>🤖 LLM Gemini: ${this.collectibles.llm_gemini.length}</div>
     </div>
   </div>
   
@@ -3468,35 +3469,35 @@ _getCollectiblesListHTML() {
     `;
   });
   
-  // Coins
-  this.collectibles.coins.forEach((coin, index) => {
+  // LLM GPT (no visuals, but still in list)
+  this.collectibles.llm_gpt.forEach((llm, index) => {
     html += `
-      <div class="item-row" data-type="coin" data-index="${index}">
-        <strong>🪙 Coin</strong><br>
-        at [${coin.position.join(', ')}]
-        <button onclick="window.editor._deleteCollectible('coin', ${index})">Delete</button>
+      <div class="item-row" data-type="llm_gpt" data-index="${index}">
+        <strong>🤖 LLM GPT</strong> (invisible)<br>
+        at [${llm.position.join(', ')}]
+        <button onclick="window.editor._deleteCollectible('llm_gpt', ${index})">Delete</button>
       </div>
     `;
   });
   
-  // Gems
-  this.collectibles.gems.forEach((gem, index) => {
+  // LLM Claude (no visuals, but still in list)
+  this.collectibles.llm_claude.forEach((llm, index) => {
     html += `
-      <div class="item-row" data-type="gem" data-index="${index}">
-        <strong>💎 Gem</strong><br>
-        at [${gem.position.join(', ')}]
-        <button onclick="window.editor._deleteCollectible('gem', ${index})">Delete</button>
+      <div class="item-row" data-type="llm_claude" data-index="${index}">
+        <strong>🤖 LLM Claude</strong> (invisible)<br>
+        at [${llm.position.join(', ')}]
+        <button onclick="window.editor._deleteCollectible('llm_claude', ${index})">Delete</button>
       </div>
     `;
   });
   
-  // Keys
-  this.collectibles.keys.forEach((key, index) => {
+  // LLM Gemini (no visuals, but still in list)
+  this.collectibles.llm_gemini.forEach((llm, index) => {
     html += `
-      <div class="item-row" data-type="key" data-index="${index}">
-        <strong>🔑 Key</strong><br>
-        at [${key.position.join(', ')}]
-        <button onclick="window.editor._deleteCollectible('key', ${index})">Delete</button>
+      <div class="item-row" data-type="llm_gemini" data-index="${index}">
+        <strong>🤖 LLM Gemini</strong> (invisible)<br>
+        at [${llm.position.join(', ')}]
+        <button onclick="window.editor._deleteCollectible('llm_gemini', ${index})">Delete</button>
       </div>
     `;
   });
@@ -3516,13 +3517,12 @@ _createCollectibleVisuals() {
   });
   this.collectibleMeshes = [];
   
-  // Create visuals for each collectible type
+  // Create visuals only for chests, apples, and potions (skip LLMs)
   this._createChestVisuals();
   this._createAppleVisuals();
   this._createPotionVisuals();
-  this._createCoinVisuals();
-  this._createGemVisuals();
-  this._createKeyVisuals();
+  
+  // Note: LLMs don't have visuals, they're invisible collectibles
 }
 
 /**
@@ -3800,9 +3800,9 @@ _loadCollectibles() {
       chests: [...(this.currentLevel.collectibles.chests || [])],
       apples: [...(this.currentLevel.collectibles.apples || [])],
       potions: [...(this.currentLevel.collectibles.potions || [])],
-      coins: [...(this.currentLevel.collectibles.coins || [])],
-      gems: [...(this.currentLevel.collectibles.gems || [])],
-      keys: [...(this.currentLevel.collectibles.keys || [])]
+      llm_gpt: [...(this.currentLevel.collectibles.llm_gpt || [])],
+      llm_claude: [...(this.currentLevel.collectibles.llm_claude || [])],
+      llm_gemini: [...(this.currentLevel.collectibles.llm_gemini || [])]
     };
     this._createCollectibleVisuals();
   }
