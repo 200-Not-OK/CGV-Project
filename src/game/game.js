@@ -2446,6 +2446,7 @@ setupLLMTracking() {
         dataType: data.type 
       });
     }
+    // 
     
     // Also update UI if needed (CollectiblesManager should handle this, but double-check)
     if (this.ui && this.ui.get('collectibles')) {
