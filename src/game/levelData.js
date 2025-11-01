@@ -1,5 +1,266 @@
 // Data-driven level definitions with GLTF geometry loading
 export const levels = [
+      {
+    "id": "intro",
+    "name": "Intro Level",
+    "order": 1,
+    "gltfUrl": "assets/levels/City/futuristic low poly city by niko.glb",
+    "startPosition": [
+      0,
+      15,
+      8
+    ],
+    "ui": [
+      "hud",
+      "fps",
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 12,
+          "potionsStart": 2,
+          "pointsPerApple": 150,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍎",
+              "name": "Red Apples",
+              "color": "#ff6b6b",
+              "completeColor": "#51cf66",
+              "completeIcon": "🏆"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#4dabf7",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
+    ],
+    "lights": [
+      {
+        "key": "BasicLights",
+        "props": {
+          "intensity": 0.1
+        }
+      }
+    ],
+    "enemies": [
+      {
+        "type": "snake",
+        "position": [
+          -5,
+          0.5,
+          5
+        ],
+        "modelUrl": "assets/enemies/snake/scene.gltf",
+        "patrolPoints": [
+          [
+            -5,
+            1,
+            5,
+            0.3
+          ],
+          [
+            -8,
+            1,
+            8,
+            0.3
+          ],
+          [
+            -3,
+            1,
+            10,
+            0.3
+          ]
+        ],
+        "speed": 8,
+        "chaseRange": 10,
+        "health": 35
+      }
+    ],
+    "colliders": [
+      {
+        "id": "collider_18",
+        "type": "box",
+        "position": [
+          0,
+          2,
+          0
+        ],
+        "size": [
+          11.6,
+          0.1,
+          6
+        ],
+        "rotation": [
+          44,
+          0,
+          0
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_10",
+        "type": "box",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          42.917484283447266,
+          0.5594812631607056,
+          38.855934143066406
+        ],
+        "materialType": "ground",
+        "meshName": "collider_playground"
+      },
+      {
+        "id": "collider_11",
+        "type": "box",
+        "position": [
+          -21.06,
+          3.44,
+          0
+        ],
+        "size": [
+          0.7933826446533203,
+          6.32648104429245,
+          38.855934143066406
+        ],
+        "materialType": "wall",
+        "meshName": "collider_playground001"
+      },
+      {
+        "id": "collider_12",
+        "type": "box",
+        "position": [
+          0,
+          3.44,
+          -19.03
+        ],
+        "size": [
+          42.917484283447266,
+          6.32648104429245,
+          0.7933826446533203
+        ],
+        "materialType": "wall",
+        "meshName": "collider_playground002"
+      },
+      {
+        "id": "collider_13",
+        "type": "box",
+        "position": [
+          0,
+          3.44,
+          19.03
+        ],
+        "size": [
+          42.917484283447266,
+          6.32648104429245,
+          0.7933826446533203
+        ],
+        "materialType": "wall",
+        "meshName": "collider_playground004"
+      },
+      {
+        "id": "collider_14",
+        "type": "box",
+        "position": [
+          21.06,
+          3.44,
+          0
+        ],
+        "size": [
+          0.7933826446533203,
+          6.32648104429245,
+          38.855934143066406
+        ],
+        "materialType": "wall",
+        "meshName": "collider_playground003"
+      }
+    ],
+    "cinematics": {
+      "onLevelStart": {
+        "type": "dialogue",
+        "character": "narrator",
+        "lines": [
+          {
+            "text": "Welcome to the training grounds!",
+            "duration": 3000
+          },
+          {
+            "text": "Use WASD to move and Space to jump.",
+            "duration": 4000
+          }
+        ]
+      },
+      "onEnemyDefeat": {
+        "type": "cutscene",
+        "cameraPath": [
+          {
+            "position": [
+              10,
+              5,
+              10
+            ],
+            "lookAt": [
+              0,
+              0,
+              0
+            ],
+            "duration": 2000
+          }
+        ],
+        "dialogue": [
+          {
+            "character": "player",
+            "text": "One down, more to go!",
+            "duration": 2000
+          }
+        ]
+      }
+    },
+    "sounds": {
+      "music": {
+        "intro-theme": {
+          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
+          "loop": true
+        }
+      },
+      "sfx": {
+        "sword": {
+          "url": "assets/audio/sfx/sword.mp3",
+          "loop": false
+        },
+        "chest": {
+          "url": "assets/audio/sfx/chest_open.mp3",
+          "loop": false
+        },
+        "snake": {
+          "url": "assets/audio/sfx/snake.wav",
+          "loop": false
+        },
+        "potion": {
+          "url": "assets/audio/sfx/potion.wav",
+          "loop": false
+        },
+        "walk": {
+          "url": "assets/audio/sfx/walking.mp3",
+          "loop": false
+        },
+        "jump": {
+          "url": "assets/audio/sfx/jumping.wav",
+          "loop": false
+        }
+      },
+      "playMusic": "intro-theme"
+    }
+  },
   {
     "id": "level1",
     "name": "Level 1",
