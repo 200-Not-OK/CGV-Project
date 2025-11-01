@@ -106,8 +106,6 @@ export class Player {
   this._lastLockSwitchAt = 0;
     this.isSprinting = false;
     this.isJumping = false;
-    this.jumpHoldTime = 0; // Track how long jump button is held
-    this.maxJumpHoldTime = 0.3; // Maximum time to apply upward force (300ms)
     this.isMoving = false;
 
     // Double jump system
@@ -116,6 +114,13 @@ export class Player {
     this.maxJumps = 2;                      // Maximum jumps allowed (1 = normal, 2 = double jump)
     this.doubleJumpStrength = 20;           // Slightly weaker than first jump
     this.canDoubleJump = true;              // Reset when landing
+
+    // Jump responsiveness improvements
+    this.jumpBufferTime = options.jumpBufferTime ?? 0.2;   // Time window to buffer jump requests (seconds) - increased for better reliability
+    this.coyoteTime = options.coyoteTime ?? 0.15;          // Time window after leaving ground where jump still works (seconds) - increased for edge jumps
+    this.jumpBufferTimer = 0;               // Track remaining buffer time
+    this.coyoteTimeTimer = 0;               // Track remaining coyote time
+    this.wasGroundedLastFrame = false;      // Track previous grounded state
 
     // Sound state for footsteps
     this.footstepTimer = 0;
@@ -800,12 +805,10 @@ export class Player {
     }
     
     // Update ground detection
-    this.updateGroundDetection();
+    this.updateGroundDetection(delta);
     
-    // Update jump hold timer
-    if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
-      this.jumpHoldTime += delta;
-    }
+    // Jump hold timer is no longer used for variable jump height
+    // (discrete low/high jump system instead)
     
     // Apply additional downward force when airborne for faster falling
     if (!this.isGrounded) {
@@ -817,6 +820,39 @@ export class Player {
     if (playerActive) {
       this.handleMovementInput(input, camOrientation, delta);
       this.handleJumpInput(input);
+      
+      // Check for buffered jumps immediately after jump input processing
+      // This catches edge cases where player presses jump at the very edge
+      if (this.jumpBufferTimer > 0 && this.jumpCount === 0 && !this.isJumping) {
+        // Check multiple conditions for edge jumps:
+        // 1. Currently grounded
+        // 2. Coyote time is active (just left ground)
+        // 3. Very small downward velocity (just started falling, likely at edge)
+        const justStartedFalling = !this.isGrounded && this.body.velocity.y > -2.0 && this.body.velocity.y < 0;
+        const canExecuteEdgeJump = this.isGrounded || this.coyoteTimeTimer > 0 || justStartedFalling;
+        
+        if (canExecuteEdgeJump) {
+          // Preserve and boost horizontal velocity for edge jumps
+          const horizontalVel = Math.sqrt(this.body.velocity.x * this.body.velocity.x + this.body.velocity.z * this.body.velocity.z);
+          if (horizontalVel > 0.1) {
+            const boostFactor = 1.15;
+            this.body.velocity.x *= boostFactor;
+            this.body.velocity.z *= boostFactor;
+          }
+          
+          this.body.velocity.y = this.jumpStrength;
+          this.isJumping = true;
+          this.jumpCount = 1;
+          this.jumpBufferTimer = 0;
+          this.coyoteTimeTimer = 0;
+          
+          if (this.game && this.game.soundManager) {
+            this.game.soundManager.playSFX('jump', 0.5);
+          }
+          
+          console.log('🦘 Edge jump executed via buffer');
+        }
+      }
       this.handleInteractionInput(input);
       
       // Handle weapon input
@@ -971,7 +1007,7 @@ export class Player {
     }
   }
 
-  updateGroundDetection() {
+  updateGroundDetection(delta = 0) {
     // Use the physics world's ground detection
     const wasGrounded = this.isGrounded;
     const groundedNow = this.physicsWorld.isBodyGrounded(this.body, this.groundNormalThreshold);
@@ -984,6 +1020,51 @@ export class Player {
     const debounceFrames = 2; // require a couple frames of contact
     this.isGrounded = groundedNow || (wasGrounded && this._lastGroundedTime > 0);
     
+    // Track grounded state changes for coyote time
+    const justLeftGround = this.wasGroundedLastFrame && !this.isGrounded;
+    const justLanded = !this.wasGroundedLastFrame && this.isGrounded;
+    this.wasGroundedLastFrame = this.isGrounded;
+    
+    // Update coyote time: start timer when leaving ground, clear when landing
+    if (justLeftGround) {
+      this.coyoteTimeTimer = this.coyoteTime;
+    } else if (this.isGrounded) {
+      this.coyoteTimeTimer = 0; // Clear coyote time when grounded
+    } else if (this.coyoteTimeTimer > 0) {
+      // Decrement coyote time while airborne
+      this.coyoteTimeTimer = Math.max(0, this.coyoteTimeTimer - delta);
+    }
+    
+    // Update jump buffer timer: decrement each frame
+    if (this.jumpBufferTimer > 0) {
+      this.jumpBufferTimer = Math.max(0, this.jumpBufferTimer - delta);
+      
+      // Check for buffered jump: execute if grounded (not just on justLanded)
+      // This catches delayed ground detection after landing
+      if (this.isGrounded && this.jumpBufferTimer > 0 && this.jumpCount === 0 && !this.isJumping) {
+        // Preserve and boost horizontal velocity for buffered jumps
+        const horizontalVel = Math.sqrt(this.body.velocity.x * this.body.velocity.x + this.body.velocity.z * this.body.velocity.z);
+        if (horizontalVel > 0.1) {
+          const boostFactor = 1.15;
+          this.body.velocity.x *= boostFactor;
+          this.body.velocity.z *= boostFactor;
+        }
+        
+        this.body.velocity.y = this.jumpStrength;
+        this.isJumping = true;
+        this.jumpCount = 1;
+        this.jumpBufferTimer = 0; // Clear buffer
+        this.coyoteTimeTimer = 0; // Clear coyote time
+        
+        // Play jump sound
+        if (this.game && this.game.soundManager) {
+          this.game.soundManager.playSFX('jump', 0.5);
+        }
+        
+        console.log('🦘 Buffered jump executed');
+      }
+    }
+    
     // Check if we're on a slope (for better physics handling)
     this.isOnSlope = this.checkIfOnSlope();
     
@@ -992,6 +1073,7 @@ export class Player {
       this.isJumping = false;
       this.jumpCount = 0;              // ✅ Reset jump count on landing
       this.canDoubleJump = true;       // ✅ Allow double jump again
+      this.coyoteTimeTimer = 0;        // Clear coyote time on landing
     }
   }
 
@@ -1117,13 +1199,14 @@ export class Player {
         // When airborne, DON'T apply wall sliding to input
         // Let the player gain velocity, then applyWallSlidingPhysics will handle collision
         // This prevents "clinging" when jumping then pressing forward into wall
-        const airControl = 0.3; // Reduce air control compared to ground movement
+        const airControl = 0.65; // Increased air control for better horizontal jump distance (was 0.3)
         const currentVelX = this.body.velocity.x;
         const currentVelZ = this.body.velocity.z;
         
         // Blend current velocity with target velocity for air control
-        this.body.velocity.x = THREE.MathUtils.lerp(currentVelX, targetVelX * airControl, 0.2);
-        this.body.velocity.z = THREE.MathUtils.lerp(currentVelZ, targetVelZ * airControl, 0.2);
+        // Increased lerp factor for more responsive air control (was 0.2)
+        this.body.velocity.x = THREE.MathUtils.lerp(currentVelX, targetVelX * airControl, 0.35);
+        this.body.velocity.z = THREE.MathUtils.lerp(currentVelZ, targetVelZ * airControl, 0.35);
       }
       
       // Rotate player to face movement direction
@@ -1143,9 +1226,9 @@ export class Player {
           this.body.velocity.x *= 0.95;
           this.body.velocity.z *= 0.95;
         } else {
-          // Normal air resistance when not touching walls
-          this.body.velocity.x *= 0.8;
-          this.body.velocity.z *= 0.8;
+          // Reduced air resistance when not touching walls to preserve horizontal jump distance (was 0.8)
+          this.body.velocity.x *= 0.92;
+          this.body.velocity.z *= 0.92;
         }
       }
     }
@@ -1267,19 +1350,43 @@ export class Player {
     }
     
     if (input.isKey('Space')) {
-      // First jump (grounded)
-      if (this.isGrounded && this.jumpCount === 0) {
-        this.body.velocity.y = this.jumpStrength;
-        this.isJumping = true;
-        this.jumpCount = 1;
-        this.jumpHoldTime = 0;
+      // Try to execute jump immediately if conditions are met
+      let jumpExecuted = false;
 
-        // Play jump sound
-        if (this.game && this.game.soundManager) {
-          this.game.soundManager.playSFX('jump', 0.5);
+      // First jump: check grounded OR coyote time OR buffered jump
+      if (this.jumpCount === 0) {
+        const canJumpFromGround = this.isGrounded;
+        const canJumpFromCoyote = this.coyoteTimeTimer > 0;
+        const hasBufferedJump = this.jumpBufferTimer > 0;
+
+        if (canJumpFromGround || canJumpFromCoyote || hasBufferedJump) {
+          // Preserve and slightly boost horizontal velocity when jumping to increase horizontal distance
+          const horizontalVel = Math.sqrt(this.body.velocity.x * this.body.velocity.x + this.body.velocity.z * this.body.velocity.z);
+          if (horizontalVel > 0.1) {
+            // Player is moving horizontally - preserve momentum with slight boost
+            const boostFactor = 1.15; // 15% boost to horizontal velocity on jump
+            this.body.velocity.x *= boostFactor;
+            this.body.velocity.z *= boostFactor;
+          }
+          
+          this.body.velocity.y = this.jumpStrength;
+          this.isJumping = true;
+          this.jumpCount = 1;
+          this.jumpBufferTimer = 0; // Clear buffer
+          this.coyoteTimeTimer = 0; // Clear coyote time
+          jumpExecuted = true;
+
+          // Play jump sound
+          if (this.game && this.game.soundManager) {
+            this.game.soundManager.playSFX('jump', 0.5);
+          }
+          
+          console.log('🦘 First jump');
+        } else {
+          // Can't jump yet - buffer the request
+          // Refresh buffer to maximum time to ensure it catches delayed ground detection
+          this.jumpBufferTimer = this.jumpBufferTime;
         }
-        
-        console.log('🦘 First jump');
       }
       // Double jump (airborne, haven't used double jump yet)
       else if (this.enableDoubleJump && !this.isGrounded && this.jumpCount === 1 && this.canDoubleJump) {
@@ -1287,7 +1394,8 @@ export class Player {
         this.body.velocity.y = this.doubleJumpStrength;
         this.jumpCount = 2;
         this.canDoubleJump = false; // Prevent triple jump
-        this.jumpHoldTime = 0;
+        this.jumpBufferTimer = 0; // Clear buffer
+        jumpExecuted = true;
 
         // Play different sound for double jump (if available)
         if (this.game && this.game.soundManager) {
@@ -1296,22 +1404,7 @@ export class Player {
         
         console.log('🦘🦘 Double jump!');
       }
-      // Variable jump height (hold space for higher jump)
-      else if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
-        const jumpBoostForce = 25;
-        this.body.applyForce(
-          new CANNON.Vec3(0, jumpBoostForce, 0),
-          this.body.position
-        );
-      }
-    } else {
-      // Space key released - cut upward velocity for short hop
-      if (this.isJumping && this.jumpHoldTime < this.maxJumpHoldTime) {
-        if (this.body.velocity.y > 0) {
-          this.body.velocity.y *= 0.5;
-        }
-      }
-      this.jumpHoldTime = this.maxJumpHoldTime;
+      // Single jump height - no variable height system
     }
   }
 
