@@ -2340,7 +2340,7 @@ showMessage(message, duration = 3000) {
 
 checkGlitchedLevelCompletion() {
   if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
-  
+  // 
   const levelData = this.levelManager.getLevelData(this.currentLevelId);
   if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
   
