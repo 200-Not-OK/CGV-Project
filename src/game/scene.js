@@ -57,7 +57,11 @@ function convertToBasicMaterial(material) {
   return basic;
 }
 
-async function createSunEyeInstance() {
+async function createSunEyeInstance(scene) {
+  // Safety: never create/load outside Level 3
+  if (!scene || scene?.userData?.levelId !== 'level3') {
+    return null;
+  }
   const gltf = await loadSunEyeAsset();
   const eyeScene = gltf.scene.clone(true);
   eyeScene.traverse((child) => {
@@ -176,11 +180,19 @@ const totalTextures = 2; // Only 2 layers for better FPS
         fog: false,
         transparent: false,
         depthWrite: false, // Don't write depth to allow layering
-        depthTest: true // MUST test depth so castle/objects occlude skybox
+        depthTest: false // Disable depth test to prevent near-plane artifacts
       });
       
       skyboxMeshFar = new THREE.Mesh(skyGeometryFar, skyMaterialFar);
       skyboxMeshFar.rotation.y = Math.PI;
+      // Revert inversion to avoid polar seam artifacts
+      skyboxMeshFar.rotation.x = 0;
+      // Prevent culling and pin to camera position to avoid frustum edge artifacts
+      skyboxMeshFar.frustumCulled = false;
+      skyboxMeshFar.onBeforeRender = (_renderer, _scene, camera) => {
+        try { skyboxMeshFar.position.copy(camera.position); } catch (_) {}
+      };
+      skyboxMeshFar.renderOrder = -10;
       skyboxMeshFar.renderOrder = -3; // Render first
       scene.add(skyboxMeshFar);
       scene.userData.sky.far = skyboxMeshFar;
@@ -214,12 +226,22 @@ const totalTextures = 2; // Only 2 layers for better FPS
         transparent: true,
         opacity: 0.35,
         depthWrite: false, // Don't write depth to allow layering
-        depthTest: true, // MUST test depth so castle/objects occlude skybox
+        depthTest: false, // Disable depth test to prevent near-plane artifacts
         blending: THREE.AdditiveBlending
       });
       
       skyboxMeshNear = new THREE.Mesh(skyGeometryNear, skyMaterialNear);
       skyboxMeshNear.rotation.y = Math.PI + 2.5;
+      // Revert inversion on near layer
+      skyboxMeshNear.rotation.x = 0;
+      // Prevent culling and pin to camera position to avoid frustum edge artifacts
+      skyboxMeshNear.frustumCulled = false;
+      skyboxMeshNear.onBeforeRender = (_renderer, _scene, camera) => {
+        try { skyboxMeshNear.position.copy(camera.position); } catch (_) {}
+      };
+      // TEMP: hide near layer to test artifact source
+      skyboxMeshNear.visible = false;
+      skyboxMeshNear.renderOrder = -9;
       skyboxMeshNear.renderOrder = -2; // Render after far layer
       scene.add(skyboxMeshNear);
       scene.userData.sky.near = skyboxMeshNear;
@@ -280,6 +302,12 @@ const totalTextures = 2; // Only 2 layers for better FPS
 // Lightweight preset switcher for per-level sky
 export function setSkyPreset(scene, renderer, preset = 'dark') {
   if (!scene) return;
+  // Safety: never apply Level 3 'light' preset outside Level 3
+  try {
+    if (preset === 'light' && (!scene.userData || scene.userData.levelId !== 'level3')) {
+      preset = 'dark';
+    }
+  } catch (_) {}
   const sky = scene.userData && scene.userData.sky ? scene.userData.sky : null;
   // Remove previous sun if any
   if (scene.userData && scene.userData.sun) {
@@ -516,49 +544,56 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
     if (renderer) {
       renderer.toneMappingExposure = 0.68; // softer cartoon exposure
     }
-    // Add sun directional light and load eyeball model
+    // Add sun directional light and load eyeball model ONLY in Level 3
     try {
-      const sunGroup = new THREE.Group();
-      const sunDistance = 800;
-      sunGroup.position.copy(sunDir.clone().multiplyScalar(sunDistance));
-      sunGroup.frustumCulled = false;
+      const allowEye = !!(scene?.userData?.allowSunEye === true);
+      if (allowEye) {
+        const sunGroup = new THREE.Group();
+        const sunDistance = 800;
+        sunGroup.position.copy(sunDir.clone().multiplyScalar(sunDistance));
+        sunGroup.frustumCulled = false;
 
-      const sunLight = new THREE.DirectionalLight(0xffe6b0, 7.2);
-      sunLight.position.set(0, 0, 0);
-       // Force no shadows from sun
-       sunLight.castShadow = false;
+        const sunLight = new THREE.DirectionalLight(0xffe6b0, 7.2);
+        sunLight.position.set(0, 0, 0);
+        // Force no shadows from sun
+        sunLight.castShadow = false;
 
-      const target = new THREE.Object3D();
-      target.position.set(0, 0, 0);
-      scene.add(target);
-      sunLight.target = target;
-       sunGroup.add(sunLight);
+        const target = new THREE.Object3D();
+        target.position.set(0, 0, 0);
+        scene.add(target);
+        sunLight.target = target;
+        sunGroup.add(sunLight);
 
-      sunGroup.userData = { isSun: true };
-      scene.add(sunGroup);
-       scene.userData.sun = sunGroup;
-       scene.userData.sunLight = sunLight;
-      scene.userData.sunTarget = target;
-      scene.userData.sunEye = {
-        group: sunGroup,
-        rig: null,
-        mesh: null,
-        direction: sunDir.clone(),
-        distance: sunDistance,
-        rotationOffset: SUN_EYE_ROTATION_OFFSET.clone(),
-        radius: 0,
-        lookOffset: new THREE.Vector3()
-      };
+        sunGroup.userData = { isSun: true };
+        // Render sun/eye on isolated layer 2 only
+        try { sunGroup.layers.set(2); } catch (_) {}
+        scene.add(sunGroup);
+        scene.userData.sun = sunGroup;
+        scene.userData.sunLight = sunLight;
+        scene.userData.sunTarget = target;
+        scene.userData.sunEye = {
+          group: sunGroup,
+          rig: null,
+          mesh: null,
+          direction: sunDir.clone(),
+          distance: sunDistance,
+          rotationOffset: SUN_EYE_ROTATION_OFFSET.clone(),
+          radius: 0,
+          lookOffset: new THREE.Vector3()
+        };
 
-      createSunEyeInstance()
-        .then(({ rig, mesh, diameter }) => {
+      createSunEyeInstance(scene)
+        .then((inst) => {
+          if (!inst) return;
+          const { rig, mesh, diameter } = inst;
           if (!scene.userData || scene.userData.sun !== sunGroup || !scene.userData.sunEye) return;
           const sunData = scene.userData.sunEye;
           rig.position.set(0, 0, 0);
           rig.frustumCulled = false;
           sunGroup.add(rig);
-         // Make the eye look toward the scene origin by default
-         try { rig.lookAt(new THREE.Vector3(0, 0, 0)); } catch (e) {}
+          try { rig.traverse((n)=>{ if (n.layers) n.layers.set(2); }); } catch (_) {}
+          // Make the eye look toward the scene origin by default
+          try { rig.lookAt(new THREE.Vector3(0, 0, 0)); } catch (e) {}
           sunData.rig = rig;
           sunData.mesh = mesh;
           sunData.radius = diameter * 0.5;
@@ -566,24 +601,34 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
             sunData.rig.quaternion.multiply(sunData.rotationOffset);
           }
         })
-        .catch((error) => {
-          console.warn('Sun eye model failed to attach:', error);
-        });
+          .catch((error) => {
+            console.warn('Sun eye model failed to attach:', error);
+          });
 
-      // Add a global top-down cartoon fill light (no shadows)
-      const topFill = new THREE.DirectionalLight(0xffffff, 1.1);
-      topFill.position.set(0, 1000, 0);
-      topFill.castShadow = false;
-      const topTarget = new THREE.Object3D();
-      topTarget.position.set(0, 0, 0);
-      scene.add(topTarget);
-      topFill.target = topTarget;
-      scene.add(topFill);
-      scene.userData.topFillLight = topFill;
-      // Mild ambient to lift darkest areas
-      const ambient = new THREE.AmbientLight(0xffffff, 0.55);
-      scene.add(ambient);
-      scene.userData.ambientFill = ambient;
+        // Add a global top-down cartoon fill light (no shadows)
+        const topFill = new THREE.DirectionalLight(0xffffff, 1.1);
+        topFill.position.set(0, 1000, 0);
+        topFill.castShadow = false;
+        const topTarget = new THREE.Object3D();
+        topTarget.position.set(0, 0, 0);
+        scene.add(topTarget);
+        topFill.target = topTarget;
+        // Keep Level 3 fill light isolated to layer 2
+        try { topFill.layers.set(2); } catch (_) {}
+        scene.add(topFill);
+        scene.userData.topFillLight = topFill;
+        // Mild ambient to lift darkest areas
+        const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+        try { ambient.layers.set(2); } catch (_) {}
+        scene.add(ambient);
+        scene.userData.ambientFill = ambient;
+      } else {
+        // Outside level 3, make sure no leftover eye/lights remain
+        try {
+          if (scene.userData?.sunEye?.group?.parent) scene.remove(scene.userData.sunEye.group);
+        } catch (_) {}
+        if (scene.userData) scene.userData.sunEye = null;
+      }
     } catch (e) { /* ignore visual sun errors */ }
     return;
   }
@@ -598,33 +643,6 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
     renderer.toneMappingExposure = 0.6;
   }
 }
-
-export function disposeSky(scene, renderer) {
-  try {
-    const sky = scene.userData?.sky;
-    if (sky?.mesh) {
-      scene.remove(sky.mesh);
-      if (sky.mesh.geometry) sky.mesh.geometry.dispose();
-      if (sky.mesh.material) sky.mesh.material.dispose();
-    }
-    if (sky?.envTexture && sky.envTexture.dispose) {
-      sky.envTexture.dispose();
-    }
-    scene.userData.sky = null;
-
-    // Clear environment/reflection map
-    if (scene.environment && scene.environment.dispose) {
-      scene.environment.dispose();
-    }
-    scene.environment = null;
-
-    // Optional sanity: tighten renderer to flush cached envs
-    renderer?.initTexture && renderer.initTexture(null);
-  } catch (e) {
-    console.warn('disposeSky failed:', e);
-  }
-}
-
 
 /**
  * Load a panorama sky texture for a level
@@ -675,36 +693,23 @@ export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
     const rotation = options.rotation || 0;
 
     if (isHDR) {
-      // Load HDR using RGBELoader
+      // Load HDR using RGBELoader and set as scene background (no sky mesh)
       const rgbeLoader = new RGBELoader();
       rgbeLoader.load(
         textureUrl,
         (texture) => {
-          texture.needsUpdate = true;
-          texture.minFilter = THREE.LinearFilter;
-          texture.magFilter = THREE.LinearFilter;
-          texture.generateMipmaps = false;
-
-          const skyGeometry = new THREE.SphereGeometry(radius, 64, 32);
-          const skyMaterial = new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.BackSide,
-            fog: false,
-            depthWrite: false,
-            depthTest: true
-          });
-
-          const skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
-          skyMesh.rotation.y = Math.PI + rotation;
-          skyMesh.renderOrder = -10;
-          skyMesh.frustumCulled = false;
-          
-          scene.add(skyMesh);
-          sky.panorama = skyMesh;
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          scene.background = texture; // Use background instead of geometry to avoid artifacts
+          sky.panorama = null;
           sky.preset = 'panorama';
-
-          console.log('🌌 Panorama sky loaded (HDR):', textureUrl);
-          resolve(skyMesh);
+          if (options.useAsEnvironment !== false && renderer) {
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            pmremGenerator.compileEquirectangularShader();
+            scene.environment = pmremGenerator.fromEquirectangular(texture).texture;
+            pmremGenerator.dispose();
+          }
+          console.log('🌌 Panorama sky (HDR) set as scene.background:', textureUrl);
+          resolve(null);
         },
         undefined,
         (error) => {
@@ -713,44 +718,23 @@ export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
         }
       );
     } else {
-      // Load regular image using TextureLoader
+      // Load regular image and set as scene background (no sky mesh)
       const textureLoader = new THREE.TextureLoader();
       textureLoader.load(
         textureUrl,
         (texture) => {
-          texture.needsUpdate = true;
           texture.mapping = THREE.EquirectangularReflectionMapping;
-          texture.minFilter = THREE.LinearFilter;
-          texture.magFilter = THREE.LinearFilter;
-
-          const skyGeometry = new THREE.SphereGeometry(radius, 64, 32);
-          const skyMaterial = new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.BackSide,
-            fog: false,
-            depthWrite: false,
-            depthTest: true
-          });
-
-          const skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
-          skyMesh.rotation.y = Math.PI + rotation;
-          skyMesh.renderOrder = -10;
-          skyMesh.frustumCulled = false;
-          
-          scene.add(skyMesh);
-          sky.panorama = skyMesh;
+          scene.background = texture; // Use background instead of geometry to avoid artifacts
+          sky.panorama = null;
           sky.preset = 'panorama';
-
-          // Optionally set as environment map for reflections
           if (options.useAsEnvironment !== false && renderer) {
             const pmremGenerator = new THREE.PMREMGenerator(renderer);
             pmremGenerator.compileEquirectangularShader();
             scene.environment = pmremGenerator.fromEquirectangular(texture).texture;
             pmremGenerator.dispose();
           }
-
-          console.log('🌌 Panorama sky loaded (image):', textureUrl);
-          resolve(skyMesh);
+          console.log('🌌 Panorama sky (image) set as scene.background:', textureUrl);
+          resolve(null);
         },
         undefined,
         (error) => {
