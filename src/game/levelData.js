@@ -2239,6 +2239,36 @@ export const levels = [
           0,
           0
         ]
+      },
+      {
+        "id": "collider_29",
+        "type": "mesh",
+        "meshName": "Platform",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_30",
+        "type": "mesh",
+        "meshName": "Platform1",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_31",
+        "type": "mesh",
+        "meshName": "Platform2",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_32",
+        "type": "mesh",
+        "meshName": "Platform3",
+        "materialType": "ground"
+      },
+      {
+        "id": "collider_33",
+        "type": "mesh",
+        "meshName": "Platform8",
+        "materialType": "ground"
       }
     ],
      "placeableBlocks": [
