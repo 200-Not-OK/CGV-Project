@@ -339,7 +339,6 @@ export class Game {
 
     // Overlays (built on demand)
     this._victoryOverlay = null;
-    this._levelPicker = null;
 
     // Listen for level completion (boss dispatches 'level:complete')
     window.addEventListener('level:complete', () => this._onLevelComplete());
@@ -782,10 +781,6 @@ suppressOversizedMinimapColliders() {
         }
         // ensure player is active when in third- or first-person
         // (handled each frame in _loop by checking activeCamera)
-      } else if (code === 'KeyN') {
-        // Open the Level Picker instead of jumping to next level
-        this._showLevelPicker();
-        
       } else if (code === 'Backquote') { // ` key
   this.suppressOversizedMinimapColliders();
 } else if (code === 'KeyM') {
@@ -1890,6 +1885,15 @@ clearDeathVisualsAndState() {
   try { this.combatSystem.suppressAttacks = false; } catch {}
   try { this.level?.freezeAllEnemies?.(false); } catch {}
   try { this.proximitySoundManager?.resume?.(); } catch {}
+  
+  // Lock cursor when level loads
+  try {
+    if (typeof document !== 'undefined' && document.body?.requestPointerLock) {
+      document.body.requestPointerLock();
+    }
+  } catch (e) {
+    console.warn('⚠️ Unable to request pointer lock on level load:', e);
+  }
 }
 
 
@@ -2445,13 +2449,7 @@ this._runCaptionSequence([
 
     }
 
-    // Show the victory overlay a beat after the camera move starts
-setTimeout(() => {
-  this._showVictoryOverlay();  // already shows Replay + Go To Level
-  this._showLevelPicker();     // or pop the picker directly
-  this.input?.setEnabled?.(true);
-}, 3000); // after orbit; tweak to your taste
-
+    // Victory overlay is now handled in main.js after cinematic completes
   }
 
   _runCaptionSequence(segments = []) {
@@ -2534,27 +2532,20 @@ setTimeout(() => {
       this.input?.setEnabled?.(true);
     };
 
-    const toLevelButtonsWrap = document.createElement('div');
-    Object.assign(toLevelButtonsWrap.style, { display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' });
-
-    const levelsArray = this._getAvailableLevels();
-    for (const lvl of levelsArray) {
-      const b = btn(`Go to: ${lvl.name || lvl.id}`);
-      b.onclick = () => {
-        overlay.style.display = 'none';
-        const idx = this._findLevelIndexById(lvl.id);
-        if (idx >= 0) this.loadLevel(idx);
-        this.input?.setEnabled?.(true);
-      };
-      toLevelButtonsWrap.appendChild(b);
-    }
+    const backToHub = btn('Back to Hub');
+    backToHub.onclick = () => {
+      overlay.style.display = 'none';
+      // Load hub level (index 0)
+      this.loadLevel(0);
+      this.input?.setEnabled?.(true);
+    };
 
     const hint = document.createElement('div');
-    hint.textContent = 'Press N to open the Level Picker any time';
+    hint.textContent = 'Complete other levels to unlock them!';
     Object.assign(hint.style, { marginTop: '10px', opacity: .65, fontSize: '12px' });
 
     actions.appendChild(replay);
-    actions.appendChild(toLevelButtonsWrap);
+    actions.appendChild(backToHub);
     card.appendChild(title);
     card.appendChild(subtitle);
     card.appendChild(actions);
@@ -2572,214 +2563,7 @@ setTimeout(() => {
     }
   }
 
-  /* ===========================
-     Level Picker overlay
-     =========================== */
-
-  _ensureLevelPicker() {
-    if (this._levelPicker) return;
-
-    const picker = document.createElement('div');
-    Object.assign(picker.style, {
-      position: 'fixed',
-      inset: 0,
-      display: 'none',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75))',
-      zIndex: 9998
-    });
-
-    const card = document.createElement('div');
-    Object.assign(card.style, {
-      width: 'min(92vw, 640px)',
-      borderRadius: '18px',
-      border: '3px solid #4dabf7',
-      background: '#0b1222',
-      color: 'white',
-      padding: '22px',
-      boxShadow: '0 20px 60px rgba(0,0,0,.55)',
-      fontFamily: 'system-ui, sans-serif',
-      textAlign: 'center'
-    });
-
-    const title = document.createElement('div');
-    title.textContent = 'Choose a Level';
-    Object.assign(title.style, { fontSize: '26px', fontWeight: 800, marginBottom: '8px' });
-
-    const grid = document.createElement('div');
-    Object.assign(grid.style, {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-      gap: '10px',
-      marginTop: '12px'
-    });
-
-
-    if (!document.getElementById('level-picker-keyboard-style')) {
-      const st = document.createElement('style');
-      st.id = 'level-picker-keyboard-style';
-      st.textContent = `
-        .level-picker-btn.is-selected {
-          outline: 3px solid #a0d4ffff;
-          border-color: #a0d4ffff !important;
-          transform: translateY(-1px);
-        }s
-      `;
-      document.head.appendChild(st);
-    }
-
-    const levelsArray = this._getAvailableLevels();
-    const buttons = [];
-    levelsArray.forEach((lvl, i) => {
-      const b = document.createElement('button');
-      b.textContent = `${lvl.name || lvl.id}`;
-      Object.assign(b.style, {
-        cursor: 'pointer',
-        padding: '18px 12px',
-        borderRadius: '14px',
-        border: '2px solid #4dabf7',
-        background: '#142647',
-        color: 'white',
-        fontWeight: 700
-      });
-
-      b.className = 'level-picker-btn';
-      b.setAttribute('tabindex', '-1');            // we manage focus manually
-      b.setAttribute('role', 'option');
-      b.dataset.index = String(i);
-
-
-      b.onclick = () => {
-        picker.style.display = 'none';
-        const idx = this._findLevelIndexById(lvl.id);
-        if (idx >= 0) this.loadLevel(idx);
-        if (this._pickerPrevInputEnabled) this.input?.setEnabled?.(true);
-        this._detachLevelPickerKeys?.();
-      };
-      grid.appendChild(b);
-      buttons.push(b);
-    });
-
-    const hint = document.createElement('div');
-    hint.textContent = 'Press N to toggle this open at any time';
-    Object.assign(hint.style, { marginTop: '10px', opacity: .65, fontSize: '12px' });
-
-    card.appendChild(title);
-    card.appendChild(grid);
-    card.appendChild(hint);
-    picker.appendChild(card);
-    document.body.appendChild(picker);
-
-    this._levelPicker = picker;
-    this._levelPickerGrid = grid;
-    this._levelPickerButtons = buttons;
-    this._levelPickerSelectedIndex = 0;
-
-    // Attach a unified key handler (added/removed when shown/hidden)
-    this._attachLevelPickerKeys = () => {
-      if (this._levelPickerKeyHandler) return;
-      this._levelPickerKeyHandler = (e) => {
-        // Only handle keys when the picker is visible
-        if (picker.style.display !== 'flex') return;
-        const code = e.code;
-        let idx = this._levelPickerSelectedIndex ?? 0;
-        const max = buttons.length - 1;
-        const getCols = () => {
-          // Count computed grid columns (robust to responsive anges)
-          const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length;
-         return Math.max(1, cols || 1);
-        };
-        const move = (newIdx) => {
-          newIdx = Math.min(Math.max(newIdx, 0), max);
-          if (newIdx !== this._levelPickerSelectedIndex) {
-            this._levelPickerSelectedIndex = newIdx;
-            this._highlightLevelPickerSelection();
-          }
-        };
-        if (code === 'ArrowRight') {
-          move(idx + 1);
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'ArrowLeft') {
-          move(idx - 1);
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'ArrowDown') {
-          move(idx + getCols());
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'ArrowUp') {
-          move(idx - getCols());
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'Enter' || code === 'NumpadEnter') {
-          const btn = buttons[this._levelPickerSelectedIndex];
-          if (btn) btn.click();
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'KeyN') {
-          picker.style.display = 'none';
-          if (this._pickerPrevInputEnabled) this.input?.setEnabled?.(true);
-          this._detachLevelPickerKeys();
-          e.preventDefault(); e.stopPropagation();
-        }
-      };
-      window.addEventListener('keydown', this._levelPickerKeyHandler, { capture: true });
-    };
-    this._detachLevelPickerKeys = () => {
-      if (!this._levelPickerKeyHandler) return;
-      window.removeEventListener('keydown', this._levelPickerKeyHandler, { capture: true });
-      this._levelPickerKeyHandler = null;
-    };
-
-    // Helper to apply highlight/focus/scroll
-    this._highlightLevelPickerSelection = () => {
-      const i = this._levelPickerSelectedIndex ?? 0;
-      buttons.forEach((b, j) => {
-        const sel = j === i;
-        b.classList.toggle('is-selected', sel);
-        b.setAttribute('aria-selected', sel ? 'true' : 'false');
-      });
-      const btn = buttons[i];
-      if (btn) {
-        try { btn.focus({ preventScroll: true }); } catch {}
-        try { btn.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch {}
-      }
-    };
-
-    this._levelPicker = picker;
-  }
-
-  _showLevelPicker() {
-    this._ensureLevelPicker();
-    if (this._levelPicker) {
-      this._levelPicker.style.display = 'flex';
-      // Disable game input while the picker is open
-      this._pickerPrevInputEnabled = this.input ? (this.input.enabled !== false) : false;
-      this.input?.setEnabled?.(false);
-      // Initialize selection to current level if possible
-      const currentIdx = this._findLevelIndexById(this.currentLevelId);
-      this._levelPickerSelectedIndex = Math.max(0, currentIdx);
-      this._highlightLevelPickerSelection();
-      this._attachLevelPickerKeys();
-    }
-  }
-
-  _getAvailableLevels() {
-    // Prefer explicit level data export if present
-    const listFromExport = Array.isArray(LEVELS) ? LEVELS : (LEVELS?.levels ?? null);
-    const listFromManager = this.levelManager?.levels ?? null;
-
-    const list = listFromExport || listFromManager || [];
-    // If you only want a couple of levels visible, filter here:
-    // return list.filter(l => ['intro','level2'].includes(l.id));
-    return list;
-  }
-
-  _findLevelIndexById(id) {
-    const listFromExport = Array.isArray(LEVELS) ? LEVELS : (LEVELS?.levels ?? null);
-    const listFromManager = this.levelManager?.levels ?? null;
-    const list = listFromExport || listFromManager || [];
-    const idx = list.findIndex(l => l.id === id);
-    return idx >= 0 ? idx : 0;
-  }
-setupComputerTerminal() {
+  setupComputerTerminal() {
   console.log('🛠️ === SETUP COMPUTER TERMINAL START ===');
   
   try {
