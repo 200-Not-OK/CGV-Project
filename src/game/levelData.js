@@ -19900,6 +19900,7 @@ export const levels = [
     "id": "level1_glitched",
     "name": "GLITCHED: Level 1",
     "gltfUrl": "assets/levels/revamped/Level1.gltf",
+    "panoramaSky": "assets/galaxy-night-landscape.jpg",
     "startPosition": [
       0,
       12,
