@@ -14,6 +14,7 @@ export class TriggerManager {
     this.triggers = [];
     this.activeTrigger = null; // Currently highlighted trigger
     this.triggerBodies = []; // Physics bodies for debug visualization
+    this.triggerLabels = []; // Three.js text meshes for trigger labels
   }
 
   /**
@@ -112,6 +113,88 @@ export class TriggerManager {
     console.log(
       `  ✓ Trigger "${trigger.id}" (${trigger.type}) at [${trigger.position.x.toFixed(2)}, ${trigger.position.y.toFixed(2)}, ${trigger.position.z.toFixed(2)}] - radius ${trigger.radius}`
     );
+
+    // Create floating text label for this trigger
+    this._createTriggerLabel(trigger);
+  }
+
+  /**
+   * Create a floating text label above the trigger
+   * @private
+   */
+  _createTriggerLabel(trigger) {
+    // Check if this is a level loader trigger and if the level is locked
+    let isLocked = false;
+    if (trigger.type === 'levelLoader' && trigger.targetLevel && this.game?.progressionManager) {
+      isLocked = !this.game.progressionManager.isLevelUnlocked(trigger.targetLevel);
+    }
+
+    // Use canvas texture for text - large canvas for big, eye-catching text
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 2048;  // Large for high-quality rendering
+    canvas.height = 1024;
+
+    // Clear canvas with transparency
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Set text properties - very large and eye-catching
+    context.font = '900 300px Arial';  // Extra bold (900 weight)
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+
+    // Determine colors based on lock status
+    if (isLocked) {
+      context.fillStyle = '#888888';  // Gray for locked
+      context.shadowColor = '#555555';
+      context.strokeStyle = '#666666';
+    } else {
+      context.fillStyle = '#ff8800';  // Warm orange color (matches main menu)
+      context.shadowColor = '#ff8800';
+      context.strokeStyle = '#ff6600';
+    }
+
+    // Add very strong glow effect for eye-grabbing appearance
+    context.shadowBlur = 80;  // Very strong glow
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+
+    // Draw text with stroke for bolder appearance
+    const text = trigger.poiText;
+    const lockSuffix = isLocked ? ' 🔒' : '';
+    const displayText = text + lockSuffix;
+    
+    // Draw stroke outline for boldness
+    context.lineWidth = 12;
+    context.lineJoin = 'round';
+    context.lineCap = 'round';
+    context.strokeText(displayText, canvas.width / 2, canvas.height / 2);
+    
+    // Draw filled text on top
+    context.fillText(displayText, canvas.width / 2, canvas.height / 2);
+
+    // Create texture and sprite
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearFilter;
+
+    const material = new THREE.SpriteMaterial({ map: texture });
+    material.sizeAttenuation = true;
+    const sprite = new THREE.Sprite(material);
+
+    // Make the sprite much larger and eye-grabbing
+    const scale = Math.max(8, displayText.length * 1.2);  // Much larger base scale
+    sprite.scale.set(scale, scale * 0.5, 1);
+    sprite.position.copy(trigger.position);
+    sprite.position.y += trigger.radius * 0.5;
+
+    this.scene.add(sprite);
+
+    // Store reference for cleanup
+    trigger.labelSprite = sprite;
+    this.triggerLabels.push(sprite);
+
+    console.log(`  ✓ Created label for trigger "${trigger.id}": "${text}"${isLocked ? ' (LOCKED)' : ''}`);
   }
 
   /**
@@ -199,6 +282,15 @@ export class TriggerManager {
       return;
     }
 
+    // Check if level is unlocked
+    if (this.game && this.game.progressionManager) {
+      if (!this.game.progressionManager.isLevelUnlocked(trigger.targetLevel)) {
+        console.warn(`🔒 Level "${trigger.targetLevel}" is locked. Complete the previous level to unlock it.`);
+        this.game.showMessage(`🔒 Level locked! Complete the previous level to unlock it.`, 3000);
+        return;
+      }
+    }
+
     console.log(`🚀 Loading level: ${trigger.targetLevel}`);
 
     // Load the level through game's level loading system
@@ -220,6 +312,17 @@ export class TriggerManager {
       this.physicsWorld.removeBody(body);
     }
     this.triggerBodies = [];
+
+    // Remove label sprites from scene
+    for (const label of this.triggerLabels) {
+      this.scene.remove(label);
+      if (label.material && label.material.map) {
+        label.material.map.dispose();
+      }
+      label.material.dispose();
+      label.geometry?.dispose();
+    }
+    this.triggerLabels = [];
 
     this.triggers = [];
     this.activeTrigger = null;
