@@ -130,6 +130,22 @@ export class Level0Controller {
       }
     };
     window.addEventListener('level:complete', this._levelCompleteHandler);
+    
+    // Expose debug function to skip directly to boss fight
+    if (typeof window !== 'undefined') {
+      window.skipToBossFight = () => {
+        console.log('🚀 [DEBUG] Skipping to boss fight...');
+        this._finalBinaryChoiceEnabled = true;
+        if (this.richard && this.richard.mesh) {
+          this._showExclamationMark();
+        }
+        // Directly trigger boss fight after a short delay to ensure everything is ready
+        setTimeout(() => {
+          this._teleportToBossRoom();
+        }, 500);
+      };
+      console.log('💡 [DEBUG] Call skipToBossFight() in console to skip to boss fight');
+    }
   }
 
   /**
@@ -493,6 +509,7 @@ export class Level0Controller {
             position: [bossPos.x, bossPos.y, bossPos.z],
             health: 500,
             scale: 2.5,
+            game: this.game,
           });
         } else {
           // Reposition existing boss
@@ -3353,6 +3370,18 @@ export class Level0Controller {
       if (this.bossFightSystem !== null) {
         console.log('🔄 [Level0Controller] Resetting boss fight state after death');
         
+        // Clean up boss fight system properly
+        try {
+          if (this.bossFightSystem.cleanup) {
+            this.bossFightSystem.cleanup();
+          }
+          if (this.bossFightSystem.hud && this.bossFightSystem.hud.unmount) {
+            this.bossFightSystem.hud.unmount();
+          }
+        } catch (e) {
+          console.warn('⚠️ Error cleaning up boss fight system on reset:', e);
+        }
+        
         // Clear boss fight system
         this.bossFightSystem = null;
         
@@ -3397,6 +3426,23 @@ export class Level0Controller {
    */
   dispose() {
     console.log('🧹 [Level0Controller] Disposing...');
+    
+    // Clean up boss fight system FIRST to remove HUD and platform
+    if (this.bossFightSystem) {
+      console.log('🧹 [Level0Controller] Cleaning up boss fight system...');
+      try {
+        if (this.bossFightSystem.cleanup) {
+          this.bossFightSystem.cleanup();
+        }
+        // Extra safety: ensure HUD is unmounted
+        if (this.bossFightSystem.hud && this.bossFightSystem.hud.unmount) {
+          this.bossFightSystem.hud.unmount();
+        }
+        this.bossFightSystem = null;
+      } catch (e) {
+        console.warn('⚠️ Error cleaning up boss fight system:', e);
+      }
+    }
     
     // Stop pacing and remove listeners
     this._stopPacingLoop();

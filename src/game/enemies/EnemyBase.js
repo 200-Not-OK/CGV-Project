@@ -429,9 +429,25 @@ export class EnemyBase {
     console.log(`💀 ${this.constructor.name} has died!`);
     this.alive = false;
     
-    // Hide health bar on death
+    // Completely remove health bar on death (not just hide it)
     if (this.healthBarGroup) {
-      this.healthBarGroup.visible = false;
+      // Dispose of materials and geometries immediately
+      this.healthBarGroup.children.forEach(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => mat.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+      });
+      
+      // Remove from parent mesh
+      if (this.mesh && this.healthBarGroup.parent === this.mesh) {
+        this.mesh.remove(this.healthBarGroup);
+      }
+      this.healthBarGroup = null;
       this.healthBarVisible = false;
     }
     
@@ -467,14 +483,36 @@ export class EnemyBase {
         }
       });
       
-      // Remove from scene
-      if (this.mesh) {
+      // Remove from mesh if attached
+      if (this.mesh && this.healthBarGroup.parent === this.mesh) {
         this.mesh.remove(this.healthBarGroup);
       }
+      
+      // Extra safety: remove from scene directly if somehow added there
+      if (this.healthBarGroup.parent === this.scene) {
+        this.scene.remove(this.healthBarGroup);
+      }
+      
       this.healthBarGroup = null;
     }
     
-    if (this.mesh) this.scene.remove(this.mesh);
+    // Remove mesh from scene completely (not just hide it)
+    if (this.mesh) {
+      // Dispose of any materials and geometries in the mesh
+      this.mesh.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => mat.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+      });
+      
+      this.scene.remove(this.mesh);
+      this.mesh = null;
+    }
   }
 }
 

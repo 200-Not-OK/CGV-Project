@@ -345,6 +345,86 @@ this.setupLLMTracking();
     setTimeout(() => this._showLevelPicker(), 400);
   }
 
+  // Clean up any stray health bars that might persist in the scene
+  _cleanupStrayHealthBars() {
+    if (!this.scene) return;
+    
+    const healthBarsToRemove = [];
+    
+    // Traverse the scene looking for health bar groups
+    this.scene.traverse((obj) => {
+      // Health bars are typically THREE.Group objects with specific children
+      if (obj instanceof THREE.Group && obj.children.length >= 2) {
+        const hasHealthBarStructure = obj.children.some(child => 
+          child instanceof THREE.Mesh && 
+          child.geometry instanceof THREE.PlaneGeometry &&
+          child.material instanceof THREE.MeshBasicMaterial
+        );
+        
+        if (!hasHealthBarStructure) return;
+        
+        // Additional check: health bars typically have specific material colors
+        const likelyHealthBar = obj.children.some(child => {
+          const mat = child.material;
+          if (!mat || !mat.color) return false;
+          // Health bars typically have red/green/black colors and specific opacity
+          const isHealthBarColor = 
+            mat.transparent === true &&
+            (mat.opacity > 0.5 && mat.opacity <= 1.0) &&
+            (
+              mat.color.getHex() === 0x000000 || // black background
+              mat.color.getHex() === 0xff0000 || // red
+              mat.color.getHex() === 0x00ff00 || // green
+              mat.color.getHex() === 0xffff00 || // yellow
+              mat.color.getHex() === 0xff3333    // boss red
+            );
+          return isHealthBarColor;
+        });
+        
+        if (hasHealthBarStructure && likelyHealthBar) {
+          healthBarsToRemove.push(obj);
+        }
+      }
+    });
+    
+    // Remove any found health bars
+    if (healthBarsToRemove.length > 0) {
+      console.log(`🧹 Cleaning up ${healthBarsToRemove.length} stray health bar(s)`);
+      healthBarsToRemove.forEach(healthBar => {
+        // Dispose materials and geometries
+        healthBar.children.forEach(child => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(mat => mat.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
+        
+        // Remove from parent
+        if (healthBar.parent) {
+          healthBar.parent.remove(healthBar);
+        }
+      });
+    }
+    
+    // ALSO clean up any stray boss HUD elements (screen-space UI)
+    if (typeof document !== 'undefined') {
+      // Look for boss HUD elements that might not have been unmounted
+      const strayHuds = document.querySelectorAll('div[style*="position:fixed"][style*="top:24px"]');
+      if (strayHuds.length > 0) {
+        console.log(`🧹 Cleaning up ${strayHuds.length} stray boss HUD element(s)`);
+        strayHuds.forEach(hud => {
+          if (hud.parentNode) {
+            hud.parentNode.removeChild(hud);
+          }
+        });
+      }
+    }
+  }
+
 
   _bindKeys() {
     window.addEventListener('keydown', (e) => {
@@ -959,9 +1039,19 @@ this.setupLLMTracking();
   async loadLevel(index) {
     if (this.level) this.level.dispose();
 
+   // Hide node counter UI when transitioning levels
+    const hud = this.ui?.get('hud');
+    if (hud && hud.showNodeCounter) {
+      hud.showNodeCounter(false);
+    }
+
    if (this.collectiblesManager) {
     this.collectiblesManager.clearPersistentChests();
   }
+
+    // Clean up any stray health bars that might have persisted from previous levels
+    this._cleanupStrayHealthBars();
+
   // Preserve debug state before disposing old physics world
   const wasDebugEnabled = this.physicsWorld.isDebugEnabled();
 
@@ -1317,6 +1407,14 @@ this.setupLLMTracking();
 
   // Finally: trigger the cinematic (sounds are loaded and ready).
   this.level.triggerLevelStartCinematic(this.activeCamera, this.player);
+
+  // Show node counter only for level1
+  if (this.currentLevelId === 'level1' || this.currentLevelId === 'level1A') {
+    const hud = this.ui?.get('hud');
+    if (hud && hud.showNodeCounter) {
+      hud.showNodeCounter(true);
+    }
+  }
 
   return this.level;
 }
