@@ -107,6 +107,12 @@ export class Level0Controller {
     
     // Set up E key listener for node interaction
     this._setupNodeInteractionListener();
+
+    // Ensure node HUD is hidden until after Richard's first interaction
+    try {
+      const hud = this.game?.ui?.get('hud');
+      if (hud && hud.showNodeCounter) hud.showNodeCounter(false);
+    } catch (_) {}
     
     // DEBUG: Enable final interaction immediately if flag is set
     if (this._debugFinalInteractionAlways) {
@@ -918,6 +924,11 @@ export class Level0Controller {
       // Richard: One infiltrated...
       this._setupEnterKeyListener(director);
       await this._showCaption('One infiltrated the tree, a big one. We won\'t be able to stop it.', 0, 'Richard');
+      // Requirement: Hide node HUD once Richard tells about something inside the tree
+      try {
+        const hud = this.game?.ui?.get('hud');
+        if (hud && hud.showNodeCounter) hud.showNodeCounter(false);
+      } catch (_) {}
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -1128,6 +1139,11 @@ export class Level0Controller {
       // Richard dialogue 2: "One infilitrated the tree, a big one, We wont be able to stop it"
       this._setupEnterKeyListener(director);
       await this._showCaption('One infiltrated the tree, a big one. We won\'t be able to stop it.', 0, 'Richard');
+      // Requirement: Hide node HUD when Richard reveals something is inside the tree
+      try {
+        const hud = this.game?.ui?.get('hud');
+        if (hud && hud.showNodeCounter) hud.showNodeCounter(false);
+      } catch (_) {}
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -3128,6 +3144,13 @@ export class Level0Controller {
    * Update method - should be called from game loop to track player with Steve
    */
   update(delta) {
+    // Guard: keep node HUD hidden until the first Richard interaction has actually occurred
+    try {
+      if (!this.interactionDialogueShown) {
+        const hud = this.game?.ui?.get('hud');
+        if (hud && hud.showNodeCounter) hud.showNodeCounter(false);
+      }
+    } catch (_) {}
     // (Preview disabled)
 
     // Update Steve's rotation to track player
