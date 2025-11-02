@@ -29,7 +29,47 @@ export class Level0Controller {
   // Enter prompt UI for dialogue
   this.enterPromptEl = null;
   this.enterPromptPulseId = null;
-    
+
+    // Richard voiceover audio file mapping
+    this.richardVoiceoverMap = {
+      'oh_no_no': 'rich_oh_no',
+      'whoa': 'rich_whoa_whered_you_come',
+      'nodes': 'rich_its_the_nodes',
+      'crawlers': 'rich_the_crawlers',
+      'yes_please': 'rich_yes_please_hurry',
+      'there_is_node': 'rich_there_is_a_node',
+      'press_e': 'rich_press_e',
+      'theres_node': 'rich_theres_the_node',
+      'nevermind': 'rich_nevermin',
+      'two_ways': 'rich_you_have_two_wayd',
+      'oh_no': 'rich_oh_no_stacktool',
+      'nice_got_them': 'rich_nice_u_got_them',
+      'this_is_bad': 'rich_this_is_bad',
+      'one_infiltrated': 'rich_one_infiltrated',
+      'but_please': 'rich_but_please',
+      'connection_mainland': 'rich_connection_to_mainland',
+      'when_decide': 'rich_when_you_decide',
+      'good_job': 'rich_good_job'
+    };
+
+    // Steve voiceover audio file mapping
+    this.steveVoiceoverMap = {
+      'before_you_go': 'steve_before_you_go',
+      'but_beware': 'steve_but_beware',
+      'calm_down': 'steve_calm_down_richard',
+      'how_did_they': 'steve_how_did_they',
+      'it_should': 'steve_it_should',
+      'listen_were': 'steve_listen_were',
+      'press_x': 'steve_press_x',
+      'richard_still_red': 'steve_richard_its_still_red',
+      'that_should': 'steve_that_should',
+      'thats_bugger': 'steve_thats_the_bugger',
+      'this_one': 'steve_this_one',
+      'those_crawlers': 'steve_those_crawlers',
+      'wait': 'steve_wait',
+      'you_can_use': 'steve_you_can_use'
+    };
+
     // Boss fight system
     this.bossFightSystem = null; // Store boss fight instance for updates
     
@@ -108,15 +148,21 @@ export class Level0Controller {
     // Preview flag disabled
     this._forceSecondNodePreview = false;
 
+    // Load Richard's voiceover audio files
+    this._loadRichardVoiceovers();
+
+    // Load Steve's voiceover audio files
+    this._loadSteveVoiceovers();
+
     // Get references to NPCs once
     this._initializeNpcs();
-    
+
     // Set up interaction system after initialization
     this._setupRichardInteraction();
-    
+
     // Find and store node meshes
     this._findNodeMeshes();
-    
+
     // Set up E key listener for node interaction
     this._setupNodeInteractionListener();
 
@@ -1515,7 +1561,7 @@ export class Level0Controller {
       console.log('🎭 Fade element opacity:', director._fadeEl?.style.opacity);
       
       // Show dialogue and start pacing
-      await this._showCaption('Oh no, oh no, oh no! What are we gonna do?', 3000);
+      await this._showCaption('Oh no no, oh no! What are we gonna do?', 3000);
       
       // Start pacing loop
       this._startPacingLoop(director);
@@ -2093,7 +2139,7 @@ export class Level0Controller {
    * @param {number} ms - Duration in milliseconds (0 = no auto-hide, waits for manual hide)
    * @returns {Promise} Resolves when caption is shown (not when it hides)
    */
-  _showCaption(text, ms, characterName = 'Richard') {
+  _showCaption(text, ms, characterName = 'Richard', voiceoverKey = null) {
     return new Promise((resolve) => {
       const cm = this.level.cinematicsManager;
       if (!cm) {
@@ -2101,7 +2147,7 @@ export class Level0Controller {
         resolve();
         return;
       }
-      
+
       // Set character name in caption UI
       if (cm.dialogueUI) {
         const nameEl = cm.dialogueUI.querySelector('.caption-name');
@@ -2109,7 +2155,99 @@ export class Level0Controller {
           nameEl.textContent = characterName;
         }
       }
-      
+
+      // Auto-detect voiceover key if not provided and character is Richard
+      if (!voiceoverKey && characterName === 'Richard' && this.game.soundManager) {
+        const lowerText = text.toLowerCase();
+
+        // Try to match dialogue text to voiceover keys
+        if (lowerText.includes('oh no no') || (lowerText.includes('oh no') && lowerText.includes('what are we'))) {
+          voiceoverKey = 'oh_no_no';
+        } else if (lowerText.includes('whoa') || lowerText.includes('where did you come from')) {
+          voiceoverKey = 'whoa';
+        } else if (lowerText.includes("it's the nodes") || lowerText.includes('primary nodes')) {
+          voiceoverKey = 'nodes';
+        } else if (lowerText.includes('crawlers')) {
+          voiceoverKey = 'crawlers';
+        } else if (lowerText.includes('yes') && lowerText.includes('please')) {
+          voiceoverKey = 'yes_please';
+        } else if (lowerText.includes("there's a node") || lowerText.includes('there is a node')) {
+          voiceoverKey = 'there_is_node';
+        } else if (lowerText.includes('press e')) {
+          voiceoverKey = 'press_e';
+        } else if (lowerText.includes("there's the node")) {
+          voiceoverKey = 'theres_node';
+        } else if (lowerText.includes('never mind') || lowerText.includes('nevermind')) {
+          voiceoverKey = 'nevermind';
+        } else if (lowerText.includes('two ways')) {
+          voiceoverKey = 'two_ways';
+        } else if (lowerText.includes('oh no') && lowerText.includes('stack tool')) {
+          voiceoverKey = 'oh_no';
+        } else if (lowerText.includes('nice') && lowerText.includes('got them')) {
+          voiceoverKey = 'nice_got_them';
+        } else if (lowerText.includes('this is bad')) {
+          voiceoverKey = 'this_is_bad';
+        } else if (lowerText.includes('one infiltrated')) {
+          voiceoverKey = 'one_infiltrated';
+        } else if (lowerText.includes('but please') || (lowerText.includes('already') && lowerText.includes('please'))) {
+          voiceoverKey = 'but_please';
+        } else if (lowerText.includes('connection') && lowerText.includes('mainland')) {
+          voiceoverKey = 'connection_mainland';
+        } else if (lowerText.includes('when you decide') || lowerText.includes('ready')) {
+          voiceoverKey = 'when_decide';
+        } else if (lowerText.includes('good job')) {
+          voiceoverKey = 'good_job';
+        }
+      }
+
+      // Auto-detect voiceover key if not provided and character is Steve
+      if (!voiceoverKey && characterName === 'Steve' && this.game.soundManager) {
+        const lowerText = text.toLowerCase();
+
+        // Try to match dialogue text to voiceover keys
+        if (lowerText.includes('before you go')) {
+          voiceoverKey = 'before_you_go';
+        } else if (lowerText.includes('but beware')) {
+          voiceoverKey = 'but_beware';
+        } else if (lowerText.includes('calm down')) {
+          voiceoverKey = 'calm_down';
+        } else if (lowerText.includes('how did they')) {
+          voiceoverKey = 'how_did_they';
+        } else if (lowerText.includes('it should')) {
+          voiceoverKey = 'it_should';
+        } else if (lowerText.includes('listen') && (lowerText.includes("we're") || lowerText.includes('were'))) {
+          voiceoverKey = 'listen_were';
+        } else if (lowerText.includes('press x')) {
+          voiceoverKey = 'press_x';
+        } else if (lowerText.includes('richard') && lowerText.includes('still red')) {
+          voiceoverKey = 'richard_still_red';
+        } else if (lowerText.includes('that should')) {
+          voiceoverKey = 'that_should';
+        } else if (lowerText.includes('bugger')) {
+          voiceoverKey = 'thats_bugger';
+        } else if (lowerText.includes('this one')) {
+          voiceoverKey = 'this_one';
+        } else if (lowerText.includes('those crawlers')) {
+          voiceoverKey = 'those_crawlers';
+        } else if (lowerText.includes('wait') && lowerText.length < 10) {
+          voiceoverKey = 'wait';
+        } else if (lowerText.includes('you can use')) {
+          voiceoverKey = 'you_can_use';
+        }
+      }
+
+      // Play voiceover if key is provided/detected and character is Richard
+      if (voiceoverKey && characterName === 'Richard' && this.game.soundManager) {
+        this.game.soundManager.playSFX(voiceoverKey);
+        console.log(`🎤 [Level0Controller] Playing Richard voiceover: ${voiceoverKey}`);
+      }
+
+      // Play voiceover if key is provided/detected and character is Steve
+      if (voiceoverKey && characterName === 'Steve' && this.game.soundManager) {
+        this.game.soundManager.playSFX(voiceoverKey);
+        console.log(`🎤 [Level0Controller] Playing Steve voiceover: ${voiceoverKey}`);
+      }
+
       // If ms is 0, show caption indefinitely (will be hidden manually)
       if (ms === 0) {
         cm._showCaption(text, 999999).then(() => resolve()); // Long timeout, will be hidden manually
@@ -2117,6 +2255,44 @@ export class Level0Controller {
         cm._showCaption(text, ms).then(resolve);
       }
     });
+  }
+
+  /**
+   * Load Richard's voiceover audio files
+   */
+  _loadRichardVoiceovers() {
+    if (!this.game.soundManager) {
+      console.warn('⚠️ [Level0Controller] SoundManager not available for loading voiceovers');
+      return;
+    }
+
+    const soundManager = this.game.soundManager;
+    const basePath = 'assets/audio/ambient/';
+
+    for (const [key, fileName] of Object.entries(this.richardVoiceoverMap)) {
+      const url = `${basePath}${fileName}.mp3`;
+      soundManager.load('sfx', key, url, false)
+        .catch(err => console.error(`❌ Failed to load voiceover: ${key}`, err));
+    }
+  }
+
+  /**
+   * Load Steve's voiceover audio files
+   */
+  _loadSteveVoiceovers() {
+    if (!this.game.soundManager) {
+      console.warn('⚠️ [Level0Controller] SoundManager not available for loading Steve voiceovers');
+      return;
+    }
+
+    const soundManager = this.game.soundManager;
+    const basePath = 'assets/audio/ambient/';
+
+    for (const [key, fileName] of Object.entries(this.steveVoiceoverMap)) {
+      const url = `${basePath}${fileName}.mp3`;
+      soundManager.load('sfx', key, url, false)
+        .catch(err => console.error(`❌ Failed to load Steve voiceover: ${key}`, err));
+    }
   }
 
   /**
