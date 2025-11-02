@@ -101,7 +101,7 @@ export function createSceneAndRenderer() {
 
   // Skybox rotation properties (creates twinkling effect)
   let skyboxRotation = 0;
-  const skyboxRotationSpeed = 0.1; // Increased speed for more noticeable rotation
+  const skyboxRotationSpeed = 0.025; // Slower rotation for Level 3
   let skyboxMeshFar = null; // Far layer - blue nebulae
   let skyboxMeshNear = null; // Near layer - asteroid field
   // Expose handles for external sky switching
@@ -285,6 +285,12 @@ const totalTextures = 2; // Only 2 layers for better FPS
   // Update function for skybox animation
   // Update function for skybox rotation (creates twinkling stars effect)
   const updateSkybox = (deltaTime) => {
+    // Only rotate skybox for Level 3, not for other levels
+    const currentLevelId = scene?.userData?.levelId;
+    if (currentLevelId !== 'level3') {
+      return; // Stop rotation for all levels except Level 3
+    }
+    
     if (skyboxMeshFar && skyboxMeshNear) {
       skyboxRotation += skyboxRotationSpeed * (deltaTime / 16.67);
       
@@ -530,11 +536,11 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
         group: skyGroup,
         gradientMaterial,
         cloudMaterial: cloudsMaterial,
-        rotationSpeed: 0.035
+        rotationSpeed: 0.01 // Slower rotation for Level 3 sky
       };
       sky.preset = 'light';
     }
-    scene.background = new THREE.Color(0x8fd4ff);
+    scene.background = new THREE.Color(0x8fd4ff); // Light blue background with white clouds for Level 3
     // Disable all shadows for this light preset per request
     if (renderer && renderer.shadowMap) {
       renderer.shadowMap.enabled = false;
