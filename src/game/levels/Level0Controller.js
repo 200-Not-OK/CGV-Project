@@ -81,6 +81,10 @@ export class Level0Controller {
     // Player death tracking
     this.lastPlayerHealth = null;
     this.playerDeathHandler = null;
+    this._customRespawnHandler = null; // Custom respawn handler for boss fights
+    
+    // Hook into the death menu's respawn callback
+    this._overrideDeathMenuRespawn();
     
     // Door trigger tutorial flags
     this._doorTriggersEnabled = false;
@@ -205,6 +209,62 @@ export class Level0Controller {
         }, 500);
       };
       console.log('💡 [DEBUG] Call skipToBossFight() in console to skip to boss fight');
+    }
+  }
+
+  /**
+   * Override death menu respawn to use custom handler during boss fights
+   */
+  _overrideDeathMenuRespawn() {
+    // Store original respawnPlayer function
+    if (this.game && this.game.respawnPlayer) {
+      const originalRespawn = this.game.respawnPlayer.bind(this.game);
+      
+      // Replace with our interceptor
+      this.game.respawnPlayer = async () => {
+        // Check if we have a custom respawn handler (set during boss fight death)
+        if (this._customRespawnHandler) {
+          console.log('🎮 [Level0Controller] Using custom respawn handler for boss fight');
+          const handler = this._customRespawnHandler;
+          this._customRespawnHandler = null; // Clear it
+          
+          // Hide death menu
+          const deathMenu = this.game.ui?.get('deathMenu');
+          if (deathMenu && deathMenu.hide) {
+            deathMenu.hide();
+          }
+          
+          // Clear death state
+          this.game.playerDead = false;
+          if (this.game.player) this.game.player.alive = true;
+          this.game.clearDeathVisualsAndState?.();
+          
+          // Unpause the game
+          this.game.setPaused(false);
+          
+          // Re-enable input
+          if (this.game.input && this.game.input.setEnabled) {
+            this.game.input.setEnabled(true);
+          }
+          
+          // Re-lock pointer
+          if ((this.game.activeCamera === this.game.thirdCameraObject || this.game.activeCamera === this.game.firstCameraObject)
+            && !document.pointerLockElement) {
+            try {
+              document.body.requestPointerLock();
+            } catch (err) {
+              console.warn('requestPointerLock on respawn failed:', err);
+            }
+          }
+          
+          // Execute custom respawn logic
+          handler();
+        } else {
+          // Use original respawn (reload level)
+          console.log('🎮 [Level0Controller] Using default respawn (reload level)');
+          await originalRespawn();
+        }
+      };
     }
   }
 
@@ -564,39 +624,12 @@ export class Level0Controller {
         // Check if boss already exists
         bossEnemy = this.level.enemyManager.enemies.find(e => e.enemyType === 'lobber_boss');
         if (!bossEnemy) {
-          // Spawn new boss
+          // Spawn new boss (scale 2.5x is hardcoded in LobberBossEnemy class)
           bossEnemy = this.level.enemyManager.spawn('lobber_boss', {
             position: [bossPos.x, bossPos.y, bossPos.z],
             health: 500,
-            scale: 2.5,
             game: this.game,
           });
-          
-          // Scale the physics body to match visual scale
-          if (bossEnemy && bossEnemy.body && bossEnemy.body.shapes) {
-            const scaleValue = 2.5;
-            bossEnemy.body.shapes.forEach(shape => {
-              if (shape.type === CANNON.Shape.types.BOX) {
-                // Scale box shape (multiply halfExtents)
-                shape.halfExtents.x *= scaleValue;
-                shape.halfExtents.y *= scaleValue;
-                shape.halfExtents.z *= scaleValue;
-              } else if (shape.type === CANNON.Shape.types.SPHERE) {
-                // Scale sphere shape
-                shape.radius *= scaleValue;
-              } else if (shape.type === CANNON.Shape.types.CYLINDER) {
-                // Scale cylinder shape
-                shape.radiusTop *= scaleValue;
-                shape.radiusBottom *= scaleValue;
-                shape.height *= scaleValue;
-              }
-            });
-            // Update the body's bounding sphere radius
-            bossEnemy.body.updateBoundingRadius();
-            // Recompute AABB (axis-aligned bounding box)
-            bossEnemy.body.aabbNeedsUpdate = true;
-            console.log('⚔️ [Level0Controller] Boss physics body scaled to match visual scale');
-          }
         } else {
           // Reposition existing boss
           bossEnemy.setPosition(bossPos);
@@ -914,8 +947,7 @@ export class Level0Controller {
       // Lock player movement for whole sequence
       this.game.player.lockMovement('SecondNodeCutscene');
 
-      // Take camera control
-      director.takeControl();
+      // Take camera control;
 
       // Prelude caption
       this._setupEnterKeyListener(director);
@@ -1150,19 +1182,6 @@ export class Level0Controller {
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
-      // Setup player and Steve to track Richard (during dialogue)
-      let trackingActive = true;
-      const trackInterval = setInterval(() => {
-        if (!trackingActive || !this.richard || !this.steve || !this.game.player) {
-          clearInterval(trackInterval);
-          return;
-        }
-        this._makeNpcFaceTarget(this.steve, this.richard.mesh.position);
-        // Player tracking will be handled manually if needed
-      }, 50); // Update every 50ms
-
-      await this._wait(500); // Brief pause
-
       // Richard turns back (180 degrees) and moves to previous static position
       // Richard's original static position (from pacing start): around 22.40, 10.66, -15.98
       const richardStaticPos = new THREE.Vector3(22.40, 10.66, -15.98);
@@ -1271,10 +1290,41 @@ export class Level0Controller {
 
       // Fade out to conclude, then clear overlay and release
       await director.fadeOut({ ms: 800 });
+
+      // Post-cutscene setup: move NPCs to static spots and show exclamation
+      {
+        // Richard static
+        const richardStaticPos = new THREE.Vector3(22.40, 10.66, -15.98);
+        if (this.richard?.mesh) {
+          this.richard.mesh.position.copy(richardStaticPos);
+          this.richard.mesh.rotation.y = 0; // face +X
+        }
+        if (this.richard?.body) {
+          this.richard.body.position.set(richardStaticPos.x, richardStaticPos.y, richardStaticPos.z);
+          this.richard.body.velocity.set(0, 0, 0);
+          this.richard.body.angularVelocity.set(0, 0, 0);
+        }
+        // Steve static
+        const steveStaticPos = new THREE.Vector3(28.91, 12.66, -1.21);
+        if (this.steve?.mesh) this.steve.mesh.position.copy(steveStaticPos);
+        if (this.steve?.body) {
+          this.steve.body.position.set(steveStaticPos.x, steveStaticPos.y, steveStaticPos.z);
+          this.steve.body.velocity.set(0, 0, 0);
+          this.steve.body.angularVelocity.set(0, 0, 0);
+        }
+        // Indicator
+        this._showExclamationMark();
+        // Enable final post-second-node choice
+        this._finalBinaryChoiceEnabled = true;
+      }
+
+      // Ensure overlay is cleared before releasing
       try {
         await director.fadeIn({ ms: 0 });
         if (director._fadeEl) director._fadeEl.style.opacity = '0';
-      } catch (e) {}
+      } catch {}
+
+      // Release camera and restore gameplay
       await director.release();
       if (this.game.thirdCameraObject) {
         this.game.activeCamera = this.game.thirdCameraObject;
@@ -1286,37 +1336,9 @@ export class Level0Controller {
       this.game.player.unlockMovement();
       this.cutsceneActive = false;
 
-      // Move Richard to static position with exclamation mark
-      if (this.richard && this.richard.mesh) {
-        // Richard's static position (from pacing start)
-        const richardStaticPos = new THREE.Vector3(22.40, 10.66, -15.98);
-        // Already at static position, just ensure rotation is correct
-        this.richard.mesh.rotation.y = 0; // Face positive X
-        if (this.richard.body) {
-          this.richard.body.position.set(richardStaticPos.x, richardStaticPos.y, richardStaticPos.z);
-        }
-        // Show exclamation mark
-        this._showExclamationMark();
-      }
-
-      // Move Steve to static position (no exclamation mark)
-      if (this.steve && this.steve.mesh) {
-        // Steve's static position from initial cutscene: around 28.91, 12.66, -1.21
-        const steveStaticPos = new THREE.Vector3(28.91, 12.66, -1.21);
-        this.steve.mesh.position.copy(steveStaticPos);
-        if (this.steve.body) {
-          this.steve.body.position.set(steveStaticPos.x, steveStaticPos.y, steveStaticPos.z);
-        }
-        // Make Steve face appropriate direction
-        await this._faceNpcTo(this.steve, this.richard.mesh.position);
-      }
-
       console.log('✅ [Level0Controller] Second node cutscene complete');
-      
-      // Enable final binary choice after second-node scene completes
-      this._finalBinaryChoiceEnabled = true;
     } catch (e) {
-      console.error('❌ [Level0Controller] Error in second node cutscene:', e);
+      console.error('❌ [Level0Controller] Error in second node cutscene flow:', e);
       try { await cm.director.release(); } catch {}
       // Auto re-lock pointer after the scene (error path)
       if (typeof document !== 'undefined' && !document.pointerLockElement) {
@@ -2432,8 +2454,8 @@ export class Level0Controller {
       // Re-setup Enter key listener
       this._setupEnterKeyListener(director);
       
-      // Dialogue 4: Steve - "Calm down. This one looks... capable. More capable than us, at least."
-      await this._showCaption('Calm down. This one looks... capable. More capable than us, at least.', 0, 'Steve');
+      // Dialogue 4: Steve - "Calm down Richard"
+      await this._showCaption('Calm down Richard', 0, 'Steve');
       await this._waitForEnter();
       
       // Clear caption
@@ -3147,7 +3169,6 @@ export class Level0Controller {
       // Camera Position 2: Cut to new position
       const cam2Pos = [-402.3180252502396, 78.19130472056894, 228.4097942646058];
       const cam2LookAt = [-411.6181265700495, 60.753981237230946, 231.48353224607055];
-      
       director.cutTo({
         position: cam2Pos,
         lookAt: cam2LookAt,
@@ -3164,13 +3185,19 @@ export class Level0Controller {
       await director.fadeIn({ ms: 600 });
       await this._wait(300);
       
-      // Setup Enter key listener
+      // Dialogue: Steve then Richard
       this._setupEnterKeyListener(director);
-      
-      // Steve: "Those crawlers. They moved the data blocks now the lift is not working."
-      await this._showCaption('Those crawlers. They moved the data blocks now the lift is not working.', 0, 'Steve');
+      await this._showCaption('How did they know to guard the shortest path?', 0, 'Steve');
       await this._waitForEnter();
       cm._hideCaption?.(true);
+      
+      this._setupEnterKeyListener(director);
+      await this._showCaption('Never mind that.', 0, 'Richard');
+      await this._waitForEnter();
+      cm._hideCaption?.(true);
+      
+      // Fade out
+      await director.fadeOut({ ms: 800 });
       
       // Camera Position 3: Cut to lift position
       const cam3Pos = [-464.162086792485, 26.74864580159782, 215.22313148750766];
@@ -3310,7 +3337,7 @@ export class Level0Controller {
       // Fade out
       await director.fadeOut({ ms: 800 });
       
-      // Position C (cut)
+      // Camera Position 2: Cut to new position
       const posC = [268.80087190447995, 182.26145828072922, 9.299643635569545];
       const lookC = [267.12235344898016, 166.66979483365512, 21.71264515606087];
       director.cutTo({ position: posC, lookAt: lookC, fov: 60 });
@@ -3338,7 +3365,7 @@ export class Level0Controller {
       // Fade out
       await director.fadeOut({ ms: 800 });
       
-      // Position D (cut)
+      // Camera Position 3: Cut to lift position
       const posD = [321.0640880949602, 50.73027575325627, -72.21474211077759];
       const lookD = [329.43533656744535, 42.465643469972974, -56.04013076354499];
       director.cutTo({ position: posD, lookAt: lookD, fov: 60 });
@@ -3479,8 +3506,13 @@ export class Level0Controller {
       
       // Detect death (health was > 0, now <= 0)
       if (this.lastPlayerHealth !== null && this.lastPlayerHealth > 0 && currentHealth <= 0) {
-        console.log('💀 [Level0Controller] Player died, respawning at initial spawn');
-        this._respawnPlayer(true); // true = from death
+        // If in boss fight, store custom respawn handler to override default level reload
+        if (this.bossFightSystem !== null) {
+          console.log('💀 [Level0Controller] Player died in boss fight - setting custom respawn handler');
+          this._customRespawnHandler = () => {
+            this._respawnPlayer(true); // Use our custom boss respawn logic
+          };
+        }
       }
       
       // Update last known health
@@ -3636,18 +3668,34 @@ export class Level0Controller {
     
     console.log(`🔄 [Level0Controller] Respawning player ${fromDeath ? '(from death)' : '(from fall)'}`);
     
-    // Reset player position to initial spawn
+    // Determine respawn position:
+    // - If died during boss fight: respawn near Richard for retry
+    // - Otherwise: respawn at initial spawn position
+    let respawnPosition = this.initialSpawnPosition.clone();
+    
+    if (fromDeath && this.bossFightSystem !== null && this.richard?.mesh) {
+      // Respawn near Richard (but not too close) so player can retry the boss fight
+      const richardPos = this.richard.mesh.position;
+      respawnPosition = new THREE.Vector3(
+        richardPos.x + 5, // 5 units away from Richard
+        richardPos.y,
+        richardPos.z + 5
+      );
+      console.log('🔄 [Level0Controller] Died to boss - respawning near Richard for retry');
+    }
+    
+    // Reset player position to respawn point
     if (this.game.player.body) {
       this.game.player.body.position.set(
-        this.initialSpawnPosition.x,
-        this.initialSpawnPosition.y,
-        this.initialSpawnPosition.z
+        respawnPosition.x,
+        respawnPosition.y,
+        respawnPosition.z
       );
       this.game.player.body.velocity.set(0, 0, 0);
       this.game.player.body.angularVelocity.set(0, 0, 0);
     }
     if (this.game.player.mesh) {
-      this.game.player.mesh.position.copy(this.initialSpawnPosition);
+      this.game.player.mesh.position.copy(respawnPosition);
     }
     
     // If respawning from death
@@ -3657,6 +3705,37 @@ export class Level0Controller {
         this.game.player.health = this.game.player.maxHealth;
       } else {
         this.game.player.health = 100;
+      }
+      
+      // Reset stack to full (3 blocks)
+      if (this.game.player.weapon) {
+        console.log('🔍 [Level0Controller] Weapon exists:', !!this.game.player.weapon);
+        console.log('🔍 [Level0Controller] Stack tool state - Granted:', this.game.state?.stackToolGranted, 'Broken:', this.game.state?.stackToolBroken);
+        console.log('🔍 [Level0Controller] Current level ID:', this.game.currentLevelId);
+        
+        // UNBREAK the stack tool for the retry (it was broken during boss fight)
+        if (this.game.state) {
+          this.game.state.stackToolBroken = false;
+          console.log('🔧 [Level0Controller] Stack tool unbroken for retry');
+        }
+        
+        // Clear any existing blocks
+        if (this.game.player.weapon.clear) {
+          this.game.player.weapon.clear();
+        }
+        
+        // Re-enable the stack tool using the game's refresh method
+        if (this.game.refreshStackToolAvailability) {
+          console.log('🔄 [Level0Controller] Calling refreshStackToolAvailability()...');
+          this.game.refreshStackToolAvailability();
+        } else {
+          // Fallback: directly mount
+          console.log('🔄 [Level0Controller] Using fallback mount method...');
+          this.game.player.weapon.mount();
+        }
+        
+        console.log('✅ [Level0Controller] Stack tool enabled status:', this.game.player.weapon.enabled);
+        console.log('🔄 [Level0Controller] Stack restored to full (0/3)');
       }
       
       // Update HUD if available
@@ -3687,12 +3766,20 @@ export class Level0Controller {
         // Clear boss fight system
         this.bossFightSystem = null;
         
-        // Re-enable Richard's final interaction
+        // Re-enable Richard's final interaction (boss fight trigger)
         this._finalBinaryChoiceEnabled = true;
+        console.log('✅ [Level0Controller] Richard final interaction re-enabled for retry');
         
-        // Show exclamation mark if Richard exists
+        // Ensure Richard is interactable and show exclamation mark
         if (this.richard && this.richard.mesh) {
+          // Make sure Richard is set to kinematic (non-interactable by physics)
+          if (this.richard.body) {
+            this.richard.body.type = CANNON.Body.KINEMATIC;
+            this.richard.body.collisionResponse = false;
+          }
+          // Show exclamation mark above Richard
           this._showExclamationMark();
+          console.log('✅ [Level0Controller] Exclamation mark shown above Richard');
         }
         
         // Find and remove/reset boss enemy if it exists

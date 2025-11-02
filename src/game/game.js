@@ -1911,7 +1911,9 @@ clearDeathVisualsAndState() {
 
   refreshStackToolAvailability() {
     const levelId = this.currentLevelId || this.level?.data?.id || this.scene?.userData?.levelId || null;
-    const canUse = !this.state.stackToolBroken && this.state.stackToolGranted && levelId === 'level1';
+    // Allow stack tool in both 'level1' and 'level1_glitched'
+    const isLevel1OrGlitched = levelId === 'level1' || levelId === 'level1_glitched';
+    const canUse = !this.state.stackToolBroken && this.state.stackToolGranted && isLevel1OrGlitched;
     
     console.log('[StackTool] Refresh - Level:', levelId, 'Granted:', this.state.stackToolGranted, 'Broken:', this.state.stackToolBroken, '=> Can use:', canUse);
     

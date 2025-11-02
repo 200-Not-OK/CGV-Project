@@ -1912,6 +1912,17 @@ export const levels = [
         "materialType": "wall"
       },
       {
+        "id": "collider_5",
+        "type": "mesh",
+        "meshName": "Walls",
+        "materialType": "wall",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "id": "collider_4",
         "type": "box",
         "position": [
@@ -1931,6 +1942,7 @@ export const levels = [
         ],
         "materialType": "wall"
       },
+
       {
         "id": "collider_6",
         "type": "mesh",
@@ -21061,17 +21073,6 @@ export const levels = [
           0
         ],
         "materialType": "wall"
-      },
-      {
-        "id": "collider_5",
-        "type": "mesh",
-        "meshName": "Walls",
-        "materialType": "wall",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
       },
       {
         "id": "collider_6",
