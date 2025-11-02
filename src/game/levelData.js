@@ -20352,13 +20352,13 @@ export const levels = [
       {
         "type": "collectibles",
         "config": {
-          "applesTotal": 7,
+          "applesTotal": 2,
           "potionsStart": 5,
           "pointsPerApple": 200,
           "collectibleTypes": {
             "apples": {
-              "icon": "🍏",
-              "name": "Green Apples",
+              "icon": "🖥️",
+              "name": "Assets",
               "color": "#51cf66",
               "completeColor": "#ffd43b",
               "completeIcon": "👑"
