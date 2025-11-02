@@ -2016,9 +2016,9 @@ export class Level0Controller {
       
       // If ms is 0, show caption indefinitely (will be hidden manually)
       if (ms === 0) {
-        cm._showCaption(text, 999999).then(() => resolve()); // Long timeout, will be hidden manually
+        cm._showCaption(characterName, text, 999999).then(() => resolve()); // Long timeout, will be hidden manually
       } else {
-        cm._showCaption(text, ms).then(resolve);
+        cm._showCaption(characterName, text, ms).then(resolve);
       }
     });
   }
