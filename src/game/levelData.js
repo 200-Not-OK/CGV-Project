@@ -4248,7 +4248,7 @@ export const levels = [
             -35
           ]
         ],
-        "health": 500,
+        "health": 250,
         "speed": 3,
         "chaseRange": 12
       }

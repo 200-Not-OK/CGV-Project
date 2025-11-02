@@ -33,6 +33,7 @@ import { initGPUDetector } from './utils/gpuDetector.js';
 import { initQualityControls } from './utils/qualityControls.js';
 import { GlitchManager } from './GlitchManager.js';
 import { ComputerTerminal } from './components/ComputerTerminal.js';
+import { LoadingScreen } from './components/LoadingScreen.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -229,6 +230,9 @@ export class Game {
     console.log('📝 Adding TriggerPrompt to UIManager');
     this.ui.add('triggerPrompt', TriggerPrompt, {});
     console.log('✅ TriggerPrompt added to UIManager');
+    // Add loading screen
+    this.ui.add('loadingScreen', LoadingScreen, {});
+    console.log('📺 LoadingScreen added to UIManager');
     // Add voiceover card for character dialogues
     this.ui.add('voiceoverCard', VoiceoverCard, {
       characterName: 'Pravesh',
@@ -1059,6 +1063,14 @@ suppressOversizedMinimapColliders() {
   // Load level by index and swap UI based on level metadata
   // Load level by index and swap UI based on level metadata
   async loadLevel(index) {
+    // Show loading screen
+    const loadingScreen = this.ui.get('loadingScreen');
+    if (loadingScreen) {
+      loadingScreen.show();
+      loadingScreen.setStatus('INITIALIZING', 0);
+      console.log('📺 Loading screen shown');
+    }
+
     if (this.level) this.level.dispose();
 
    if (this.collectiblesManager) {
@@ -1134,6 +1146,10 @@ if (staleLow) staleLow.remove();
 
   this.levelManager.physicsWorld = this.physicsWorld;
   try { disposeSky(this.scene, this.renderer); } catch {}
+  
+  // Update loading progress
+  if (loadingScreen) loadingScreen.setStatus('LOADING GEOMETRY', 30);
+  
   // === Load the level once ===
   this.level = await this.levelManager.loadIndex(index);
 
@@ -1144,6 +1160,10 @@ if (staleLow) staleLow.remove();
     // Explicit flag to allow sun eye only in level3
     this.scene.userData.allowSunEye = (this.scene.userData.levelId === 'level3');
   } catch (e) { /* ignore */ }
+
+  // Update loading progress
+  if (loadingScreen) loadingScreen.setStatus('INITIALIZING SYSTEMS', 50);
+
 
   // === COMPUTER SETUP - CALL THIS AFTER LEVEL IS LOADED ===
   if (this.level.data.id === 'level3') {
@@ -1388,6 +1408,9 @@ this.input.alwaysTrackMouse = true;
   this.applyLevelUI(this.level.data);
   this.applyLevelLights(this.level.data);
 
+  // Update loading progress
+  if (loadingScreen) loadingScreen.setStatus('LOADING AUDIO', 65);
+
   // IMPORTANT: If an onLevelStart cinematic exists, we want the cinematic to control VO timing.
   const hasLevelStartCinematic = !!(this.level?.data?.cinematics && (this.level.data.cinematics.onLevelStart || Array.isArray(this.level.data.cinematics)));
 
@@ -1397,6 +1420,9 @@ this.input.alwaysTrackMouse = true;
   // Spawn collectibles AFTER sounds/UI are ready
   this.collectiblesManager.cleanup();
   await this.collectiblesManager.spawnCollectiblesForLevel(this.level.data);
+
+  // Update loading progress
+  if (loadingScreen) loadingScreen.setStatus('FINALIZING', 85);
 
   // Doors (Level 2 example)
   if (this.level?.data?.id === 'level2') {
@@ -1436,6 +1462,13 @@ this.input.alwaysTrackMouse = true;
 
   // Finally: trigger the cinematic (sounds are loaded and ready).
   this.level.triggerLevelStartCinematic(this.activeCamera, this.player);
+
+  // Hide loading screen
+  if (loadingScreen) {
+    loadingScreen.setStatus('READY', 100);
+    loadingScreen.hide(500); // Fade out over 500ms
+    console.log('📺 Loading screen hidden');
+  }
 
   return this.level;
 }
@@ -1652,6 +1685,9 @@ clearDeathVisualsAndState() {
   }
   if (this.ui.get('triggerPrompt')) {
     globalComponents.set('triggerPrompt', this.ui.get('triggerPrompt'));
+  }
+  if (this.ui.get('loadingScreen')) {
+    globalComponents.set('loadingScreen', this.ui.get('loadingScreen'));
   }
   
   this.ui.clear();
