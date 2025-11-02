@@ -3215,6 +3215,8 @@ export class Level0Controller {
       director.freeCam.pitch = Math.asin(THREE.MathUtils.clamp(dir3.y, -1, 1));
       director.freeCam.yaw = Math.atan2(dir3.x, dir3.z);
       
+      // Fade in to show the lift scene
+      await director.fadeIn({ ms: 600 });
       await this._wait(300);
       
       // Setup Enter key listener
