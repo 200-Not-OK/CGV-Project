@@ -805,26 +805,7 @@ suppressOversizedMinimapColliders() {
         }
         // ensure player is active when in third- or first-person
         // (handled each frame in _loop by checking activeCamera)
-      } else if (code === 'Backquote') { // ` key
-  this.suppressOversizedMinimapColliders();
-} else if (code === 'KeyM') {
-        // toggle physics debug visualization
-        this.physicsWorld.enableDebugRenderer(!this.physicsWorld.isDebugEnabled());
-      } else if (code === 'KeyP') {
-        // toggle performance stats display
-        this.performanceMonitor.toggleStatsDisplay();
-      } else if (code === 'KeyH') {
-        // toggle door collision helpers (green boxes around doors)
-        if (this.doorManager) {
-          this.doorHelpersVisible = !this.doorHelpersVisible;
-          this.doorManager.toggleColliders(this.doorHelpersVisible);
-        }
-      } else if (code === 'KeyB') {
-        // toggle combat debug visuals
-        if (this.combatSystem) {
-          this.combatSystem.toggleDebug();
-        }
-      }else if (code === 'KeyE') {
+      } else if (code === 'KeyE') {
   // interact with computer, doors, or chests
   let interacted = false;
   
@@ -849,82 +830,7 @@ suppressOversizedMinimapColliders() {
   if (!interacted) {
     console.log('❌ No interactable object found');
   }
-}else if (code === 'Key8') {
-  // DEBUG: Check interaction prompt
-  this.debugInteractionPrompt();
-}else if (code === 'Key0') { // Zero key
-  this.emergencyComputerDebug();
-}else if (code === 'KeyU') {
-  // DEBUG: Add all LLMs instantly
-  console.log('🔧 DEBUG: Adding all LLMs');
-  this.glitchManager.collectedLLMs.add('llm_gpt');
-  this.glitchManager.collectedLLMs.add('llm_claude');
-  this.glitchManager.collectedLLMs.add('llm_gemini');
-  
-  if (this.showMessage) {
-    this.showMessage('DEBUG: All LLMs added! Computer should be active.');
-  }
-  console.log('✅ LLMs added:', this.glitchManager.collectedLLMs);
-}else if (code === 'KeyO') {
-  // DEBUG: Teleport to computer location from level data
-  console.log('🔧 DEBUG: Teleporting to computer location');
-  
-  if (this.level && this.level.data && this.level.data.computerLocation) {
-    const computerPos = this.level.data.computerLocation.position;
-    this.player.setPosition(new THREE.Vector3(computerPos[0], computerPos[1], computerPos[2]));
-    console.log('🚀 Teleported to computer at:', computerPos);
-    
-    if (this.showMessage) {
-      this.showMessage('DEBUG: Teleported to computer location');
-    }
-  } else {
-    console.error('❌ No computer location found in level data');
-  }
-}else if (code === 'KeyT') {
-  // DEBUG: Computer diagnostics
-  console.log('🔧 DEBUG: Running computer diagnostics');
-  this.debugComputerTerminal();
-  
-  if (this.computerTerminal) {
-    console.log('✅ Computer terminal exists');
-    console.log('🎯 Attempting to interact...');
-    this.computerTerminal.interact();
-  } else {
-    console.error('❌ No computer terminal found!');
-    
-    // Try to create it from level data
-    if (this.level?.data?.computerLocation) {
-      console.log('🔄 Attempting to create computer from level data...');
-      this.setupComputerTerminal();
-    }
-  }
-}
-else if (code === 'KeyY') {
-  // DEBUG: Create computer from level data
-  console.log('🔧 DEBUG: Creating computer from level data');
-  
-  if (this.level?.data?.computerLocation) {
-    console.log('🎯 Creating computer from level data at:', this.level.data.computerLocation.position);
-    this.setupComputerTerminal();
-    
-    // Verify creation
-    setTimeout(() => {
-      if (this.computerTerminal) {
-        console.log('✅ Computer created successfully');
-        this.debugComputerTerminal();
-      } else {
-        console.error('❌ Computer creation failed!');
-      }
-    }, 500);
-  } else {
-    console.error('❌ No computer location found in level data!');
-    console.log('Current level data:', this.level?.data);
-  }
-
-} else if (code === 'KeyF') {
-        // toggle FPS counter visibility
-        this.toggleFPSCounter();
-      } else if (code === 'KeyQ') {
+} else if (code === 'KeyQ') {
         // use health potion
         this.useHealthPotion();
       } else if (code === 'KeyJ') {
@@ -933,60 +839,8 @@ else if (code === 'KeyY') {
           this.player.takeDamage(50);
           console.log('🩸 Debug: Player damaged for testing');
         }
-      } else if (code === 'KeyU') {
-        // Debug: manually play music
-        console.log('🔊 DEBUG: Manual music trigger (U key pressed)');
-        console.log('🔊 AudioContext state:', this.soundManager.listener.context.state);
-        console.log('🔊 Pending music:', this._pendingMusic);
-        console.log('🔊 Current music:', this.soundManager.currentMusic);
-        console.log('🔊 Available music tracks:', Object.keys(this.soundManager.music));
-
-        // Try to resume AudioContext
-        if (this.soundManager.listener.context.state === 'suspended') {
-          this.soundManager.listener.context.resume().then(() => {
-            console.log('🔊 AudioContext resumed via P key');
-          });
-        }
-
-        // Try to play pending or intro music
-        if (this._pendingMusic) {
-          console.log('🔊 Playing pending music:', this._pendingMusic);
-          this.soundManager.playMusic(this._pendingMusic, 0); // No fade for debugging
-        } else if (this.soundManager.music['intro-theme']) {
-          console.log('🔊 Playing intro-theme directly');
-          this.soundManager.playMusic('intro-theme', 0); // No fade for debugging
-        } else if (this.soundManager.music['level2-theme']) {
-          console.log('🔊 Playing level2-theme directly');
-          this.soundManager.playMusic('level2-theme', 0); // No fade for debugging
-        }
-      }
-      // Toggle center probe
-      if (code === 'KeyB') {
-        this._centerProbeEnabled = !this._centerProbeEnabled;
-        console.log(`🔎 Center probe ${this._centerProbeEnabled ? 'ENABLED' : 'DISABLED'}`);
       }
     });
-  }
-
-  toggleFPSCounter() {
-    const fpsComponent = this.ui.get('fps');
-    if (fpsComponent) {
-      // Toggle visibility using show/hide methods
-      const currentDisplay = fpsComponent.root.style.display;
-      const isCurrentlyVisible = currentDisplay !== 'none';
-      
-      if (isCurrentlyVisible) {
-        fpsComponent.hide();
-        console.log(`📊 FPS counter is now hidden (Press F to toggle)`);
-      } else {
-        fpsComponent.show();
-        console.log(`📊 FPS counter is now visible (Press F to toggle)`);
-      }
-      
-      fpsComponent.isVisible = !isCurrentlyVisible;
-    } else {
-      console.warn('⚠️ FPS component not found. Cannot toggle visibility.');
-    }
   }
 
   useHealthPotion() {
@@ -996,8 +850,6 @@ else if (code === 'KeyY') {
     
     let potionUsed = false;
     let potionAvailable = false;
-    
-    // Try collectibles UI first (for levels that use collectibles component)
     if (collectiblesUI && collectiblesUI.useHealthPotion) {
       potionAvailable = collectiblesUI.collectibles.potions.count > 0;
       if (potionAvailable) {
