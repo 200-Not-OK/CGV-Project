@@ -467,6 +467,14 @@ E - Interact with chests and doors
       // Wait for fade to complete
       await new Promise(resolve => setTimeout(resolve, 500));
     }
+
+    // Load main menu music
+    try {
+      await this.soundManager.load('music', 'main-menu', 'assets/audio/music/magical_rainforest.MP3', true);
+      console.log('✅ Main menu music loaded');
+    } catch (error) {
+      console.warn('⚠️ Failed to load main menu music:', error);
+    }
     
     // Show main menu
     console.log('🎮 Showing main menu');
@@ -474,6 +482,16 @@ E - Interact with chests and doors
     if (mainMenu) {
       mainMenu.show();
       this.gameStarted = false;
+      
+      // Play main menu music
+      setTimeout(() => {
+        try {
+          this.soundManager.playMusic('main-menu', 2000); // 2 second fade in
+          console.log('🎵 Playing main menu music');
+        } catch (error) {
+          console.warn('⚠️ Failed to play main menu music:', error);
+        }
+      }, 500);
     }
     // Hide crosshair on main menu
     const crosshair = this.ui.get('crosshair');
@@ -490,6 +508,11 @@ E - Interact with chests and doors
     const mainMenu = this.ui.get('mainMenu');
     const loadingScreen = this.ui.get('loadingScreen');
     const crosshair = this.ui.get('crosshair');
+    
+    // Stop main menu music and fade it out
+    if (this.soundManager) {
+      this.soundManager.stopMusic(1000); // 1 second fade out
+    }
     
     // Hide main menu
     if (mainMenu) {
@@ -531,6 +554,7 @@ E - Interact with chests and doors
     if (crosshair) {
       crosshair.setProps({ visible: false });
     }
+    // Keep main menu music playing in background
   }
 
   /**
@@ -548,6 +572,7 @@ E - Interact with chests and doors
     if (crosshair) {
       crosshair.setProps({ visible: false });
     }
+    // Main menu music continues playing
   }
 
   /**

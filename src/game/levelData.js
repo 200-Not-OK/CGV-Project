@@ -60,7 +60,7 @@ export const levels = [
     "sounds": {
       "music": {
         "intro-theme": {
-          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
+          "url": "assets/audio/music/magical_rainforest.MP3",
           "loop": true
         }
       },
