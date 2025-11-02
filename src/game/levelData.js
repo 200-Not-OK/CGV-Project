@@ -605,7 +605,7 @@ export const levels = [
           1.9,
           10.9
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -626,7 +626,7 @@ export const levels = [
           2,
           6.7
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -878,7 +878,7 @@ export const levels = [
           2.5,
           2
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -899,7 +899,7 @@ export const levels = [
           2.5,
           2
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -920,7 +920,7 @@ export const levels = [
           2.5,
           8
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -941,7 +941,7 @@ export const levels = [
           2.5,
           8
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -962,7 +962,7 @@ export const levels = [
           2.5,
           8
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -983,7 +983,7 @@ export const levels = [
           2.5,
           2
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -1004,7 +1004,7 @@ export const levels = [
           2.5,
           2
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -1025,7 +1025,7 @@ export const levels = [
           2.5,
           2
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
@@ -1046,7 +1046,7 @@ export const levels = [
           2.5,
           8
         ],
-        "materialType": "ground",
+        "materialType": "wall",
         "meshName": null
       },
       {
