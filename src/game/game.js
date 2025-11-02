@@ -42,6 +42,7 @@ import { SettingsMenu } from './components/SettingsMenu.js';
 import { GraphicsSettingsMenu } from './components/GraphicsSettingsMenu.js';
 import { ProgressionManager } from './ProgressionManager.js';
 import { Level3Voiceovers } from './levels/Level3Voiceovers.js';
+import { CreditsScreen } from './components/CreditsScreen.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -63,6 +64,9 @@ export class Game {
       stackToolGranted: false,
       stackToolBroken: false,
     };
+
+    // Brightness setting (0.5 to 1.5, default 1.0)
+    this.brightnessLevel = 1.0;
 
     // GPU Detection & Quality Settings
     console.log('🔍 Detecting GPU capabilities...');
@@ -249,6 +253,10 @@ export class Game {
       if (this.playerDead) {
         return;
       }
+      // Don't show pause menu if credits screen is active
+      if (this._creditsScreenActive) {
+        return;
+      }
       // If we were in first/third person, interpret the pointerlock exit as Esc -> pause
       if (this.activeCamera === this.thirdCameraObject || this.activeCamera === this.firstCameraObject) {
         this.setPaused(true);
@@ -284,11 +292,13 @@ export class Game {
     // Add main menu
     this.ui.add('mainMenu', MainMenu, {
       onStart: () => this._onMainMenuStart(),
-      onSettings: () => this._onMainMenuSettings()
+      onSettings: () => this._onMainMenuSettings(),
+      onCredits: () => this._onMainMenuCredits()
     });
     console.log('🎮 MainMenu added to UIManager');
     // Add settings menu
     this.ui.add('settingsMenu', SettingsMenu, {
+      game: this, // Pass game reference for brightness control
       onBack: () => this._onSettingsBack(),
       onOpenAdvancedGraphics: () => this._onOpenAdvancedGraphicsFromSettings()
     });
@@ -620,6 +630,19 @@ debugInteractionPrompt() {
       crosshair.setProps({ visible: false });
     }
     // Keep main menu music playing in background
+  }
+
+  /**
+   * Handle main menu Credits button click
+   */
+  _onMainMenuCredits() {
+    console.log('🎬 Opening credits from main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    
+    if (mainMenu) mainMenu.hide(300);
+    
+    // Show the credits screen
+    this._showCreditsScreen();
   }
 
   /**
@@ -1864,6 +1887,9 @@ this.input.alwaysTrackMouse = true;
   // Refresh stack tool availability after level loads
   this.refreshStackToolAvailability();
 
+  // Check if we've returned to hub after completing all levels
+  this._checkAndShowCreditsIfAllLevelsComplete();
+
   // Hide loading screen
   if (loadingScreen) {
     loadingScreen.setStatus('READY', 100);
@@ -1959,6 +1985,90 @@ clearDeathVisualsAndState() {
     } else {
       this.player.weapon.unmount();
     }
+  }
+
+  /**
+   * Check if all levels are completed and show credits screen when returning to hub
+   * @private
+   */
+  _checkAndShowCreditsIfAllLevelsComplete() {
+    // Only check if loading the hub level
+    const currentLevelId = this.currentLevelId || this.level?.data?.id;
+    if (currentLevelId !== 'hub') {
+      return;
+    }
+
+    // Check if credits have already been watched in this save
+    if (CreditsScreen.hasWatchedCredits()) {
+      console.log('🎬 Credits already watched, skipping');
+      return;
+    }
+
+    // Get progression status
+    const progression = this.progressionManager?.getStatus?.();
+    if (!progression) {
+      console.log('🎬 No progression data available');
+      return;
+    }
+
+    // Define all playable levels (excluding hub)
+    const allLevels = ['level1', 'level2', 'level3'];
+    
+    // Check if all levels are completed
+    const allCompleted = allLevels.every(lvl => progression.completedLevels.includes(lvl));
+
+    if (allCompleted && progression.completedLevels.length > 0) {
+      console.log('🎬 All levels completed! Showing credits screen.');
+      this._showCreditsScreen();
+    } else {
+      console.log('🎬 Not all levels completed yet:', {
+        completed: progression.completedLevels,
+        remaining: allLevels.filter(lvl => !progression.completedLevels.includes(lvl))
+      });
+    }
+  }
+
+  /**
+   * Display the credits screen
+   * @private
+   */
+  _showCreditsScreen() {
+    // Create or get existing credits screen
+    let creditsScreen = this.ui?.get('creditsScreen');
+    
+    if (!creditsScreen) {
+      creditsScreen = new CreditsScreen(
+        document.getElementById('app'),
+        {
+          // Note: creditsList is NOT passed here, so CreditsScreen uses its own _getDefaultCredits()
+          // This way, updates to CreditsScreen.js are automatically reflected
+          onClose: () => {
+            console.log('🎬 Credits screen closed');
+            
+            // If we're in the main menu (not in a level), show the main menu again
+            if (!this.level) {
+              const mainMenu = this.ui?.get('mainMenu');
+              if (mainMenu) {
+                mainMenu.show();
+              }
+            }
+            
+            // Re-enable player input after credits
+            if (this.input?.setEnabled) {
+              this.input.setEnabled(true);
+            }
+          }
+        }
+      );
+      this.ui?.add('creditsScreen', creditsScreen);
+    }
+
+    // Disable player input while credits are showing
+    if (this.input?.setEnabled) {
+      this.input.setEnabled(false);
+    }
+
+    creditsScreen.show();
   }
 
   /**
@@ -2824,6 +2934,23 @@ setupGlitchedLevelProgression() {
       this.loadLevelByName('level3');
     }, 2000);
   }
+}
+
+/**
+ * Set the brightness level for the entire game
+ * @param {number} value - Brightness value between 0.5 and 1.5 (1.0 is normal)
+ */
+setBrightness(value) {
+  // Clamp value between 0.5 and 1.5
+  this.brightnessLevel = Math.max(0.5, Math.min(1.5, value));
+  
+  // Apply brightness filter to the canvas/renderer container
+  const renderer = this.renderer.domElement;
+  if (renderer && renderer.parentNode) {
+    renderer.parentNode.style.filter = `brightness(${this.brightnessLevel})`;
+  }
+  
+  console.log('☀️ Brightness set to:', (this.brightnessLevel * 100).toFixed(0) + '%');
 }
 
 
