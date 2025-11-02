@@ -667,7 +667,10 @@ openChest(chestCollectible) {
     
     if (this.uiRef) {
       if (this.uiRef.collectLLM) {
-        console.log(`🎯 Calling uiRef.collectLLM('${llmType}')`);
+        console.log(`🎯 Collecting 3x ${llmType.toUpperCase()} from chest`);
+        // Collect 3 of the same LLM type
+        this.uiRef.collectLLM(llmType);
+        this.uiRef.collectLLM(llmType);
         this.uiRef.collectLLM(llmType);
       } else {
         console.warn('⚠️ UI reference exists but collectLLM method not found!');
@@ -676,7 +679,7 @@ openChest(chestCollectible) {
       console.error('❌ No UI reference available for LLM collection!');
     }
     
-    console.log(`🤖 Found ${llmType.toUpperCase()} LLM in the chest!`);
+    console.log(`🤖 Found ${llmType.toUpperCase()} chest! Collected 3x ${llmType.toUpperCase()}`);
   } else {
     console.warn(`⚠️ Unknown chest contents: ${chestCollectible.contents}`);
   }
