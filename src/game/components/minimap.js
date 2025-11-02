@@ -102,7 +102,12 @@ export class Minimap extends UIComponent {
     if (Array.isArray(colliders)) {
       for (const collider of colliders) {
         // Skip completely if explicitly hidden from the minimap
-        if (collider?.minimap === false) continue;
+        this.ctx.strokeStyle = 'rgba(44, 50, 60, 1)';
+        if (collider?.minimap === false)
+        {
+          this.ctx.strokeStyle = 'rgba(20, 20, 30, 1)';
+          continue;
+        }
 
         // New: allow collider to opt out of *bounds* only
         if (collider?.minimapBounds === false) continue;
@@ -220,9 +225,10 @@ export class Minimap extends UIComponent {
     }
 
     // Enemies
-    if (Array.isArray(ctx.enemies)) {
+    if (ctx.enemies && Array.isArray(ctx.enemies)) {
       this.ctx.fillStyle = '#ff4444';
       for (const enemy of ctx.enemies) {
+        if (!this._isActiveEnemy(enemy)) continue;
         const p = (typeof enemy?.getMinimapPosition === 'function'
                     ? enemy.getMinimapPosition()
                     : (enemy?.mesh?.position || enemy?.body?.position));
@@ -315,18 +321,26 @@ if (Array.isArray(ctx.platforms)) {
     if (tl.x > this.canvas.width || br.x < 0 || tl.y > this.canvas.height || br.y < 0) return;
 
     const kind = collider?.materialType || collider?.type || 'other';
-    if (kind === 'wall') {
-      this.ctx.fillStyle = 'rgba(100, 100, 120, 0.8)';
+    const defaults = {
+      fill:
+        kind === 'wall'   ? 'rgba(100, 100, 120, 0.8)' :
+        kind === 'ground' ? 'rgba(60, 70, 80, 0.6)'   :
+                            'rgba(80, 80, 100, 0.7)',
+      stroke: (kind === 'wall') ? 'rgba(150, 150, 170, 0.5)' : null,
+      lineWidth: (kind === 'wall') ? 1 : 0,
+    };
+    const fill = (collider.minimapFill ?? defaults.fill);
+    const stroke = (collider.minimapStroke ?? defaults.stroke);
+    const lw = (collider.minimapLineWidth ?? defaults.lineWidth);
+
+    if (fill && fill !== 'transparent') {
+      this.ctx.fillStyle = fill;
       this.ctx.fillRect(tl.x, tl.y, w, h);
-      this.ctx.strokeStyle = 'rgba(150, 150, 170, 0.5)';
-      this.ctx.lineWidth = 1;
+    }
+    if (stroke && stroke !== 'transparent' && lw > 0) {
+      this.ctx.strokeStyle = stroke;
+      this.ctx.lineWidth = lw;
       this.ctx.strokeRect(tl.x, tl.y, w, h);
-    } else if (kind === 'ground') {
-      this.ctx.fillStyle = 'rgba(60, 70, 80, 0.6)';
-      this.ctx.fillRect(tl.x, tl.y, w, h);
-    } else {
-      this.ctx.fillStyle = 'rgba(80, 80, 100, 0.7)';
-      this.ctx.fillRect(tl.x, tl.y, w, h);
     }
   }
 
@@ -425,5 +439,25 @@ if (Array.isArray(ctx.platforms)) {
   // Call once to print which colliders defined bounds and the final numbers.
   logBoundsContributorsNextUpdate() {
     this.debug.logContributorsOnce = true;
+  }
+  _isActiveEnemy(e) {
+    if (!e) return false;
+
+    // Standard flags you likely set on death/disposal:
+    const disposed = e.disposed || e.isDisposed || false;
+    const deadFlag = (e.isDead === true) || (e.alive === false);
+    const hpOK = (typeof e.health === 'number') ? (e.health > 0) : true;
+
+    // Mesh presence/visibility (if you hide or remove on death)
+    const mesh = e.mesh || null;
+    const attached = !!(mesh && mesh.parent);      // removed from scene?
+    const visible = (mesh?.visible !== false);     // default true
+
+    // Optional explicit API on enemies:
+    if (typeof e.isActiveOnMinimap === 'function') {
+      try { return !!e.isActiveOnMinimap(); } catch (_) {}
+    }
+
+    return !disposed && !deadFlag && hpOK && attached && visible;
   }
 }

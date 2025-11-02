@@ -140,6 +140,79 @@ export class Level {
       ];
     }
 
+    if (this.data.id === 'level1') {
+      // Lightning borders attached to lifts in Level 1
+      // Points must be ordered to form a proper rectangle: 0->1->2->3 (counter-clockwise)
+      this.lightningBorderDefinitions = [
+        {
+          points: [
+            [-238.68716707158967, 10.112970352172852, 111.21257792385695],  // left, z=111 (front-left)
+            [-212.94578069186704, 10.112970352172852, 111.32783123103297],   // right, z=111 (front-right)
+            [-212.90965992776285, 10.112970352172848, 136.9679127439894],     // right, z=136 (back-right)
+            [-238.70135625348306, 10.112970352172852, 136.9445701789927]     // left, z=136 (back-left)
+          ],
+          color: 0xff0000, // red
+          attachTo: 'Lift2',
+          intensityMultiplier: 1.0
+        },
+        {
+          points: [
+            [-272.3311831347431, 10.112970352172852, 97.45374510784526],     // left, z=97 (front-left)
+            [-246.58241880122753, 10.112970352172848, 97.43534861004001],      // right, z=97 (front-right)
+            [-246.6129551726857, 10.112970352172855, 123.24549958516906],      // right, z=123 (back-right)
+            [-272.3246293609324, 10.112970352172855, 123.35847657144565]       // left, z=123 (back-left)
+          ],
+          color: 0x0000ff, // blue
+          attachTo: 'Lift3',
+          intensityMultiplier: 1.1
+        },
+        {
+          points: [
+            [-505.5470055713914, 13.888110280036926, 182.5698548857207],     // left, z=182 (front-left)
+            [-488.08502293037463, 13.888110280036924, 182.5413512832319],     // right, z=182 (front-right)
+            [-488.1830369869478, 13.888110280036924, 208.1483479200724],      // right, z=208 (back-right)
+            [-505.7551162984357, 13.888110280036926, 207.95872519011542]      // left, z=208 (back-left)
+          ],
+          color: 0x00ff00, // green
+          attachTo: 'Lift',
+          intensityMultiplier: 1.15
+        },
+        {
+          points: [
+            [332.1193965286098, 10.112970352172852, -23.350905991608897],      // right, z=-23 (front-right)
+            [357.6347612364969, 10.112970352172852, -23.156863179153056],     // left, z=-23 (front-left)
+            [357.7947723266882, 10.112970352172852, -49.01520596315945],      // left, z=-49 (back-left)
+            [331.9242938960253, 10.112970352172852, -48.963319910801914]      // right, z=-49 (back-right)
+          ],
+          color: 0x00ff00, // green
+          attachTo: 'Lift3001',
+          intensityMultiplier: 1.2
+        },
+        {
+          points: [
+            [544.4488867162959, 10.112970352172852, 111.76117361180306],      // right, z=111 (front-right)
+            [570.1167452854577, 10.112970352172852, 111.95425568927675],      // left, z=111 (front-left)
+            [570.1006063866906, 10.112970352172852, 86.3019311949614],        // left, z=86 (back-left)
+            [544.3271406555639, 10.112970352172852, 86.18218560220839]        // right, z=86 (back-right)
+          ],
+          color: 0x0000ff, // blue
+          attachTo: 'Lift3002',
+          intensityMultiplier: 1.2
+        },
+        {
+          points: [
+            [512.4538154642148, 10.112970352172852, 406.4277977817882],       // right, z=406 (front-right)
+            [538.2865796152263, 10.112970352172852, 406.4577995123756],       // left, z=406 (front-left)
+            [538.4164650516327, 10.112970352172855, 432.1987921273185],       // left, z=432 (back-left)
+            [512.4829194243133, 10.112970352172852, 432.2451738355174]        // right, z=432 (back-right)
+          ],
+          color: 0xff0000, // red
+          attachTo: 'Lift3003',
+          intensityMultiplier: 1.2
+        }
+      ];
+    }
+
     if (this.data.id === 'level1A') {
       this.lightningBorderDefinitions = [
         {

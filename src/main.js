@@ -25,18 +25,30 @@ window.addEventListener('load', () => {
     availableLevels,
     onReplay: () => {
       const id = game?.level?.data?.id;
-      if (id) game.loadLevel(game.levelManager.currentIndex);
+      if (id) {
+        // Lock cursor when loading new level
+        if (document.pointerLockElement) {
+          try { document.exitPointerLock(); } catch (e) { /* ignore */ }
+        }
+        game.loadLevel(game.levelManager.currentIndex);
+      }
       game?.input?.setEnabled?.(true);
     },
     onSelect: (id) => {
       const idx = (LVLS || []).findIndex(l => l.id === id);
-      if (idx >= 0) game.loadLevel(idx);
+      if (idx >= 0) {
+        // Lock cursor when loading new level
+        if (document.pointerLockElement) {
+          try { document.exitPointerLock(); } catch (e) { /* ignore */ }
+        }
+        game.loadLevel(idx);
+      }
       game?.input?.setEnabled?.(true);
     }
   });
 
   // React to completion from either DOM custom event or internal bus
- window.addEventListener('level:complete', (event) => {
+ window.addEventListener('level:complete', async (event) => {
   // Get level ID from event detail or game instance
   const levelId = event.detail?.levelId || game?.currentLevelId || game?.level?.data?.id;
   
@@ -57,16 +69,30 @@ window.addEventListener('load', () => {
   // Pause input while showing the UI
   game?.input?.setEnabled?.(false);
 
-  // (a) trigger the level-complete cinematic if present
-  game?.level?.triggerLevelCompleteCinematic?.();
+  // (a) trigger the level-complete cinematic if present and wait for it to finish
+  if (game?.level?.cinematicsManager) {
+    console.log('⏳ Waiting for level complete cinematic to finish...');
+    await game.level.cinematicsManager.playCinematic('onLevelComplete');
+    console.log('✅ Cinematic finished');
+  }
 
-  // (b) play success VO quickly (if you prefer to wait for cinematic: set a timeout)
+  // (b) play success VO (can play during or after cinematic)
   if (game?.soundManager?.sfx?.['vo-success']) {
     game.playVoiceover('vo-success', 6000);
   }
 
-  // (c) show the overlay shortly after the camera move starts (feel-good timing)
-  setTimeout(() => overlay.show('Victory! The Great Serpent falls 🏆'), 1200);
+  // (c) Show victory overlay after 8 second delay
+  console.log('⏱️ Waiting 8 seconds before showing victory overlay...');
+  await new Promise(resolve => setTimeout(resolve, 8000));
+  console.log('🏆 Showing victory overlay');
+  
+  // Unlock cursor so user can interact with buttons
+  if (document.pointerLockElement) {
+    try { document.exitPointerLock(); } catch (e) { /* ignore */ }
+  }
+  
+  game._showVictoryOverlay?.();
+  game?.input?.setEnabled?.(true);
 });
 
   if (game?.events?.on) {
