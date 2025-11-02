@@ -665,6 +665,12 @@ openChest(chestCollectible) {
     
     this.triggerEvent('onLLMCollected', { type: llmType, chest: chestCollectible });
     
+    // Notify GlitchManager about the LLM collection (for computer unlock)
+    if (this.game && this.game.glitchManager) {
+      this.game.glitchManager.collectLLM(llmType);
+      console.log('🔄 Notified GlitchManager of LLM collection');
+    }
+    
     if (this.uiRef) {
       if (this.uiRef.collectLLM) {
         console.log(`🎯 Collecting 3x ${llmType.toUpperCase()} from chest`);
