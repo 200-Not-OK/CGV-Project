@@ -123,6 +123,12 @@ export class TriggerManager {
    * @private
    */
   _createTriggerLabel(trigger) {
+    // Check if this is a level loader trigger and if the level is locked
+    let isLocked = false;
+    if (trigger.type === 'levelLoader' && trigger.targetLevel && this.game?.progressionManager) {
+      isLocked = !this.game.progressionManager.isLevelUnlocked(trigger.targetLevel);
+    }
+
     // Use canvas texture for text - large canvas for big, eye-catching text
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -134,28 +140,38 @@ export class TriggerManager {
 
     // Set text properties - very large and eye-catching
     context.font = '900 300px Arial';  // Extra bold (900 weight)
-    context.fillStyle = '#ff8800';  // Warm orange color (matches main menu)
     context.textAlign = 'center';
     context.textBaseline = 'middle';
 
+    // Determine colors based on lock status
+    if (isLocked) {
+      context.fillStyle = '#888888';  // Gray for locked
+      context.shadowColor = '#555555';
+      context.strokeStyle = '#666666';
+    } else {
+      context.fillStyle = '#ff8800';  // Warm orange color (matches main menu)
+      context.shadowColor = '#ff8800';
+      context.strokeStyle = '#ff6600';
+    }
+
     // Add very strong glow effect for eye-grabbing appearance
-    context.shadowColor = '#ff8800';  // Orange glow to match
     context.shadowBlur = 80;  // Very strong glow
     context.shadowOffsetX = 0;
     context.shadowOffsetY = 0;
 
     // Draw text with stroke for bolder appearance
     const text = trigger.poiText;
+    const lockSuffix = isLocked ? ' 🔒' : '';
+    const displayText = text + lockSuffix;
     
     // Draw stroke outline for boldness
-    context.strokeStyle = '#ff6600';  // Darker orange for outline
     context.lineWidth = 12;
     context.lineJoin = 'round';
     context.lineCap = 'round';
-    context.strokeText(text, canvas.width / 2, canvas.height / 2);
+    context.strokeText(displayText, canvas.width / 2, canvas.height / 2);
     
     // Draw filled text on top
-    context.fillText(text, canvas.width / 2, canvas.height / 2);
+    context.fillText(displayText, canvas.width / 2, canvas.height / 2);
 
     // Create texture and sprite
     const texture = new THREE.CanvasTexture(canvas);
@@ -167,7 +183,7 @@ export class TriggerManager {
     const sprite = new THREE.Sprite(material);
 
     // Make the sprite much larger and eye-grabbing
-    const scale = Math.max(8, text.length * 1.2);  // Much larger base scale
+    const scale = Math.max(8, displayText.length * 1.2);  // Much larger base scale
     sprite.scale.set(scale, scale * 0.5, 1);
     sprite.position.copy(trigger.position);
     sprite.position.y += trigger.radius * 0.5;
@@ -178,7 +194,7 @@ export class TriggerManager {
     trigger.labelSprite = sprite;
     this.triggerLabels.push(sprite);
 
-    console.log(`  ✓ Created label for trigger "${trigger.id}": "${text}"`);
+    console.log(`  ✓ Created label for trigger "${trigger.id}": "${text}"${isLocked ? ' (LOCKED)' : ''}`);
   }
 
   /**
@@ -264,6 +280,15 @@ export class TriggerManager {
     if (!trigger.targetLevel) {
       console.warn(`⚠️ Level loader trigger "${trigger.id}" has no targetLevel`);
       return;
+    }
+
+    // Check if level is unlocked
+    if (this.game && this.game.progressionManager) {
+      if (!this.game.progressionManager.isLevelUnlocked(trigger.targetLevel)) {
+        console.warn(`🔒 Level "${trigger.targetLevel}" is locked. Complete the previous level to unlock it.`);
+        this.game.showMessage(`🔒 Level locked! Complete the previous level to unlock it.`, 3000);
+        return;
+      }
     }
 
     console.log(`🚀 Loading level: ${trigger.targetLevel}`);
