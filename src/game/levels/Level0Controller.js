@@ -70,6 +70,14 @@ export class Level0Controller {
       halfSize: new THREE.Vector3(15, 15, 15) // 30x30x30 units
     };
     
+    // Stack tool boost hint trigger
+    this._boostHintTriggerEnabled = false; // Enabled after stack tool is granted
+    this._boostHintTriggerConsumed = false;
+    this._boostHintTriggerBox = {
+      center: new THREE.Vector3(-205.07, 11.33, -34.84),
+      halfSize: new THREE.Vector3(8, 8, 8) // 16x16x16 units trigger area
+    };
+    
     // Node interaction tracking
     this.nodeMeshes = []; // Array of node meshes found in scene
     this.collectedNodes = new Set(); // Track collected node names
@@ -2711,6 +2719,10 @@ export class Level0Controller {
       // Enable lift area trigger after Stack tool tutorial completes
       this._liftTriggerEnabled = true;
       this._liftTriggerConsumed = false;
+      
+      // Enable boost hint trigger so player can learn jump + X combo
+      this._boostHintTriggerEnabled = true;
+      console.log('💡 [Level0Controller] Boost hint trigger enabled');
     } catch (e) {
       console.error('❌ [Level0Controller] Error in Stack tool tutorial:', e);
   this._stopCameraLookAtPlayer();
@@ -2804,6 +2816,50 @@ export class Level0Controller {
       if (el.parentElement) el.parentElement.removeChild(el);
     }, durationMs);
     return el;
+  }
+
+  /**
+   * Show boost hint popup teaching jump + X combo
+   */
+  _showBoostHint() {
+    console.log('💡 [Level0Controller] Showing boost hint');
+    
+    // Create multi-line hint overlay
+    const hintEl = document.createElement('div');
+    hintEl.style.position = 'fixed';
+    hintEl.style.top = '30%';
+    hintEl.style.left = '50%';
+    hintEl.style.transform = 'translate(-50%, -50%)';
+    hintEl.style.padding = '20px 30px';
+    hintEl.style.background = 'rgba(0,0,0,0.85)';
+    hintEl.style.color = '#00ff88';
+    hintEl.style.fontFamily = 'monospace, sans-serif';
+    hintEl.style.fontSize = '18px';
+    hintEl.style.border = '2px solid #00ff88';
+    hintEl.style.borderRadius = '10px';
+    hintEl.style.zIndex = '9999';
+    hintEl.style.textAlign = 'center';
+    hintEl.style.lineHeight = '1.6';
+    
+    hintEl.innerHTML = `
+      <div style="font-size: 22px; font-weight: bold; margin-bottom: 12px; color: #ffd700;">💡 HINT: Stack Tool Boost</div>
+      <div style="margin-bottom: 8px;">Jump and press <span style="color: #ffd700; font-weight: bold;">X</span> to boost yourself up!</div>
+      <div style="margin-bottom: 8px;">You can stack up to 3 blocks.</div>
+      <div>If you need to move more than 3 blocks, press <span style="color: #ffd700; font-weight: bold;">Z</span> to pop them so you can boost again.</div>
+    `;
+    
+    document.body.appendChild(hintEl);
+    
+    // Auto-hide after 6 seconds
+    setTimeout(() => {
+      if (hintEl.parentElement) {
+        hintEl.style.opacity = '0';
+        hintEl.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+          if (hintEl.parentElement) hintEl.parentElement.removeChild(hintEl);
+        }, 500);
+      }
+    }, 6000);
   }
 
   /**
@@ -3309,6 +3365,19 @@ export class Level0Controller {
         this._rightPathTriggerConsumed = true;
         this._rightPathTriggerEnabled = false;
         this._runRightPathCutscene().catch(err => console.error('❌ Right-path cutscene error', err));
+      }
+    }
+    
+    // Check boost hint trigger volume (teaches jump + X combo)
+    if (this._boostHintTriggerEnabled && !this._boostHintTriggerConsumed && this.game?.player?.body) {
+      const p3 = this.game.player.body.position;
+      const box3 = this._boostHintTriggerBox;
+      const inX3 = Math.abs(p3.x - box3.center.x) <= box3.halfSize.x;
+      const inY3 = Math.abs(p3.y - box3.center.y) <= box3.halfSize.y;
+      const inZ3 = Math.abs(p3.z - box3.center.z) <= box3.halfSize.z;
+      if (inX3 && inY3 && inZ3) {
+        this._boostHintTriggerConsumed = true;
+        this._showBoostHint();
       }
     }
     
