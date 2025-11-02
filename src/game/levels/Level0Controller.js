@@ -602,6 +602,13 @@ export class Level0Controller {
       // Dialogue sequence (Richard and Steve not physically present, just dialogue)
       this._setupEnterKeyListener(director);
       await this._showCaption('Oh no! Your stack tool broke with the fall.', 0, 'Richard');
+      
+      // Break the stack tool permanently
+      if (this.game.breakStackTool) {
+        this.game.breakStackTool();
+        console.log('[Level0] Stack tool permanently broken');
+      }
+      
       await this._waitForEnter();
       cm._hideCaption?.(true);
       await this._wait(200);
@@ -2651,9 +2658,10 @@ export class Level0Controller {
       this._showTemporaryPopup('Tool acquired: Stack', 1800);
       await this._wait(600);
       
-      // Ensure tool is granted/mounted (already present by default, but remount to be safe)
-      if (this.game.player.weapon && this.game.player.weapon.mount) {
-        this.game.player.weapon.mount();
+      // Grant the Stack tool via game state (only available in Level 1)
+      if (this.game.grantStackTool) {
+        this.game.grantStackTool();
+        console.log('[Level0] Stack tool granted to player');
       }
       
       // Continue dialogue and on-screen controls

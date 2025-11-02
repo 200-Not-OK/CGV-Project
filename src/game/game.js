@@ -14,7 +14,6 @@ import { FPS } from './components/fps.js';
 import { Crosshair } from './components/crosshair.js';
 import { Collectibles } from './components/collectibles.js';
 import { InteractionPrompt } from './components/interactionPrompt.js';
-import { CollectiblesLevel3 } from './components/CollectiblesLevel3.js';
 import { DeathMenu } from './components/deathMenu.js';
 import { VoiceoverCard } from './components/voiceoverCard.js';
 import { Coordinates } from './components/coordinates.js';
@@ -43,6 +42,14 @@ export class Game {
     this.scene = scene;
     this.renderer = renderer;
     this.shaderSystem = shaderSystem;
+
+    // Persistent game state flags
+    // - stackToolGranted: becomes true when Steve grants the tool in Level 1
+    // - stackToolBroken: once set true, tool is permanently unusable in all levels
+    this.state = {
+      stackToolGranted: false,
+      stackToolBroken: false,
+    };
 
     // GPU Detection & Quality Settings
     console.log('🔍 Detecting GPU capabilities...');
@@ -234,13 +241,8 @@ export class Game {
     this.soundManager = new SoundManager(this.thirdCameraObject);
 
     //glitch
-  this.glitchManager = new GlitchManager(this);
-this.collectiblesManager = new CollectiblesManager(this.scene, this.physicsWorld, this);
-this.setupGlitchedLevelProgression();
-
-// Connect the CollectiblesManager to GlitchManager for LLM events
-this.setupLLMTracking();
-    
+    this.glitchManager = new GlitchManager();
+    this.computerTerminal = null;
 
      // Setup LLM tracking
     this.setupLLMTracking();
@@ -344,87 +346,66 @@ this.setupLLMTracking();
     // Show level picker shortly after load-in (as requested)
     setTimeout(() => this._showLevelPicker(), 400);
   }
-
-  // Clean up any stray health bars that might persist in the scene
-  _cleanupStrayHealthBars() {
-    if (!this.scene) return;
-    
-    const healthBarsToRemove = [];
-    
-    // Traverse the scene looking for health bar groups
-    this.scene.traverse((obj) => {
-      // Health bars are typically THREE.Group objects with specific children
-      if (obj instanceof THREE.Group && obj.children.length >= 2) {
-        const hasHealthBarStructure = obj.children.some(child => 
-          child instanceof THREE.Mesh && 
-          child.geometry instanceof THREE.PlaneGeometry &&
-          child.material instanceof THREE.MeshBasicMaterial
-        );
-        
-        if (!hasHealthBarStructure) return;
-        
-        // Additional check: health bars typically have specific material colors
-        const likelyHealthBar = obj.children.some(child => {
-          const mat = child.material;
-          if (!mat || !mat.color) return false;
-          // Health bars typically have red/green/black colors and specific opacity
-          const isHealthBarColor = 
-            mat.transparent === true &&
-            (mat.opacity > 0.5 && mat.opacity <= 1.0) &&
-            (
-              mat.color.getHex() === 0x000000 || // black background
-              mat.color.getHex() === 0xff0000 || // red
-              mat.color.getHex() === 0x00ff00 || // green
-              mat.color.getHex() === 0xffff00 || // yellow
-              mat.color.getHex() === 0xff3333    // boss red
-            );
-          return isHealthBarColor;
-        });
-        
-        if (hasHealthBarStructure && likelyHealthBar) {
-          healthBarsToRemove.push(obj);
-        }
-      }
-    });
-    
-    // Remove any found health bars
-    if (healthBarsToRemove.length > 0) {
-      console.log(`🧹 Cleaning up ${healthBarsToRemove.length} stray health bar(s)`);
-      healthBarsToRemove.forEach(healthBar => {
-        // Dispose materials and geometries
-        healthBar.children.forEach(child => {
-          if (child.geometry) child.geometry.dispose();
-          if (child.material) {
-            if (Array.isArray(child.material)) {
-              child.material.forEach(mat => mat.dispose());
-            } else {
-              child.material.dispose();
-            }
-          }
-        });
-        
-        // Remove from parent
-        if (healthBar.parent) {
-          healthBar.parent.remove(healthBar);
-        }
-      });
-    }
-    
-    // ALSO clean up any stray boss HUD elements (screen-space UI)
-    if (typeof document !== 'undefined') {
-      // Look for boss HUD elements that might not have been unmounted
-      const strayHuds = document.querySelectorAll('div[style*="position:fixed"][style*="top:24px"]');
-      if (strayHuds.length > 0) {
-        console.log(`🧹 Cleaning up ${strayHuds.length} stray boss HUD element(s)`);
-        strayHuds.forEach(hud => {
-          if (hud.parentNode) {
-            hud.parentNode.removeChild(hud);
-          }
-        });
-      }
-    }
+  emergencyComputerDebug() {
+  console.log('🚨 EMERGENCY COMPUTER DEBUG 🚨');
+  
+  const playerPos = this.player.getPosition();
+  console.log('🎯 Player position:', playerPos);
+  
+  // Create computer right in front of player
+  const emergencyPos = [
+    playerPos.x + 5, 
+    playerPos.y, 
+    playerPos.z + 5
+  ];
+  
+  console.log('🔧 Creating emergency computer at:', emergencyPos);
+  
+  const emergencyComputerData = {
+    position: emergencyPos,
+    radius: 15.0,
+    requiredLLMs: ["llm_gpt", "llm_claude", "llm_gemini"]
+  };
+  
+  // Remove existing
+  if (this.computerTerminal) {
+    this.scene.remove(this.computerTerminal.mesh);
   }
+  
+  // Create new
+  this.computerTerminal = new ComputerTerminal(emergencyComputerData, this.glitchManager, this);
+  this.scene.add(this.computerTerminal.mesh);
+  
+  console.log('✅ Emergency computer created');
+  this.showMessage('EMERGENCY: Computer created in front of you!');
+  
+  // Verify
+  setTimeout(() => {
+    this.debugComputerTerminal();
+  }, 100);
+}
 
+debugInteractionPrompt() {
+  console.log('🔍 === INTERACTION PROMPT DEBUG ===');
+  
+  const interactionPrompt = this.ui.get('interactionPrompt');
+  if (interactionPrompt) {
+    console.log('💬 Interaction prompt exists:', interactionPrompt);
+    console.log('👀 Prompt visible:', interactionPrompt.isVisible);
+    console.log('🎯 Computer terminal exists:', !!this.computerTerminal);
+    
+    if (this.computerTerminal) {
+      console.log('📍 Computer position:', this.computerTerminal.mesh.position.toArray());
+      console.log('🎯 Player position:', this.player.getPosition());
+      console.log('📏 Distance to computer:', this.computerTerminal.mesh.position.distanceTo(this.player.getPosition()));
+      console.log('🎯 Player in computer range:', this.computerTerminal.isPlayerInRange(this.player.getPosition()));
+    }
+  } else {
+    console.error('❌ No interaction prompt found in UI!');
+  }
+  
+  console.log('🔍 === END DEBUG ===');
+}
 
   _bindKeys() {
     window.addEventListener('keydown', (e) => {
@@ -510,7 +491,77 @@ this.setupLLMTracking();
   if (!interacted) {
     console.log('❌ No interactable object found');
   }
-
+}else if (code === 'Key8') {
+  // DEBUG: Check interaction prompt
+  this.debugInteractionPrompt();
+}else if (code === 'Key0') { // Zero key
+  this.emergencyComputerDebug();
+}else if (code === 'KeyU') {
+  // DEBUG: Add all LLMs instantly
+  console.log('🔧 DEBUG: Adding all LLMs');
+  this.glitchManager.collectedLLMs.add('llm_gpt');
+  this.glitchManager.collectedLLMs.add('llm_claude');
+  this.glitchManager.collectedLLMs.add('llm_gemini');
+  
+  if (this.showMessage) {
+    this.showMessage('DEBUG: All LLMs added! Computer should be active.');
+  }
+  console.log('✅ LLMs added:', this.glitchManager.collectedLLMs);
+}else if (code === 'KeyO') {
+  // DEBUG: Teleport to computer location from level data
+  console.log('🔧 DEBUG: Teleporting to computer location');
+  
+  if (this.level && this.level.data && this.level.data.computerLocation) {
+    const computerPos = this.level.data.computerLocation.position;
+    this.player.setPosition(new THREE.Vector3(computerPos[0], computerPos[1], computerPos[2]));
+    console.log('🚀 Teleported to computer at:', computerPos);
+    
+    if (this.showMessage) {
+      this.showMessage('DEBUG: Teleported to computer location');
+    }
+  } else {
+    console.error('❌ No computer location found in level data');
+  }
+}else if (code === 'KeyT') {
+  // DEBUG: Computer diagnostics
+  console.log('🔧 DEBUG: Running computer diagnostics');
+  this.debugComputerTerminal();
+  
+  if (this.computerTerminal) {
+    console.log('✅ Computer terminal exists');
+    console.log('🎯 Attempting to interact...');
+    this.computerTerminal.interact();
+  } else {
+    console.error('❌ No computer terminal found!');
+    
+    // Try to create it from level data
+    if (this.level?.data?.computerLocation) {
+      console.log('🔄 Attempting to create computer from level data...');
+      this.setupComputerTerminal();
+    }
+  }
+}
+else if (code === 'KeyY') {
+  // DEBUG: Create computer from level data
+  console.log('🔧 DEBUG: Creating computer from level data');
+  
+  if (this.level?.data?.computerLocation) {
+    console.log('🎯 Creating computer from level data at:', this.level.data.computerLocation.position);
+    this.setupComputerTerminal();
+    
+    // Verify creation
+    setTimeout(() => {
+      if (this.computerTerminal) {
+        console.log('✅ Computer created successfully');
+        this.debugComputerTerminal();
+      } else {
+        console.error('❌ Computer creation failed!');
+      }
+    }, 500);
+  } else {
+    console.error('❌ No computer location found in level data!');
+    console.log('Current level data:', this.level?.data);
+  }
 
 } else if (code === 'KeyF') {
         // toggle FPS counter visibility
@@ -1039,21 +1090,8 @@ this.setupLLMTracking();
   async loadLevel(index) {
     if (this.level) this.level.dispose();
 
-   // Hide node counter UI when transitioning levels
-    const hud = this.ui?.get('hud');
-    if (hud && hud.showNodeCounter) {
-      hud.showNodeCounter(false);
-    }
-
-   if (this.collectiblesManager) {
-    this.collectiblesManager.clearPersistentChests();
-  }
-
-    // Clean up any stray health bars that might have persisted from previous levels
-    this._cleanupStrayHealthBars();
-
-  // Preserve debug state before disposing old physics world
-  const wasDebugEnabled = this.physicsWorld.isDebugEnabled();
+    // Preserve debug state before disposing old physics world
+    const wasDebugEnabled = this.physicsWorld.isDebugEnabled();
 
   // Clear existing physics bodies and recreate physics world
   this.physicsWorld.dispose();
@@ -1408,16 +1446,44 @@ this.setupLLMTracking();
   // Finally: trigger the cinematic (sounds are loaded and ready).
   this.level.triggerLevelStartCinematic(this.activeCamera, this.player);
 
-  // Show node counter only for level1
-  if (this.currentLevelId === 'level1' || this.currentLevelId === 'level1A') {
-    const hud = this.ui?.get('hud');
-    if (hud && hud.showNodeCounter) {
-      hud.showNodeCounter(true);
-    }
-  }
+  // Refresh stack tool availability after level loads
+  this.refreshStackToolAvailability();
 
   return this.level;
 }
+
+  /**
+   * Stack tool control helpers
+   */
+  grantStackTool() {
+    this.state.stackToolGranted = true;
+    console.log('[StackTool] Granted! Level:', this.currentLevelId);
+    this.refreshStackToolAvailability();
+  }
+
+  breakStackTool() {
+    this.state.stackToolBroken = true;
+    console.log('[StackTool] Broken permanently!');
+    // Immediately unmount the tool
+    if (this.player?.weapon) {
+      this.player.weapon.unmount();
+    }
+  }
+
+  refreshStackToolAvailability() {
+    const levelId = this.currentLevelId || this.level?.data?.id || this.scene?.userData?.levelId || null;
+    const canUse = !this.state.stackToolBroken && this.state.stackToolGranted && levelId === 'level1';
+    
+    console.log('[StackTool] Refresh - Level:', levelId, 'Granted:', this.state.stackToolGranted, 'Broken:', this.state.stackToolBroken, '=> Can use:', canUse);
+    
+    if (!this.player?.weapon) return;
+    
+    if (canUse) {
+      this.player.weapon.mount();
+    } else {
+      this.player.weapon.unmount();
+    }
+  }
 
   /**
    * Check if all apples have been collected and unlock doors in Level 2
@@ -1579,109 +1645,102 @@ this.setupLLMTracking();
   }
 
   applyLevelUI(levelData) {
-  // Clear existing UI and re-add defaults according to level metadata
-  if (!this.ui) return;
-  
-  // Store global components that should persist across levels
-  const globalComponents = new Map();
-  if (this.ui.get('fps')) {
-    globalComponents.set('fps', this.ui.get('fps'));
-  }
-  if (this.ui.get('crosshair')) {
-    globalComponents.set('crosshair', this.ui.get('crosshair'));
-  }
-  if (this.ui.get('interactionPrompt')) {
-    globalComponents.set('interactionPrompt', this.ui.get('interactionPrompt'));
-  }
-  if (this.ui.get('voiceoverCard')) {
-    globalComponents.set('voiceoverCard', this.ui.get('voiceoverCard'));
-  }
-  if (this.ui.get('coordinates')) {
-    globalComponents.set('coordinates', this.ui.get('coordinates'));
-  }
-  
-  this.ui.clear();
-  
-  // Re-add global components first
-  for (const [key, component] of globalComponents) {
-    this.ui.components.set(key, component);
-    // Re-mount the component since it was unmounted during clear
-    if (component.mount) {
-      component.mount();
+    // Clear existing UI and re-add defaults according to level metadata
+    if (!this.ui) return;
+    
+    // Store global components that should persist across levels
+    const globalComponents = new Map();
+    if (this.ui.get('fps')) {
+      globalComponents.set('fps', this.ui.get('fps'));
     }
-  }
-  
-  const uiList = (levelData && levelData.ui) ? levelData.ui : ['hud'];
-  
-  for (const uiItem of uiList) {
-    // Handle both string format ("hud") and object format ({ type: "collectibles", config: {...} })
-    let key, config;
-    if (typeof uiItem === 'string') {
-      key = uiItem;
-      config = {};
-    } else if (typeof uiItem === 'object' && uiItem.type) {
-      key = uiItem.type;
-      config = uiItem.config || {};
-    } else {
-      console.warn('Invalid UI item format in level data:', uiItem);
-      continue;
+    if (this.ui.get('crosshair')) {
+      globalComponents.set('crosshair', this.ui.get('crosshair'));
+    }
+    if (this.ui.get('interactionPrompt')) {
+      globalComponents.set('interactionPrompt', this.ui.get('interactionPrompt'));
+    }
+    if (this.ui.get('voiceoverCard')) {
+      globalComponents.set('voiceoverCard', this.ui.get('voiceoverCard'));
+    }
+    if (this.ui.get('coordinates')) {
+      globalComponents.set('coordinates', this.ui.get('coordinates'));
     }
     
-    if (key === 'hud') {
-      this.ui.add('hud', HUD, { health: this.player.health ?? 100 });
-    } else if (key === 'minimap') {
-      const minimap = this.ui.add('minimap', Minimap, config);
-      // Set level data for minimap rendering
-      if (minimap && minimap.setLevelData) {
-        minimap.setLevelData(levelData);
+    this.ui.clear();
+    
+    // Re-add global components first
+    for (const [key, component] of globalComponents) {
+      this.ui.components.set(key, component);
+      // Re-mount the component since it was unmounted during clear
+      if (component.mount) {
+        component.mount();
       }
-    } else if (key === 'objectives') {
-      this.ui.add('objectives', Objectives, { 
-        items: levelData.objectives ?? ['Reach the goal'],
-        ...config 
-      });
-    } else if (key === 'menu') {
-      this.ui.add('menu', SmallMenu, { 
-        onResume: () => this.setPaused(false),
-        onToggleShaders: () => {
-          if (this.shaderSystem) {
-            const newState = this.shaderSystem.toggleShaders();
-            return newState;
-          }
-          return true;
-        },
-        ...config 
-      });
-    } else if (key === 'collectibles') {
-      // USE CollectiblesLevel3 ONLY FOR LEVEL 3
-      if (levelData.id === 'level3') {
-        console.log('🎯 Using CollectiblesLevel3 for Level 3');
-        this.ui.add('collectibles', CollectiblesLevel3, config);
+    }
+    
+    const uiList = (levelData && levelData.ui) ? levelData.ui : ['hud'];
+    
+    for (const uiItem of uiList) {
+      // Handle both string format ("hud") and object format ({ type: "collectibles", config: {...} })
+      let key, config;
+      if (typeof uiItem === 'string') {
+        key = uiItem;
+        config = {};
+      } else if (typeof uiItem === 'object' && uiItem.type) {
+        key = uiItem.type;
+        config = uiItem.config || {};
       } else {
-        // Use regular Collectibles for other levels
-        this.ui.add('collectibles', Collectibles, config);
+        console.warn('Invalid UI item format in level data:', uiItem);
+        continue;
       }
-    } else if (key === 'fps') {
-      // FPS is already added as a global component, skip
-      continue;
-    } else if (key === 'coordinates') {
-      // Coordinates is already added as a global component, skip
-      continue;
-    } else {
-      console.warn('Unknown UI component type in level data:', key);
+      
+      if (key === 'hud') {
+        this.ui.add('hud', HUD, { health: this.player.health ?? 100 });
+      } else if (key === 'minimap') {
+        const minimap = this.ui.add('minimap', Minimap, config);
+        // Set level data for minimap rendering
+        if (minimap && minimap.setLevelData) {
+          minimap.setLevelData(levelData);
+        }
+      } else if (key === 'objectives') {
+        this.ui.add('objectives', Objectives, { 
+          items: levelData.objectives ?? ['Reach the goal'],
+          ...config 
+        });
+      } else if (key === 'menu') {
+        this.ui.add('menu', SmallMenu, { 
+          onResume: () => this.setPaused(false),
+          onToggleShaders: () => {
+            if (this.shaderSystem) {
+              const newState = this.shaderSystem.toggleShaders();
+              return newState;
+            }
+            return true;
+          },
+          ...config 
+        });
+      } else if (key === 'collectibles') {
+        this.ui.add('collectibles', Collectibles, config);
+      } else if (key === 'fps') {
+        // FPS is already added as a global component, skip
+        continue;
+      } else if (key === 'coordinates') {
+        // Coordinates is already added as a global component, skip
+        continue;
+      } else {
+        console.warn('Unknown UI component type in level data:', key);
+      }
+    }
+    
+    // Set up collectibles manager references after UI is loaded
+    const collectiblesUI = this.ui.get('collectibles');
+    const interactionPrompt = this.ui.get('interactionPrompt');
+    if (collectiblesUI) {
+      this.collectiblesManager.setReferences(this.player, collectiblesUI);
+    }
+    if (interactionPrompt) {
+      this.collectiblesManager.setInteractionPrompt(interactionPrompt);
     }
   }
-  
-  // Set up collectibles manager references after UI is loaded
-  const collectiblesUI = this.ui.get('collectibles');
-  const interactionPrompt = this.ui.get('interactionPrompt');
-  if (collectiblesUI) {
-    this.collectiblesManager.setReferences(this.player, collectiblesUI);
-  }
-  if (interactionPrompt) {
-    this.collectiblesManager.setInteractionPrompt(interactionPrompt);
-  }
-}
 
   async applyLevelSounds(levelData, opts = {}) {
     const { deferVoiceoverToCinematic = false } = opts;
@@ -1874,50 +1933,38 @@ this.setupLLMTracking();
      =========================== */
 
   _onLevelComplete() {
-  console.log('🏁 Level complete event received');
+    console.log('🏁 Level complete event received');
 
-  // 🚫 Skip victory sequence for level2_glitched
-  const currentLevelId = this.currentLevelId || this.level?.data?.id;
-  if (currentLevelId === 'level2_glitched') {
-    console.log('🚫 Victory sequence skipped for level2_glitched');
-    
-    // Just re-enable input and return without showing victory screen
-    this.input?.setEnabled?.(true);
-    
-    
-    
-    
-    return;
+    // Temporarily disable input while we show cinematics/overlays
+    this.input?.setEnabled?.(false);
+
+    // Kick the level-complete cinematic if your level defines it
+    if (this.level?.triggerLevelCompleteCinematic) {
+      this.level.triggerLevelCompleteCinematic(this.activeCamera, this.player);
+    }
+
+    // Play success VO (pravesh_success_vo.mp3 should be registered as "vo-success")
+    if (this.soundManager?.sfx?.['vo-success']) {
+      this.playVoiceover('vo-success', 7000);
+      // Optional captions to go with the VO (simple sequenced bubbles)
+this._runCaptionSequence([
+  { at: 0,    text: "You made it—the apples are yours and the labyrinth is behind you." },
+  { at: 1700, text: "Not bad, knight." },
+  { at: 2600, text: "I’d say you’ve earned a break… but the next challenge won’t be so forgiving." },
+  { at: 4800, text: "Take a breath, sharpen your wits," },
+  { at: 6200, text: "and get ready—Level Four awaits." }
+]);
+
+    }
+
+    // Show the victory overlay a beat after the camera move starts
+setTimeout(() => {
+  this._showVictoryOverlay();  // already shows Replay + Go To Level
+  this._showLevelPicker();     // or pop the picker directly
+  this.input?.setEnabled?.(true);
+}, 3000); // after orbit; tweak to your taste
+
   }
-
-  // Temporarily disable input while we show cinematics/overlays
-  this.input?.setEnabled?.(false);
-
-  // Kick the level-complete cinematic if your level defines it
-  if (this.level?.triggerLevelCompleteCinematic) {
-    this.level.triggerLevelCompleteCinematic(this.activeCamera, this.player);
-  }
-
-  // Play success VO (pravesh_success_vo.mp3 should be registered as "vo-success")
-  if (this.soundManager?.sfx?.['vo-success']) {
-    this.playVoiceover('vo-success', 7000);
-    // Optional captions to go with the VO (simple sequenced bubbles)
-    this._runCaptionSequence([
-      { at: 0,    text: "You made it—the apples are yours and the labyrinth is behind you." },
-      { at: 1700, text: "Not bad, knight." },
-      { at: 2600, text: "I'd say you've earned a break… but the next challenge won't be so forgiving." },
-      { at: 4800, text: "Take a breath, sharpen your wits," },
-      { at: 6200, text: "and get ready—Level Four awaits." }
-    ]);
-  }
-
-  // Show the victory overlay a beat after the camera move starts
-  setTimeout(() => {
-    this._showVictoryOverlay();  // already shows Replay + Go To Level
-    this._showLevelPicker();     // or pop the picker directly
-    this.input?.setEnabled?.(true);
-  }, 3000); // after orbit; tweak to your taste
-}
 
   _runCaptionSequence(segments = []) {
     // Uses the same simple bubble you already use in showSimpleDialogue
@@ -2223,9 +2270,6 @@ setupComputerTerminal() {
 /**
  * Setup LLM collection tracking
  */
-/**
- * Setup LLM collection tracking
- */
 setupLLMTracking() {
   console.log('🔧 Setting up LLM tracking...');
   
@@ -2235,65 +2279,74 @@ setupLLMTracking() {
     return;
   }
   
-  // Listen for LLM collection events from CollectiblesManager
-  this.collectiblesManager.addEventListener('onLLMCollected', (data) => {
-    console.log('🎯 Game: Received LLM collection event for', data.type);
+  // Override the chest collection handler to track LLMs
+  if (this.collectiblesManager.onChestCollected) {
+    const originalOnChestCollected = this.collectiblesManager.onChestCollected.bind(this.collectiblesManager);
     
-    // Update GlitchManager
-    if (this.glitchManager && data.type) {
-      this.glitchManager.collectLLM(data.type);
-    } else {
-      console.error('❌ Missing glitchManager or LLM type:', { 
-        hasGlitchManager: !!this.glitchManager, 
-        dataType: data.type 
-      });
-    }
-    
-    // Also update UI if needed (CollectiblesManager should handle this, but double-check)
-    if (this.ui && this.ui.get('collectibles')) {
-      const collectiblesUI = this.ui.get('collectibles');
-      if (collectiblesUI && collectiblesUI.collectLLM) {
-        collectiblesUI.collectLLM(data.type);
+    this.collectiblesManager.onChestCollected = (chestId, contents) => {
+      console.log('📦 Chest collected:', chestId, contents);
+      
+      // Call original handler first
+      originalOnChestCollected(chestId, contents);
+      
+      // Track LLMs in level 3
+      if (this.currentLevelId === 'level3' && contents && contents.startsWith('llm_')) {
+        // FIXED TYPO: was this.glatchManager, now this.glitchManager
+        this.glitchManager.collectedLLMs.add(contents);
+        console.log(`🧠 LLM Collected: ${contents}. Total: ${this.glitchManager.collectedLLMs.size}`);
+        
+        // Show collection message
+        if (this.showMessage) {
+          this.showMessage(`LLM Acquired: ${contents.toUpperCase()}! (${this.glitchManager.collectedLLMs.size}/3)`);
+        }
       }
-    }
-  });
-  
-  console.log('✅ LLM tracking setup complete');
+      
+      // Check glitched level completion
+      if (this.currentLevelId && this.currentLevelId.includes('_glitched')) {
+        this.checkGlitchedLevelCompletion();
+      }
+    };
+    
+    console.log('✅ LLM tracking setup complete');
+  } else {
+    console.error('❌ onChestCollected method not found in collectiblesManager');
+  }
 }
 
 /**
  * Check if enough collectibles are collected in glitched levels
  */
 checkGlitchedLevelCompletion() {
-  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) {
-    console.log('🔍 Not in glitched level, skipping completion check');
-    return;
-  }
+  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
   
-  console.log('🔍 Checking glitched level completion for:', this.currentLevelId);
+  const levelData = this.levelManager.getLevelData(this.currentLevelId);
+  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
   
-  const requiredCount = this.glitchManager.requiredGlitchedCollectibles[this.currentLevelId] || 2;
-  const collectedCount = this.collectiblesManager.getCollectedChestCount();
+  const chests = levelData.collectibles.chests;
   
-  console.log(`📊 Glitched level progress: ${collectedCount}/${requiredCount} chests`);
+  // Count collected chests
+  const collectedCount = chests.filter(chest => {
+    return this.collectiblesManager.isChestCollected(chest.id);
+  }).length;
+  
+  const requiredCount = this.glitchManager.requiredGlitchedCollectibles[this.currentLevelId];
+  
+  console.log(`📊 Glitched level progress: ${collectedCount}/${requiredCount} collectibles`);
   
   if (collectedCount >= requiredCount) {
-    console.log(`✅ Required ${requiredCount} chests collected in ${this.currentLevelId}!`);
+    console.log(`✅ Required collectibles collected in ${this.currentLevelId}!`);
     
     // Mark this glitched level as completed
     this.glitchManager.completeGlitchedLevel(this.currentLevelId);
     
     // Determine next level
     let nextLevel, message;
-    if (this.currentLevelId === 'level1_glitched') {
+    if (this.currentLevelId === 'level1_glitched' && !this.glitchManager.glitchedLevelsCompleted.level2_glitched) {
       nextLevel = 'level2_glitched';
       message = 'Level 1 Glitched completed! Moving to Level 2 Glitched.';
-    } else if (this.currentLevelId === 'level2_glitched') {
-      nextLevel = 'level3';
-      message = 'All glitched levels completed! Returning to Level 3.';
     } else {
       nextLevel = 'level3';
-      message = 'Glitched level completed! Returning to Level 3.';
+      message = 'All glitched levels completed! Returning to Level 3.';
     }
     
     // Show completion message
@@ -2301,7 +2354,6 @@ checkGlitchedLevelCompletion() {
     
     // Wait, then go to next level
     setTimeout(() => {
-      console.log('🚀 Auto-progressing to:', nextLevel);
       this.loadLevelByName(nextLevel);
     }, 3000);
   }
@@ -2351,18 +2403,35 @@ showMessage(message, duration = 3000) {
   }, duration);
 }
 
-setupGlitchedLevelProgression() {
-  console.log('🔧 Setting up glitched level progression...');
+checkGlitchedLevelCompletion() {
+  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
   
-  // Listen for collectible pickup events
-  this.collectiblesManager.addEventListener('onCollectiblePickup', (collectible) => {
-    if (collectible.type === 'chest') {
-      console.log('📦 Chest collected, checking glitched level completion...');
-      this.checkGlitchedLevelCompletion();
-    }
+  const levelData = this.levelManager.getLevelData(this.currentLevelId);
+  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
+  
+  const chests = levelData.collectibles.chests;
+  
+  // Check if ALL chests in this glitched level are collected
+  const allCollected = chests.every(chest => {
+    return this.collectiblesManager.isChestCollected(chest.id);
   });
   
-  console.log('✅ Glitched level progression setup complete');
+  if (allCollected) {
+    console.log('✅ All chests collected in glitched level!');
+    
+    // Mark this glitched level as completed
+    this.glitchManager.completeGlitchedLevel(this.currentLevelId);
+    
+    // Show completion message
+    this.showMessage(`Glitched level completed! Returning to Level 3.`);
+    
+    // Wait 2 seconds, then automatically return to Level 3
+    setTimeout(() => {
+      this.loadLevelByName('level3');
+    }, 2000);
+  }
 }
+
+
 
 }

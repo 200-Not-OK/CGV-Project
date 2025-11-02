@@ -151,7 +151,8 @@ export class Player {
     
     // Initialize weapon system
     this.weapon = new StackWeapon(this, scene, physicsWorld);
-    this.weapon.mount();
+    // Do not mount by default - Level 1 tutorial grants it via game state
+    this.weapon.unmount();
     
     // Block pickup system
     this.heldBlock = null; // Reference to block currently being held
