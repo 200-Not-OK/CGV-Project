@@ -76,7 +76,19 @@ export const levels = [
         "jump": {
           "url": "assets/audio/sfx/jumping.wav",
           "loop": false
-        }
+        },
+         "chest": {
+          "url": "assets/audio/sfx/chest_open.mp3",
+          "loop": false
+        },
+        "potion": {
+          "url": "assets/audio/sfx/potion.wav",
+          "loop": false
+        },
+        "low-health": {
+          "url": "assets/audio/sfx/low_health.mp3",
+          "loop": false
+        },
       },
       "playMusic": "intro-theme"
     },
