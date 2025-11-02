@@ -18,31 +18,45 @@ export class TriggerManager {
 
   /**
    * Load triggers from level data
-   * @param {Object} triggersData - Triggers object with nested arrays (like collectibles)
+   * @param {Array|Object} triggersData - Triggers as flat array or nested object with categories
    */
-  loadTriggers(triggersData = {}) {
+  loadTriggers(triggersData = null) {
     // Clear existing triggers
     this.disposeTriggers();
 
-    if (!triggersData || Object.keys(triggersData).length === 0) {
+    if (!triggersData) {
       console.log('ℹ️ No triggers in level data');
       return;
     }
 
     console.log(`📍 Loading triggers from level data`);
 
-    // Flatten all trigger types (levelLoaders, custom, etc)
     let triggerCount = 0;
-    for (const triggerType in triggersData) {
-      const triggersArray = triggersData[triggerType];
-      
-      if (Array.isArray(triggersArray)) {
-        for (const trigData of triggersArray) {
-          try {
-            this._createTrigger(trigData);
-            triggerCount++;
-          } catch (error) {
-            console.error(`❌ Failed to create trigger:`, error);
+    
+    // Handle flat array format (new style)
+    if (Array.isArray(triggersData)) {
+      for (const trigData of triggersData) {
+        try {
+          this._createTrigger(trigData);
+          triggerCount++;
+        } catch (error) {
+          console.error(`❌ Failed to create trigger:`, error);
+        }
+      }
+    } 
+    // Handle nested object format (old style with categories like levelLoaders, custom, etc)
+    else if (typeof triggersData === 'object') {
+      for (const triggerType in triggersData) {
+        const triggersArray = triggersData[triggerType];
+        
+        if (Array.isArray(triggersArray)) {
+          for (const trigData of triggersArray) {
+            try {
+              this._createTrigger(trigData);
+              triggerCount++;
+            } catch (error) {
+              console.error(`❌ Failed to create trigger:`, error);
+            }
           }
         }
       }

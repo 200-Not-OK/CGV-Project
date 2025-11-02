@@ -28,7 +28,7 @@ export const levels = [
         "position": [
           -1.5,
           1.21,
-          28.5
+          23.5
         ],
         "radius": 3,
         "poiText": "Level 1",
@@ -37,7 +37,7 @@ export const levels = [
       {
         "id": "trigger_level2",
         "position": [
-          20.25,
+          16.25,
           1.21,
           8.25
         ],
@@ -48,7 +48,7 @@ export const levels = [
       {
         "id": "trigger_level3",
         "position": [
-          -22.75,
+          -16.75,
           1.21,
           7.5
         ],
