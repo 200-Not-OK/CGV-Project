@@ -1883,6 +1883,15 @@ clearDeathVisualsAndState() {
   try { this.combatSystem.suppressAttacks = false; } catch {}
   try { this.level?.freezeAllEnemies?.(false); } catch {}
   try { this.proximitySoundManager?.resume?.(); } catch {}
+  
+  // Lock cursor when level loads
+  try {
+    if (typeof document !== 'undefined' && document.body?.requestPointerLock) {
+      document.body.requestPointerLock();
+    }
+  } catch (e) {
+    console.warn('⚠️ Unable to request pointer lock on level load:', e);
+  }
 }
 
 

@@ -25,12 +25,24 @@ window.addEventListener('load', () => {
     availableLevels,
     onReplay: () => {
       const id = game?.level?.data?.id;
-      if (id) game.loadLevel(game.levelManager.currentIndex);
+      if (id) {
+        // Lock cursor when loading new level
+        if (document.pointerLockElement) {
+          try { document.exitPointerLock(); } catch (e) { /* ignore */ }
+        }
+        game.loadLevel(game.levelManager.currentIndex);
+      }
       game?.input?.setEnabled?.(true);
     },
     onSelect: (id) => {
       const idx = (LVLS || []).findIndex(l => l.id === id);
-      if (idx >= 0) game.loadLevel(idx);
+      if (idx >= 0) {
+        // Lock cursor when loading new level
+        if (document.pointerLockElement) {
+          try { document.exitPointerLock(); } catch (e) { /* ignore */ }
+        }
+        game.loadLevel(idx);
+      }
       game?.input?.setEnabled?.(true);
     }
   });
@@ -69,10 +81,16 @@ window.addEventListener('load', () => {
     game.playVoiceover('vo-success', 6000);
   }
 
-  // (c) Show victory overlay after 6 second delay
-  console.log('⏱️ Waiting 6 seconds before showing victory overlay...');
-  await new Promise(resolve => setTimeout(resolve, 6000));
+  // (c) Show victory overlay after 8 second delay
+  console.log('⏱️ Waiting 8 seconds before showing victory overlay...');
+  await new Promise(resolve => setTimeout(resolve, 8000));
   console.log('🏆 Showing victory overlay');
+  
+  // Unlock cursor so user can interact with buttons
+  if (document.pointerLockElement) {
+    try { document.exitPointerLock(); } catch (e) { /* ignore */ }
+  }
+  
   game._showVictoryOverlay?.();
   game?.input?.setEnabled?.(true);
 });
