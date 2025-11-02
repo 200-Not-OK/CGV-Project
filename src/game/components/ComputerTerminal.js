@@ -173,7 +173,7 @@ export class ComputerTerminal {
       if (interactionPrompt) {
         // Always set our prompt when in range, overriding others if needed
         if (this.canActivate) {
-          interactionPrompt.show('ACCESS GLITCHED DIMENSIONS');
+          interactionPrompt.show('TO COMPILE GAME');
         } else {
           const collected = this.glitchManager.collectedLLMs.size;
           const required = this.glitchManager.requiredLLMs.length;
