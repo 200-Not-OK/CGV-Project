@@ -214,13 +214,19 @@ export class CollectiblesLevel3 extends UIComponent {
 
   // LLM collection method
   collectLLM(llmType) {
+    console.log(`🔍 [CollectiblesLevel3] collectLLM called with: ${llmType}`);
+    console.log(`🔍 [CollectiblesLevel3] Current state BEFORE:`, JSON.parse(JSON.stringify(this.collectibles.llms)));
+    
     if (['gpt', 'claude', 'gemini'].includes(llmType)) {
       this.collectibles.llms[llmType].collected++;
       this._updateLLMDisplay();
       this._playLLMCollectAnimation(llmType);
+      
+      console.log(`🔍 [CollectiblesLevel3] Current state AFTER:`, JSON.parse(JSON.stringify(this.collectibles.llms)));
       console.log(`🤖 Collected LLM ${llmType.toUpperCase()}! Total: ${this.collectibles.llms[llmType].collected}`);
       return true;
     }
+    console.warn(`⚠️ [CollectiblesLevel3] Invalid LLM type: ${llmType}`);
     return false;
   }
 

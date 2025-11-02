@@ -665,9 +665,18 @@ openChest(chestCollectible) {
     
     this.triggerEvent('onLLMCollected', { type: llmType, chest: chestCollectible });
     
+    // Notify GlitchManager about the LLM collection (for computer unlock)
+    if (this.game && this.game.glitchManager) {
+      this.game.glitchManager.collectLLM(llmType);
+      console.log('🔄 Notified GlitchManager of LLM collection');
+    }
+    
     if (this.uiRef) {
       if (this.uiRef.collectLLM) {
-        console.log(`🎯 Calling uiRef.collectLLM('${llmType}')`);
+        console.log(`🎯 Collecting 3x ${llmType.toUpperCase()} from chest`);
+        // Collect 3 of the same LLM type
+        this.uiRef.collectLLM(llmType);
+        this.uiRef.collectLLM(llmType);
         this.uiRef.collectLLM(llmType);
       } else {
         console.warn('⚠️ UI reference exists but collectLLM method not found!');
@@ -676,7 +685,7 @@ openChest(chestCollectible) {
       console.error('❌ No UI reference available for LLM collection!');
     }
     
-    console.log(`🤖 Found ${llmType.toUpperCase()} LLM in the chest!`);
+    console.log(`🤖 Found ${llmType.toUpperCase()} chest! Collected 3x ${llmType.toUpperCase()}`);
   } else {
     console.warn(`⚠️ Unknown chest contents: ${chestCollectible.contents}`);
   }
