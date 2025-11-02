@@ -36,6 +36,7 @@ import { GraphicsSettingsUI } from './components/ui/GraphicsSettingsUI.js';
 import { GlitchManager } from './GlitchManager.js';
 import { ComputerTerminal } from './components/ComputerTerminal.js';
 import { LoadingScreen } from './components/LoadingScreen.js';
+import { SplashScreen } from './components/SplashScreen.js';
 import { MainMenu } from './components/MainMenu.js';
 import { SettingsMenu } from './components/SettingsMenu.js';
 import { GraphicsSettingsMenu } from './components/GraphicsSettingsMenu.js';
@@ -264,6 +265,9 @@ export class Game {
     // Add loading screen
     this.ui.add('loadingScreen', LoadingScreen, {});
     console.log('📺 LoadingScreen added to UIManager');
+    // Add splash screen (shown on startup)
+    this.ui.add('splashScreen', SplashScreen, {});
+    console.log('🎨 SplashScreen added to UIManager');
     // Add main menu
     this.ui.add('mainMenu', MainMenu, {
       onStart: () => this._onMainMenuStart(),
@@ -420,7 +424,47 @@ E - Interact with chests and doors
 
   // Initialize the first level asynchronously
   async _initializeLevel() {
-    // Show main menu instead of loading a level immediately
+    // Show splash screen and simulate asset loading
+    console.log('🎨 Showing splash screen on startup');
+    const splashScreen = this.ui.get('splashScreen');
+    
+    if (splashScreen) {
+      splashScreen.show();
+      
+      // Simulate loading progress with various asset types
+      const assets = [
+        { name: 'Loading level data...', progress: 15 },
+        { name: 'Initializing physics engine...', progress: 30 },
+        { name: 'Loading shaders...', progress: 45 },
+        { name: 'Preparing audio system...', progress: 60 },
+        { name: 'Loading effects...', progress: 75 },
+        { name: 'Finalizing assets...', progress: 90 }
+      ];
+      
+      // Show progress through assets
+      for (const asset of assets) {
+        await new Promise(resolve => {
+          setTimeout(() => {
+            splashScreen.setStatus(asset.name, asset.progress);
+            resolve();
+          }, 300);
+        });
+      }
+      
+      // Final loading step
+      splashScreen.setStatus('Ready!', 100);
+      
+      // Hold on ready screen briefly, then transition to main menu
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Fade out splash screen
+      splashScreen.hide(500);
+      
+      // Wait for fade to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    // Show main menu
     console.log('🎮 Showing main menu');
     const mainMenu = this.ui.get('mainMenu');
     if (mainMenu) {

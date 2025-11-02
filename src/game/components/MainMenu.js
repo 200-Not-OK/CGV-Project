@@ -214,7 +214,7 @@ export class MainMenu extends UIComponent {
     // Subtitle
     const subtitle = document.createElement('p');
     subtitle.className = 'main-menu-subtitle';
-    subtitle.textContent = 'FACE YOUR FEAR';
+    subtitle.textContent = 'CONQUER THE EDGE';
     menuContainer.appendChild(subtitle);
 
     // Buttons container
