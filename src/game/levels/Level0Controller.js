@@ -70,6 +70,14 @@ export class Level0Controller {
       halfSize: new THREE.Vector3(15, 15, 15) // 30x30x30 units
     };
     
+    // Stack tool boost hint trigger
+    this._boostHintTriggerEnabled = false; // Enabled after stack tool is granted
+    this._boostHintTriggerConsumed = false;
+    this._boostHintTriggerBox = {
+      center: new THREE.Vector3(-205.07, 11.33, -34.84),
+      halfSize: new THREE.Vector3(8, 8, 8) // 16x16x16 units trigger area
+    };
+    
     // Node interaction tracking
     this.nodeMeshes = []; // Array of node meshes found in scene
     this.collectedNodes = new Set(); // Track collected node names
@@ -107,6 +115,12 @@ export class Level0Controller {
     
     // Set up E key listener for node interaction
     this._setupNodeInteractionListener();
+
+    // Ensure node HUD is hidden until after Richard's first interaction
+    try {
+      const hud = this.game?.ui?.get('hud');
+      if (hud && hud.showNodeCounter) hud.showNodeCounter(false);
+    } catch (_) {}
     
     // DEBUG: Enable final interaction immediately if flag is set
     if (this._debugFinalInteractionAlways) {
@@ -130,6 +144,22 @@ export class Level0Controller {
       }
     };
     window.addEventListener('level:complete', this._levelCompleteHandler);
+    
+    // Expose debug function to skip directly to boss fight
+    if (typeof window !== 'undefined') {
+      window.skipToBossFight = () => {
+        console.log('🚀 [DEBUG] Skipping to boss fight...');
+        this._finalBinaryChoiceEnabled = true;
+        if (this.richard && this.richard.mesh) {
+          this._showExclamationMark();
+        }
+        // Directly trigger boss fight after a short delay to ensure everything is ready
+        setTimeout(() => {
+          this._teleportToBossRoom();
+        }, 500);
+      };
+      console.log('💡 [DEBUG] Call skipToBossFight() in console to skip to boss fight');
+    }
   }
 
   /**
@@ -493,7 +523,34 @@ export class Level0Controller {
             position: [bossPos.x, bossPos.y, bossPos.z],
             health: 500,
             scale: 2.5,
+            game: this.game,
           });
+          
+          // Scale the physics body to match visual scale
+          if (bossEnemy && bossEnemy.body && bossEnemy.body.shapes) {
+            const scaleValue = 2.5;
+            bossEnemy.body.shapes.forEach(shape => {
+              if (shape.type === CANNON.Shape.types.BOX) {
+                // Scale box shape (multiply halfExtents)
+                shape.halfExtents.x *= scaleValue;
+                shape.halfExtents.y *= scaleValue;
+                shape.halfExtents.z *= scaleValue;
+              } else if (shape.type === CANNON.Shape.types.SPHERE) {
+                // Scale sphere shape
+                shape.radius *= scaleValue;
+              } else if (shape.type === CANNON.Shape.types.CYLINDER) {
+                // Scale cylinder shape
+                shape.radiusTop *= scaleValue;
+                shape.radiusBottom *= scaleValue;
+                shape.height *= scaleValue;
+              }
+            });
+            // Update the body's bounding sphere radius
+            bossEnemy.body.updateBoundingRadius();
+            // Recompute AABB (axis-aligned bounding box)
+            bossEnemy.body.aabbNeedsUpdate = true;
+            console.log('⚔️ [Level0Controller] Boss physics body scaled to match visual scale');
+          }
         } else {
           // Reposition existing boss
           bossEnemy.setPosition(bossPos);
@@ -579,6 +636,13 @@ export class Level0Controller {
       // Dialogue sequence (Richard and Steve not physically present, just dialogue)
       this._setupEnterKeyListener(director);
       await this._showCaption('Oh no! Your stack tool broke with the fall.', 0, 'Richard');
+      
+      // Break the stack tool permanently
+      if (this.game.breakStackTool) {
+        this.game.breakStackTool();
+        console.log('[Level0] Stack tool permanently broken');
+      }
+      
       await this._waitForEnter();
       cm._hideCaption?.(true);
       await this._wait(200);
@@ -901,6 +965,11 @@ export class Level0Controller {
       // Richard: One infiltrated...
       this._setupEnterKeyListener(director);
       await this._showCaption('One infiltrated the tree, a big one. We won\'t be able to stop it.', 0, 'Richard');
+      // Requirement: Hide node HUD once Richard tells about something inside the tree
+      try {
+        const hud = this.game?.ui?.get('hud');
+        if (hud && hud.showNodeCounter) hud.showNodeCounter(false);
+      } catch (_) {}
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -1111,6 +1180,11 @@ export class Level0Controller {
       // Richard dialogue 2: "One infilitrated the tree, a big one, We wont be able to stop it"
       this._setupEnterKeyListener(director);
       await this._showCaption('One infiltrated the tree, a big one. We won\'t be able to stop it.', 0, 'Richard');
+      // Requirement: Hide node HUD when Richard reveals something is inside the tree
+      try {
+        const hud = this.game?.ui?.get('hud');
+        if (hud && hud.showNodeCounter) hud.showNodeCounter(false);
+      } catch (_) {}
       await this._waitForEnter();
       cm._hideCaption?.(true);
 
@@ -2618,9 +2692,10 @@ export class Level0Controller {
       this._showTemporaryPopup('Tool acquired: Stack', 1800);
       await this._wait(600);
       
-      // Ensure tool is granted/mounted (already present by default, but remount to be safe)
-      if (this.game.player.weapon && this.game.player.weapon.mount) {
-        this.game.player.weapon.mount();
+      // Grant the Stack tool via game state (only available in Level 1)
+      if (this.game.grantStackTool) {
+        this.game.grantStackTool();
+        console.log('[Level0] Stack tool granted to player');
       }
       
       // Continue dialogue and on-screen controls
@@ -2670,6 +2745,10 @@ export class Level0Controller {
       // Enable lift area trigger after Stack tool tutorial completes
       this._liftTriggerEnabled = true;
       this._liftTriggerConsumed = false;
+      
+      // Enable boost hint trigger so player can learn jump + X combo
+      this._boostHintTriggerEnabled = true;
+      console.log('💡 [Level0Controller] Boost hint trigger enabled');
     } catch (e) {
       console.error('❌ [Level0Controller] Error in Stack tool tutorial:', e);
   this._stopCameraLookAtPlayer();
@@ -2763,6 +2842,50 @@ export class Level0Controller {
       if (el.parentElement) el.parentElement.removeChild(el);
     }, durationMs);
     return el;
+  }
+
+  /**
+   * Show boost hint popup teaching jump + X combo
+   */
+  _showBoostHint() {
+    console.log('💡 [Level0Controller] Showing boost hint');
+    
+    // Create multi-line hint overlay
+    const hintEl = document.createElement('div');
+    hintEl.style.position = 'fixed';
+    hintEl.style.top = '30%';
+    hintEl.style.left = '50%';
+    hintEl.style.transform = 'translate(-50%, -50%)';
+    hintEl.style.padding = '20px 30px';
+    hintEl.style.background = 'rgba(0,0,0,0.85)';
+    hintEl.style.color = '#00ff88';
+    hintEl.style.fontFamily = 'monospace, sans-serif';
+    hintEl.style.fontSize = '18px';
+    hintEl.style.border = '2px solid #00ff88';
+    hintEl.style.borderRadius = '10px';
+    hintEl.style.zIndex = '9999';
+    hintEl.style.textAlign = 'center';
+    hintEl.style.lineHeight = '1.6';
+    
+    hintEl.innerHTML = `
+      <div style="font-size: 22px; font-weight: bold; margin-bottom: 12px; color: #ffd700;">💡 HINT: Stack Tool Boost</div>
+      <div style="margin-bottom: 8px;">Jump and press <span style="color: #ffd700; font-weight: bold;">X</span> to boost yourself up!</div>
+      <div style="margin-bottom: 8px;">You can stack up to 3 blocks.</div>
+      <div>If you need to move more than 3 blocks, press <span style="color: #ffd700; font-weight: bold;">Z</span> to pop them so you can boost again.</div>
+    `;
+    
+    document.body.appendChild(hintEl);
+    
+    // Auto-hide after 6 seconds
+    setTimeout(() => {
+      if (hintEl.parentElement) {
+        hintEl.style.opacity = '0';
+        hintEl.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+          if (hintEl.parentElement) hintEl.parentElement.removeChild(hintEl);
+        }, 500);
+      }
+    }, 6000);
   }
 
   /**
@@ -3111,6 +3234,13 @@ export class Level0Controller {
    * Update method - should be called from game loop to track player with Steve
    */
   update(delta) {
+    // Guard: keep node HUD hidden until the first Richard interaction has actually occurred
+    try {
+      if (!this.interactionDialogueShown) {
+        const hud = this.game?.ui?.get('hud');
+        if (hud && hud.showNodeCounter) hud.showNodeCounter(false);
+      }
+    } catch (_) {}
     // (Preview disabled)
 
     // Update Steve's rotation to track player
@@ -3264,6 +3394,19 @@ export class Level0Controller {
       }
     }
     
+    // Check boost hint trigger volume (teaches jump + X combo)
+    if (this._boostHintTriggerEnabled && !this._boostHintTriggerConsumed && this.game?.player?.body) {
+      const p3 = this.game.player.body.position;
+      const box3 = this._boostHintTriggerBox;
+      const inX3 = Math.abs(p3.x - box3.center.x) <= box3.halfSize.x;
+      const inY3 = Math.abs(p3.y - box3.center.y) <= box3.halfSize.y;
+      const inZ3 = Math.abs(p3.z - box3.center.z) <= box3.halfSize.z;
+      if (inX3 && inY3 && inZ3) {
+        this._boostHintTriggerConsumed = true;
+        this._showBoostHint();
+      }
+    }
+    
     // Check node proximity and handle interaction
     this._checkNodeProximity();
     
@@ -3353,6 +3496,18 @@ export class Level0Controller {
       if (this.bossFightSystem !== null) {
         console.log('🔄 [Level0Controller] Resetting boss fight state after death');
         
+        // Clean up boss fight system properly
+        try {
+          if (this.bossFightSystem.cleanup) {
+            this.bossFightSystem.cleanup();
+          }
+          if (this.bossFightSystem.hud && this.bossFightSystem.hud.unmount) {
+            this.bossFightSystem.hud.unmount();
+          }
+        } catch (e) {
+          console.warn('⚠️ Error cleaning up boss fight system on reset:', e);
+        }
+        
         // Clear boss fight system
         this.bossFightSystem = null;
         
@@ -3397,6 +3552,23 @@ export class Level0Controller {
    */
   dispose() {
     console.log('🧹 [Level0Controller] Disposing...');
+    
+    // Clean up boss fight system FIRST to remove HUD and platform
+    if (this.bossFightSystem) {
+      console.log('🧹 [Level0Controller] Cleaning up boss fight system...');
+      try {
+        if (this.bossFightSystem.cleanup) {
+          this.bossFightSystem.cleanup();
+        }
+        // Extra safety: ensure HUD is unmounted
+        if (this.bossFightSystem.hud && this.bossFightSystem.hud.unmount) {
+          this.bossFightSystem.hud.unmount();
+        }
+        this.bossFightSystem = null;
+      } catch (e) {
+        console.warn('⚠️ Error cleaning up boss fight system:', e);
+      }
+    }
     
     // Stop pacing and remove listeners
     this._stopPacingLoop();

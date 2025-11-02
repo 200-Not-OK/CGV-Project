@@ -48,6 +48,12 @@ window.addEventListener('load', () => {
 
   console.log('🏁 Level complete in main.js for level:', levelId);
 
+  // Hide node counter UI when level completes
+  const hud = game?.ui?.get('hud');
+  if (hud && hud.showNodeCounter) {
+    hud.showNodeCounter(false);
+  }
+
   // Pause input while showing the UI
   game?.input?.setEnabled?.(false);
 
