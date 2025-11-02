@@ -1935,6 +1935,19 @@ clearDeathVisualsAndState() {
     const levelId = this.currentLevelId || this.level?.data?.id || this.scene?.userData?.levelId || null;
     // Allow stack tool in both 'level1' and 'level1_glitched'
     const isLevel1OrGlitched = levelId === 'level1' || levelId === 'level1_glitched';
+    
+    // IMPORTANT: Auto-grant and unbreak the stack tool for level1_glitched
+    if (levelId === 'level1_glitched') {
+      if (!this.state.stackToolGranted) {
+        console.log('[StackTool] 🎁 Auto-granting stack tool for glitched level1');
+        this.state.stackToolGranted = true;
+      }
+      if (this.state.stackToolBroken) {
+        console.log('[StackTool] 🔧 Unbreaking stack tool for glitched level1');
+        this.state.stackToolBroken = false;
+      }
+    }
+    
     const canUse = !this.state.stackToolBroken && this.state.stackToolGranted && isLevel1OrGlitched;
     
     console.log('[StackTool] Refresh - Level:', levelId, 'Granted:', this.state.stackToolGranted, 'Broken:', this.state.stackToolBroken, '=> Can use:', canUse);
