@@ -25,10 +25,6 @@ export class Level0Controller {
     this._steveTrackingEnabled = false;
   this._lookAtSteveRaf = null; // RAF id for camera lookAt tracking during Steve scene
   this._lookAtPlayerRaf = null; // RAF id for camera lookAt tracking during Player focus
-  
-  // Enter prompt UI for dialogue
-  this.enterPromptEl = null;
-  this.enterPromptPulseId = null;
     
     // Boss fight system
     this.bossFightSystem = null; // Store boss fight instance for updates
@@ -46,8 +42,8 @@ export class Level0Controller {
     this._doorTriggersEnabled = false;
     this._doorTriggersConsumed = false;
     this._doorTriggerBoxes = [
-      { center: new THREE.Vector3(-36.67, 10.66, -29.51), halfSize: new THREE.Vector3(15, 15, 15) }, // 30x30x30 units - huge trigger area
-      { center: new THREE.Vector3( 36.67, 10.66, -29.51), halfSize: new THREE.Vector3(15, 15, 15) }  // 30x30x30 units - huge trigger area
+      { center: new THREE.Vector3(-36.67, 10.66, -29.51), halfSize: new THREE.Vector3(2, 2, 2) },
+      { center: new THREE.Vector3( 36.67, 10.66, -29.51), halfSize: new THREE.Vector3(2, 2, 2) }
     ];
     
     // Early door triggers (before Richard interaction)
@@ -1586,128 +1582,15 @@ export class Level0Controller {
    * Wait for Enter key to be pressed
    */
   async _waitForEnter() {
-    // Show the prompt when starting to wait
-    this._showEnterPrompt();
-    
     return new Promise((resolve) => {
       const checkInterval = setInterval(() => {
         if (this._enterPressed) {
           clearInterval(checkInterval);
           this._enterPressed = false;
-          // Hide the prompt before resolving
-          this._hideEnterPrompt();
           resolve();
         }
       }, 100);
     });
-  }
-
-  /**
-   * Ensure the Enter prompt UI element exists
-   */
-  _ensureEnterPromptUI() {
-    if (this.enterPromptEl) return;
-    
-    this.enterPromptEl = document.createElement('div');
-    this.enterPromptEl.className = 'enter-prompt';
-    this.enterPromptEl.style.cssText = `
-      position: fixed;
-      left: 50%;
-      bottom: 3vh;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.75);
-      color: #ffdd44;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-family: system-ui, "Segoe UI", Arial, sans-serif;
-      font-size: 18px;
-      font-weight: 600;
-      text-align: center;
-      z-index: 10000;
-      display: none;
-      opacity: 0;
-      transition: opacity 200ms ease;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-      letter-spacing: 0.2px;
-    `;
-    this.enterPromptEl.textContent = 'Press Enter to continue';
-    document.body.appendChild(this.enterPromptEl);
-  }
-
-  /**
-   * Show the Enter prompt with fade-in animation and start pulse effect
-   */
-  _showEnterPrompt() {
-    this._ensureEnterPromptUI();
-    
-    if (!this.enterPromptEl) return;
-    
-    // Show the element
-    this.enterPromptEl.style.display = 'block';
-    // Force repaint before opacity change
-    this.enterPromptEl.style.opacity = '0';
-    void this.enterPromptEl.offsetHeight;
-    this.enterPromptEl.style.opacity = '1';
-    
-    // Start pulse animation
-    this._startPromptPulse();
-  }
-
-  /**
-   * Hide the Enter prompt with fade-out animation and stop pulse effect
-   */
-  _hideEnterPrompt() {
-    if (!this.enterPromptEl || this.enterPromptEl.style.display === 'none') return;
-    
-    // Stop pulse animation
-    this._stopPromptPulse();
-    
-    // Fade out
-    this.enterPromptEl.style.opacity = '0';
-    setTimeout(() => {
-      if (this.enterPromptEl) {
-        this.enterPromptEl.style.display = 'none';
-      }
-    }, 200);
-  }
-
-  /**
-   * Start pulsing animation for the Enter prompt
-   */
-  _startPromptPulse() {
-    this._stopPromptPulse(); // Clear any existing animation
-    
-    let startTime = null;
-    const pulseDuration = 1500; // 1.5 seconds per cycle
-    
-    const pulse = (timestamp) => {
-      if (!startTime) startTime = timestamp;
-      if (!this.enterPromptEl || this.enterPromptEl.style.display === 'none') {
-        this.enterPromptPulseId = null;
-        return;
-      }
-      
-      const elapsed = timestamp - startTime;
-      const progress = (elapsed % pulseDuration) / pulseDuration;
-      // Create sine wave: 0 to 1, then scale to opacity range 0.6 to 1.0
-      const opacity = 0.6 + (0.4 * (Math.sin(progress * Math.PI * 2) * 0.5 + 0.5));
-      
-      this.enterPromptEl.style.opacity = opacity.toString();
-      
-      this.enterPromptPulseId = requestAnimationFrame(pulse);
-    };
-    
-    this.enterPromptPulseId = requestAnimationFrame(pulse);
-  }
-
-  /**
-   * Stop pulsing animation for the Enter prompt
-   */
-  _stopPromptPulse() {
-    if (this.enterPromptPulseId) {
-      cancelAnimationFrame(this.enterPromptPulseId);
-      this.enterPromptPulseId = null;
-    }
   }
 
   /**
@@ -3383,11 +3266,6 @@ export class Level0Controller {
       }
     }
     
-    // If respawning from fall (not death), show movement hint
-    if (!fromDeath) {
-      this._showTemporaryPopup('Hint: Press and hold Shift to sprint, then press Space to jump', 4000);
-    }
-    
     // Progress is preserved (nodes, interactions, etc. are not reset)
     console.log('✅ [Level0Controller] Player respawned, progress preserved');
   }
@@ -3408,17 +3286,6 @@ export class Level0Controller {
     if (this._pulseAnimationId) {
       cancelAnimationFrame(this._pulseAnimationId);
       this._pulseAnimationId = null;
-    }
-    
-    // Clean up Enter prompt UI
-    this._hideEnterPrompt();
-    if (this.enterPromptEl && this.enterPromptEl.parentElement) {
-      this.enterPromptEl.parentElement.removeChild(this.enterPromptEl);
-    }
-    this.enterPromptEl = null;
-    if (this.enterPromptPulseId) {
-      cancelAnimationFrame(this.enterPromptPulseId);
-      this.enterPromptPulseId = null;
     }
     
     // Remove exclamation mark if it exists
