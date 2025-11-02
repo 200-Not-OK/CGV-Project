@@ -13,6 +13,7 @@ import { SmallMenu } from './components/menu.js';
 import { FPS } from './components/fps.js';
 import { Crosshair } from './components/crosshair.js';
 import { Collectibles } from './components/collectibles.js';
+import { CollectiblesLevel3 } from './components/CollectiblesLevel3.js';
 import { InteractionPrompt } from './components/interactionPrompt.js';
 import { DeathMenu } from './components/deathMenu.js';
 import { VoiceoverCard } from './components/voiceoverCard.js';
@@ -2144,7 +2145,14 @@ clearDeathVisualsAndState() {
         ...config 
       });
     } else if (key === 'collectibles') {
-      this.ui.add('collectibles', Collectibles, config);
+      // USE CollectiblesLevel3 ONLY FOR LEVEL 3
+      if (levelData.id === 'level3') {
+        console.log('🎯 Using CollectiblesLevel3 for Level 3');
+        this.ui.add('collectibles', CollectiblesLevel3, config);
+      } else {
+        // Use regular Collectibles for other levels
+        this.ui.add('collectibles', Collectibles, config);
+      }
     } else if (key === 'fps') {
       // FPS is already added as a global component, skip
       continue;
