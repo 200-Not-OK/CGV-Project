@@ -208,13 +208,13 @@ export class MainMenu extends UIComponent {
     // Title
     const title = document.createElement('h1');
     title.className = 'main-menu-title';
-    title.textContent = 'REALM QUEST';
+    title.textContent = 'THE EDGE';
     menuContainer.appendChild(title);
 
     // Subtitle
     const subtitle = document.createElement('p');
     subtitle.className = 'main-menu-subtitle';
-    subtitle.textContent = 'ADVENTURE AWAITS';
+    subtitle.textContent = 'FACE YOUR FEAR';
     menuContainer.appendChild(subtitle);
 
     // Buttons container
@@ -261,6 +261,13 @@ export class MainMenu extends UIComponent {
       this.root.style.display = 'flex';
       this.root.style.opacity = '1';
       this.root.style.pointerEvents = 'auto';
+      this.root.style.cursor = 'auto'; // Show cursor
+      // Exit pointer lock if active
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+      // Ensure body cursor is visible
+      document.body.style.cursor = 'auto';
     }
   }
 

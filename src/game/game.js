@@ -139,6 +139,9 @@ export class Game {
     // doesn't accidentally trigger a second request or race with the resume flow.
     window.addEventListener('click', (e) => {
       if (this.pauseMenu && this.pauseMenu.contains && this.pauseMenu.contains(e.target)) return;
+      
+      // Don't request pointer lock if game hasn't started yet (main menu is showing)
+      if (!this.gameStarted) return;
 
       // Resume AudioContext on first user interaction (required by browsers)
       if (this.soundManager && this.soundManager.listener && this.soundManager.listener.context) {
@@ -362,8 +365,8 @@ this.setupLLMTracking();
 🔍 M - Toggle physics debug visualization  
 🚪 H - Toggle door collision helpers
 ⚔️  B - Toggle combat debug visuals
-� E - Interact with chests and doors
-📊 F - Toggle FPS counter
+📊 F - Toggle FPS counter (hidden by default)
+E - Interact with chests and doors
 ⏸️  ESC - Pause/Resume game
 ========================`);
     }, 1000); // Delay to ensure other startup messages are shown first
@@ -637,16 +640,18 @@ suppressOversizedMinimapColliders() {
   toggleFPSCounter() {
     const fpsComponent = this.ui.get('fps');
     if (fpsComponent) {
-      // Toggle visibility by modifying the display style
+      // Toggle visibility using show/hide methods
       const currentDisplay = fpsComponent.root.style.display;
       const isCurrentlyVisible = currentDisplay !== 'none';
       
-      fpsComponent.root.style.display = isCurrentlyVisible ? 'none' : 'block';
+      if (isCurrentlyVisible) {
+        fpsComponent.hide();
+        console.log(`📊 FPS counter is now hidden (Press F to toggle)`);
+      } else {
+        fpsComponent.show();
+        console.log(`📊 FPS counter is now visible (Press F to toggle)`);
+      }
       
-      const newState = isCurrentlyVisible ? 'hidden' : 'visible';
-      console.log(`📊 FPS counter is now ${newState} (Press F to toggle)`);
-      
-      // Store the state for consistency
       fpsComponent.isVisible = !isCurrentlyVisible;
     } else {
       console.warn('⚠️ FPS component not found. Cannot toggle visibility.');

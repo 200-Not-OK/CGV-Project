@@ -24,6 +24,7 @@ export class FPS extends UIComponent {
     this.root.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 1)';
     this.root.style.border = '2px solid #00ff00'; // Add visible border
     this.root.style.minWidth = '100px'; // Ensure minimum width
+    this.root.style.display = 'none'; // Hidden by default
     
     // FPS calculation variables
     this.frameCount = 0;
@@ -143,5 +144,19 @@ export class FPS extends UIComponent {
     this.lastFpsUpdate = this.lastTime;
     this.fpsHistory = [];
     this.fps = 0;
+  }
+
+  // Show FPS counter
+  show() {
+    if (this.root) {
+      this.root.style.display = 'block';
+    }
+  }
+
+  // Hide FPS counter
+  hide() {
+    if (this.root) {
+      this.root.style.display = 'none';
+    }
   }
 }
