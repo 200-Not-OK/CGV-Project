@@ -102,6 +102,11 @@
 		{
 			"mesh":1,
 			"name":"Platform1",
+			"scale":[
+				1.523051142692566,
+				1,
+				1
+			],
 			"translation":[
 				-118.64678955078125,
 				5.535099983215332,
@@ -111,15 +116,25 @@
 		{
 			"mesh":2,
 			"name":"Platform2",
+			"scale":[
+				1.4575104713439941,
+				1,
+				1
+			],
 			"translation":[
-				-158.64678955078125,
+				-163.99366760253906,
 				5.535099983215332,
-				-34.93140411376953
+				-33.55156326293945
 			]
 		},
 		{
 			"mesh":3,
 			"name":"Platform3",
+			"scale":[
+				1,
+				1,
+				1.7940905094146729
+			],
 			"translation":[
 				-158.64678955078125,
 				5.535099983215332,
@@ -7044,25 +7059,25 @@
 		{
 			"name":"ctrl_latch_btm_mid.001",
 			"translation":[
-				-99.9242172241211,
-				-83.28209686279297,
-				0.0003590451378840953
+				-187.60781860351562,
+				-83.28207397460938,
+				0.0007252560462802649
 			]
 		},
 		{
 			"name":"ctrl_latch_top_L.001",
 			"translation":[
-				22.228309631347656,
+				22.22830581665039,
 				49.16629409790039,
-				-0.0001083257157006301
+				-0.00023039602092467248
 			]
 		},
 		{
 			"name":"ctrl_latch_upper_mid.001",
 			"translation":[
 				70.65391540527344,
-				5.046695232391357,
-				-3.392469079699367e-05
+				5.046702861785889,
+				-0.00015599500329699367
 			]
 		},
 		{
@@ -7074,16 +7089,16 @@
 			"name":"ctrl_door_left.001",
 			"translation":[
 				-87.92890167236328,
-				106.9358139038086,
-				42.174774169921875
+				106.93580627441406,
+				42.174713134765625
 			]
 		},
 		{
 			"name":"ctrl_latch_top_R.001",
 			"translation":[
-				159.35140991210938,
-				49.65250778198242,
-				0.00025788519997149706
+				250.34552001953125,
+				49.65251541137695,
+				0.0005020258249714971
 			]
 		},
 		{
@@ -7092,36 +7107,26 @@
 			],
 			"name":"ctrl_door_right.001",
 			"translation":[
-				89.88917541503906,
+				89.8891830444336,
 				106.44961547851562,
-				42.174774169921875
+				42.174713134765625
 			]
 		},
 		{
 			"name":"ctrl_Upper.001",
 			"translation":[
-				-0.6421546936035156,
-				260.1884765625,
-				42.18418502807617
+				-0.6421470642089844,
+				260.1884460449219,
+				42.18412399291992
 			]
 		},
 		{
 			"mesh":347,
-			"name":"Door_Left_Decals_0.001",
-			"translation":[
-				0,
-				0,
-				6.103515625e-05
-			]
+			"name":"Door_Left_Decals_0.001"
 		},
 		{
 			"mesh":348,
-			"name":"Door_Left_Mat_Door_Main_0.001",
-			"translation":[
-				0,
-				0,
-				6.103515625e-05
-			]
+			"name":"Door_Left_Mat_Door_Main_0.001"
 		},
 		{
 			"children":[
@@ -7130,28 +7135,18 @@
 			],
 			"name":"Door_Left.001",
 			"translation":[
-				1.33514404296875e-05,
+				1.71661376953125e-05,
 				0,
-				-0.0001220703125
+				-0.00018310546875
 			]
 		},
 		{
 			"mesh":349,
-			"name":"Door_Right_Decals_0.001",
-			"translation":[
-				0,
-				0,
-				6.103515625e-05
-			]
+			"name":"Door_Right_Decals_0.001"
 		},
 		{
 			"mesh":350,
-			"name":"Door_Right_Mat_Door_Main_0.001",
-			"translation":[
-				0,
-				0,
-				6.103515625e-05
-			]
+			"name":"Door_Right_Mat_Door_Main_0.001"
 		},
 		{
 			"children":[
@@ -7160,39 +7155,24 @@
 			],
 			"name":"Door_Right.001",
 			"translation":[
-				1.33514404296875e-05,
+				1.71661376953125e-05,
 				0,
-				-0.0001220703125
+				-0.00018310546875
 			]
 		},
 		{
 			"mesh":351,
-			"name":"Door_info_decals_Decals_0.001",
-			"translation":[
-				0,
-				0,
-				6.100174141465686e-05
-			]
+			"name":"Door_info_decals_Decals_0.001"
 		},
 		{
 			"children":[
 				567
 			],
-			"name":"Door_info_decals.001",
-			"translation":[
-				0,
-				0,
-				6.100174141465686e-05
-			]
+			"name":"Door_info_decals.001"
 		},
 		{
 			"mesh":352,
-			"name":"Door_Top_Mat_Door_Main_0.001",
-			"translation":[
-				0,
-				0,
-				6.100174141465686e-05
-			]
+			"name":"Door_Top_Mat_Door_Main_0.001"
 		},
 		{
 			"children":[
@@ -7201,19 +7181,14 @@
 			],
 			"name":"Door_Top.001",
 			"translation":[
-				0.8874912261962891,
+				0.8874950408935547,
 				0.11029525101184845,
-				0.009155239909887314
+				0.009094204753637314
 			]
 		},
 		{
 			"mesh":353,
-			"name":"Latch_Mid_Btm_Mat_Door_Main_0.001",
-			"translation":[
-				0,
-				0,
-				6.103515625e-05
-			]
+			"name":"Latch_Mid_Btm_Mat_Door_Main_0.001"
 		},
 		{
 			"children":[
@@ -7221,19 +7196,14 @@
 			],
 			"name":"Latch_Mid_Btm.001",
 			"translation":[
-				-1.2206153869628906,
+				-1.220611572265625,
 				0,
-				-0.0001220703125
+				-0.00018310546875
 			]
 		},
 		{
 			"mesh":354,
-			"name":"Latch_Mid_Top_Mat_Door_Main_0.001",
-			"translation":[
-				0,
-				0,
-				6.103515625e-05
-			]
+			"name":"Latch_Mid_Top_Mat_Door_Main_0.001"
 		},
 		{
 			"children":[
@@ -7241,19 +7211,14 @@
 			],
 			"name":"Latch_Mid_Top.001",
 			"translation":[
-				1.33514404296875e-05,
+				1.71661376953125e-05,
 				0,
-				-0.0001220703125
+				-0.00018310546875
 			]
 		},
 		{
 			"mesh":355,
-			"name":"Latch_Top_Left_Mat_Door_Main_0.001",
-			"translation":[
-				0,
-				0,
-				6.103515625e-05
-			]
+			"name":"Latch_Top_Left_Mat_Door_Main_0.001"
 		},
 		{
 			"children":[
@@ -7261,19 +7226,14 @@
 			],
 			"name":"Latch_Top_Left.001",
 			"translation":[
-				1.33514404296875e-05,
+				1.71661376953125e-05,
 				0,
-				-0.0001220703125
+				-0.00018310546875
 			]
 		},
 		{
 			"mesh":356,
-			"name":"Latch_Top_Right_Mat_Door_Main_0.001",
-			"translation":[
-				0,
-				0,
-				6.103515625e-05
-			]
+			"name":"Latch_Top_Right_Mat_Door_Main_0.001"
 		},
 		{
 			"children":[
@@ -7281,9 +7241,9 @@
 			],
 			"name":"Latch_Top_Right.001",
 			"translation":[
-				1.33514404296875e-05,
+				1.71661376953125e-05,
 				0,
-				-0.0001220703125
+				-0.00018310546875
 			]
 		},
 		{
@@ -7318,7 +7278,7 @@
 			],
 			"translation":[
 				-4.289540811441839e-06,
-				2.3579667732254173e-11,
+				2.753660147125636e-12,
 				6.208199920365587e-05
 			]
 		},
@@ -7340,7 +7300,7 @@
 			],
 			"translation":[
 				-4.289537173463032e-06,
-				2.774344816380836e-11,
+				6.917440578679823e-12,
 				6.208199920365587e-05
 			]
 		},
@@ -7359,7 +7319,7 @@
 			],
 			"translation":[
 				-4.289540811441839e-06,
-				2.3579667732254173e-11,
+				2.753660147125636e-12,
 				6.208199920365587e-05
 			]
 		},
@@ -7378,7 +7338,7 @@
 			],
 			"translation":[
 				-4.289540811441839e-06,
-				2.3579667732254173e-11,
+				2.753660147125636e-12,
 				6.208199920365587e-05
 			]
 		},
@@ -7397,7 +7357,7 @@
 			],
 			"translation":[
 				-4.289540811441839e-06,
-				2.3579667732254173e-11,
+				2.753660147125636e-12,
 				6.208199920365587e-05
 			]
 		},
@@ -7421,7 +7381,7 @@
 			],
 			"translation":[
 				-4.289537173463032e-06,
-				2.774344816380836e-11,
+				6.917440578679823e-12,
 				6.208199920365587e-05
 			]
 		},
@@ -7440,7 +7400,7 @@
 			],
 			"translation":[
 				-4.289537173463032e-06,
-				2.774344816380836e-11,
+				6.917440578679823e-12,
 				6.208199920365587e-05
 			]
 		},
@@ -7464,7 +7424,7 @@
 			],
 			"translation":[
 				-2.3799620976205915e-06,
-				-1.1752069803416809e-11,
+				-3.4742467149712075e-12,
 				6.208207196323201e-05
 			]
 		},
@@ -7486,7 +7446,7 @@
 			],
 			"translation":[
 				0,
-				-7.624123554705875e-12,
+				6.536993168992922e-13,
 				0
 			]
 		},
@@ -17463,162 +17423,162 @@
 		{
 			"mimeType":"image/png",
 			"name":"plane_divided_DefaultMaterial_BaseColor",
-			"uri":"level1/plane_divided_DefaultMaterial_BaseColor.png"
+			"uri":"Level1/plane_divided_DefaultMaterial_BaseColor.png"
 		},
 		{
 			"mimeType":"image/jpeg",
 			"name":"Sci_Fi_Panel_14_basecolor",
-			"uri":"level1/Sci_Fi_Panel_14_basecolor.jpg"
+			"uri":"Level1/Sci_Fi_Panel_14_basecolor.jpg"
 		},
 		{
 			"mimeType":"image/jpeg",
 			"name":"Sci_Fi_Panel_01_basecolor",
-			"uri":"level1/Sci_Fi_Panel_01_basecolor.jpg"
+			"uri":"Level1/Sci_Fi_Panel_01_basecolor.jpg"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Gemini_Generated_Image_xwi21xwi21xwi21x",
-			"uri":"level1/Gemini_Generated_Image_xwi21xwi21xwi21x.png"
+			"uri":"Level1/Gemini_Generated_Image_xwi21xwi21xwi21x.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Gemini_Generated_Image_u8834mu8834mu883",
-			"uri":"level1/Gemini_Generated_Image_u8834mu8834mu883.png"
+			"uri":"Level1/Gemini_Generated_Image_u8834mu8834mu883.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Gemini_Generated_Image_f4kh7mf4kh7mf4kh(1)",
-			"uri":"level1/Gemini_Generated_Image_f4kh7mf4kh7mf4kh%281%29.png"
+			"uri":"Level1/Gemini_Generated_Image_f4kh7mf4kh7mf4kh%281%29.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_1",
-			"uri":"level1/Image_1.png"
+			"uri":"Level1/Image_1.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_0",
-			"uri":"level1/Image_0.png"
+			"uri":"Level1/Image_0.png"
 		},
 		{
 			"mimeType":"image/jpeg",
 			"name":"Image_1",
-			"uri":"level1/Image_1.jpg"
+			"uri":"Level1/Image_1.jpg"
 		},
 		{
 			"mimeType":"image/jpeg",
 			"name":"Image_0",
-			"uri":"level1/Image_0.jpg"
+			"uri":"Level1/Image_0.jpg"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_4",
-			"uri":"level1/Image_4.png"
+			"uri":"Level1/Image_4.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_3",
-			"uri":"level1/Image_3.png"
+			"uri":"Level1/Image_3.png"
 		},
 		{
 			"mimeType":"image/jpeg",
 			"name":"Image_2",
-			"uri":"level1/Image_2.jpg"
+			"uri":"Level1/Image_2.jpg"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_2",
-			"uri":"level1/Image_2.png"
+			"uri":"Level1/Image_2.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_0-1",
-			"uri":"level1/Image_0-1.png"
+			"uri":"Level1/Image_0-1.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_1-1",
-			"uri":"level1/Image_1-1.png"
+			"uri":"Level1/Image_1-1.png"
 		},
 		{
 			"mimeType":"image/jpeg",
 			"name":"Image_3",
-			"uri":"level1/Image_3.jpg"
+			"uri":"Level1/Image_3.jpg"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_4-1",
-			"uri":"level1/Image_4-1.png"
+			"uri":"Level1/Image_4-1.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_2-4",
-			"uri":"level1/Image_2-4.png"
+			"uri":"Level1/Image_2-4.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_3-1",
-			"uri":"level1/Image_3-1.png"
+			"uri":"Level1/Image_3-1.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_1-5",
-			"uri":"level1/Image_1-5.png"
+			"uri":"Level1/Image_1-5.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Image_0-5",
-			"uri":"level1/Image_0-5.png"
+			"uri":"Level1/Image_0-5.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_03_Normal",
-			"uri":"level1/T_Trim_03_Normal.png"
+			"uri":"Level1/T_Trim_03_Normal.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_03_Cables",
-			"uri":"level1/T_Trim_03_Cables.png"
+			"uri":"Level1/T_Trim_03_Cables.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_03_ORM",
-			"uri":"level1/T_Trim_03_ORM.png"
+			"uri":"Level1/T_Trim_03_ORM.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_02_Normal",
-			"uri":"level1/T_Trim_02_Normal.png"
+			"uri":"Level1/T_Trim_02_Normal.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_02_BaseColor_Red",
-			"uri":"level1/T_Trim_02_BaseColor_Red.png"
+			"uri":"Level1/T_Trim_02_BaseColor_Red.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_02_ORM",
-			"uri":"level1/T_Trim_02_ORM.png"
+			"uri":"Level1/T_Trim_02_ORM.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_01_Normal",
-			"uri":"level1/T_Trim_01_Normal.png"
+			"uri":"Level1/T_Trim_01_Normal.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_01_BaseColor_Red",
-			"uri":"level1/T_Trim_01_BaseColor_Red.png"
+			"uri":"Level1/T_Trim_01_BaseColor_Red.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Trim_01_ORM",
-			"uri":"level1/T_Trim_01_ORM.png"
+			"uri":"Level1/T_Trim_01_ORM.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"T_Decals",
-			"uri":"level1/T_Decals.png"
+			"uri":"Level1/T_Decals.png"
 		}
 	],
 	"skins":[
