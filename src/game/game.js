@@ -41,6 +41,7 @@ import { MainMenu } from './components/MainMenu.js';
 import { SettingsMenu } from './components/SettingsMenu.js';
 import { GraphicsSettingsMenu } from './components/GraphicsSettingsMenu.js';
 import { ProgressionManager } from './ProgressionManager.js';
+import { Level3Voiceovers } from './levels/Level3Voiceovers.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -1554,6 +1555,21 @@ if (staleLow) staleLow.remove();
   if (this.level.data.id === 'level3') {
     console.log('🎯 Setting up computer for level3');
     this.setupComputerTerminal();
+
+    // Load Level 3 voiceovers (non-blocking)
+    try {
+      if (!this.level3Voiceovers) {
+        this.level3Voiceovers = new Level3Voiceovers(this);
+      }
+      // Load voiceovers in the background without blocking game initialization
+      if (this.level3Voiceovers && this.level3Voiceovers.loadAll) {
+        this.level3Voiceovers.loadAll().catch(err => {
+          console.error('❌ Failed to load Level 3 voiceovers:', err);
+        });
+      }
+    } catch (err) {
+      console.error('❌ Failed to initialize Level 3 voiceovers:', err);
+    }
     // TEMP: Completely disable the Level 3 eye to test Level 1 artifacts
     try {
       if (this.scene?.userData) {

@@ -187,7 +187,7 @@ export class CinematicsManager {
         this.director.shake({ seconds: step.seconds ?? 1.0, magnitude: step.magnitude ?? 0.15 });
       }
       else if (type === 'caption') {
-        await this._showCaption(step.text, step.ms ?? 2500);
+        await this._showCaption(step.speaker, step.text, step.ms ?? 2500);
       }
       else if (type === 'vo') { // <— use this in levelData steps later
         await this._runVO(step);
@@ -222,11 +222,65 @@ export class CinematicsManager {
         const at = Math.max(0, seg.at ?? 0);
         const ms = Math.max(200, seg.ms ?? 1200);
         const text = seg.text ?? '';
-        this._schedule(() => this._showCaption(text, ms), at);
+
+        // Parse speaker from text if embedded (format: "SPEAKER: dialogue text")
+        let speaker = seg.speaker ?? 'Narrator';
+        let displayText = text;
+        let speakerForAudio = speaker; // Keep original for audio detection
+
+        if (text.includes(':')) {
+          const colonIndex = text.indexOf(':');
+          const parsedSpeaker = text.substring(0, colonIndex).trim();
+          // Remove labels like "(INTERNAL MONOLOGUE)"
+          const cleanSpeaker = parsedSpeaker.split('(')[0].trim();
+
+          if (cleanSpeaker) {
+            speakerForAudio = cleanSpeaker;
+            speaker = cleanSpeaker;
+            // Keep full text for display (includes "SPEAKER: dialogue")
+            displayText = text;
+
+            // Map PLAYER to Alex for Level 3
+            if (speaker === 'PLAYER') {
+              speaker = 'Alex';
+            }
+          }
+        }
+
+        // Map Narrator to Pravesh for Level 2
+        const currentLevel = this.game?.level?.data?.id || this.game?.currentLevelId;
+        if (currentLevel === 'level2' && (speaker === 'Narrator' || speaker === 'NARRATOR')) {
+          speaker = 'Pravesh';
+        }
+
+        this._schedule(() => {
+          // Show voiceover card with character name
+          const card = this.game?.ui?.voiceoverCard;
+          if (card) {
+            card.show(speaker);
+            card.startSpeaking();
+
+            // Stop speaking animation and hide card after duration
+            setTimeout(() => {
+              card.stopSpeaking();
+              setTimeout(() => {
+                card.hide();
+              }, 300); // Small delay for smooth transition
+            }, ms);
+          }
+
+          // Show caption
+          this._showCaption(speaker, displayText, ms);
+
+          // Trigger Level 3 voiceover audio detection
+          if (this.game.level3Voiceovers && speakerForAudio) {
+            this.game.level3Voiceovers.detectAndPlay(displayText, speakerForAudio);
+          }
+        }, at);
       }
     } else if (step.text) {
       // classic single caption that lasts for whole VO
-      await this._showCaption(step.text, durMs);
+      await this._showCaption(step.speaker, step.text, durMs);
     }
 
     if (block) {
@@ -238,11 +292,32 @@ export class CinematicsManager {
    const { speaker = 'Narrator', text = '', sfx = null, ms = 0 } = step;
    const sm = this.game?.soundManager;
    const hasSfx = !!(sm && sfx && sm.sfx && sm.sfx[sfx] && sm.sfx[sfx].buffer);
-   const card = this.game?.ui?.voiceoverCard; // <- read from game.ui
+   const card = this.game?.ui?.voiceoverCard;
+
+   // Map PLAYER to Alex for Level 3
+   let displaySpeaker = speaker;
+   if (speaker === 'PLAYER') {
+     displaySpeaker = 'Alex';
+   }
+
+   // Map Narrator to Pravesh for Level 2
+   const currentLevel = this.game?.level?.data?.id || this.game?.currentLevelId;
+   if (currentLevel === 'level2' && (speaker === 'Narrator' || speaker === 'NARRATOR')) {
+     displaySpeaker = 'Pravesh';
+   }
 
    // show name card + caption immediately
-   if (card) { card.show(speaker); card.startSpeaking(); }
-   await this._showCaption(text, 0);
+   if (card) {
+     card.show(displaySpeaker);
+     card.startSpeaking();
+   }
+
+   await this._showCaption(displaySpeaker, text, 0);
+
+   // Trigger Level 3 voiceover audio detection
+   if (this.game.level3Voiceovers) {
+     this.game.level3Voiceovers.detectAndPlay(text, speaker);
+   }
 
    let waitMs = ms || 10;
    if (hasSfx) {
@@ -251,7 +326,12 @@ export class CinematicsManager {
      waitMs = Math.max(waitMs, durMs + 120); // tiny pad
    }
    await this._wait(waitMs);
-   if (card) card.stopSpeaking();
+   if (card) {
+     card.stopSpeaking();
+     setTimeout(() => {
+       card.hide();
+     }, 300); // Small delay for smooth transition
+   }
  }
 
   async _playVoiceoverAndGetMs(voName, fallbackMs) {
@@ -283,7 +363,7 @@ export class CinematicsManager {
     const name = document.createElement('div');
     name.className = 'caption-name';
     name.style.cssText = 'font-size:12px; opacity:.9; color:#ffdd44; margin-bottom:6px; text-transform:uppercase;';
-    name.textContent = 'Pravesh';
+    name.textContent = 'Speaker';
 
     const text = document.createElement('div');
     text.className = 'caption-text';
@@ -293,7 +373,8 @@ export class CinematicsManager {
     this.dialogueUI = el;
   }
 
-  async _showCaption(text, ms) {
+  async _showCaption(speaker, text, ms) {
+    if (this.skipRequested) return;
     if (!this.dialogueUI) this._ensureCaptionUI();
 
     // cancel any pending auto-hide so a new caption isn't hidden early
@@ -301,6 +382,13 @@ export class CinematicsManager {
       clearTimeout(this._captionTimer);
       this._captionTimer = null;
     }
+
+    console.log('🎬 Speaker:', speaker);
+    console.log('🎬 Caption:', text);
+    console.log('🎬 Duration:', ms, 'ms');
+
+    const n = this.dialogueUI.querySelector('.caption-name');
+    n.textContent = speaker || 'Narrator';
 
     const t = this.dialogueUI.querySelector('.caption-text');
     t.textContent = text;
