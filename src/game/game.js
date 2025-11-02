@@ -40,6 +40,7 @@ import { SplashScreen } from './components/SplashScreen.js';
 import { MainMenu } from './components/MainMenu.js';
 import { SettingsMenu } from './components/SettingsMenu.js';
 import { GraphicsSettingsMenu } from './components/GraphicsSettingsMenu.js';
+import { ProgressionManager } from './ProgressionManager.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -107,6 +108,9 @@ export class Game {
     // Level system
     this.levelManager = new LevelManager(this.scene, this.physicsWorld, this);
     this.level = null;
+
+    // Progression system for level locking and unlocking
+    this.progressionManager = new ProgressionManager();
 
     // Debug: center-screen ray probe (to identify unexpected occluders)
     this._centerProbeEnabled = false;
@@ -2370,6 +2374,28 @@ clearDeathVisualsAndState() {
 
     // Temporarily disable input while we show cinematics/overlays
     this.input?.setEnabled?.(false);
+  // Mark current level as completed and unlock progression
+  const currentLevelId = this.currentLevelId || this.level?.data?.id;
+  if (currentLevelId && this.progressionManager) {
+    if (this.progressionManager.completeLevel(currentLevelId)) {
+      console.log(`✅ Level "${currentLevelId}" marked as completed`);
+      const status = this.progressionManager.getStatus();
+      console.log('📊 Progression:', status);
+    }
+  }
+
+  // 🚫 Skip victory sequence for level2_glitched
+  if (currentLevelId === 'level2_glitched') {
+    console.log('🚫 Victory sequence skipped for level2_glitched');
+    
+    // Just re-enable input and return without showing victory screen
+    this.input?.setEnabled?.(true);
+    
+    
+    
+    
+    return;
+  }
 
     // Kick the level-complete cinematic if your level defines it
     if (this.level?.triggerLevelCompleteCinematic) {
