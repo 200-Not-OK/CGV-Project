@@ -8,26 +8,47 @@ export const levels = [
 
     "startPosition": [
       0,
-      12,
-      0
+      15,
+      8
+    ],
+    "ui": [
+      "hud",
+      "fps",
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 12,
+          "potionsStart": 2,
+          "pointsPerApple": 150,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍎",
+              "name": "Red Apples",
+              "color": "#ff6b6b",
+              "completeColor": "#51cf66",
+              "completeIcon": "🏆"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#4dabf7",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
     ],
     "lights": [
       {
-        "key": "TechLights",
-        "props": {
-          "position": [
-            0,
-            0,
-            0
-          ]
-        }
-      },
-      {
         "key": "BasicLights",
         "props": {
-          "intensity": 0.6
+          "intensity": 0.1
         }
-      },
+      }
+    ],
+    "enemies": [
       {
         "key": "PointLight",
         "props": {
@@ -451,7 +472,7 @@ export const levels = [
       {
         "type": "minimap",
         "config": {
-          "zoom": 1.6
+          "zoom": 5,
         }
       },
       {
@@ -490,22 +511,9 @@ export const levels = [
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 29
-      },
-      {
-        "type": "crawler",
-        "position": [
-          -433.3701164361692,
-          20.113008499145515,
-          257.2399163600309
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 30
       },
       {
         "type": "crawler",
@@ -516,8 +524,8 @@ export const levels = [
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 31
       },
       {
@@ -542,34 +550,21 @@ export const levels = [
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 49
       },
       {
         "type": "crawler",
         "position": [
-          310.305134317053,
-          20.452826949471497,
-          122.30921272529777
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 50
-      },
-      {
-        "type": "crawler",
-        "position": [
-          291.14432266074226,
+          300.14432266074226,
           20.509656195663787,
           121.99517109242474
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 51
       },
       {
@@ -594,8 +589,8 @@ export const levels = [
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 53
       }
     ],
@@ -700,9 +695,9 @@ export const levels = [
           "speed": 10,
           "path": [
             [
-              -223.34,
-              24.44,
-              94.46
+              -259.41,
+              10.11,
+              110.38
             ],
             [
               -387.15,
@@ -879,17 +874,15 @@ export const levels = [
         ],
         "materialType": "wall"
       },
-      {
-        "id": "collider_5",
-        "type": "mesh",
-        "meshName": "Walls",
-        "materialType": "wall",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
+      // {
+      //   "id": "collider_5",
+      //   "type": "mesh",
+      //   "meshName": "Walls",
+      //   "materialType": "wall",
+      //   "minimap": true,
+      //   "minimapBounds": false,
+      //   "rotation": [0, 0, 0]
+      // },
       {
         "id": "collider_6",
         "type": "mesh",
@@ -1425,251 +1418,348 @@ export const levels = [
       "hud",
       "fps",
       {
-        "type": "collectibles",
-        "config": {
-          "applesTotal": 12,
-          "potionsStart": 2,
-          "pointsPerApple": 150,
-          "collectibleTypes": {
-            "apples": {
-              "icon": "🍎",
-              "name": "Red Apples",
-              "color": "#ff6b6b",
-              "completeColor": "#51cf66",
-              "completeIcon": "🏆"
-            },
-            "potions": {
-              "icon": "🧪",
-              "name": "Health Potions",
-              "color": "#4dabf7",
-              "lowColor": "#ffd43b",
-              "emptyColor": "#ff6b6b",
-              "emptyIcon": "💔"
-            }
-          }
-        }
-      }
-    ],
-    "lights": [
-      {
-        "key": "BasicLights",
-        "props": {
-          "intensity": 0.1
-        }
-      }
-    ],
-    "enemies": [
-      {
-        "type": "snake",
-        "position": [
-          -5,
-          0.5,
-          5
-        ],
-        "modelUrl": "assets/enemies/snake/scene.gltf",
-        "patrolPoints": [
-          [
-            -5,
-            1,
-            5,
-            0.3
-          ],
-          [
-            -8,
-            1,
-            8,
-            0.3
-          ],
-          [
-            -3,
-            1,
-            10,
-            0.3
-          ]
-        ],
-        "speed": 8,
-        "chaseRange": 10,
-        "health": 35
-      }
-    ],
-    "colliders": [
-      {
-        "id": "collider_18",
-        "type": "box",
-        "position": [
-          0,
-          2,
-          0
-        ],
-        "size": [
-          11.6,
-          0.1,
-          6
-        ],
-        "rotation": [
-          44,
-          0,
-          0
-        ],
+        "id": "collider_4",
+        "type": "mesh",
+        "meshName": "Platform3002",
         "materialType": "ground",
-        "meshName": null
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_5",
+        "type": "mesh",
+        "meshName": "Cube",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_6",
+        "type": "mesh",
+        "meshName": "Lift3001",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_7",
+        "type": "mesh",
+        "meshName": "Platform4001",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_8",
+        "type": "mesh",
+        "meshName": "Platform3003",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "collider_9",
+        "type": "mesh",
+        "meshName": "Lift3002",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
       },
       {
         "id": "collider_10",
-        "type": "box",
-        "position": [
+        "type": "mesh",
+        "meshName": "Platform3004",
+        "materialType": "ground",
+        "rotation": [
           0,
           0,
           0
-        ],
-        "size": [
-          42.917484283447266,
-          0.5594812631607056,
-          38.855934143066406
-        ],
-        "materialType": "ground",
-        "meshName": "collider_playground"
+        ]
       },
       {
         "id": "collider_11",
-        "type": "box",
-        "position": [
-          -21.06,
-          3.44,
+        "type": "mesh",
+        "meshName": "Lift3003",
+        "materialType": "ground",
+        "rotation": [
+          0,
+          0,
           0
-        ],
-        "size": [
-          0.7933826446533203,
-          6.32648104429245,
-          38.855934143066406
-        ],
-        "materialType": "wall",
-        "meshName": "collider_playground001"
+        ]
       },
       {
         "id": "collider_12",
-        "type": "box",
-        "position": [
+        "type": "mesh",
+        "meshName": "Platform3006",
+        "materialType": "ground",
+        "rotation": [
           0,
-          3.44,
-          -19.03
-        ],
-        "size": [
-          42.917484283447266,
-          6.32648104429245,
-          0.7933826446533203
-        ],
-        "materialType": "wall",
-        "meshName": "collider_playground002"
-      },
-      {
-        "id": "collider_13",
-        "type": "box",
-        "position": [
           0,
-          3.44,
-          19.03
-        ],
-        "size": [
-          42.917484283447266,
-          6.32648104429245,
-          0.7933826446533203
-        ],
-        "materialType": "wall",
-        "meshName": "collider_playground004"
-      },
-      {
-        "id": "collider_14",
-        "type": "box",
-        "position": [
-          21.06,
-          3.44,
           0
-        ],
-        "size": [
-          0.7933826446533203,
-          6.32648104429245,
-          38.855934143066406
-        ],
-        "materialType": "wall",
-        "meshName": "collider_playground003"
+        ]
       }
     ],
-    "cinematics": {
-      "onLevelStart": {
-        "type": "dialogue",
-        "character": "narrator",
-        "lines": [
-          {
-            "text": "Welcome to the training grounds!",
-            "duration": 3000
-          },
-          {
-            "text": "Use WASD to move and Space to jump.",
-            "duration": 4000
-          }
-        ]
-      },
-      "onEnemyDefeat": {
-        "type": "cutscene",
-        "cameraPath": [
-          {
-            "position": [
-              10,
-              5,
-              10
-            ],
-            "lookAt": [
-              0,
-              0,
-              0
-            ],
-            "duration": 2000
-          }
+    "placeableBlocks": [
+      {
+        "id": "block_2",
+        "type": "placeableBlock",
+        "color": 16729156,
+        "colorName": "red",
+        "position": [
+          -452.98549867511366,
+          31,
+          278.80619239726207
         ],
-        "dialogue": [
-          {
-            "character": "player",
-            "text": "One down, more to go!",
-            "duration": 2000
-          }
-        ]
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -452.98549867511366,
+          40,
+          278.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      },
+      {
+        "id": "block_3",
+        "type": "placeableBlock",
+        "color": 6448255,
+        "colorName": "blue",
+        "position": [
+          -438.98549867511366,
+          31,
+          252.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -438.98549867511366,
+          40,
+          252.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
+      },
+      {
+        "id": "block_4",
+        "type": "placeableBlock",
+        "color": 43520,
+        "colorName": "green",
+        "position": [
+          -456.98549867511366,
+          31,
+          265.80619239726207
+        ],
+        "size": [
+          5,
+          5,
+          5
+        ],
+        "mass": 61,
+        "respawn": true,
+        "respawnTime": 60.5,
+        "spawnPosition": [
+          -456.98549867511366,
+          40,
+          265.80619239726207
+        ],
+        "collider": {
+          "type": "box",
+          "size": [
+            5,
+            5,
+            5
+          ],
+          "materialType": "ground"
+        }
       }
-    },
-    "sounds": {
-      "music": {
-        "intro-theme": {
-          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
-          "loop": true
+    ],
+    "collectibles": {
+      "chests": [
+        {
+          "id": "chest_32",
+          "position": [
+            -499.085311265958,
+            38.74439334869385,
+            334.06633057575175
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_33",
+          "position": [
+            -225.62864531854856,
+            9.651255130767824,
+            278.7988147172013
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_34",
+          "position": [
+            -237.44661100161906,
+            23.226380348205566,
+            -17.687950706826655
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_35",
+          "position": [
+            -238.27040579662082,
+            23.226380348205566,
+            -23.327350349487794
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_37",
+          "position": [
+            -237.8768482421618,
+            23.226380348205566,
+            -30.485315919861755
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_38",
+          "position": [
+            -169.3996665850923,
+            9.651255130767822,
+            -82.64101963921365
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_39",
+          "position": [
+            -26.238882996084904,
+            9.439203262329102,
+            -44.85368840875811
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_40",
+          "position": [
+            27.87669681671055,
+            9.439203262329102,
+            -45.742070533768135
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_41",
+          "position": [
+            563.1453318104104,
+            23.226380348205566,
+            46.48808928837561
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_42",
+          "position": [
+            567.1970196438438,
+            9.651255130767822,
+            429.1261757803478
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_43",
+          "position": [
+            317.9556895504127,
+            9.691577911376953,
+            402.88531324057374
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_44",
+          "position": [
+            274.4610301937911,
+            9.691577911376955,
+            406.2805544583855
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_45",
+          "position": [
+            272.8105836219984,
+            9.691577911376951,
+            417.24719695393435
+          ],
+          "contents": "potion"
+        },
+        {
+          "id": "chest_46",
+          "position": [
+            319.2518496027569,
+            9.691577911376955,
+            417.44962917460015
+          ],
+          "contents": "apple"
+        },
+        {
+          "id": "chest_47",
+          "position": [
+            275.60067626746354,
+            9.691577911376953,
+            -62.93518485094077
+          ],
+          "contents": "potion"
         }
-      },
-      "sfx": {
-        "sword": {
-          "url": "assets/audio/sfx/sword.mp3",
-          "loop": false
-        },
-        "chest": {
-          "url": "assets/audio/sfx/chest_open.mp3",
-          "loop": false
-        },
-        "snake": {
-          "url": "assets/audio/sfx/snake.wav",
-          "loop": false
-        },
-        "potion": {
-          "url": "assets/audio/sfx/potion.wav",
-          "loop": false
-        },
-        "walk": {
-          "url": "assets/audio/sfx/walking.mp3",
-          "loop": false
-        },
-        "jump": {
-          "url": "assets/audio/sfx/jumping.wav",
-          "loop": false
-        }
-      },
-      "playMusic": "intro-theme"
+      ],
+      "potions": [],
+      "coins": [],
+      "gems": [],
+      "keys": []
     }
   },
   {
@@ -9809,7 +9899,7 @@ export const levels = [
     "gltfUrl": "assets/levels/Level3/level3.gltf",
     "startPosition": [
       -4,
-      15,
+      6,
       0
     ],
     "lights": [
@@ -9878,6 +9968,67 @@ export const levels = [
         "color": 7048739
       }
     ],
+
+    "cinematics": {
+  "onLevelStart": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "fadeOut", "ms": 300 },
+      { "type": "cut", "position": [-1, 7, -3], "lookAt": "player", "fov": 55 },
+      { "type": "fadeIn", "ms": 600 },
+      {
+        "type": "playVO",
+        "vo": "vo-l3-intro",
+        "fallbackMs": 23000,
+        "block": true,
+        "segments": [
+          { "at": 0, "ms": 2100, "text": "BRANDEN: Sir Knight. Eyes up. Yes, it is me—your favorite lecturer, now a giant floating eyeball. I am keeping an eye on you." },
+          { "at": 2400, "ms": 1800, "text": "PLAYER: Only you would turn into a sky-orb for office hours." },
+          { "at": 4400, "ms": 3900, "text": "BRANDEN: Your project theme is “Consequence.” You have three weeks. It counts for the majority of your grade. No use of AI." },
+          { "at": 8600, "ms": 2400, "text": "BRANDEN: Good luck. I will be watching." },
+          { "at": 11200, "ms": 4600, "text": "PLAYER (INTERNAL MONOLOGUE): Three weeks. Consequence. Everyone else is already panicking. But not me." },
+          { "at": 16200, "ms": 4300, "text": "PLAYER (INTERNAL MONOLOGUE): I have the ultimate advantage—ChatGPT, Claude, Gemini. I will be careful." },
+          { "at": 20700, "ms": 3000, "text": "BRANDEN: Time to collect those AIs and head to MSL." }
+        ],
+        "concurrent": [
+          { "type": "orbit", "center": "player", "radius": 7.5, "startDeg": 20, "endDeg": 55, "height": 4.8, "duration": 12000 },
+          { "type": "wait", "ms": 6200 },
+          { "type": "orbit", "center": [72, 9, -100], "radius": 2, "startDeg": 0, "endDeg": 60, "height": 4, "duration": 6000 }
+        ]
+      },
+      { "type": "fadeOut", "ms": 250 },
+      { "type": "releaseCamera" },
+      { "type": "fadeIn", "ms": 250 }
+    ]
+  },
+
+  // Small rumble beat before teleport to level1_glitched
+  "l3_p2_glitch": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "rumble", "sfx": "rumbling", "seconds": 1.2, "magnitude": 0.18, "volume": 0.8 },
+      { "type": "caption", "text": "System link engaged… hold steady.", "ms": 900 },
+      { "type": "fadeOut", "ms": 220 },
+      { "type": "releaseCamera" }
+    ]
+  },
+
+  // Finale already triggered by game.js when level3 completes
+  "l3_p4_graduation": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "fadeOut", "ms": 200 },
+      { "type": "cut", "position": [32, 6, -24], "lookAt": [30, 2, -25], "fov": 60 },
+      { "type": "fadeIn", "ms": 300 },
+      { "type": "caption", "text": "YOUR WORK IS YOUR SIGNATURE. MAKE IT LEGENDARY.", "ms": 2600 },
+      { "type": "orbit", "center": "player", "radius": 6, "startDeg": 10, "endDeg": 70, "height": 3.2, "duration": 2500 },
+      { "type": "fadeOut", "ms": 250 },
+      { "type": "releaseCamera" },
+      { "type": "fadeIn", "ms": 250 }
+    ]
+  }
+},
+
     "computerLocation": {
       "position": [
         72,

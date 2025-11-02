@@ -189,6 +189,9 @@ export class CinematicsManager {
       else if (type === 'caption') {
         await this._showCaption(step.text, step.ms ?? 2500);
       }
+      else if (type === 'vo') { // <— use this in levelData steps later
+        await this._runVO(step);
+      }
       else if (type === 'playVO') {
         // Extended: supports { segments:[{at, text, ms}], concurrent:[steps...], block:true }
         await this._playVO(step);
@@ -230,6 +233,26 @@ export class CinematicsManager {
       await this._wait(durMs);
     }
   }
+
+ async _runVO(step) {
+   const { speaker = 'Narrator', text = '', sfx = null, ms = 0 } = step;
+   const sm = this.game?.soundManager;
+   const hasSfx = !!(sm && sfx && sm.sfx && sm.sfx[sfx] && sm.sfx[sfx].buffer);
+   const card = this.game?.ui?.voiceoverCard; // <- read from game.ui
+
+   // show name card + caption immediately
+   if (card) { card.show(speaker); card.startSpeaking(); }
+   await this._showCaption(text, 0);
+
+   let waitMs = ms || 10;
+   if (hasSfx) {
+     const durMs = Math.ceil(sm.sfx[sfx].buffer.duration * 1000);
+     sm.playSFX(sfx);
+     waitMs = Math.max(waitMs, durMs + 120); // tiny pad
+   }
+   await this._wait(waitMs);
+   if (card) card.stopSpeaking();
+ }
 
   async _playVoiceoverAndGetMs(voName, fallbackMs) {
     const sm = this.game.soundManager;
