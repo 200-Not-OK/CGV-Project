@@ -588,6 +588,8 @@ debugInteractionPrompt() {
     }
     
     // Load the hub level (index 0)
+    
+      // let loading_this_level = 3;
     await this.loadLevel(0);
     this.gameStarted = true;
     
@@ -1883,6 +1885,15 @@ clearDeathVisualsAndState() {
   try { this.combatSystem.suppressAttacks = false; } catch {}
   try { this.level?.freezeAllEnemies?.(false); } catch {}
   try { this.proximitySoundManager?.resume?.(); } catch {}
+  
+  // Lock cursor when level loads
+  try {
+    if (typeof document !== 'undefined' && document.body?.requestPointerLock) {
+      document.body.requestPointerLock();
+    }
+  } catch (e) {
+    console.warn('⚠️ Unable to request pointer lock on level load:', e);
+  }
 }
 
 

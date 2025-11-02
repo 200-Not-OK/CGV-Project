@@ -187,7 +187,7 @@ export class CinematicsManager {
         this.director.shake({ seconds: step.seconds ?? 1.0, magnitude: step.magnitude ?? 0.15 });
       }
       else if (type === 'caption') {
-        await this._showCaption(step.text, step.ms ?? 2500);
+        await this._showCaption(step.speaker, step.text, step.ms ?? 2500);
       }
       else if (type === 'vo') { // <— use this in levelData steps later
         await this._runVO(step);
@@ -222,11 +222,12 @@ export class CinematicsManager {
         const at = Math.max(0, seg.at ?? 0);
         const ms = Math.max(200, seg.ms ?? 1200);
         const text = seg.text ?? '';
-        this._schedule(() => this._showCaption(text, ms), at);
+        const speaker = seg.speaker ?? 'Narrator';
+        this._schedule(() => this._showCaption(speaker, text, ms), at);
       }
     } else if (step.text) {
       // classic single caption that lasts for whole VO
-      await this._showCaption(step.text, durMs);
+      await this._showCaption(step.speaker, step.text, durMs);
     }
 
     if (block) {
@@ -242,7 +243,7 @@ export class CinematicsManager {
 
    // show name card + caption immediately
    if (card) { card.show(speaker); card.startSpeaking(); }
-   await this._showCaption(text, 0);
+   await this._showCaption(speaker,text, 0);
 
    let waitMs = ms || 10;
    if (hasSfx) {
@@ -283,7 +284,7 @@ export class CinematicsManager {
     const name = document.createElement('div');
     name.className = 'caption-name';
     name.style.cssText = 'font-size:12px; opacity:.9; color:#ffdd44; margin-bottom:6px; text-transform:uppercase;';
-    name.textContent = 'Pravesh';
+    name.textContent = 'Speaker';
 
     const text = document.createElement('div');
     text.className = 'caption-text';
@@ -293,7 +294,8 @@ export class CinematicsManager {
     this.dialogueUI = el;
   }
 
-  async _showCaption(text, ms) {
+  async _showCaption(speaker,text, ms) {
+    if (this.skipRequested) return;
     if (!this.dialogueUI) this._ensureCaptionUI();
 
     // cancel any pending auto-hide so a new caption isn't hidden early
@@ -301,6 +303,14 @@ export class CinematicsManager {
       clearTimeout(this._captionTimer);
       this._captionTimer = null;
     }
+
+    console.log('🎬 Speaker:', speaker);
+    console.log('🎬 Caption:', text);
+    console.log('🎬 Duration:', ms, 'ms');
+
+    const n = this.dialogueUI.querySelector('.caption-name');
+
+    n.textContent = speaker || 'Narrator';
 
     const t = this.dialogueUI.querySelector('.caption-text');
     t.textContent = text;
