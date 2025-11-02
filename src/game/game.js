@@ -42,6 +42,7 @@ import { SettingsMenu } from './components/SettingsMenu.js';
 import { GraphicsSettingsMenu } from './components/GraphicsSettingsMenu.js';
 import { ProgressionManager } from './ProgressionManager.js';
 import { Level3Voiceovers } from './levels/Level3Voiceovers.js';
+import { CreditsScreen } from './components/CreditsScreen.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -247,6 +248,10 @@ export class Game {
       }
       // Don't show pause menu if player is dead
       if (this.playerDead) {
+        return;
+      }
+      // Don't show pause menu if credits screen is active
+      if (this._creditsScreenActive) {
         return;
       }
       // If we were in first/third person, interpret the pointerlock exit as Esc -> pause
@@ -1864,6 +1869,9 @@ this.input.alwaysTrackMouse = true;
   // Refresh stack tool availability after level loads
   this.refreshStackToolAvailability();
 
+  // Check if we've returned to hub after completing all levels
+  this._checkAndShowCreditsIfAllLevelsComplete();
+
   // Hide loading screen
   if (loadingScreen) {
     loadingScreen.setStatus('READY', 100);
@@ -1946,6 +1954,81 @@ clearDeathVisualsAndState() {
     } else {
       this.player.weapon.unmount();
     }
+  }
+
+  /**
+   * Check if all levels are completed and show credits screen when returning to hub
+   * @private
+   */
+  _checkAndShowCreditsIfAllLevelsComplete() {
+    // Only check if loading the hub level
+    const currentLevelId = this.currentLevelId || this.level?.data?.id;
+    if (currentLevelId !== 'hub') {
+      return;
+    }
+
+    // Check if credits have already been watched in this save
+    if (CreditsScreen.hasWatchedCredits()) {
+      console.log('🎬 Credits already watched, skipping');
+      return;
+    }
+
+    // Get progression status
+    const progression = this.progressionManager?.getStatus?.();
+    if (!progression) {
+      console.log('🎬 No progression data available');
+      return;
+    }
+
+    // Define all playable levels (excluding hub)
+    const allLevels = ['level1', 'level2', 'level3'];
+    
+    // Check if all levels are completed
+    const allCompleted = allLevels.every(lvl => progression.completedLevels.includes(lvl));
+
+    if (allCompleted && progression.completedLevels.length > 0) {
+      console.log('🎬 All levels completed! Showing credits screen.');
+      this._showCreditsScreen();
+    } else {
+      console.log('🎬 Not all levels completed yet:', {
+        completed: progression.completedLevels,
+        remaining: allLevels.filter(lvl => !progression.completedLevels.includes(lvl))
+      });
+    }
+  }
+
+  /**
+   * Display the credits screen
+   * @private
+   */
+  _showCreditsScreen() {
+    // Create or get existing credits screen
+    let creditsScreen = this.ui?.get('creditsScreen');
+    
+    if (!creditsScreen) {
+      creditsScreen = new CreditsScreen(
+        document.getElementById('app'),
+        {
+          // Note: creditsList is NOT passed here, so CreditsScreen uses its own _getDefaultCredits()
+          // This way, updates to CreditsScreen.js are automatically reflected
+          onClose: () => {
+            console.log('🎬 Credits screen closed');
+            // Re-enable player input after credits
+            if (this.input?.setEnabled) {
+              this.input.setEnabled(true);
+            }
+          }
+        }
+      );
+      this.ui?.add('creditsScreen', creditsScreen);
+    }
+
+    // Disable player input while credits are showing
+    if (this.input?.setEnabled) {
+      this.input.setEnabled(false);
+    }
+
+    creditsScreen.show();
   }
 
   /**
