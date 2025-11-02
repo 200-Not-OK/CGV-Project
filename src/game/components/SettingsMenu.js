@@ -9,6 +9,7 @@ export class SettingsMenu extends UIComponent {
     super(container, props);
     this.root.className = 'settings-menu';
     this.onBack = props.onBack || (() => {});
+    this.onOpenAdvancedGraphics = props.onOpenAdvancedGraphics || (() => {});
 
     this.root.style.cssText = `
       position: fixed;
@@ -229,26 +230,6 @@ export class SettingsMenu extends UIComponent {
     graphicsTitle.textContent = 'GRAPHICS';
     graphicsGroup.appendChild(graphicsTitle);
 
-    // Master Volume
-    const volumeItem = document.createElement('div');
-    volumeItem.className = 'setting-item';
-    volumeItem.innerHTML = `
-      <span class="setting-label">Master Volume</span>
-      <div class="setting-value">
-        <div class="slider-container">
-          <input type="range" min="0" max="100" value="70" class="volume-slider">
-          <span class="volume-value">70%</span>
-        </div>
-      </div>
-    `;
-    const volumeSlider = volumeItem.querySelector('.volume-slider');
-    const volumeValue = volumeItem.querySelector('.volume-value');
-    volumeSlider.addEventListener('input', (e) => {
-      volumeValue.textContent = e.target.value + '%';
-      console.log('🔊 Volume changed to:', e.target.value);
-    });
-    graphicsGroup.appendChild(volumeItem);
-
     // Brightness
     const brightnessItem = document.createElement('div');
     brightnessItem.className = 'setting-item';
@@ -269,24 +250,42 @@ export class SettingsMenu extends UIComponent {
     });
     graphicsGroup.appendChild(brightnessItem);
 
-    // Shadows toggle
-    const shadowsItem = document.createElement('div');
-    shadowsItem.className = 'setting-item';
-    shadowsItem.innerHTML = `
-      <span class="setting-label">Enable Shadows</span>
-      <div class="setting-value">
-        <button class="toggle-button active shadow-toggle">ON</button>
-      </div>
+    // Advanced Graphics Settings button
+    const advancedGraphicsItem = document.createElement('div');
+    advancedGraphicsItem.className = 'setting-item';
+    advancedGraphicsItem.style.cssText = 'justify-content: center; margin-top: 20px;';
+    const advancedGraphicsBtn = document.createElement('button');
+    advancedGraphicsBtn.style.cssText = `
+      background: #9c27b0;
+      color: white;
+      border: 2px solid #9c27b0;
+      padding: 10px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: all 0.3s ease;
     `;
-    const shadowToggle = shadowsItem.querySelector('.shadow-toggle');
-    let shadowsEnabled = true;
-    shadowToggle.addEventListener('click', () => {
-      shadowsEnabled = !shadowsEnabled;
-      shadowToggle.textContent = shadowsEnabled ? 'ON' : 'OFF';
-      shadowToggle.classList.toggle('active');
-      console.log('🌑 Shadows toggled:', shadowsEnabled);
+    advancedGraphicsBtn.textContent = '⚙️ Advanced Graphics Settings';
+    advancedGraphicsBtn.addEventListener('mouseover', () => {
+      advancedGraphicsBtn.style.background = '#7b1fa2';
+      advancedGraphicsBtn.style.boxShadow = '0 0 15px rgba(156, 39, 176, 0.6)';
     });
-    graphicsGroup.appendChild(shadowsItem);
+    advancedGraphicsBtn.addEventListener('mouseout', () => {
+      advancedGraphicsBtn.style.background = '#9c27b0';
+      advancedGraphicsBtn.style.boxShadow = 'none';
+    });
+    advancedGraphicsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      console.log('⚙️ Opening Advanced Graphics Settings from SettingsMenu');
+      // Call callback to let game.js handle the transition
+      if (this.onOpenAdvancedGraphics) {
+        this.onOpenAdvancedGraphics();
+      }
+    });
+    advancedGraphicsItem.appendChild(advancedGraphicsBtn);
+    graphicsGroup.appendChild(advancedGraphicsItem);
 
     container.appendChild(graphicsGroup);
 
@@ -298,6 +297,26 @@ export class SettingsMenu extends UIComponent {
     audioTitle.style.cssText = 'font-size: 18px; font-weight: bold; color: #ffd700; margin-bottom: 15px;';
     audioTitle.textContent = 'AUDIO';
     audioGroup.appendChild(audioTitle);
+
+    // Master Volume (moved to audio section)
+    const volumeItem = document.createElement('div');
+    volumeItem.className = 'setting-item';
+    volumeItem.innerHTML = `
+      <span class="setting-label">Master Volume</span>
+      <div class="setting-value">
+        <div class="slider-container">
+          <input type="range" min="0" max="100" value="70" class="volume-slider">
+          <span class="volume-value">70%</span>
+        </div>
+      </div>
+    `;
+    const volumeSlider = volumeItem.querySelector('.volume-slider');
+    const volumeValue = volumeItem.querySelector('.volume-value');
+    volumeSlider.addEventListener('input', (e) => {
+      volumeValue.textContent = e.target.value + '%';
+      console.log('🔊 Volume changed to:', e.target.value);
+    });
+    audioGroup.appendChild(volumeItem);
 
     // Music Volume
     const musicItem = document.createElement('div');

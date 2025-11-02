@@ -58,8 +58,6 @@ export class GraphicsSettings {
       environment: {
         skybox: true,
         skyQuality: 'MEDIUM',
-        fog: true,
-        fogDensity: 1.0,
         ambientBrightness: 1.0,
         environmentalLighting: true
       },
@@ -101,7 +99,7 @@ export class GraphicsSettings {
         rendering: { resolutionScale: 0.5, antiAlias: false, pixelPrecision: 'mediump' },
         shadows: { enabled: false, quality: 'LOW', mapSize: 512 },
         shaders: { enhanced: false, complexity: 'OFF' },
-        environment: { skyQuality: 'LOW', fog: true, fogDensity: 0.5 },
+        environment: { skyQuality: 'LOW' },
         lighting: { maxCount: 1, intensity: 0.8 },
         effects: { particles: false, quality: 'LOW', count: 30, flames: false, lightning: false },
         advanced: { frameRateTarget: 30 }
@@ -111,7 +109,7 @@ export class GraphicsSettings {
         rendering: { resolutionScale: 0.75, antiAlias: false, pixelPrecision: 'highp' },
         shadows: { enabled: true, quality: 'MEDIUM', mapSize: 1024 },
         shaders: { enhanced: true, complexity: 'FULL' },
-        environment: { skyQuality: 'MEDIUM', fog: true, fogDensity: 1.0 },
+        environment: { skyQuality: 'MEDIUM' },
         lighting: { maxCount: 2, intensity: 1.0 },
         effects: { particles: true, quality: 'MEDIUM', count: 100, flames: true, lightning: false },
         advanced: { frameRateTarget: 60 }
@@ -121,7 +119,7 @@ export class GraphicsSettings {
         rendering: { resolutionScale: 1.0, antiAlias: false, pixelPrecision: 'highp' },
         shadows: { enabled: true, quality: 'HIGH', mapSize: 2048 },
         shaders: { enhanced: true, complexity: 'FULL' },
-        environment: { skyQuality: 'HIGH', fog: true, fogDensity: 1.0 },
+        environment: { skyQuality: 'HIGH' },
         lighting: { maxCount: 3, intensity: 1.2 },
         effects: { particles: true, quality: 'HIGH', count: 200, flames: true, lightning: true },
         advanced: { frameRateTarget: 60 }
@@ -359,27 +357,27 @@ export class GraphicsSettings {
    * Apply environment settings
    */
   applyEnvironmentSettings() {
-    const { scene, shaderSystem } = this.game;
+    const { scene } = this.game;
     const s = this.currentSettings.environment;
     
-    if (!scene || !shaderSystem) return;
+    if (!scene) return;
     
-    // Fog
-    if (s.fog) {
-      const fogColor = 0x000510;
-      const fogStart = 30 * (1 / s.fogDensity);
-      const fogEnd = 150 * (1 / s.fogDensity);
-      
-      if (!scene.fog) {
-        scene.fog = new THREE.Fog(fogColor, fogStart, fogEnd);
-      } else {
-        scene.fog.near = fogStart;
-        scene.fog.far = fogEnd;
+    // Skybox is ALWAYS enabled - users cannot disable it
+    // Show mesh skyboxes if they exist
+    if (scene.userData && scene.userData.sky) {
+      if (scene.userData.sky.far) {
+        scene.userData.sky.far.visible = true;
       }
-      console.log(`✅ Environment: Fog enabled, Density ${s.fogDensity}x`);
-    } else {
-      scene.fog = null;
-      console.log('✅ Environment: Fog disabled');
+      if (scene.userData.sky.near) {
+        scene.userData.sky.near.visible = true;
+      }
+    }
+    // Show HDR environment/background
+    if (scene.userData && scene.userData.hdrBackground) {
+      scene.background = scene.userData.hdrBackground;
+    }
+    if (scene.userData && scene.userData.hdrEnvironment) {
+      scene.environment = scene.userData.hdrEnvironment;
     }
     
     // Ambient brightness (multiplier on ambient light)
@@ -574,9 +572,7 @@ SHADERS
 
 ENVIRONMENT
 -----------
-  Skybox: ${this.currentSettings.environment.skybox ? 'ON' : 'OFF'}
-  Fog: ${this.currentSettings.environment.fog ? 'ON' : 'OFF'}
-  Fog Density: ${this.currentSettings.environment.fogDensity}x
+  Skybox: ALWAYS ON
   Ambient Brightness: ${this.currentSettings.environment.ambientBrightness}x
 
 LIGHTING

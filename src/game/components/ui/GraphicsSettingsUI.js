@@ -11,6 +11,8 @@ export class GraphicsSettingsUI {
     this.currentTab = 'rendering';
     this.container = null;
     this.elements = {};
+    this.onBackFromPauseMenu = null; // Callback when closing from pause menu
+    this.isMenuMode = false; // Flag to indicate we're in the main menu system
     
     // Listen for settings changes
     this.settings.listen((event) => this.onSettingsChanged(event));
@@ -180,33 +182,13 @@ export class GraphicsSettingsUI {
             <h3>World Environment</h3>
             
             <div class="setting-item">
-              <label>Skybox</label>
-              <div class="toggle-switch">
-                <input type="checkbox" class="setting-toggle" data-setting="environment.skybox" checked>
-                <span class="toggle-slider"></span>
-              </div>
-            </div>
-            
-            <div class="setting-item">
               <label>Skybox Quality</label>
               <div class="button-group">
                 <button class="quality-btn" data-setting="environment.skyQuality" data-value="LOW">Low</button>
                 <button class="quality-btn active" data-setting="environment.skyQuality" data-value="MEDIUM">Medium</button>
                 <button class="quality-btn" data-setting="environment.skyQuality" data-value="HIGH">High</button>
               </div>
-            </div>
-            
-            <div class="setting-item">
-              <label>Fog</label>
-              <div class="toggle-switch">
-                <input type="checkbox" class="setting-toggle" data-setting="environment.fog" checked>
-                <span class="toggle-slider"></span>
-              </div>
-            </div>
-            
-            <div class="setting-item">
-              <label>Fog Density: <span class="value-display">1.0x</span></label>
-              <input type="range" min="0.1" max="2" step="0.1" class="setting-slider" data-setting="environment.fogDensity">
+              <small>Skybox is always enabled for visual immersion</small>
             </div>
             
             <div class="setting-item">
@@ -384,7 +366,20 @@ export class GraphicsSettingsUI {
    */
   setupEventListeners() {
     // Close button
-    this.container.querySelector('.settings-close-btn').addEventListener('click', () => this.toggle());
+    this.container.querySelector('.settings-close-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      // If in menu mode, just hide without callbacks
+      if (this.isMenuMode) {
+        this.hide();
+      } else if (this.onBackFromPauseMenu) {
+        // If we came from pause menu, call the back callback
+        this.hide();
+        this.onBackFromPauseMenu();
+        this.onBackFromPauseMenu = null;
+      } else {
+        this.toggle();
+      }
+    });
     
     // Tab switching - stop propagation to prevent pointer lock
     this.container.querySelectorAll('.tab-btn').forEach((btn) => {
@@ -453,19 +448,19 @@ export class GraphicsSettingsUI {
     // This ensures clicking ANYWHERE on the UI doesn't trigger game interactions
     this.container.addEventListener('click', (e) => {
       e.stopPropagation();
-    }, true); // Use capture phase to catch all clicks
+    }, false); // Use bubble phase (after handlers have fired)
     
     this.container.addEventListener('mousedown', (e) => {
       e.stopPropagation();
-    }, true);
+    }, false);
     
     this.container.addEventListener('mouseup', (e) => {
       e.stopPropagation();
-    }, true);
+    }, false);
     
     this.container.addEventListener('wheel', (e) => {
       e.stopPropagation();
-    }, true);
+    }, false);
   }
 
   /**
@@ -700,6 +695,38 @@ export class GraphicsSettingsUI {
     } else {
       this.show();
     }
+  }
+
+  /**
+   * Show from pause menu with back button functionality
+   */
+  showFromPauseMenu(onBack) {
+    this.isMenuMode = false;
+    this.onBackFromPauseMenu = onBack;
+    
+    // Update close button to say "Back to Pause Menu"
+    const closeBtn = this.container.querySelector('.settings-close-btn');
+    if (closeBtn) {
+      closeBtn.title = 'Back to Pause Menu';
+    }
+    
+    this.show();
+  }
+
+  /**
+   * Show from main menu settings (no game running)
+   */
+  showFromMenu() {
+    this.isMenuMode = true;
+    this.onBackFromPauseMenu = null;
+    
+    // Update close button to say "Back to Settings"
+    const closeBtn = this.container.querySelector('.settings-close-btn');
+    if (closeBtn) {
+      closeBtn.title = 'Back to Settings';
+    }
+    
+    this.show();
   }
 
   /**

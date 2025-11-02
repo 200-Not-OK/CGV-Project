@@ -38,6 +38,7 @@ import { ComputerTerminal } from './components/ComputerTerminal.js';
 import { LoadingScreen } from './components/LoadingScreen.js';
 import { MainMenu } from './components/MainMenu.js';
 import { SettingsMenu } from './components/SettingsMenu.js';
+import { GraphicsSettingsMenu } from './components/GraphicsSettingsMenu.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -271,9 +272,16 @@ export class Game {
     console.log('🎮 MainMenu added to UIManager');
     // Add settings menu
     this.ui.add('settingsMenu', SettingsMenu, {
-      onBack: () => this._onSettingsBack()
+      onBack: () => this._onSettingsBack(),
+      onOpenAdvancedGraphics: () => this._onOpenAdvancedGraphicsFromSettings()
     });
     console.log('⚙️ SettingsMenu added to UIManager');
+    // Add graphics settings menu
+    this.ui.add('graphicsSettingsMenu', GraphicsSettingsMenu, {
+      graphicsSettings: this.graphicsSettings,
+      onBack: () => this._onGraphicsSettingsMenuBack()
+    });
+    console.log('🎨 GraphicsSettingsMenu added to UIManager');
     // Add voiceover card for character dialogues
     this.ui.add('voiceoverCard', VoiceoverCard, {
       characterName: 'Pravesh',
@@ -365,20 +373,19 @@ this.setupLLMTracking();
       this.loadLevel(0); // Load the hub level (index 0)
     });
 
-    // Shader toggle button
-    const toggleShadersBtn = document.getElementById('toggleShadersBtn');
-    if (toggleShadersBtn) {
-      toggleShadersBtn.addEventListener('click', (e) => {
+    // Graphics Settings button (from pause menu)
+    const openGraphicsSettingsBtn = document.getElementById('openGraphicsSettingsBtn');
+    if (openGraphicsSettingsBtn) {
+      openGraphicsSettingsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (this.shaderSystem) {
-          const newState = this.shaderSystem.toggleShaders();
-          const statusText = document.getElementById('shaderStatusText');
-          if (statusText) {
-            statusText.textContent = newState ? 'ON' : 'OFF';
-            toggleShadersBtn.style.background = newState ? '#2196F3' : '#ff6b6b';
-          }
-        }
+        // Hide pause menu
+        this.pauseMenu.style.display = 'none';
+        // Show graphics settings with callback to return to pause menu
+        this.graphicsSettingsUI.showFromPauseMenu(() => {
+          // When graphics settings closes, show pause menu again
+          this.pauseMenu.style.display = 'flex';
+        });
       });
     }
 
@@ -492,6 +499,47 @@ E - Interact with chests and doors
     // Hide crosshair when returning to main menu
     if (crosshair) {
       crosshair.setProps({ visible: false });
+    }
+  }
+
+  /**
+   * Handle Advanced Graphics Settings button from settings menu
+   */
+  _onOpenAdvancedGraphicsFromSettings() {
+    console.log('🎨 Opening Advanced Graphics Settings Menu from SettingsMenu');
+    
+    // Hide settings menu
+    const settingsMenu = this.ui.get('settingsMenu');
+    if (settingsMenu) {
+      settingsMenu.hide(300);
+    }
+    
+    // Show graphics settings menu after a small delay to avoid race conditions
+    setTimeout(() => {
+      const graphicsSettingsMenu = this.ui.get('graphicsSettingsMenu');
+      if (graphicsSettingsMenu) {
+        console.log('🎨 Showing GraphicsSettingsMenu');
+        graphicsSettingsMenu.show();
+      }
+    }, 100);
+  }
+
+  /**
+   * Handle back button from graphics settings menu
+   */
+  _onGraphicsSettingsMenuBack() {
+    console.log('← Back to settings menu from graphics settings');
+    
+    // Hide graphics settings menu
+    const graphicsSettingsMenu = this.ui.get('graphicsSettingsMenu');
+    if (graphicsSettingsMenu) {
+      graphicsSettingsMenu.hide();
+    }
+    
+    // Show settings menu
+    const settingsMenu = this.ui.get('settingsMenu');
+    if (settingsMenu) {
+      settingsMenu.show();
     }
   }
 
