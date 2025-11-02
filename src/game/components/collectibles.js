@@ -11,10 +11,12 @@ export class Collectibles extends UIComponent {
       potions: { icon: '🧪', name: 'Health Potions', color: '#4caf50', lowColor: '#ff9800', emptyColor: '#f44336', emptyIcon: '💔' }
     };
     
-    // Initial values
+    // Initial values - check if apples should be shown
+    const hasApples = props.applesTotal !== undefined && props.applesTotal > 0;
+    
     this.collectibles = {
-      apples: { collected: 0, total: props.applesTotal || 10 },
-      potions: { count: props.potionsStart || 3 }
+      apples: { collected: 0, total: props.applesTotal || 0, show: hasApples },
+      potions: { count: props.potionsStart || 3, show: true } // Always show potions
     };
     
     this.pointsPerApple = props.pointsPerApple || 100;
@@ -48,9 +50,13 @@ export class Collectibles extends UIComponent {
       min-width: 180px;
     `;
 
-    // Create sections for each collectible type
+    // Create sections only for collectibles that should be shown
     this.sections = {};
-    this._createAppleSection();
+    
+    if (this.collectibles.apples.show) {
+      this._createAppleSection();
+    }
+    
     this._createPotionSection();
 
     this.root.appendChild(this.collectiblesContainer);
@@ -97,9 +103,9 @@ export class Collectibles extends UIComponent {
     this.sections.potions.style.cssText = `
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
       font-weight: bold;
       padding: 4px 0;
+      ${this.collectibles.apples.show ? 'margin-bottom: 10px;' : ''}
     `;
     
     this.potionIcon = document.createElement('span');
@@ -126,7 +132,7 @@ export class Collectibles extends UIComponent {
 
   // Public methods for updating collectibles
   collectApple() {
-    if (this.collectibles.apples.collected < this.collectibles.apples.total) {
+    if (this.collectibles.apples.show && this.collectibles.apples.collected < this.collectibles.apples.total) {
       this.collectibles.apples.collected++;
       this._updateAppleDisplay();
       this._playCollectAnimation(this.appleIcon);
@@ -160,6 +166,8 @@ export class Collectibles extends UIComponent {
   }
 
   _updateAppleDisplay() {
+    if (!this.collectibles.apples.show) return;
+    
     const config = this.collectibleTypes.apples;
     const { collected, total } = this.collectibles.apples;
     const progress = collected / total;
@@ -214,7 +222,7 @@ export class Collectibles extends UIComponent {
 
   // Set collectible data (for loading/restoring)
   setCollectiblesData(data) {
-    if (data.apples) {
+    if (data.apples && this.collectibles.apples.show) {
       this.collectibles.apples = { ...this.collectibles.apples, ...data.apples };
       this._updateAppleDisplay();
     }
