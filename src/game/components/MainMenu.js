@@ -11,6 +11,7 @@ export class MainMenu extends UIComponent {
     this.root.className = 'main-menu';
     this.onStart = props.onStart || (() => {});
     this.onSettings = props.onSettings || (() => {});
+    this.onCredits = props.onCredits || (() => {});
 
     this.root.style.cssText = `
       position: fixed;
@@ -240,6 +241,16 @@ export class MainMenu extends UIComponent {
       this.onSettings();
     });
     buttonsContainer.appendChild(this.settingsButton);
+
+    // Credits button
+    this.creditsButton = document.createElement('button');
+    this.creditsButton.className = 'menu-button';
+    this.creditsButton.textContent = 'CREDITS';
+    this.creditsButton.addEventListener('click', () => {
+      console.log('🎬 Credits button clicked');
+      this.onCredits();
+    });
+    buttonsContainer.appendChild(this.creditsButton);
 
     menuContainer.appendChild(buttonsContainer);
     this.root.appendChild(menuContainer);

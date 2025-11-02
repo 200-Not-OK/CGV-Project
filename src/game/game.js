@@ -65,6 +65,9 @@ export class Game {
       stackToolBroken: false,
     };
 
+    // Brightness setting (0.5 to 1.5, default 1.0)
+    this.brightnessLevel = 1.0;
+
     // GPU Detection & Quality Settings
     console.log('🔍 Detecting GPU capabilities...');
     this.gpuDetector = initGPUDetector(this.renderer);
@@ -289,11 +292,13 @@ export class Game {
     // Add main menu
     this.ui.add('mainMenu', MainMenu, {
       onStart: () => this._onMainMenuStart(),
-      onSettings: () => this._onMainMenuSettings()
+      onSettings: () => this._onMainMenuSettings(),
+      onCredits: () => this._onMainMenuCredits()
     });
     console.log('🎮 MainMenu added to UIManager');
     // Add settings menu
     this.ui.add('settingsMenu', SettingsMenu, {
+      game: this, // Pass game reference for brightness control
       onBack: () => this._onSettingsBack(),
       onOpenAdvancedGraphics: () => this._onOpenAdvancedGraphicsFromSettings()
     });
@@ -625,6 +630,19 @@ debugInteractionPrompt() {
       crosshair.setProps({ visible: false });
     }
     // Keep main menu music playing in background
+  }
+
+  /**
+   * Handle main menu Credits button click
+   */
+  _onMainMenuCredits() {
+    console.log('🎬 Opening credits from main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    
+    if (mainMenu) mainMenu.hide(300);
+    
+    // Show the credits screen
+    this._showCreditsScreen();
   }
 
   /**
@@ -2013,6 +2031,15 @@ clearDeathVisualsAndState() {
           // This way, updates to CreditsScreen.js are automatically reflected
           onClose: () => {
             console.log('🎬 Credits screen closed');
+            
+            // If we're in the main menu (not in a level), show the main menu again
+            if (!this.level) {
+              const mainMenu = this.ui?.get('mainMenu');
+              if (mainMenu) {
+                mainMenu.show();
+              }
+            }
+            
             // Re-enable player input after credits
             if (this.input?.setEnabled) {
               this.input.setEnabled(true);
@@ -2894,6 +2921,23 @@ setupGlitchedLevelProgression() {
       this.loadLevelByName('level3');
     }, 2000);
   }
+}
+
+/**
+ * Set the brightness level for the entire game
+ * @param {number} value - Brightness value between 0.5 and 1.5 (1.0 is normal)
+ */
+setBrightness(value) {
+  // Clamp value between 0.5 and 1.5
+  this.brightnessLevel = Math.max(0.5, Math.min(1.5, value));
+  
+  // Apply brightness filter to the canvas/renderer container
+  const renderer = this.renderer.domElement;
+  if (renderer && renderer.parentNode) {
+    renderer.parentNode.style.filter = `brightness(${this.brightnessLevel})`;
+  }
+  
+  console.log('☀️ Brightness set to:', (this.brightnessLevel * 100).toFixed(0) + '%');
 }
 
 

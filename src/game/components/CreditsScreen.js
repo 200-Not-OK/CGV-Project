@@ -72,7 +72,14 @@ export class CreditsScreen extends UIComponent {
       { type: 'credit', role: '', name: 'Cannon-es - Physics Engine' },
       { type: 'credit', role: '', name: 'Vite - Build Tool' },
       { type: 'space' },
+      { type: 'section', text: 'VOICE ACTORS' },
+      { type: 'credit', role: '', name: 'AI Pravesh' },
+      { type: 'credit', role: '', name: 'AI Richard' },
+      { type: 'credit', role: '', name: 'AI Branden' },
+      { type: 'credit', role: '', name: 'AI Steve' },
+      { type: 'space' },
       { type: 'section', text: 'SPECIAL THANKS' },
+      { type: 'credit', role: 'Tutor', name: 'Tapiwa Mazarura' },
       { type: 'credit', role: '', name: 'Kay Lousberg : Dungeon Remastered Pack (1.1)' },
       { type: 'credit', role: '', name: 'Kay Lousberg : Adventurers Character Pack (1.0)' },
       { type: 'credit', role: '', name: 'Willy Decarpentrie : Mech Drone' },
@@ -119,7 +126,7 @@ export class CreditsScreen extends UIComponent {
       flexDirection: 'column',
       alignItems: 'center',
       padding: '60px 20px',
-      animation: 'credits-scroll 60s linear forwards',
+      animation: 'credits-scroll 35s linear forwards',
       scrollBehavior: 'smooth'
     });
 
@@ -301,11 +308,11 @@ export class CreditsScreen extends UIComponent {
     };
     window.addEventListener('keydown', this._keyListener, true); // Capture phase
     
-    // Auto-close after 60 seconds
+    // Auto-close after 35 seconds
     this._closeTimeout = setTimeout(() => {
-      console.log('🎬 Credits timer (60s) ended, auto-closing');
+      console.log('🎬 Credits timer (35s) ended, auto-closing');
       this.close();
-    }, 60000);
+    }, 35000);
     
     // Also listen for animation end as backup
     if (this.creditsContainer) {
