@@ -499,6 +499,8 @@ E - Interact with chests and doors
     }
     
     // Load the hub level (index 0)
+    
+      // let loading_this_level = 3;
     await this.loadLevel(0);
     this.gameStarted = true;
     
