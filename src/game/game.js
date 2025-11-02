@@ -34,6 +34,8 @@ import { initQualityControls } from './utils/qualityControls.js';
 import { GlitchManager } from './GlitchManager.js';
 import { ComputerTerminal } from './components/ComputerTerminal.js';
 import { LoadingScreen } from './components/LoadingScreen.js';
+import { MainMenu } from './components/MainMenu.js';
+import { SettingsMenu } from './components/SettingsMenu.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -233,11 +235,25 @@ export class Game {
     // Add loading screen
     this.ui.add('loadingScreen', LoadingScreen, {});
     console.log('📺 LoadingScreen added to UIManager');
+    // Add main menu
+    this.ui.add('mainMenu', MainMenu, {
+      onStart: () => this._onMainMenuStart(),
+      onSettings: () => this._onMainMenuSettings()
+    });
+    console.log('🎮 MainMenu added to UIManager');
+    // Add settings menu
+    this.ui.add('settingsMenu', SettingsMenu, {
+      onBack: () => this._onSettingsBack()
+    });
+    console.log('⚙️ SettingsMenu added to UIManager');
     // Add voiceover card for character dialogues
     this.ui.add('voiceoverCard', VoiceoverCard, {
       characterName: 'Pravesh',
       position: 'left'
     });
+
+    // Game state
+    this.gameStarted = false; // Track if player has started the game from main menu
 
     // Combat system
     this.combatSystem = new CombatSystem(this.scene, this.physicsWorld);
@@ -360,12 +376,65 @@ this.setupLLMTracking();
 
   // Initialize the first level asynchronously
   async _initializeLevel() {
-    await this.loadLevel(0);
-    // Apply lights for current level   
-    this.applyLevelLights(this.level?.data);
+    // Show main menu instead of loading a level immediately
+    console.log('🎮 Showing main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    if (mainMenu) {
+      mainMenu.show();
+      this.gameStarted = false;
+    }
+  }
 
-    // Show level picker shortly after load-in (as requested)
-    // setTimeout(() => this._showLevelPicker(), 400);
+  /**
+   * Handle main menu Start button click
+   */
+  async _onMainMenuStart() {
+    console.log('🎮 Starting game from main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    const loadingScreen = this.ui.get('loadingScreen');
+    
+    // Hide main menu
+    if (mainMenu) {
+      mainMenu.hide(300);
+    }
+    
+    // Show loading screen and load hub level
+    if (loadingScreen) {
+      loadingScreen.show();
+      loadingScreen.setStatus('LOADING HUB', 0);
+    }
+    
+    // Load the hub level (index 0)
+    await this.loadLevel(0);
+    this.gameStarted = true;
+    
+    if (loadingScreen) {
+      loadingScreen.hide(500);
+    }
+  }
+
+  /**
+   * Handle main menu Settings button click
+   */
+  _onMainMenuSettings() {
+    console.log('⚙️ Opening settings from main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    const settingsMenu = this.ui.get('settingsMenu');
+    
+    if (mainMenu) mainMenu.hide(300);
+    if (settingsMenu) settingsMenu.show();
+  }
+
+  /**
+   * Handle settings menu Back button click
+   */
+  _onSettingsBack() {
+    console.log('← Back to main menu from settings');
+    const mainMenu = this.ui.get('mainMenu');
+    const settingsMenu = this.ui.get('settingsMenu');
+    
+    if (settingsMenu) settingsMenu.hide(300);
+    if (mainMenu) mainMenu.show();
   }
 
 
@@ -1142,6 +1211,9 @@ if (staleLow) staleLow.remove();
 
   if (this.player.originalModelSize) {
     this.player.createPhysicsBody(this.player.originalModelSize);
+  } else {
+    console.warn('⚠️ Player model size not available yet, using default fallback size');
+    this.player.createPhysicsBody(new THREE.Vector3(1, 2, 1));
   }
 
   this.levelManager.physicsWorld = this.physicsWorld;
@@ -1688,6 +1760,12 @@ clearDeathVisualsAndState() {
   }
   if (this.ui.get('loadingScreen')) {
     globalComponents.set('loadingScreen', this.ui.get('loadingScreen'));
+  }
+  if (this.ui.get('mainMenu')) {
+    globalComponents.set('mainMenu', this.ui.get('mainMenu'));
+  }
+  if (this.ui.get('settingsMenu')) {
+    globalComponents.set('settingsMenu', this.ui.get('settingsMenu'));
   }
   
   this.ui.clear();

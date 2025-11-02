@@ -170,7 +170,8 @@ export class LoadingScreen extends UIComponent {
 
     this.root.appendChild(container);
 
-    this.show();
+    // Start hidden - only show when explicitly called
+    this.root.style.display = 'none';
   }
 
   /**
