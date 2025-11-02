@@ -712,7 +712,7 @@ export const levels = [
       {
         "type": "minimap",
         "config": {
-          "zoom": 5.0,
+          "zoom": 1.6
         }
       },
       {
