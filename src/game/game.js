@@ -331,6 +331,15 @@ this.setupLLMTracking();
       }
     });
 
+    // Back to Hub button
+    const backToHubBtn = document.getElementById('backToHubBtn');
+    if (backToHubBtn) backToHubBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      this.setPaused(false);
+      this.loadLevel(0); // Load the hub level (index 0)
+    });
+
     // Shader toggle button
     const toggleShadersBtn = document.getElementById('toggleShadersBtn');
     if (toggleShadersBtn) {
