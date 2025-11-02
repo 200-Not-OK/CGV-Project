@@ -2780,35 +2780,6 @@ showMessage(message, duration = 3000) {
   }, duration);
 }
 
-checkGlitchedLevelCompletion() {
-  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
-  // 
-  const levelData = this.levelManager.getLevelData(this.currentLevelId);
-  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
-  
-  const chests = levelData.collectibles.chests;
-  
-  // Check if ALL chests in this glitched level are collected
-  const allCollected = chests.every(chest => {
-    return this.collectiblesManager.isChestCollected(chest.id);
-  });
-  
-  if (allCollected) {
-    console.log('✅ All chests collected in glitched level!');
-    
-    // Mark this glitched level as completed
-    this.glitchManager.completeGlitchedLevel(this.currentLevelId);
-    
-    // Show completion message
-    this.showMessage(`Glitched level completed! Returning to Level 3.`);
-
-    // Wait 2 seconds, then automatically return to Level 3
-    setTimeout(() => {
-      this.loadLevelByName('level3');
-    }, 2000); //comeback
-  }
-}
-
 setupGlitchedLevelProgression() {
   console.log('🔧 Setting up glitched level progression...');
   
