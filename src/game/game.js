@@ -1906,7 +1906,9 @@ clearDeathVisualsAndState() {
 
   refreshStackToolAvailability() {
     const levelId = this.currentLevelId || this.level?.data?.id || this.scene?.userData?.levelId || null;
-    const canUse = !this.state.stackToolBroken && this.state.stackToolGranted && levelId === 'level1';
+    // Allow stack tool in both 'level1' and 'level1_glitched'
+    const isLevel1OrGlitched = levelId === 'level1' || levelId === 'level1_glitched';
+    const canUse = !this.state.stackToolBroken && this.state.stackToolGranted && isLevel1OrGlitched;
     
     console.log('[StackTool] Refresh - Level:', levelId, 'Granted:', this.state.stackToolGranted, 'Broken:', this.state.stackToolBroken, '=> Can use:', canUse);
     
@@ -2763,35 +2765,6 @@ showMessage(message, duration = 3000) {
       messageElement.parentNode.removeChild(messageElement);
     }
   }, duration);
-}
-
-checkGlitchedLevelCompletion() {
-  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
-  
-  const levelData = this.levelManager.getLevelData(this.currentLevelId);
-  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
-  
-  const chests = levelData.collectibles.chests;
-  
-  // Check if ALL chests in this glitched level are collected
-  const allCollected = chests.every(chest => {
-    return this.collectiblesManager.isChestCollected(chest.id);
-  });
-  
-  if (allCollected) {
-    console.log('✅ All chests collected in glitched level!');
-    
-    // Mark this glitched level as completed
-    this.glitchManager.completeGlitchedLevel(this.currentLevelId);
-    
-    // Show completion message
-    this.showMessage(`Glitched level completed! Returning to Level 3.`);
-
-    // Wait 2 seconds, then automatically return to Level 3
-    setTimeout(() => {
-      this.loadLevelByName('level3');
-    }, 2000); //comeback
-  }
 }
 
 setupGlitchedLevelProgression() {
