@@ -1561,17 +1561,11 @@ export const levels = [
       {
         "type": "collectibles",
         "config": {
-          "applesTotal": 7,
+         
           "potionsStart": 5,
-          "pointsPerApple": 200,
+          
           "collectibleTypes": {
-            "apples": {
-              "icon": "🍏",
-              "name": "Green Apples",
-              "color": "#51cf66",
-              "completeColor": "#ffd43b",
-              "completeIcon": "👑"
-            },
+            
             "potions": {
               "icon": "🧪",
               "name": "Health Potions",
@@ -2373,7 +2367,7 @@ export const levels = [
             38.74439334869385,
             334.06633057575175
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_33",
@@ -2382,7 +2376,7 @@ export const levels = [
             9.651255130767824,
             278.7988147172013
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_34",
@@ -2391,7 +2385,7 @@ export const levels = [
             23.226380348205566,
             -17.687950706826655
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_35",
@@ -2418,7 +2412,7 @@ export const levels = [
             9.651255130767822,
             -82.64101963921365
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_39",
@@ -2427,7 +2421,7 @@ export const levels = [
             9.439203262329102,
             -44.85368840875811
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_40",
@@ -2436,7 +2430,7 @@ export const levels = [
             9.439203262329102,
             -45.742070533768135
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_41",
@@ -2490,7 +2484,7 @@ export const levels = [
             9.691577911376955,
             417.44962917460015
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_47",
@@ -10744,45 +10738,29 @@ export const levels = [
           { "type": "fadeIn", "ms": 600 },
           {
             "type": "playVO",
-            "vo": "vo-l3-intro",
-            "fallbackMs": 32000,
+            "vo": "level3start_vo",
             "block": true,
             "segments": [
-              {
-                "at": 0,
-                "ms": 6000,
-                "text": "BRANDEN: Sir Knight. Eyes up. Yes, it is me—your favorite lecturer, now a giant floating eyeball. I am keeping an eye on you."
-              },
-              {
-                "at": 7500,
-                "ms": 2000,
-                "text": "PLAYER: Only you would turn into a sky-orb for office hours."
-              },
-              {
-                "at": 11000,
-                "ms": 8000,
-                "text": "BRANDEN: Your project theme is \"Consequence.\" You have three weeks. It counts for the majority of your grade. No use of AI."
-              },
-              {
-                "at": 19500,
-                "ms": 2400,
-                "text": "BRANDEN: Good luck. I will be watching."
-              },
-              {
-                "at": 22400,
-                "ms": 4600,
-                "text": "PLAYER (INTERNAL MONOLOGUE): Three weeks. Consequence. Everyone else is already panicking. But not me."
-              },
-              {
-                "at": 27400,
-                "ms": 4300,
-                "text": "PLAYER (INTERNAL MONOLOGUE): I have the ultimate advantage—ChatGPT, Claude, Gemini. I will be careful."
-              },
-              {
-                "at": 31900,
-                "ms": 3000,
-                "text": "BRANDEN: Time to collect those AIs and head to MSL."
-              }
+              { "speaker": "Branden", "at": 0, "ms": 3000, 
+                "text": "Sir Knight. Eyes up. Yes, it is me—your favorite lecturer, " },
+                { "speaker": "Branden", "at": 3300, "ms": 3500, 
+                "text": "now a giant floating eyeball. I am keeping an eye on you." },
+              { "speaker": "Player", "at": 6700, "ms": 4000,    
+                "text": "Only you would turn into a sky-orb for office hours." },
+              { "speaker": "Branden", "at": 11000, "ms": 3700, 
+                "text": "Your project theme is “Consequence.” You have three weeks." },
+                 { "speaker": "Branden", "at": 15000, "ms": 2900, 
+                "text": "It counts for the majority of your grade. No use of AI." },
+              { "speaker": "Branden", "at": 18200, "ms": 2000, "text": "Good luck. I will be watching." },
+              { "speaker": "Player (Internally)", "at": 21000, "ms": 3600, 
+                "text": "Three weeks. Consequence. Everyone else is already panicking." },
+              {  "speaker": "Player (Internally)", "at": 24900, "ms": 6000, 
+                "text": "But not me. I have the ultimate advantage—ChatGPT, Claude, Gemini." },
+                              {  "speaker": "Player (Internally)", "at": 32000, "ms": 2200, 
+                                "text": "Let them waste their time. I will delegate. How will Branden Know?" },
+                                                              {  "speaker": "Player (Internally)", "at": 34500, "ms": 4000, 
+                                "text": "How will Branden Know? I will be careful and use them where he cannot see me." },
+              {  "speaker": "Player (Internally)", "at": 38500, "ms": 3600,   "text": "Time to collect those AIs and head to MSL to do this project." }
             ],
             "concurrent": [
               { "type": "orbit", "center": "player", "radius": 7.5, "startDeg": 20, "endDeg": 55, "height": 4.8, "duration": 12000 },
@@ -10834,90 +10812,6 @@ export const levels = [
         "llm_claude",
         "llm_gemini"
       ]
-    },
-    "sounds": {
-      "sfx": {
-        "chest": {
-          "url": "assets/audio/sfx/chest_open.mp3",
-          "loop": false
-        },
-        "potion": {
-          "url": "assets/audio/sfx/potion.wav",
-          "loop": false
-        },
-        "low-health": {
-          "url": "assets/audio/sfx/low_health.mp3",
-          "loop": false
-        },
-        "branden_sir_knight": {
-          "url": "assets/audio/ambient/branden_sir_knight.mp3",
-          "loop": false
-        },
-        "branden_your_project": {
-          "url": "assets/audio/ambient/branden_your_project.mp3",
-          "loop": false
-        },
-        "branden_the_theme": {
-          "url": "assets/audio/ambient/branden_the_theme.mp3",
-          "loop": false
-        },
-        "branden_which_brings": {
-          "url": "assets/audio/ambient/branden_which_brings.mp3",
-          "loop": false
-        },
-        "branden_an_excellent": {
-          "url": "assets/audio/ambient/branden_an_excellent.mp3",
-          "loop": false
-        },
-        "branded_and_that": {
-          "url": "assets/audio/ambient/branded_and_that.mp3",
-          "loop": false
-        },
-        "alex_3_weeks": {
-          "url": "assets/audio/ambient/alex_3_weeks.mp3",
-          "loop": false
-        },
-        "alex_alright_team": {
-          "url": "assets/audio/ambient/alex_alright_team.mp3",
-          "loop": false
-        },
-        "alex_finally": {
-          "url": "assets/audio/ambient/alex_finally.mp3",
-          "loop": false
-        },
-        "alex_its_done": {
-          "url": "assets/audio/ambient/alex_its_done.mp3",
-          "loop": false
-        },
-        "alex_okay_deadline": {
-          "url": "assets/audio/ambient/alex_okay_deadline.mp3",
-          "loop": false
-        },
-        "alex_okay_okay": {
-          "url": "assets/audio/ambient/alex_okay_okay.mp3",
-          "loop": false
-        },
-        "alex_only_you": {
-          "url": "assets/audio/ambient/alex_only_you.mp3",
-          "loop": false
-        },
-        "alex_time_to": {
-          "url": "assets/audio/ambient/alex_time_to.mp3",
-          "loop": false
-        },
-        "alex_what_are_you": {
-          "url": "assets/audio/ambient/alex_what_are_you.mp3",
-          "loop": false
-        },
-        "alex_what_is": {
-          "url": "assets/audio/ambient/alex_what_is.mp3",
-          "loop": false
-        },
-        "alex_what_the": {
-          "url": "assets/audio/ambient/alex_what_the.mp3",
-          "loop": false
-        }
-      }
     },
     "colliders": [
       {
