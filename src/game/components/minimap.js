@@ -1,12 +1,8 @@
-// src/ui/components/minimap.js
-import * as THREE from 'three';
 import { UIComponent } from '../uiComponent.js';
 
 export class Minimap extends UIComponent {
   constructor(container, props = {}) {
     super(container, props);
-
-    // Root styling
     this.root.className = 'game-minimap';
     this.root.style.position = 'absolute';
     this.root.style.right = props.right || '12px';
@@ -22,7 +18,6 @@ export class Minimap extends UIComponent {
     this.root.style.border = '2px solid rgba(255,255,255,0.3)';
     this.root.style.borderRadius = '4px';
 
-    // Title
     this.title = document.createElement('div');
     this.title.textContent = 'Map';
     this.title.style.textAlign = 'center';
@@ -30,400 +25,181 @@ export class Minimap extends UIComponent {
     this.title.style.fontWeight = 'bold';
     this.root.appendChild(this.title);
 
-    // Canvas
+    // Create canvas for map rendering
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 184;  // inner width (root has padding/border)
+    this.canvas.width = 184;
     this.canvas.height = 160;
     this.canvas.style.width = '100%';
     this.canvas.style.height = 'auto';
     this.canvas.style.imageRendering = 'crisp-edges';
     this.root.appendChild(this.canvas);
-
-    this.ctx = this.canvas.getContext('2d');
-
-    // State
-    this.levelData = null;
-    this.levelAABBs = null; // optional static AABBs by meshName
-    this.bounds = null;
-    this.worldWidth = 1;
-    this.worldHeight = 1;
-    this.baseScale = 1;
-
-    // zoom < 1 shows more world, > 1 zooms in (relative to fitted world)
-    this.zoom = typeof props.zoom === 'number' ? props.zoom : 0.5;
-
-    // Mesh AABB live cache (meshName -> {minX,maxX,minZ,maxZ})
-    this._meshAabbCache = new Map();
-
-    // Debug options
-    this.debug = {
-      showBoundsRect: false,
-      logContributorsOnce: false,
-    };
-
     
-  
+    this.ctx = this.canvas.getContext('2d');
+    
+    // Map state
+    this.levelData = null;
+    this.scale = 1;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.zoom = props.zoom || 0.5; // Zoom level (lower = more zoomed out)
   }
 
-  /* --------------------------
-      Public API
-  --------------------------- */
-
   setLevelData(levelData) {
-    this.levelData = levelData || null;
-    this.levelAABBs = levelData?.meshAABBs || null;
-    this._meshAabbCache.clear();
+    this.levelData = levelData;
+    // Calculate bounds and scale
     this.calculateBounds();
   }
 
-  /* --------------------------
-      Bounds and transforms
-  --------------------------- */
-
   calculateBounds() {
-    const colliders = this.levelData?.colliders;
-    const scene = this._getScene();
-
-    let bounds = null;
-
-    // Do not let these huge, merged meshes define the map extents.
-    // They can still be drawn; we only exclude them from bounds.
-    const NAME_BOUNDS_BLACKLIST = /^(Walls|Floor|Elevated_Ground)$/i;
-
-    // Any single AABB larger than this (X-Z area) is ignored for bounds.
-    const MAX_SINGLE_AREA = 1_000_000;
-
-    const aabbArea = (a) =>
-      a ? Math.max(0, a.maxX - a.minX) * Math.max(0, a.maxZ - a.minZ) : 0;
-
-    // Keep a list for optional one-shot logging
-    const contributors = [];
-
-    if (Array.isArray(colliders)) {
-      for (const collider of colliders) {
-        // Skip completely if explicitly hidden from the minimap
-        if (collider?.minimap === false) continue;
-
-        // New: allow collider to opt out of *bounds* only
-        if (collider?.minimapBounds === false) continue;
-
-        let aabb = null;
-
-        // Box: {position:[x,y,z], size:[w,h,d], rotation:[degX,degY,degZ]?}
-        if (collider?.position && collider?.size) {
-          aabb = this._aabbFromBox(collider.position, collider.size, collider.rotation);
-        }
-        // Mesh by name
-        else if (collider?.type === 'mesh' || collider?.meshName) {
-          aabb = this._aabbFromMeshName(collider.meshName, scene);
-        }
-        // Sphere
-        else if (collider?.type === 'sphere' && collider?.position && typeof collider.radius === 'number') {
-          aabb = this._aabbFromSphere(collider.position, collider.radius);
-        }
-        // Cylinder
-        else if (collider?.type === 'cylinder' && collider?.position && typeof collider.radius === 'number') {
-          aabb = this._aabbFromCylinder(collider.position, collider.radius, collider.height ?? 0);
-        }
-
-        if (!aabb) continue;
-
-        // Exclude by name from contributing to bounds
-        const name = (collider.meshName || '').toString();
-        if (NAME_BOUNDS_BLACKLIST.test(name)) continue;
-
-        // Exclude absurdly large pieces from bounds
-        if (aabbArea(aabb) > MAX_SINGLE_AREA) continue;
-
-        contributors.push({ id: collider.id, name, aabb });
-        bounds = this._mergeAABB(bounds, aabb);
-      }
+    if (!this.levelData || !this.levelData.colliders) return;
+    
+    let minX = Infinity, maxX = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    
+    // Find level bounds from colliders
+    for (const collider of this.levelData.colliders) {
+      if (!collider.position || !collider.size) continue;
+      const [x, y, z] = collider.position;
+      const [w, h, d] = collider.size;
+      
+      minX = Math.min(minX, x - w/2);
+      maxX = Math.max(maxX, x + w/2);
+      minZ = Math.min(minZ, z - d/2);
+      maxZ = Math.max(maxZ, z + d/2);
     }
-
-    // Fallback if nothing contributed
-    if (!bounds) {
-      const box = scene ? new THREE.Box3().setFromObject(scene) : null;
-      if (box && isFinite(box.min.x) && isFinite(box.min.z)) {
-        bounds = { minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z };
-      } else {
-        bounds = { minX: -50, maxX: 50, minZ: -50, maxZ: 50 };
-      }
-    }
-
-    this.bounds = bounds;
-    this.worldWidth = Math.max(1e-3, bounds.maxX - bounds.minX);
-    this.worldHeight = Math.max(1e-3, bounds.maxZ - bounds.minZ);
-
-    // Fit whole world in canvas with padding
+    
+    this.bounds = { minX, maxX, minZ, maxZ };
+    this.worldWidth = maxX - minX;
+    this.worldHeight = maxZ - minZ;
+    
+    // Calculate scale to fit map in canvas
     const padding = 10;
     const scaleX = (this.canvas.width - padding * 2) / this.worldWidth;
     const scaleY = (this.canvas.height - padding * 2) / this.worldHeight;
-    this.baseScale = Math.max(1e-6, Math.min(scaleX, scaleY));
-
-    if (this.debug.logContributorsOnce) {
-      this.debug.logContributorsOnce = false;
-      const list = contributors
-        .slice()
-        .sort((a, b) => (a.aabb.minX - b.aabb.minX) || (a.aabb.minZ - b.aabb.minZ))
-        .map(c => `${c.id || '?'} -> ${c.name || '(box/sphere)'} [${c.aabb.minX.toFixed(1)}, ${c.aabb.minZ.toFixed(1)} – ${c.aabb.maxX.toFixed(1)}, ${c.aabb.maxZ.toFixed(1)}]`);
-      console.log('[Minimap] Bounds contributors:', list);
-      console.log('[Minimap] Final bounds:', this.bounds);
-    }
+    this.baseScale = Math.min(scaleX, scaleY);
   }
 
   worldToMap(x, z, playerX, playerZ) {
     if (!this.bounds) return { x: 0, y: 0 };
-    const s = this.baseScale * this.zoom;
-    const relX = (x - playerX) * s;
-    const relZ = (z - playerZ) * s;
+    
+    // Calculate position relative to player (so player is always centered)
+    const relX = (x - playerX) * this.baseScale * this.zoom;
+    const relZ = (z - playerZ) * this.baseScale * this.zoom;
+    
     return {
       x: this.canvas.width / 2 + relX,
       y: this.canvas.height / 2 + relZ
     };
   }
 
-  /* --------------------------
-      Update and draw
-  --------------------------- */
-
   update(delta, ctx) {
     if (!ctx) return;
-
     const player = ctx.playerModel;
-    if (!player?.position) return;
-
-    // Allow live scene access for mesh AABBs
-    const scene = ctx.game?.scene || this._getScene();
-
+    if (!player || !player.position) return;
+    
     const playerX = player.position.x;
     const playerZ = player.position.z;
-
-    // Clear
+    
+    // Clear canvas
     this.ctx.fillStyle = 'rgba(20, 20, 30, 1)';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Optional: draw overall fitted bounds rectangle for debugging
-    if (this.debug.showBoundsRect && this.bounds) {
-      const tl = this.worldToMap(this.bounds.minX, this.bounds.minZ, playerX, playerZ);
-      const br = this.worldToMap(this.bounds.maxX, this.bounds.maxZ, playerX, playerZ);
-      this.ctx.strokeStyle = '#00ffff';
-      this.ctx.lineWidth = 1;
-      this.ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
-    }
-
-    // Colliders (draw everything that is not minimap:false)
-    if (Array.isArray(this.levelData?.colliders)) {
+    
+    if (!this.levelData) return;
+    
+    // Draw colliders (level geometry)
+    if (this.levelData.colliders) {
       for (const collider of this.levelData.colliders) {
-        if (collider?.minimap === false) continue;
-        this._drawCollider(collider, playerX, playerZ, scene);
+        if (!collider.position || !collider.size) continue;
+        
+        const [x, y, z] = collider.position;
+        const [w, h, d] = collider.size;
+        
+        const topLeft = this.worldToMap(x - w/2, z - d/2, playerX, playerZ);
+        const bottomRight = this.worldToMap(x + w/2, z + d/2, playerX, playerZ);
+        
+        const mapW = bottomRight.x - topLeft.x;
+        const mapH = bottomRight.y - topLeft.y;
+        
+        // Only draw if visible on minimap
+        if (topLeft.x > this.canvas.width || bottomRight.x < 0 || 
+            topLeft.y > this.canvas.height || bottomRight.y < 0) {
+          continue;
+        }
+        
+        // Color based on material type
+        if (collider.materialType === 'wall') {
+          this.ctx.fillStyle = 'rgba(100, 100, 120, 0.8)';
+        } else if (collider.materialType === 'ground') {
+          this.ctx.fillStyle = 'rgba(60, 70, 80, 0.6)';
+        } else {
+          this.ctx.fillStyle = 'rgba(80, 80, 100, 0.7)';
+        }
+        
+        this.ctx.fillRect(topLeft.x, topLeft.y, mapW, mapH);
+        
+        // Draw border for walls
+        if (collider.materialType === 'wall') {
+          this.ctx.strokeStyle = 'rgba(150, 150, 170, 0.5)';
+          this.ctx.lineWidth = 1;
+          this.ctx.strokeRect(topLeft.x, topLeft.y, mapW, mapH);
+        }
       }
     }
-
-    // Enemies
-    if (Array.isArray(ctx.enemies)) {
+    
+    // Draw enemies if available
+    if (ctx.enemies && Array.isArray(ctx.enemies)) {
       this.ctx.fillStyle = '#ff4444';
       for (const enemy of ctx.enemies) {
-        const p = (typeof enemy?.getMinimapPosition === 'function'
-                    ? enemy.getMinimapPosition()
-                    : (enemy?.mesh?.position || enemy?.body?.position));
-        if (!p) continue;
-        const mp = this.worldToMap(p.x, p.z, playerX, playerZ);
-        if (this._onScreen(mp.x, mp.y)) {
-          this.ctx.beginPath();
-          this.ctx.arc(mp.x, mp.y, 4, 0, Math.PI * 2);
-          this.ctx.fill();
-          this.ctx.strokeStyle = '#ffffff';
-          this.ctx.lineWidth = 1;
-          this.ctx.stroke();
+        if (enemy.mesh && enemy.mesh.position) {
+          const enemyPos = this.worldToMap(enemy.mesh.position.x, enemy.mesh.position.z, playerX, playerZ);
+          // Only draw if visible
+          if (enemyPos.x >= 0 && enemyPos.x <= this.canvas.width &&
+              enemyPos.y >= 0 && enemyPos.y <= this.canvas.height) {
+            this.ctx.beginPath();
+            this.ctx.arc(enemyPos.x, enemyPos.y, 4, 0, Math.PI * 2);
+            this.ctx.fill();
+            // White outline for visibility
+            this.ctx.strokeStyle = '#ffffff';
+            this.ctx.lineWidth = 1;
+            this.ctx.stroke();
+          }
         }
       }
     }
-
-    // Collectibles
-    if (Array.isArray(ctx.collectibles)) {
+    
+    // Draw collectibles if available
+    if (ctx.collectibles && Array.isArray(ctx.collectibles)) {
       this.ctx.fillStyle = '#ffaa00';
-      for (const col of ctx.collectibles) {
-        const p = col?.mesh?.position;
-        if (!p) continue;
-        const mp = this.worldToMap(p.x, p.z, playerX, playerZ);
-        if (this._onScreen(mp.x, mp.y)) {
-          this.ctx.beginPath();
-          this.ctx.arc(mp.x, mp.y, 3, 0, Math.PI * 2);
-          this.ctx.fill();
-          this.ctx.strokeStyle = '#ffffff';
-          this.ctx.lineWidth = 1;
-          this.ctx.stroke();
+      for (const collectible of ctx.collectibles) {
+        if (collectible.mesh && collectible.mesh.position) {
+          const collectiblePos = this.worldToMap(collectible.mesh.position.x, collectible.mesh.position.z, playerX, playerZ);
+          // Only draw if visible
+          if (collectiblePos.x >= 0 && collectiblePos.x <= this.canvas.width &&
+              collectiblePos.y >= 0 && collectiblePos.y <= this.canvas.height) {
+            this.ctx.beginPath();
+            this.ctx.arc(collectiblePos.x, collectiblePos.y, 3, 0, Math.PI * 2);
+            this.ctx.fill();
+            // White outline for visibility
+            this.ctx.strokeStyle = '#ffffff';
+            this.ctx.lineWidth = 1;
+            this.ctx.stroke();
+          }
         }
       }
     }
-
-    // Platforms (only if you passed ctx.platforms)
-if (Array.isArray(ctx.platforms)) {
-  this.ctx.strokeStyle = 'rgba(44, 50, 60, 1)';
-  this.ctx.lineWidth = 2;
-  const scene = ctx.game?.scene || this._getScene();
-  for (const p of ctx.platforms) {
-    const obj = p?.mesh || p;       // support either shape
-    if (!obj) continue;
-    const box = new THREE.Box3().setFromObject(obj);
-    const tl = this.worldToMap(box.min.x, box.min.z, playerX, playerZ);
-    const br = this.worldToMap(box.max.x, box.max.z, playerX, playerZ);
-    const w = br.x - tl.x, h = br.y - tl.y;
-    if (this._onScreen(tl.x + w * 0.5, tl.y + h * 0.5)) {
-      this.ctx.strokeRect(tl.x, tl.y, w, h);
-    }
-  }
-}
-
-
-    // Player dot at center
-    const cx = this.canvas.width / 2;
-    const cy = this.canvas.height / 2;
+    
+    // Draw player (always centered)
+    const playerPos = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
+    
+    // Draw player as green circle
     this.ctx.fillStyle = '#00ff00';
     this.ctx.beginPath();
-    this.ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    this.ctx.arc(playerPos.x, playerPos.y, 6, 0, Math.PI * 2);
     this.ctx.fill();
+    
+    // Player outline
     this.ctx.strokeStyle = '#ffffff';
     this.ctx.lineWidth = 2;
     this.ctx.stroke();
-  }
-
-  /* --------------------------
-      Drawing helpers
-  --------------------------- */
-
-  _drawCollider(collider, playerX, playerZ, scene) {
-    let a = null;
-
-    if (collider?.position && collider?.size) {
-      a = this._aabbFromBox(collider.position, collider.size, collider.rotation);
-    } else if (collider?.type === 'mesh' || collider?.meshName) {
-      a = this._aabbFromMeshName(collider.meshName, scene);
-    } else if (collider?.type === 'sphere' && collider?.position && typeof collider.radius === 'number') {
-      a = this._aabbFromSphere(collider.position, collider.radius);
-    } else if (collider?.type === 'cylinder' && collider?.position && typeof collider.radius === 'number') {
-      a = this._aabbFromCylinder(collider.position, collider.radius, collider.height ?? 0);
-    }
-
-    if (!a) return;
-
-    const tl = this.worldToMap(a.minX, a.minZ, playerX, playerZ);
-    const br = this.worldToMap(a.maxX, a.maxZ, playerX, playerZ);
-    const w = br.x - tl.x;
-    const h = br.y - tl.y;
-
-    if (tl.x > this.canvas.width || br.x < 0 || tl.y > this.canvas.height || br.y < 0) return;
-
-    const kind = collider?.materialType || collider?.type || 'other';
-    if (kind === 'wall') {
-      this.ctx.fillStyle = 'rgba(100, 100, 120, 0.8)';
-      this.ctx.fillRect(tl.x, tl.y, w, h);
-      this.ctx.strokeStyle = 'rgba(150, 150, 170, 0.5)';
-      this.ctx.lineWidth = 1;
-      this.ctx.strokeRect(tl.x, tl.y, w, h);
-    } else if (kind === 'ground') {
-      this.ctx.fillStyle = 'rgba(60, 70, 80, 0.6)';
-      this.ctx.fillRect(tl.x, tl.y, w, h);
-    } else {
-      this.ctx.fillStyle = 'rgba(80, 80, 100, 0.7)';
-      this.ctx.fillRect(tl.x, tl.y, w, h);
-    }
-  }
-
-  _onScreen(x, y) {
-    return x >= 0 && x <= this.canvas.width && y >= 0 && y <= this.canvas.height;
-  }
-
-  /* --------------------------
-      AABB helpers
-  --------------------------- */
-
-  _aabbFromBox(position, size, rotation) {
-    // Rotation-aware XZ AABB (rotation around Y in degrees)
-    const [x, , z] = position;
-    const [w, , d] = size;
-    const yaw = ((rotation?.[1] ?? 0) * Math.PI) / 180; // degrees → radians (Y)
-
-    const hw = w / 2, hd = d / 2;
-    const corners = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]];
-
-    const c = Math.cos(yaw), s = Math.sin(yaw);
-    let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-
-    for (const [cx, cz] of corners) {
-      const rx = cx * c - cz * s + x;
-      const rz = cx * s + cz * c + z;
-      if (rx < minX) minX = rx; if (rx > maxX) maxX = rx;
-      if (rz < minZ) minZ = rz; if (rz > maxZ) maxZ = rz;
-    }
-    return { minX, maxX, minZ, maxZ };
-  }
-
-  _aabbFromSphere(position, radius) {
-    const [x, , z] = position;
-    const r = Math.abs(radius);
-    return { minX: x - r, maxX: x + r, minZ: z - r, maxZ: z + r };
-  }
-
-  _aabbFromCylinder(position, radius /* height unused */, /* height */) {
-    const [x, , z] = position;
-    const r = Math.abs(radius);
-    return { minX: x - r, maxX: x + r, minZ: z - r, maxZ: z + r };
-  }
-
-  _mergeAABB(a, b) {
-    if (!b) return a || null;
-    if (!a) return { ...b };
-    return {
-      minX: Math.min(a.minX, b.minX),
-      maxX: Math.max(a.maxX, b.maxX),
-      minZ: Math.min(a.minZ, b.minZ),
-      maxZ: Math.max(a.maxZ, b.maxZ)
-    };
-  }
-
-  /* --------------------------
-      Mesh AABB (live, cached)
-  --------------------------- */
-
-  _aabbFromMeshName(meshName, scene) {
-    // Prefer live scene Box3 so scale/rotation are correct
-    const live = this._aabbFromSceneMesh(meshName, scene);
-    if (live) return live;
-
-    // Fallback to static precomputed AABBs provided in level data
-    if (!meshName || !this.levelAABBs) return null;
-    const entry = this.levelAABBs[meshName];
-    if (!entry?.position || !entry?.size) return null;
-    return this._aabbFromBox(entry.position, entry.size, entry.rotation);
-  }
-
-  _aabbFromSceneMesh(meshName, scene) {
-    
-    if (!meshName || !scene) return null;
-
-    const obj = scene.getObjectByName(meshName);
-    if (!obj) return null;
-
-    const box = new THREE.Box3().setFromObject(obj); // world space
-    if (!box || !isFinite(box.min.x) || !isFinite(box.min.z)) return null;
-
-    return { minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z };
-  }
-
-  _getScene() {
-    // Fallback hook if ctx.game.scene was not provided
-    return (typeof window !== 'undefined' && window.game && window.game.scene)
-      ? window.game.scene
-      : null;
-  }
-
-  /* --------------------------
-      Optional utilities
-  --------------------------- */
-
-  // Call once to print which colliders defined bounds and the final numbers.
-  logBoundsContributorsNextUpdate() {
-    this.debug.logContributorsOnce = true;
   }
 }
