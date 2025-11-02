@@ -15,7 +15,7 @@ export class LobberBossEnemy extends EnemyBase {
   // Collider dimensions: base size (14.130, 6.520, 13.355) / scale 3.5 = (4.037, 1.863, 3.816)
   colliderSize: options.colliderSize ?? [4.037, 1.863, 3.816],
       modelUrl: options.modelUrl || 'assets/enemies/lobber_boss/lobber.gltf',
-      scale: options.scale ?? 1.0,
+      scale: 2.5, // Hardcoded 2.5x scale for boss
       ...options
     };
 
@@ -23,6 +23,7 @@ export class LobberBossEnemy extends EnemyBase {
 
     this.enemyType = 'lobber_boss';
     this.isBoss = true;
+    this.game = options.game || null;
 
     // Behavior ranges
     this.detectRange = options.detectRange ?? 20.0;
@@ -69,8 +70,8 @@ _createPhysicsBody() {
   shape.offset = new CANNON.Vec3(0, size[1] / 2, 0);
 
   const body = new CANNON.Body({
-    mass: 0,
-    type: CANNON.Body.KINEMATIC,
+    mass: 0, // Static body - won't move or fall
+    type: CANNON.Body.STATIC,
     material: this.physicsWorld.materials.enemy
   });
   body.addShape(shape);
@@ -239,10 +240,17 @@ _createPhysicsBody() {
     } catch {}
   }
 
-  // Override onDeath to play one of the death animations
+  // Override onDeath to play one of the death animations and dispatch events
   onDeath() {
     if (!this.alive) return;
-    this.alive = false;
+    
+    // Call super first to let base class handle health bar hiding and basic cleanup
+    super.onDeath();
+    
+    // Keep mesh visible for death animation (base class hides it, but we want to show death pose)
+    if (this.mesh) {
+      this.mesh.visible = true;
+    }
 
     // Play any available death animation
     const choices = [this.animations.die1, this.animations.die2, this.animations.die3].filter(Boolean);
@@ -261,21 +269,33 @@ _createPhysicsBody() {
       } catch {}
     }
 
-    // Hide health bar
-    if (this.healthBarGroup) {
-      this.healthBarGroup.visible = false;
-      this.healthBarVisible = false;
-    }
-
-    // Keep the mesh for the death pose; remove physics
-    if (this.body) {
-      this.physicsWorld.removeBody(this.body);
-      this.body = null;
-    }
-
     // Dispatch boss defeat event for game flow
     try {
-      window.dispatchEvent(new CustomEvent('boss:defeated', { detail: { type: 'lobber_boss' } }));
-    } catch {}
+      const levelId = this.game?.currentLevelId || this.game?.levelId || null;
+
+      // Prefer your in-game event bus if present
+      if (this.game?.events?.emit) {
+        this.game.events.emit('boss:defeated', { levelId });
+      }
+
+      // Also broadcast a DOM event as a safe fallback
+      window.dispatchEvent(new CustomEvent('boss:defeated', { detail: { type: 'lobber_boss', levelId } }));
+    } catch (e) {
+      console.warn('Could not dispatch boss:defeated event:', e);
+    }
+
+    // Dispatch level complete event
+    if (this.game?.events?.emit) {
+      this.game.events.emit('level:complete', { levelId: this.game?.level?.data?.id });
+    } else {
+      window.dispatchEvent(new CustomEvent('level:complete', {
+        detail: { levelId: this.game?.level?.data?.id }
+      }));
+    }
+  }
+
+  dispose() {
+    super.dispose();
+    console.log(`💀 Lobber boss enemy disposed`);
   }
 }
