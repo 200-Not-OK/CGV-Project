@@ -288,15 +288,33 @@ const totalTextures = 2; // Only 2 layers for better FPS
     // Only rotate skybox for Level 3, not for other levels
     const currentLevelId = scene?.userData?.levelId;
     if (currentLevelId !== 'level3') {
+      // For non-Level3, make sure HDR skyboxes are hidden
+      if (skyboxMeshFar) skyboxMeshFar.visible = false;
+      if (skyboxMeshNear) skyboxMeshNear.visible = false;
       return; // Stop rotation for all levels except Level 3
     }
     
-    if (skyboxMeshFar && skyboxMeshNear) {
-      skyboxRotation += skyboxRotationSpeed * (deltaTime / 16.67);
-      
-      // Level 3 slow constant rotation
-      skyboxMeshFar.rotation.y = Math.PI + skyboxRotation;
-      skyboxMeshNear.rotation.y = Math.PI + 2.5 + (skyboxRotation * 0.75);
+    // For Level 3, use the light preset skybox (not HDR)
+    // Only rotate if the 'light' preset is active
+    const sky = scene?.userData?.sky;
+    const lightPreset = sky?.light;
+    
+    if (lightPreset && lightPreset.group) {
+      // Light preset is active, don't show HDR meshes
+      if (skyboxMeshFar) skyboxMeshFar.visible = false;
+      if (skyboxMeshNear) skyboxMeshNear.visible = false;
+      // Light preset rotation is handled in shaderSystem.js
+    } else {
+      // No light preset, show HDR with rotation
+      if (skyboxMeshFar && skyboxMeshNear) {
+        skyboxMeshFar.visible = true;
+        skyboxMeshNear.visible = true;
+        skyboxRotation += skyboxRotationSpeed * (deltaTime / 16.67);
+        
+        // Level 3 slow constant rotation
+        skyboxMeshFar.rotation.y = Math.PI + skyboxRotation;
+        skyboxMeshNear.rotation.y = Math.PI + 2.5 + (skyboxRotation * 0.75);
+      }
     }
   };
 
@@ -340,8 +358,14 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
   }
   // Remove custom HDR sky meshes if switching to simple color
   if (sky) {
-    if (sky.far && sky.far.parent) scene.remove(sky.far);
-    if (sky.near && sky.near.parent) scene.remove(sky.near);
+    if (sky.far && sky.far.parent) {
+      sky.far.visible = false;
+      scene.remove(sky.far);
+    }
+    if (sky.near && sky.near.parent) {
+      sky.near.visible = false;
+      scene.remove(sky.near);
+    }
     if (sky.light) {
       const lightEntry = sky.light;
       if (lightEntry.group && lightEntry.group.parent) {
