@@ -1368,6 +1368,12 @@ if (staleLow) staleLow.remove();
   // Position player at start position from level data
   const start = this.level.data.startPosition;
   this.player.setPosition(new THREE.Vector3(...start));
+  
+  // Ensure position is set correctly by applying it again after a brief delay
+  // This handles the case where the player model is still loading
+  await new Promise(resolve => setTimeout(resolve, 50));
+  this.player.setPosition(new THREE.Vector3(...start));
+  
   if (this.player?.mesh) this.player.mesh.visible = true;
 this.setPaused(false); // make sure we aren't paused
 if (this.input?.setEnabled) this.input.setEnabled(true);

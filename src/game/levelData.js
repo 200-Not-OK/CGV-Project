@@ -1,18 +1,18 @@
 // Data-driven level definitions with GLTF geometry loading
 export const levels = [
-      {
+    {
     "id": "hub",
     "name": "Hub Level",
     "order": 1,
     "gltfUrl": "assets/levels/Hub/Hub.glb",
     "startPosition": [
-      0,
-      15,
-      8
+      36,
+      2,
+      -3
     ],
     "ui": [
       "hud",
-      "fps",
+      "fps"
     ],
     "lights": [
       {
@@ -22,31 +22,41 @@ export const levels = [
         }
       }
     ],
-    "triggers": {
-      "levelLoaders": [
-        {
-          "id": "trigger_level1",
-          "position": [-1.5, 1.21, 28.5],
-          "radius": 3,
-          "poiText": "Level 1",
-          "targetLevel": "level1"
-        },
-        {
-          "id": "trigger_level2",
-          "position": [20.25, 1.21, 8.25],
-          "radius": 3,
-          "poiText": "Level 2",
-          "targetLevel": "level2"
-        },
-        {
-          "id": "trigger_level3",
-          "position": [-22.75, 1.21, 7.5],
-          "radius": 3,
-          "poiText": "Level 3",
-          "targetLevel": "level3"
-        }
-      ]
-    },
+    "triggers": [
+      {
+        "id": "trigger_level1",
+        "position": [
+          -1.5,
+          1.21,
+          28.5
+        ],
+        "radius": 3,
+        "poiText": "Level 1",
+        "targetLevel": "level1"
+      },
+      {
+        "id": "trigger_level2",
+        "position": [
+          20.25,
+          1.21,
+          8.25
+        ],
+        "radius": 3,
+        "poiText": "Level 2",
+        "targetLevel": "level2"
+      },
+      {
+        "id": "trigger_level3",
+        "position": [
+          -22.75,
+          1.21,
+          7.5
+        ],
+        "radius": 3,
+        "poiText": "Level 3",
+        "targetLevel": "level3"
+      }
+    ],
     "sounds": {
       "music": {
         "intro-theme": {
@@ -69,7 +79,1019 @@ export const levels = [
         }
       },
       "playMusic": "intro-theme"
-    }
+    },
+    "enemies": [],
+    "npcs": [],
+    "colliders": [
+      {
+        "id": "collider_135",
+        "type": "box",
+        "position": [
+          11.22,
+          3.91,
+          -8.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          70.4,
+          7.7,
+          1.4
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_137",
+        "type": "box",
+        "position": [
+          -24.63,
+          3.91,
+          -12.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.3,
+          7.7,
+          8.1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_138",
+        "type": "box",
+        "position": [
+          -44.95,
+          3.91,
+          -16.56
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          40,
+          7.7,
+          1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_139",
+        "type": "box",
+        "position": [
+          -64.94,
+          3.91,
+          -8.69
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.4,
+          7.7,
+          15.2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_140",
+        "type": "box",
+        "position": [
+          -60.87,
+          3.91,
+          -0.69
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          7.7,
+          1.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_141",
+        "type": "box",
+        "position": [
+          -56.73,
+          3.91,
+          7.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.8,
+          7.7,
+          17
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_142",
+        "type": "box",
+        "position": [
+          -44.61,
+          3.91,
+          15.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          23.7,
+          7.7,
+          1.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_143",
+        "type": "box",
+        "position": [
+          -33.12,
+          3.91,
+          7.44
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.7,
+          7.7,
+          15.8
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_144",
+        "type": "box",
+        "position": [
+          -25,
+          3.91,
+          7.44
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.9,
+          7.7,
+          15.48
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_145",
+        "type": "box",
+        "position": [
+          -29.05,
+          3.91,
+          -0.55
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8.9,
+          7.7,
+          1.1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_146",
+        "type": "box",
+        "position": [
+          -16.94,
+          3.91,
+          15.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          15.5,
+          7.7,
+          1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_147",
+        "type": "box",
+        "position": [
+          -8.93,
+          3.91,
+          23.28
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.9,
+          7.7,
+          17.4
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_148",
+        "type": "box",
+        "position": [
+          6.88,
+          3.91,
+          23.28
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.9,
+          7.7,
+          17.4
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_149",
+        "type": "box",
+        "position": [
+          14.84,
+          3.91,
+          15.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          16.8,
+          7.7,
+          0.9
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_150",
+        "type": "box",
+        "position": [
+          22.96,
+          3.91,
+          14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.7,
+          7.7,
+          34.2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_151",
+        "type": "box",
+        "position": [
+          22.96,
+          3.91,
+          -7.29
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.7,
+          7.7,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_152",
+        "type": "box",
+        "position": [
+          22.96,
+          6.47,
+          -4.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.7,
+          2.6,
+          3.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_153",
+        "type": "box",
+        "position": [
+          46.77,
+          3.91,
+          11.32
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.1,
+          7.7,
+          39.4
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_154",
+        "type": "box",
+        "position": [
+          34.81,
+          3.91,
+          30.45
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          24.1,
+          7.7,
+          0.8
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_155",
+        "type": "box",
+        "position": [
+          -1.09,
+          3.91,
+          31.22
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          15.5,
+          7.7,
+          0.7
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_156",
+        "type": "box",
+        "position": [
+          34.97,
+          2.7,
+          -6.62
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          5.3,
+          7.4,
+          1.9
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_157",
+        "type": "box",
+        "position": [
+          24.92,
+          2.7,
+          19.43
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.9,
+          7.4,
+          5.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_158",
+        "type": "box",
+        "position": [
+          44.99,
+          2.7,
+          19.33
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.9,
+          7.4,
+          5.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_159",
+        "type": "box",
+        "position": [
+          45.03,
+          2.7,
+          3.23
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.9,
+          7.4,
+          5.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_160",
+        "type": "box",
+        "position": [
+          34.83,
+          1.02,
+          8.43
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          10.7,
+          1.9,
+          10.9
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_161",
+        "type": "box",
+        "position": [
+          34.93,
+          0.92,
+          24.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          12.1,
+          2,
+          6.7
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_162",
+        "type": "box",
+        "position": [
+          -0.98,
+          4.22,
+          7.18
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          7.5,
+          8.5,
+          7.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_163",
+        "type": "box",
+        "position": [
+          -44.96,
+          3.97,
+          3.28
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8.4,
+          7.8,
+          8.1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_164",
+        "type": "box",
+        "position": [
+          -29.03,
+          2.92,
+          -13.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          3,
+          5.7,
+          3.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_165",
+        "type": "box",
+        "position": [
+          -36.93,
+          2.92,
+          -13.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          3,
+          5.7,
+          3.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_166",
+        "type": "box",
+        "position": [
+          -44.84,
+          2.92,
+          -13.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          3,
+          5.7,
+          3.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_167",
+        "type": "box",
+        "position": [
+          -52.9,
+          2.92,
+          -13.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          3,
+          5.7,
+          3.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_168",
+        "type": "box",
+        "position": [
+          -62.21,
+          3.32,
+          -13.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2.4,
+          6.5,
+          2.7
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_169",
+        "type": "box",
+        "position": [
+          -55.9,
+          1.74,
+          -15.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          3.4,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_170",
+        "type": "box",
+        "position": [
+          -47.69,
+          1.74,
+          -15.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          3.4,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_171",
+        "type": "box",
+        "position": [
+          -39.6,
+          1.74,
+          -15.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          3.4,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_172",
+        "type": "box",
+        "position": [
+          -31.75,
+          1.74,
+          -15.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          3.4,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_174",
+        "type": "box",
+        "position": [
+          -19.28,
+          1.29,
+          12.6
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_175",
+        "type": "box",
+        "position": [
+          -19.28,
+          1.29,
+          2.73
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_176",
+        "type": "box",
+        "position": [
+          -22.53,
+          1.29,
+          7.69
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          2.5,
+          8
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_177",
+        "type": "box",
+        "position": [
+          3.89,
+          1.29,
+          25.26
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          2.5,
+          8
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_178",
+        "type": "box",
+        "position": [
+          -5.99,
+          1.29,
+          25.26
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          2.5,
+          8
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_179",
+        "type": "box",
+        "position": [
+          -1.06,
+          1.29,
+          28.59
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_180",
+        "type": "box",
+        "position": [
+          17.03,
+          1.29,
+          2.7
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_181",
+        "type": "box",
+        "position": [
+          17.03,
+          1.29,
+          12.56
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_182",
+        "type": "box",
+        "position": [
+          20.53,
+          1.29,
+          7.6
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          2.5,
+          8
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_183",
+        "type": "box",
+        "position": [
+          -6.22,
+          0.01,
+          7.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          120,
+          0.1,
+          50
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_184",
+        "type": "box",
+        "position": [
+          -6.22,
+          8.14,
+          7.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          120,
+          0.1,
+          50
+        ],
+        "materialType": "ground",
+        "meshName": null
+      }
+    ]
   },
   {
     "id": "level1",

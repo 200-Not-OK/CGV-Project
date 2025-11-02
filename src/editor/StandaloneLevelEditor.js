@@ -668,9 +668,20 @@ this.collectibleMeshes = [];
       this._createInteractiveObjectVisuals();
     }
 
-    // Load triggers
+    // Load triggers (handle both array and nested object formats)
     if (this.currentLevel.triggers) {
-      this.triggers = [...this.currentLevel.triggers];
+      if (Array.isArray(this.currentLevel.triggers)) {
+        // Old format: flat array
+        this.triggers = [...this.currentLevel.triggers];
+      } else if (typeof this.currentLevel.triggers === 'object') {
+        // New format: nested object with categories (e.g., levelLoaders, etc.)
+        this.triggers = [];
+        for (const category in this.currentLevel.triggers) {
+          if (Array.isArray(this.currentLevel.triggers[category])) {
+            this.triggers.push(...this.currentLevel.triggers[category]);
+          }
+        }
+      }
       this._createTriggerConnectionVisuals();
     }
 
@@ -684,6 +695,22 @@ this.collectibleMeshes = [];
     if (this.currentLevel.placeableBlocks) {
       this.placeableBlocks = [...this.currentLevel.placeableBlocks];
       this._createPlaceableBlockVisuals();
+    }
+
+    // Load collectibles
+    if (this.currentLevel.collectibles) {
+      this.collectibles = {
+        chests: this.currentLevel.collectibles.chests || [],
+        apples: this.currentLevel.collectibles.apples || [],
+        potions: this.currentLevel.collectibles.potions || [],
+        coins: this.currentLevel.collectibles.coins || [],
+        gems: this.currentLevel.collectibles.gems || [],
+        keys: this.currentLevel.collectibles.keys || [],
+        llm_gpt: this.currentLevel.collectibles.llm_gpt || [],
+        llm_claude: this.currentLevel.collectibles.llm_claude || [],
+        llm_gemini: this.currentLevel.collectibles.llm_gemini || []
+      };
+      this._createCollectibleVisuals();
     }
 
     // Extract patrol points from enemies and NPCs
@@ -2009,12 +2036,12 @@ if (addCollectibleBtn) {
   <div id="collectible-stats" style="margin: 10px 0; padding: 8px; background: #222; border-radius: 3px;">
     <h5>Collectibles Summary</h5>
     <div style="font-size: 10px;">
-      <div>📦 Chests: ${this.collectibles.chests.length}</div>
-      <div>🍎 Apples: ${this.collectibles.apples.length}</div>
-      <div>🧪 Potions: ${this.collectibles.potions.length}</div>
-      <div>🤖 LLM GPT: ${this.collectibles.llm_gpt.length}</div>
-      <div>🤖 LLM Claude: ${this.collectibles.llm_claude.length}</div>
-      <div>🤖 LLM Gemini: ${this.collectibles.llm_gemini.length}</div>
+      <div>📦 Chests: ${(this.collectibles?.chests || []).length}</div>
+      <div>🍎 Apples: ${(this.collectibles?.apples || []).length}</div>
+      <div>🧪 Potions: ${(this.collectibles?.potions || []).length}</div>
+      <div>🤖 LLM GPT: ${(this.collectibles?.llm_gpt || []).length}</div>
+      <div>🤖 LLM Claude: ${(this.collectibles?.llm_claude || []).length}</div>
+      <div>🤖 LLM Gemini: ${(this.collectibles?.llm_gemini || []).length}</div>
     </div>
   </div>
   
@@ -3437,7 +3464,7 @@ _getCollectiblesListHTML() {
   let html = '';
   
   // Chests
-  this.collectibles.chests.forEach((chest, index) => {
+  (this.collectibles?.chests || []).forEach((chest, index) => {
     html += `
       <div class="item-row" data-type="chest" data-index="${index}">
         <strong>📦 Chest</strong> (${chest.contents})<br>
@@ -3448,7 +3475,7 @@ _getCollectiblesListHTML() {
   });
   
   // Apples
-  this.collectibles.apples.forEach((apple, index) => {
+  (this.collectibles?.apples || []).forEach((apple, index) => {
     html += `
       <div class="item-row" data-type="apple" data-index="${index}">
         <strong>🍎 Apple</strong><br>
@@ -3459,7 +3486,7 @@ _getCollectiblesListHTML() {
   });
   
   // Potions
-  this.collectibles.potions.forEach((potion, index) => {
+  (this.collectibles?.potions || []).forEach((potion, index) => {
     html += `
       <div class="item-row" data-type="potion" data-index="${index}">
         <strong>🧪 Potion</strong><br>
@@ -3470,7 +3497,7 @@ _getCollectiblesListHTML() {
   });
   
   // LLM GPT (no visuals, but still in list)
-  this.collectibles.llm_gpt.forEach((llm, index) => {
+  (this.collectibles?.llm_gpt || []).forEach((llm, index) => {
     html += `
       <div class="item-row" data-type="llm_gpt" data-index="${index}">
         <strong>🤖 LLM GPT</strong> (invisible)<br>
@@ -3481,7 +3508,7 @@ _getCollectiblesListHTML() {
   });
   
   // LLM Claude (no visuals, but still in list)
-  this.collectibles.llm_claude.forEach((llm, index) => {
+  (this.collectibles?.llm_claude || []).forEach((llm, index) => {
     html += `
       <div class="item-row" data-type="llm_claude" data-index="${index}">
         <strong>🤖 LLM Claude</strong> (invisible)<br>
@@ -3492,7 +3519,7 @@ _getCollectiblesListHTML() {
   });
   
   // LLM Gemini (no visuals, but still in list)
-  this.collectibles.llm_gemini.forEach((llm, index) => {
+  (this.collectibles?.llm_gemini || []).forEach((llm, index) => {
     html += `
       <div class="item-row" data-type="llm_gemini" data-index="${index}">
         <strong>🤖 LLM Gemini</strong> (invisible)<br>
