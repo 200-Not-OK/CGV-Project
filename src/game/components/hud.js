@@ -20,7 +20,6 @@ export class HUD extends UIComponent {
 
     this._createElements();
     this.setProps(props);
-    this.removeLowHealthEffect();
   }
 
   _createElements() {
@@ -298,54 +297,43 @@ export class HUD extends UIComponent {
   }
 
   addLowHealthEffect() {
-    // Avoid duplicates from previous HUD instances
-    if (document.getElementById('low-health-overlay')) return;
-
     if (!this.lowHealthOverlay) {
-      const overlay = document.createElement('div');
-      overlay.id = 'low-health-overlay'; // <-- fixed id
-      overlay.style.cssText = `
+      this.lowHealthOverlay = document.createElement('div');
+      this.lowHealthOverlay.style.cssText = `
         position: fixed;
-        top: 0; left: 0;
-        width: 100vw; height: 100vh;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
         pointer-events: none;
         z-index: 1;
         box-shadow: inset 0 0 100px rgba(220, 38, 38, 0.3);
         animation: lowHealthScreen 1.5s infinite ease-in-out;
       `;
-
-      // Ensure the animation is present
+      
+      // Add screen effect animation
       if (!document.getElementById('screen-effects')) {
         const style = document.createElement('style');
         style.id = 'screen-effects';
         style.textContent = `
           @keyframes lowHealthScreen {
             0%, 100% { box-shadow: inset 0 0 100px rgba(220, 38, 38, 0.2); }
-            50%      { box-shadow: inset 0 0 100px rgba(220, 38, 38, 0.4); }
+            50% { box-shadow: inset 0 0 100px rgba(220, 38, 38, 0.4); }
           }
         `;
         document.head.appendChild(style);
       }
-
-      document.body.appendChild(overlay);
-      this.lowHealthOverlay = overlay;
+      
+      document.body.appendChild(this.lowHealthOverlay);
     }
   }
 
-
-removeLowHealthEffect() {
-  // Remove the instance reference if present
-  if (this.lowHealthOverlay && this.lowHealthOverlay.parentNode) {
-    this.lowHealthOverlay.parentNode.removeChild(this.lowHealthOverlay);
+  removeLowHealthEffect() {
+    if (this.lowHealthOverlay) {
+      document.body.removeChild(this.lowHealthOverlay);
+      this.lowHealthOverlay = null;
+    }
   }
-  // Also remove any stale overlay left by previous HUD instances
-  const stale = document.getElementById('low-health-overlay');
-  if (stale && stale.parentNode) {
-    stale.parentNode.removeChild(stale);
-  }
-  this.lowHealthOverlay = null;
-}
-
 
   updateCollectibles(apples, totalApples, potions) {
     // Update apples with color coding
