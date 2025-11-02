@@ -8,6 +8,7 @@ import { CinematicsManager } from './cinematicsManager.js';
 import { Platform } from './components/Platform.js';
 import { InteractiveObjectManager } from './InteractiveObjectManager.js';
 import { PlaceableBlockManager } from './PlaceableBlockManager.js';
+import { TriggerManager } from './TriggerManager.js';
 import { Level0Controller } from './levels/Level0Controller.js';
 import { createBinaryScreenFromExactCorners } from './lights/binaryScreen.js';
 import { createLightningBorder } from './lights/lightningBorder.js';
@@ -27,6 +28,7 @@ export class Level {
     this.physicsWorld = physicsWorld;
     this.data = levelData || {};
     this.game = game;
+    this.meshAABBs = {}; 
 
     this.showColliders = !!showColliders;
 
@@ -47,6 +49,7 @@ export class Level {
     this.npcManager = new NpcManager(this.scene, this.physicsWorld);
     this.interactiveObjectManager = new InteractiveObjectManager(this.scene, this.physicsWorld, null);
     this.placeableBlockManager = new PlaceableBlockManager(this.scene, this.physicsWorld);
+    this.triggerManager = new TriggerManager(this.scene, this.physicsWorld, game);
 
     // Cinematics
     this.cinematicsManager = new CinematicsManager(this.game);
@@ -238,6 +241,10 @@ export class Level {
     console.log('📦 Loading placeable blocks...');
     await this._loadPlaceableBlocks();
 
+    // 4.97) Triggers
+    console.log('📍 Loading triggers...');
+    this._loadTriggers();
+
     // 5) Cinematics
     if (this.data.cinematics) {
       console.log('🎬 Loading cinematics...');
@@ -258,6 +265,41 @@ export class Level {
     }
 
     console.log(`✅ Level build complete. GLTF loaded: ${this.gltfLoaded}. Visual objects: ${this.objects.length}. Physics bodies: ${this.physicsBodies.length}. Platforms: ${this.platforms.length}`);
+
+    this.meshAABBs = this._computeMeshAABBs(this.gltfScene ?? this.scene);
+  }
+
+
+  _computeMeshAABBs(root) {
+    const map = {};
+    if (!root) return map;
+    const tmpBox = new THREE.Box3();
+    const tmpSize = new THREE.Vector3();
+    const tmpCenter = new THREE.Vector3();
+    root.traverse((obj) => {
+      if (!obj?.isMesh) return;
+      // require a name so levelData.meshName can reference it
+      if (!obj.name) return;
+      try {
+        obj.updateWorldMatrix(true, true);
+        tmpBox.setFromObject(obj);
+        tmpBox.getSize(tmpSize);
+        tmpBox.getCenter(tmpCenter);
+        // guard against empty boxes
+        if (!isFinite(tmpSize.x) || !isFinite(tmpSize.y) || !isFinite(tmpSize.z)) return;
+        map[obj.name] = {
+          position: [tmpCenter.x, tmpCenter.y, tmpCenter.z],
+          size: [tmpSize.x, tmpSize.y, tmpSize.z]
+        };
+      } catch (_) {
+        /* ignore */
+      }
+    });
+    return map;
+  }
+
+  getMeshAABBs() {
+    return this.meshAABBs || {};
   }
 
   applyQualitySettings(qualitySettings = null) {
@@ -265,6 +307,7 @@ export class Level {
     this.qualitySettings = resolved;
     this._applyBinaryScreensForQuality(resolved);
     this._applyLightningBordersForQuality(resolved);
+    this.meshAABBs = this._computeMeshAABBs(this.gltfScene ?? this.scene);
   }
 
   _applyBinaryScreensForQuality(qualitySettings) {
@@ -886,6 +929,19 @@ export class Level {
     }
   }
 
+  _loadTriggers() {
+    if (!this.data.triggers || this.data.triggers.length === 0) {
+      console.log('ℹ️ No triggers defined in level data');
+      return;
+    }
+
+    try {
+      this.triggerManager.loadTriggers(this.data.triggers);
+    } catch (e) {
+      console.warn('❌ Failed to load triggers', e);
+    }
+  }
+
   _findMeshByName(meshName) {
     let foundMesh = null;
     
@@ -1156,6 +1212,11 @@ export class Level {
     if (this.interactiveObjectManager) {
       this.interactiveObjectManager.update(delta);
     }
+
+    // Update triggers
+    if (this.triggerManager && player) {
+      this.triggerManager.update(player.mesh.position, this.game?.input);
+    }
     
     // Update animated meshes
     this._updateAnimatedMeshes(delta);
@@ -1261,6 +1322,7 @@ export class Level {
       if (this.cinematicsManager) { this.cinematicsManager.dispose?.(); this.cinematicsManager = null; }
       if (this.interactiveObjectManager) { this.interactiveObjectManager.dispose?.(); this.interactiveObjectManager = null; }
       if (this.placeableBlockManager) { this.placeableBlockManager.dispose?.(); this.placeableBlockManager = null; }
+      if (this.triggerManager) { this.triggerManager.disposeTriggers?.(); this.triggerManager = null; }
       
       // Level-specific controllers
       if (this.controller) { this.controller.dispose?.(); this.controller = null; }

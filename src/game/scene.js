@@ -644,6 +644,33 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
   }
 }
 
+export function disposeSky(scene, renderer) {
+  try {
+    const sky = scene.userData?.sky;
+    if (sky?.mesh) {
+      scene.remove(sky.mesh);
+      if (sky.mesh.geometry) sky.mesh.geometry.dispose();
+      if (sky.mesh.material) sky.mesh.material.dispose();
+    }
+    if (sky?.envTexture && sky.envTexture.dispose) {
+      sky.envTexture.dispose();
+    }
+    scene.userData.sky = null;
+
+    // Clear environment/reflection map
+    if (scene.environment && scene.environment.dispose) {
+      scene.environment.dispose();
+    }
+    scene.environment = null;
+
+    // Optional sanity: tighten renderer to flush cached envs
+    renderer?.initTexture && renderer.initTexture(null);
+  } catch (e) {
+    console.warn('disposeSky failed:', e);
+  }
+}
+
+
 /**
  * Load a panorama sky texture for a level
  * Supports both HDR (.hdr) and regular image formats (.jpg, .png, etc.)
@@ -702,10 +729,13 @@ export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
           scene.background = texture; // Use background instead of geometry to avoid artifacts
           sky.panorama = null;
           sky.preset = 'panorama';
+          // Store HDR textures for graphics settings toggle
+          scene.userData.hdrBackground = texture;
           if (options.useAsEnvironment !== false && renderer) {
             const pmremGenerator = new THREE.PMREMGenerator(renderer);
             pmremGenerator.compileEquirectangularShader();
-            scene.environment = pmremGenerator.fromEquirectangular(texture).texture;
+            scene.userData.hdrEnvironment = pmremGenerator.fromEquirectangular(texture).texture;
+            scene.environment = scene.userData.hdrEnvironment;
             pmremGenerator.dispose();
           }
           console.log('🌌 Panorama sky (HDR) set as scene.background:', textureUrl);
@@ -727,10 +757,13 @@ export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
           scene.background = texture; // Use background instead of geometry to avoid artifacts
           sky.panorama = null;
           sky.preset = 'panorama';
+          // Store image textures for graphics settings toggle
+          scene.userData.hdrBackground = texture;
           if (options.useAsEnvironment !== false && renderer) {
             const pmremGenerator = new THREE.PMREMGenerator(renderer);
             pmremGenerator.compileEquirectangularShader();
-            scene.environment = pmremGenerator.fromEquirectangular(texture).texture;
+            scene.userData.hdrEnvironment = pmremGenerator.fromEquirectangular(texture).texture;
+            scene.environment = scene.userData.hdrEnvironment;
             pmremGenerator.dispose();
           }
           console.log('🌌 Panorama sky (image) set as scene.background:', textureUrl);

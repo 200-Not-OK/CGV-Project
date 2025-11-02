@@ -9,6 +9,7 @@ export class Player {
     this.physicsWorld = physicsWorld;
     this.game = game;
     
+    
     // Player settings
     this.speed = options.speed ?? 8;
   this.jumpStrength = options.jumpStrength ?? 24; // Increased further for higher platformer-style jumps
@@ -75,6 +76,9 @@ export class Player {
     this.rotationSyncStrength = 0.1;   // Rotation slerp blending (0-1, lower = smoother)
     
     // Combat system
+    // ↓ Add this in the constructor after health setup
+    this.alive = true; // single-shot death guard
+
     this.maxHealth = 100;
     this.health = this.maxHealth;
     this.isAttacking = false;
@@ -191,8 +195,13 @@ export class Player {
           const sizeVec = new THREE.Vector3();
           bbox.getSize(sizeVec);
           
-          // Create physics body now that we know the model dimensions
-          this.createPhysicsBody(sizeVec);
+          // Store model size for later physics body creation (defer until level load)
+          this.originalModelSize = {
+            x: sizeVec.x,
+            y: sizeVec.y,
+            z: sizeVec.z
+          };
+          console.log('🎨 Player model loaded, physics body will be created on level load');
           
           // Center model horizontally and vertically
           const centerX = (bbox.max.x + bbox.min.x) / 2;
@@ -367,8 +376,8 @@ export class Player {
             }
             this.mesh.add(fallbackMesh);
             
-            // Create physics body for fallback geometry
-            this.createPhysicsBody(new THREE.Vector3(1, 2, 1));
+            // Store fallback size - physics body will be created on level load
+            this.originalModelSize = { x: 1, y: 2, z: 1 };
           }
         }
       );
@@ -379,6 +388,11 @@ export class Player {
   }
 
   createPhysicsBody(modelSize) {
+    // If body already exists, remove it from physics world
+    if (this.body) {
+      this.physicsWorld.world.removeBody(this.body);
+    }
+    
     // Store original model size for future collider updates
     this.originalModelSize = {
       x: modelSize.x,
@@ -401,7 +415,7 @@ export class Player {
     // Create body with two spheres for capsule-like collision
     this.body = new CANNON.Body({
       mass: 80, // Realistic human mass
-      position: new CANNON.Vec3(0, 10, 0),
+      position: new CANNON.Vec3(0, 0, 0), // Position will be set by loadLevel
       material: playerMaterial,
       linearDamping: 0.06, // Slightly more damping to calm micro-bounces
       angularDamping: 1.0, // Prevent rotation
@@ -666,9 +680,13 @@ export class Player {
       }
     }
 
-    if (this.health <= 0) {
-      this.onDeath();
+    if (this.health <= 0 && this.alive) {
+      this.alive = false;              // guard: only trigger once
+      this.onDeath();                  // play anim etc.
+      // Tell the game a death happened
+      try { window.dispatchEvent(new Event('player:death')); } catch (e) {}
     }
+
 
     return this.health;
   }
@@ -681,10 +699,12 @@ export class Player {
 
   onDeath() {
     console.log('💀 Player has died!');
+    // this.lockMovement?.('Death');
     // Play death animation if available
     if (this.actions.death) {
       this.playAction(this.actions.death, 0.2, false);
     }
+    
     // Can trigger game over, respawn, etc.
   }
 

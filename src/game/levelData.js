@@ -1,5 +1,1098 @@
 // Data-driven level definitions with GLTF geometry loading
 export const levels = [
+    {
+    "id": "hub",
+    "name": "Hub Level",
+    "order": 1,
+    "gltfUrl": "assets/levels/Hub/Hub.glb",
+    "startPosition": [
+      36,
+      2,
+      -3
+    ],
+    "ui": [
+      "hud",
+      "fps"
+    ],
+    "lights": [
+      {
+        "key": "HubLights",
+        "props": {
+          "intensity": 0.8
+        }
+      }
+    ],
+    "triggers": [
+      {
+        "id": "trigger_level1",
+        "position": [
+          -1.5,
+          1.21,
+          23.5
+        ],
+        "radius": 3,
+        "poiText": "Level 1",
+        "targetLevel": "level1"
+      },
+      {
+        "id": "trigger_level2",
+        "position": [
+          16.25,
+          1.21,
+          8.25
+        ],
+        "radius": 3,
+        "poiText": "Level 2",
+        "targetLevel": "level2"
+      },
+      {
+        "id": "trigger_level3",
+        "position": [
+          -16.75,
+          1.21,
+          7.5
+        ],
+        "radius": 3,
+        "poiText": "Level 3",
+        "targetLevel": "level3"
+      }
+    ],
+    "sounds": {
+      "music": {
+        "intro-theme": {
+          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
+          "loop": true
+        }
+      },
+      "sfx": {
+        "sword": {
+          "url": "assets/audio/sfx/sword.mp3",
+          "loop": false
+        },
+        "walk": {
+          "url": "assets/audio/sfx/walking.mp3",
+          "loop": false
+        },
+        "jump": {
+          "url": "assets/audio/sfx/jumping.wav",
+          "loop": false
+        }
+      },
+      "playMusic": "intro-theme"
+    },
+    "enemies": [],
+    "npcs": [],
+    "colliders": [
+      {
+        "id": "collider_135",
+        "type": "box",
+        "position": [
+          11.22,
+          3.91,
+          -8.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          70.4,
+          7.7,
+          1.4
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_137",
+        "type": "box",
+        "position": [
+          -24.63,
+          3.91,
+          -12.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.3,
+          7.7,
+          8.1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_138",
+        "type": "box",
+        "position": [
+          -44.95,
+          3.91,
+          -16.56
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          40,
+          7.7,
+          1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_139",
+        "type": "box",
+        "position": [
+          -64.94,
+          3.91,
+          -8.69
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.4,
+          7.7,
+          15.2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_140",
+        "type": "box",
+        "position": [
+          -60.87,
+          3.91,
+          -0.69
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          7.7,
+          1.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_141",
+        "type": "box",
+        "position": [
+          -56.73,
+          3.91,
+          7.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.8,
+          7.7,
+          17
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_142",
+        "type": "box",
+        "position": [
+          -44.61,
+          3.91,
+          15.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          23.7,
+          7.7,
+          1.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_143",
+        "type": "box",
+        "position": [
+          -33.12,
+          3.91,
+          7.44
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.7,
+          7.7,
+          15.8
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_144",
+        "type": "box",
+        "position": [
+          -25,
+          3.91,
+          7.44
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.9,
+          7.7,
+          15.48
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_145",
+        "type": "box",
+        "position": [
+          -29.05,
+          3.91,
+          -0.55
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8.9,
+          7.7,
+          1.1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_146",
+        "type": "box",
+        "position": [
+          -16.94,
+          3.91,
+          15.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          15.5,
+          7.7,
+          1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_147",
+        "type": "box",
+        "position": [
+          -8.93,
+          3.91,
+          23.28
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.9,
+          7.7,
+          17.4
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_148",
+        "type": "box",
+        "position": [
+          6.88,
+          3.91,
+          23.28
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.9,
+          7.7,
+          17.4
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_149",
+        "type": "box",
+        "position": [
+          14.84,
+          3.91,
+          15.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          16.8,
+          7.7,
+          0.9
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_150",
+        "type": "box",
+        "position": [
+          22.96,
+          3.91,
+          14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.7,
+          7.7,
+          34.2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_151",
+        "type": "box",
+        "position": [
+          22.96,
+          3.91,
+          -7.29
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.7,
+          7.7,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_152",
+        "type": "box",
+        "position": [
+          22.96,
+          6.47,
+          -4.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0.7,
+          2.6,
+          3.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_153",
+        "type": "box",
+        "position": [
+          46.77,
+          3.91,
+          11.32
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.1,
+          7.7,
+          39.4
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_154",
+        "type": "box",
+        "position": [
+          34.81,
+          3.91,
+          30.45
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          24.1,
+          7.7,
+          0.8
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_155",
+        "type": "box",
+        "position": [
+          -1.09,
+          3.91,
+          31.22
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          15.5,
+          7.7,
+          0.7
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_156",
+        "type": "box",
+        "position": [
+          34.97,
+          2.7,
+          -6.62
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          5.3,
+          7.4,
+          1.9
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_157",
+        "type": "box",
+        "position": [
+          24.92,
+          2.7,
+          19.43
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.9,
+          7.4,
+          5.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_158",
+        "type": "box",
+        "position": [
+          44.99,
+          2.7,
+          19.33
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.9,
+          7.4,
+          5.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_159",
+        "type": "box",
+        "position": [
+          45.03,
+          2.7,
+          3.23
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          1.9,
+          7.4,
+          5.3
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_160",
+        "type": "box",
+        "position": [
+          34.83,
+          1.02,
+          8.43
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          10.7,
+          1.9,
+          10.9
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_161",
+        "type": "box",
+        "position": [
+          34.93,
+          0.92,
+          24.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          12.1,
+          2,
+          6.7
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_162",
+        "type": "box",
+        "position": [
+          -0.98,
+          4.22,
+          7.18
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          7.5,
+          8.5,
+          7.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_163",
+        "type": "box",
+        "position": [
+          -44.96,
+          3.97,
+          3.28
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8.4,
+          7.8,
+          8.1
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_164",
+        "type": "box",
+        "position": [
+          -29.03,
+          2.92,
+          -13.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          3,
+          5.7,
+          3.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_165",
+        "type": "box",
+        "position": [
+          -36.93,
+          2.92,
+          -13.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          3,
+          5.7,
+          3.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_166",
+        "type": "box",
+        "position": [
+          -44.84,
+          2.92,
+          -13.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          3,
+          5.7,
+          3.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_167",
+        "type": "box",
+        "position": [
+          -52.9,
+          2.92,
+          -13.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          3,
+          5.7,
+          3.5
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_168",
+        "type": "box",
+        "position": [
+          -62.21,
+          3.32,
+          -13.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2.4,
+          6.5,
+          2.7
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_169",
+        "type": "box",
+        "position": [
+          -55.9,
+          1.74,
+          -15.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          3.4,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_170",
+        "type": "box",
+        "position": [
+          -47.69,
+          1.74,
+          -15.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          3.4,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_171",
+        "type": "box",
+        "position": [
+          -39.6,
+          1.74,
+          -15.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          3.4,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_172",
+        "type": "box",
+        "position": [
+          -31.75,
+          1.74,
+          -15.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          3.4,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_174",
+        "type": "box",
+        "position": [
+          -19.28,
+          1.29,
+          12.6
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_175",
+        "type": "box",
+        "position": [
+          -19.28,
+          1.29,
+          2.73
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_176",
+        "type": "box",
+        "position": [
+          -22.53,
+          1.29,
+          7.69
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          2.5,
+          8
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_177",
+        "type": "box",
+        "position": [
+          3.89,
+          1.29,
+          25.26
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          2.5,
+          8
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_178",
+        "type": "box",
+        "position": [
+          -5.99,
+          1.29,
+          25.26
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          2.5,
+          8
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_179",
+        "type": "box",
+        "position": [
+          -1.06,
+          1.29,
+          28.59
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_180",
+        "type": "box",
+        "position": [
+          17.03,
+          1.29,
+          2.7
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_181",
+        "type": "box",
+        "position": [
+          17.03,
+          1.29,
+          12.56
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          8,
+          2.5,
+          2
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_182",
+        "type": "box",
+        "position": [
+          20.53,
+          1.29,
+          7.6
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          2,
+          2.5,
+          8
+        ],
+        "materialType": "wall",
+        "meshName": null
+      },
+      {
+        "id": "collider_183",
+        "type": "box",
+        "position": [
+          -6.22,
+          0.01,
+          7.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          120,
+          0.1,
+          50
+        ],
+        "materialType": "ground",
+        "meshName": null
+      },
+      {
+        "id": "collider_184",
+        "type": "box",
+        "position": [
+          -6.22,
+          8.14,
+          7.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          120,
+          0.1,
+          50
+        ],
+        "materialType": "ground",
+        "meshName": null
+      }
+    ]
+  },
   {
     "id": "level1",
     "name": "Level 1",
@@ -11,7 +1104,7 @@ export const levels = [
       12,
       0
     ],
-    "lights": [
+ "lights": [
       {
         "key": "TechLights",
         "props": {
@@ -451,7 +1544,41 @@ export const levels = [
       {
         "type": "minimap",
         "config": {
-          "zoom": 1.6
+          "zoom": 5.0,
+        }
+      },
+      {
+        "type": "collectibles",
+        "config": {
+          "applesTotal": 7,
+          "potionsStart": 5,
+          "pointsPerApple": 200,
+          "collectibleTypes": {
+            "apples": {
+              "icon": "🍏",
+              "name": "Green Apples",
+              "color": "#51cf66",
+              "completeColor": "#ffd43b",
+              "completeIcon": "👑"
+            },
+            "potions": {
+              "icon": "🧪",
+              "name": "Health Potions",
+              "color": "#9775fa",
+              "lowColor": "#ffd43b",
+              "emptyColor": "#ff6b6b",
+              "emptyIcon": "💔"
+            }
+          }
+        }
+      }
+    ],
+    "ui": [
+      "hud",
+            {
+        "type": "minimap",
+        "config": {
+          "zoom": 5,
         }
       },
       {
@@ -490,22 +1617,9 @@ export const levels = [
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 29
-      },
-      {
-        "type": "crawler",
-        "position": [
-          -433.3701164361692,
-          20.113008499145515,
-          257.2399163600309
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 30
       },
       {
         "type": "crawler",
@@ -516,90 +1630,51 @@ export const levels = [
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 31
       },
       {
         "type": "crawler",
         "position": [
-          305.7826403923883,
-          20.027040152890915,
-          24.799900322963577
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 48
-      },
-      {
-        "type": "crawler",
-        "position": [
-          287.3535217944027,
-          20.95949363708496,
+          300.3535217944027,
+          20.959493637084961,
           25.74999179342933
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 49
       },
       {
         "type": "crawler",
         "position": [
-          310.305134317053,
-          20.452826949471497,
-          122.30921272529777
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 50
-      },
-      {
-        "type": "crawler",
-        "position": [
-          291.14432266074226,
+          300.14432266074226,
           20.509656195663787,
           121.99517109242474
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 51
       },
       {
         "type": "crawler",
         "position": [
-          319.51625700361103,
-          20.486056737854557,
-          274.04694288437554
-        ],
-        "modelUrl": "assets/enemies/crawler/Crawler.gltf",
-        "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
-        "id": 52
-      },
-      {
-        "type": "crawler",
-        "position": [
-          274.64077936042764,
+          285.64077936042764,
           20.741729019436846,
           277.2949816103393
         ],
         "modelUrl": "assets/enemies/crawler/Crawler.gltf",
         "patrolPoints": [],
-        "speed": 1.5,
-        "chaseRange": 5,
+        "speed": 8,
+        "chaseRange": 10,
         "id": 53
       }
     ],
-    "npcs": [
+"npcs": [
       {
         "type": "yellow_bot",
         "position": [
@@ -818,7 +1893,7 @@ export const levels = [
         }
       }
     ],
-    "colliders": [
+ "colliders": [
       {
         "id": "collider_2",
         "type": "box",
@@ -879,17 +1954,17 @@ export const levels = [
         ],
         "materialType": "wall"
       },
-      {
-        "id": "collider_5",
-        "type": "mesh",
-        "meshName": "Walls",
-        "materialType": "wall",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
-      },
+    //   {
+    //     "id": "collider_5",
+    //     "type": "mesh",
+    //     "meshName": "Walls",
+    //     "materialType": "wall",
+    //     "rotation": [
+    //       0,
+    //       0,
+    //       0
+    //     ]
+    //   },
       {
         "id": "collider_6",
         "type": "mesh",
@@ -1196,7 +2271,7 @@ export const levels = [
         "materialType": "ground"
       }
     ],
-    "placeableBlocks": [
+     "placeableBlocks": [
       {
         "id": "block_2",
         "type": "placeableBlock",
@@ -1441,267 +2516,8 @@ export const levels = [
       "keys": []
     }
   },
-  {
-    "id": "intro",
-    "name": "Intro Level",
-    "order": 1,
-    "gltfUrl": "assets/levels/introLevel.gltf",
-    "startPosition": [
-      0,
-      15,
-      8
-    ],
-    "ui": [
-      "hud",
-      "fps",
-      {
-        "type": "collectibles",
-        "config": {
-          "applesTotal": 12,
-          "potionsStart": 2,
-          "pointsPerApple": 150,
-          "collectibleTypes": {
-            "apples": {
-              "icon": "🍎",
-              "name": "Red Apples",
-              "color": "#ff6b6b",
-              "completeColor": "#51cf66",
-              "completeIcon": "🏆"
-            },
-            "potions": {
-              "icon": "🧪",
-              "name": "Health Potions",
-              "color": "#4dabf7",
-              "lowColor": "#ffd43b",
-              "emptyColor": "#ff6b6b",
-              "emptyIcon": "💔"
-            }
-          }
-        }
-      }
-    ],
-    "lights": [
-      {
-        "key": "BasicLights",
-        "props": {
-          "intensity": 0.1
-        }
-      }
-    ],
-    "enemies": [
-      {
-        "type": "snake",
-        "position": [
-          -5,
-          0.5,
-          5
-        ],
-        "modelUrl": "assets/enemies/snake/scene.gltf",
-        "patrolPoints": [
-          [
-            -5,
-            1,
-            5,
-            0.3
-          ],
-          [
-            -8,
-            1,
-            8,
-            0.3
-          ],
-          [
-            -3,
-            1,
-            10,
-            0.3
-          ]
-        ],
-        "speed": 8,
-        "chaseRange": 10,
-        "health": 35
-      }
-    ],
-    "colliders": [
-      {
-        "id": "collider_18",
-        "type": "box",
-        "position": [
-          0,
-          2,
-          0
-        ],
-        "size": [
-          11.6,
-          0.1,
-          6
-        ],
-        "rotation": [
-          44,
-          0,
-          0
-        ],
-        "materialType": "ground",
-        "meshName": null
-      },
-      {
-        "id": "collider_10",
-        "type": "box",
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "size": [
-          42.917484283447266,
-          0.5594812631607056,
-          38.855934143066406
-        ],
-        "materialType": "ground",
-        "meshName": "collider_playground"
-      },
-      {
-        "id": "collider_11",
-        "type": "box",
-        "position": [
-          -21.06,
-          3.44,
-          0
-        ],
-        "size": [
-          0.7933826446533203,
-          6.32648104429245,
-          38.855934143066406
-        ],
-        "materialType": "wall",
-        "meshName": "collider_playground001"
-      },
-      {
-        "id": "collider_12",
-        "type": "box",
-        "position": [
-          0,
-          3.44,
-          -19.03
-        ],
-        "size": [
-          42.917484283447266,
-          6.32648104429245,
-          0.7933826446533203
-        ],
-        "materialType": "wall",
-        "meshName": "collider_playground002"
-      },
-      {
-        "id": "collider_13",
-        "type": "box",
-        "position": [
-          0,
-          3.44,
-          19.03
-        ],
-        "size": [
-          42.917484283447266,
-          6.32648104429245,
-          0.7933826446533203
-        ],
-        "materialType": "wall",
-        "meshName": "collider_playground004"
-      },
-      {
-        "id": "collider_14",
-        "type": "box",
-        "position": [
-          21.06,
-          3.44,
-          0
-        ],
-        "size": [
-          0.7933826446533203,
-          6.32648104429245,
-          38.855934143066406
-        ],
-        "materialType": "wall",
-        "meshName": "collider_playground003"
-      }
-    ],
-    "cinematics": {
-      "onLevelStart": {
-        "type": "dialogue",
-        "character": "narrator",
-        "lines": [
-          {
-            "text": "Welcome to the training grounds!",
-            "duration": 3000
-          },
-          {
-            "text": "Use WASD to move and Space to jump.",
-            "duration": 4000
-          }
-        ]
-      },
-      "onEnemyDefeat": {
-        "type": "cutscene",
-        "cameraPath": [
-          {
-            "position": [
-              10,
-              5,
-              10
-            ],
-            "lookAt": [
-              0,
-              0,
-              0
-            ],
-            "duration": 2000
-          }
-        ],
-        "dialogue": [
-          {
-            "character": "player",
-            "text": "One down, more to go!",
-            "duration": 2000
-          }
-        ]
-      }
-    },
-    "sounds": {
-      "music": {
-        "intro-theme": {
-          "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
-          "loop": true
-        }
-      },
-      "sfx": {
-        "sword": {
-          "url": "assets/audio/sfx/sword.mp3",
-          "loop": false
-        },
-        "chest": {
-          "url": "assets/audio/sfx/chest_open.mp3",
-          "loop": false
-        },
-        "snake": {
-          "url": "assets/audio/sfx/snake.wav",
-          "loop": false
-        },
-        "potion": {
-          "url": "assets/audio/sfx/potion.wav",
-          "loop": false
-        },
-        "walk": {
-          "url": "assets/audio/sfx/walking.mp3",
-          "loop": false
-        },
-        "jump": {
-          "url": "assets/audio/sfx/jumping.wav",
-          "loop": false
-        }
-      },
-      "playMusic": "intro-theme"
-    }
-  },
+
+
   {
     "id": "level2",
     "name": "Level 2: The Serpent's Labyrinth",
@@ -3462,7 +4278,7 @@ export const levels = [
             -35
           ]
         ],
-        "health": 500,
+        "health": 250,
         "speed": 3,
         "chaseRange": 12
       }
@@ -9839,7 +10655,7 @@ export const levels = [
     "gltfUrl": "assets/levels/Level3/level3.gltf",
     "startPosition": [
       -4,
-      15,
+      6,
       0
     ],
     "lights": [
@@ -9908,6 +10724,65 @@ export const levels = [
         "color": 7048739
       }
     ],
+        "cinematics": {
+  "onLevelStart": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "fadeOut", "ms": 300 },
+      { "type": "cut", "position": [-1, 7, -3], "lookAt": "player", "fov": 55 },
+      { "type": "fadeIn", "ms": 600 },
+      {
+        "type": "playVO",
+        "vo": "vo-l3-intro",
+        "fallbackMs": 23000,
+        "block": true,
+        "segments": [
+          { "at": 0, "ms": 2100, "text": "BRANDEN: Sir Knight. Eyes up. Yes, it is me—your favorite lecturer, now a giant floating eyeball. I am keeping an eye on you." },
+          { "at": 2400, "ms": 1800, "text": "PLAYER: Only you would turn into a sky-orb for office hours." },
+          { "at": 4400, "ms": 3900, "text": "BRANDEN: Your project theme is “Consequence.” You have three weeks. It counts for the majority of your grade. No use of AI." },
+          { "at": 8600, "ms": 2400, "text": "BRANDEN: Good luck. I will be watching." },
+          { "at": 11200, "ms": 4600, "text": "PLAYER (INTERNAL MONOLOGUE): Three weeks. Consequence. Everyone else is already panicking. But not me." },
+          { "at": 16200, "ms": 4300, "text": "PLAYER (INTERNAL MONOLOGUE): I have the ultimate advantage—ChatGPT, Claude, Gemini. I will be careful." },
+          { "at": 20700, "ms": 3000, "text": "BRANDEN: Time to collect those AIs and head to MSL." }
+        ],
+        "concurrent": [
+          { "type": "orbit", "center": "player", "radius": 7.5, "startDeg": 20, "endDeg": 55, "height": 4.8, "duration": 12000 },
+          { "type": "wait", "ms": 6200 },
+          { "type": "orbit", "center": [72, 9, -100], "radius": 2, "startDeg": 0, "endDeg": 60, "height": 4, "duration": 6000 }
+        ]
+      },
+      { "type": "fadeOut", "ms": 250 },
+      { "type": "releaseCamera" },
+      { "type": "fadeIn", "ms": 250 }
+    ]
+  },
+
+  // Small rumble beat before teleport to level1_glitched
+  "l3_p2_glitch": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "rumble", "sfx": "rumbling", "seconds": 1.2, "magnitude": 0.18, "volume": 0.8 },
+      { "type": "caption", "text": "System link engaged… hold steady.", "ms": 900 },
+      { "type": "fadeOut", "ms": 220 },
+      { "type": "releaseCamera" }
+    ]
+  },
+
+  // Finale already triggered by game.js when level3 completes
+  "l3_p4_graduation": {
+    "sequence": [
+      { "type": "takeCamera" },
+      { "type": "fadeOut", "ms": 200 },
+      { "type": "cut", "position": [32, 6, -24], "lookAt": [30, 2, -25], "fov": 60 },
+      { "type": "fadeIn", "ms": 300 },
+      { "type": "caption", "text": "YOUR WORK IS YOUR SIGNATURE. MAKE IT LEGENDARY.", "ms": 2600 },
+      { "type": "orbit", "center": "player", "radius": 6, "startDeg": 10, "endDeg": 70, "height": 3.2, "duration": 2500 },
+      { "type": "fadeOut", "ms": 250 },
+      { "type": "releaseCamera" },
+      { "type": "fadeIn", "ms": 250 }
+    ]
+  }
+},
     "computerLocation": {
       "position": [
         72,

@@ -46,6 +46,19 @@ export class EnemyBase {
     this.modelScale = options.scale ?? 1.0;
 
     if (options.modelUrl) this._loadModel(options.modelUrl);
+  
+  
+    this._minimapPos = new THREE.Vector3();
+  }
+
+  getMinimapPosition() {
+    if (this.body && this.body.position) {
+      const p = this.body.position; // likely a CANNON.Vec3
+      this._minimapPos.set(p.x, p.y, p.z);
+      return this._minimapPos;
+    }
+    if (this.mesh && this.mesh.position) return this.mesh.position;
+    return null;
   }
 
   _createHealthBar() {

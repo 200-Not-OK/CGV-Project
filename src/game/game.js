@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows, loadPanoramaSky } from './scene.js';
+import { createSceneAndRenderer, setSkyPreset, enforceOnlySunLight, disableAllShadows, loadPanoramaSky, disposeSky } from './scene.js';
 import { InputManager } from './input.js';
 import { Player } from './player.js';
 import { LevelManager } from './levelManager.js';
@@ -17,6 +17,7 @@ import { InteractionPrompt } from './components/interactionPrompt.js';
 import { DeathMenu } from './components/deathMenu.js';
 import { VoiceoverCard } from './components/voiceoverCard.js';
 import { Coordinates } from './components/coordinates.js';
+import { TriggerPrompt } from './components/triggerPrompt.js';
 import { FirstPersonCamera } from './firstPersonCamera.js';
 import { LightManager } from './lightManager.js';
 import * as LightModules from './lights/index.js';
@@ -29,8 +30,15 @@ import { ProximitySoundManager } from './proximitySoundManager.js';
 import { PerformanceMonitor } from './performanceMonitor.js';
 import { initGPUDetector } from './utils/gpuDetector.js';
 import { initQualityControls } from './utils/qualityControls.js';
+import { GraphicsSettings } from './utils/GraphicsSettings.js';
+import { GraphicsSettingsUI } from './components/ui/GraphicsSettingsUI.js';
 import { GlitchManager } from './GlitchManager.js';
 import { ComputerTerminal } from './components/ComputerTerminal.js';
+import { LoadingScreen } from './components/LoadingScreen.js';
+import { SplashScreen } from './components/SplashScreen.js';
+import { MainMenu } from './components/MainMenu.js';
+import { SettingsMenu } from './components/SettingsMenu.js';
+import { GraphicsSettingsMenu } from './components/GraphicsSettingsMenu.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -40,6 +48,8 @@ export class Game {
   constructor() {
     const { scene, renderer, shaderSystem } = createSceneAndRenderer();
     this.scene = scene;
+
+    
     this.renderer = renderer;
     this.shaderSystem = shaderSystem;
 
@@ -61,6 +71,28 @@ export class Game {
     // Apply quality to renderer
     this.renderer.setPixelRatio(this.qualitySettings.pixelRatio);
 
+    // Performance monitoring (early init for graphics settings UI)
+    this.performanceMonitor = new PerformanceMonitor();
+
+    // Initialize Graphics Settings System
+    console.log('🎨 Initializing Graphics Settings...');
+    this.graphicsSettings = new GraphicsSettings(this);
+    this.graphicsSettings.applyAllSettings();
+    
+    // Initialize Graphics Settings UI
+    GraphicsSettingsUI.injectStyles();
+    this.graphicsSettingsUI = new GraphicsSettingsUI(this.graphicsSettings, this.performanceMonitor);
+    this.graphicsSettingsUI.create();
+    
+    // Keyboard shortcut to toggle graphics settings (Shift+G)
+    window.addEventListener('keydown', (e) => {
+      if (e.shiftKey && e.code === 'KeyG') {
+        e.preventDefault();
+        this.graphicsSettingsUI.toggle();
+        console.log('🎨 Graphics Settings UI toggled (Shift+G)');
+      }
+    });
+
     // Initialize physics world with scene for improved collision detection
     this.physicsWorld = new PhysicsWorld(this.scene, {
       useAccurateCollision: false, // Disable Trimesh by default for more reliable collision
@@ -69,16 +101,18 @@ export class Game {
 
     // Input
     this.input = new InputManager(window);
+    this.cinematicLock = false;
 
     // Level system
     this.levelManager = new LevelManager(this.scene, this.physicsWorld, this);
     this.level = null;
 
-    // Performance monitoring
-    this.performanceMonitor = new PerformanceMonitor();
     // Debug: center-screen ray probe (to identify unexpected occluders)
     this._centerProbeEnabled = false;
     this._centerProbeCooldown = 0;
+
+    // Performance monitoring
+    this.performanceMonitor = new PerformanceMonitor();
 
     // Player
     this.player = new Player(this.scene, this.physicsWorld, {
@@ -122,12 +156,26 @@ export class Game {
         this.input.alwaysTrackMouse = true;
       }
     });
-    
+
+    // Death event listener (one-time handler per death)
+    this._handlePlayerDeathBound = () => this._handlePlayerDeath();
+    window.addEventListener('player:death', this._handlePlayerDeathBound);
+
+    window.addEventListener('level:complete', (e) => {
+  const completed = e?.detail?.levelId || this.currentLevelId;
+  if (completed === 'level3') {
+    this.cinematics?.playCinematic?.('l3_p4_graduation');
+  }
+});
+
     // Request pointer lock for third-person/first-person camera when the user clicks
     // Ignore clicks originating from the pause menu so the Resume button's click
     // doesn't accidentally trigger a second request or race with the resume flow.
     window.addEventListener('click', (e) => {
       if (this.pauseMenu && this.pauseMenu.contains && this.pauseMenu.contains(e.target)) return;
+      
+      // Don't request pointer lock if game hasn't started yet (main menu is showing)
+      if (!this.gameStarted) return;
 
       // Resume AudioContext on first user interaction (required by browsers)
       if (this.soundManager && this.soundManager.listener && this.soundManager.listener.context) {
@@ -217,11 +265,42 @@ export class Game {
     this.ui.add('crosshair', Crosshair, { visible: true });
     // Add interaction prompt for chests
     this.ui.add('interactionPrompt', InteractionPrompt, { message: 'to interact' });
+    // Add trigger prompt for level teleporters
+    console.log('📝 Adding TriggerPrompt to UIManager');
+    this.ui.add('triggerPrompt', TriggerPrompt, {});
+    console.log('✅ TriggerPrompt added to UIManager');
+    // Add loading screen
+    this.ui.add('loadingScreen', LoadingScreen, {});
+    console.log('📺 LoadingScreen added to UIManager');
+    // Add splash screen (shown on startup)
+    this.ui.add('splashScreen', SplashScreen, {});
+    console.log('🎨 SplashScreen added to UIManager');
+    // Add main menu
+    this.ui.add('mainMenu', MainMenu, {
+      onStart: () => this._onMainMenuStart(),
+      onSettings: () => this._onMainMenuSettings()
+    });
+    console.log('🎮 MainMenu added to UIManager');
+    // Add settings menu
+    this.ui.add('settingsMenu', SettingsMenu, {
+      onBack: () => this._onSettingsBack(),
+      onOpenAdvancedGraphics: () => this._onOpenAdvancedGraphicsFromSettings()
+    });
+    console.log('⚙️ SettingsMenu added to UIManager');
+    // Add graphics settings menu
+    this.ui.add('graphicsSettingsMenu', GraphicsSettingsMenu, {
+      graphicsSettings: this.graphicsSettings,
+      onBack: () => this._onGraphicsSettingsMenuBack()
+    });
+    console.log('🎨 GraphicsSettingsMenu added to UIManager');
     // Add voiceover card for character dialogues
     this.ui.add('voiceoverCard', VoiceoverCard, {
       characterName: 'Pravesh',
       position: 'left'
     });
+
+    // Game state
+    this.gameStarted = false; // Track if player has started the game from main menu
 
     // Combat system
     this.combatSystem = new CombatSystem(this.scene, this.physicsWorld);
@@ -291,20 +370,28 @@ export class Game {
       }
     });
 
-    // Shader toggle button
-    const toggleShadersBtn = document.getElementById('toggleShadersBtn');
-    if (toggleShadersBtn) {
-      toggleShadersBtn.addEventListener('click', (e) => {
+    // Back to Hub button
+    const backToHubBtn = document.getElementById('backToHubBtn');
+    if (backToHubBtn) backToHubBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      this.setPaused(false);
+      this.loadLevel(0); // Load the hub level (index 0)
+    });
+
+    // Graphics Settings button (from pause menu)
+    const openGraphicsSettingsBtn = document.getElementById('openGraphicsSettingsBtn');
+    if (openGraphicsSettingsBtn) {
+      openGraphicsSettingsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (this.shaderSystem) {
-          const newState = this.shaderSystem.toggleShaders();
-          const statusText = document.getElementById('shaderStatusText');
-          if (statusText) {
-            statusText.textContent = newState ? 'ON' : 'OFF';
-            toggleShadersBtn.style.background = newState ? '#2196F3' : '#ff6b6b';
-          }
-        }
+        // Hide pause menu
+        this.pauseMenu.style.display = 'none';
+        // Show graphics settings with callback to return to pause menu
+        this.graphicsSettingsUI.showFromPauseMenu(() => {
+          // When graphics settings closes, show pause menu again
+          this.pauseMenu.style.display = 'flex';
+        });
       });
     }
 
@@ -325,8 +412,8 @@ export class Game {
 🔍 M - Toggle physics debug visualization  
 🚪 H - Toggle door collision helpers
 ⚔️  B - Toggle combat debug visuals
-� E - Interact with chests and doors
-📊 F - Toggle FPS counter
+📊 F - Toggle FPS counter (hidden by default)
+E - Interact with chests and doors
 ⏸️  ESC - Pause/Resume game
 ========================`);
     }, 1000); // Delay to ensure other startup messages are shown first
@@ -339,12 +426,58 @@ export class Game {
 
   // Initialize the first level asynchronously
   async _initializeLevel() {
-    await this.loadLevel(0);
-    // Apply lights for current level   
-    this.applyLevelLights(this.level?.data);
-
-    // Show level picker shortly after load-in (as requested)
-    setTimeout(() => this._showLevelPicker(), 400);
+    // Show splash screen and simulate asset loading
+    console.log('🎨 Showing splash screen on startup');
+    const splashScreen = this.ui.get('splashScreen');
+    
+    if (splashScreen) {
+      splashScreen.show();
+      
+      // Simulate loading progress with various asset types
+      const assets = [
+        { name: 'Loading level data...', progress: 15 },
+        { name: 'Initializing physics engine...', progress: 30 },
+        { name: 'Loading shaders...', progress: 45 },
+        { name: 'Preparing audio system...', progress: 60 },
+        { name: 'Loading effects...', progress: 75 },
+        { name: 'Finalizing assets...', progress: 90 }
+      ];
+      
+      // Show progress through assets
+      for (const asset of assets) {
+        await new Promise(resolve => {
+          setTimeout(() => {
+            splashScreen.setStatus(asset.name, asset.progress);
+            resolve();
+          }, 300);
+        });
+      }
+      
+      // Final loading step
+      splashScreen.setStatus('Ready!', 100);
+      
+      // Hold on ready screen briefly, then transition to main menu
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Fade out splash screen
+      splashScreen.hide(500);
+      
+      // Wait for fade to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    // Show main menu
+    console.log('🎮 Showing main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    if (mainMenu) {
+      mainMenu.show();
+      this.gameStarted = false;
+    }
+    // Hide crosshair on main menu
+    const crosshair = this.ui.get('crosshair');
+    if (crosshair) {
+      crosshair.setProps({ visible: false });
+    }
   }
   emergencyComputerDebug() {
   console.log('🚨 EMERGENCY COMPUTER DEBUG 🚨');
@@ -407,11 +540,182 @@ debugInteractionPrompt() {
   console.log('🔍 === END DEBUG ===');
 }
 
+  /**
+   * Handle main menu Start button click
+   */
+  async _onMainMenuStart() {
+    console.log('🎮 Starting game from main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    const loadingScreen = this.ui.get('loadingScreen');
+    const crosshair = this.ui.get('crosshair');
+    
+    // Hide main menu
+    if (mainMenu) {
+      mainMenu.hide(300);
+    }
+    
+    // Show loading screen and load hub level
+    if (loadingScreen) {
+      loadingScreen.show();
+      loadingScreen.setStatus('LOADING HUB', 0);
+    }
+    
+    // Load the hub level (index 0)
+    await this.loadLevel(0);
+    this.gameStarted = true;
+    
+    if (loadingScreen) {
+      loadingScreen.hide(500);
+    }
+    
+    // Show crosshair when gameplay starts
+    if (crosshair) {
+      crosshair.setProps({ visible: true });
+    }
+  }
+
+  /**
+   * Handle main menu Settings button click
+   */
+  _onMainMenuSettings() {
+    console.log('⚙️ Opening settings from main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    const settingsMenu = this.ui.get('settingsMenu');
+    const crosshair = this.ui.get('crosshair');
+    
+    if (mainMenu) mainMenu.hide(300);
+    if (settingsMenu) settingsMenu.show();
+    // Hide crosshair when entering settings
+    if (crosshair) {
+      crosshair.setProps({ visible: false });
+    }
+  }
+
+  /**
+   * Handle settings menu Back button click
+   */
+  _onSettingsBack() {
+    console.log('← Back to main menu from settings');
+    const mainMenu = this.ui.get('mainMenu');
+    const settingsMenu = this.ui.get('settingsMenu');
+    const crosshair = this.ui.get('crosshair');
+    
+    if (settingsMenu) settingsMenu.hide(300);
+    if (mainMenu) mainMenu.show();
+    // Hide crosshair when returning to main menu
+    if (crosshair) {
+      crosshair.setProps({ visible: false });
+    }
+  }
+
+  /**
+   * Handle Advanced Graphics Settings button from settings menu
+   */
+  _onOpenAdvancedGraphicsFromSettings() {
+    console.log('🎨 Opening Advanced Graphics Settings Menu from SettingsMenu');
+    
+    // Hide settings menu
+    const settingsMenu = this.ui.get('settingsMenu');
+    if (settingsMenu) {
+      settingsMenu.hide(300);
+    }
+    
+    // Show graphics settings menu after a small delay to avoid race conditions
+    setTimeout(() => {
+      const graphicsSettingsMenu = this.ui.get('graphicsSettingsMenu');
+      if (graphicsSettingsMenu) {
+        console.log('🎨 Showing GraphicsSettingsMenu');
+        graphicsSettingsMenu.show();
+      }
+    }, 100);
+  }
+
+  /**
+   * Handle back button from graphics settings menu
+   */
+  _onGraphicsSettingsMenuBack() {
+    console.log('← Back to settings menu from graphics settings');
+    
+    // Hide graphics settings menu
+    const graphicsSettingsMenu = this.ui.get('graphicsSettingsMenu');
+    if (graphicsSettingsMenu) {
+      graphicsSettingsMenu.hide();
+    }
+    
+    // Show settings menu
+    const settingsMenu = this.ui.get('settingsMenu');
+    if (settingsMenu) {
+      settingsMenu.show();
+    }
+  }
+
+
+_handlePlayerDeath() {
+  // Pause aggressive systems quickly
+  if (this.combatSystem) this.combatSystem.suppressAttacks = true;
+
+  // If you have a level/manager function, freeze all enemies
+  if (this.level?.freezeAllEnemies) this.level.freezeAllEnemies(true);
+
+  // Optional: pause ambient/proximity audio if present
+  try { this.proximitySoundManager?.pause?.(); } catch {}
+
+  // Subtle visual feedback (optional)
+  document.body.style.transition = 'filter .2s ease';
+  document.body.style.filter = 'grayscale(55%) brightness(.85)';
+  document.body.classList.add('is-dead');
+
+  // Show your existing death UI (keep your implementation)
+  this.showDeathMenu?.();
+}
+
+suppressOversizedMinimapColliders() {
+  const g = this;
+  const scene = g.scene;
+  const level = g.level?.data;
+  if (!level || !scene) return;
+
+  const CX = 200, CZ = -40, R = 140;        // area you said is problematic
+  const NAME_BLACKLIST = /^(Floor|Elevated_Ground|Walls|Object_\d+|Leaf)$/i;
+  const BIG_AREA = 1500;
+
+  const boxArea = (obj) => {
+    const b = new THREE.Box3().setFromObject(obj);
+    return Math.max(0, b.max.x - b.min.x) * Math.max(0, b.max.z - b.min.z);
+  };
+  const overlaps = (obj) => {
+    const b = new THREE.Box3().setFromObject(obj);
+    const rx = Math.max(b.min.x, Math.min(CX, b.max.x));
+    const rz = Math.max(b.min.z, Math.min(CZ, b.max.z));
+    const dx = rx - CX, dz = rz - CZ;
+    return (dx*dx + dz*dz) <= R*R;
+  };
+
+  let n = 0;
+  let colliders = []
+  for (const c of level.colliders ?? []) {
+    if (!(c && (c.type === 'mesh' || c.meshName) && c.minimap !== false)) continue;
+    const obj = scene.getObjectByName(c.meshName);
+    if (!obj) continue;
+    if (NAME_BLACKLIST.test(c.meshName) || (overlaps(obj) && boxArea(obj) > BIG_AREA)) {
+      c.minimap = false;
+      colliders.push(c.meshName);
+      n++;
+    }
+  }
+  const mm = g.ui?.get?.('minimap');
+  if (mm?.setLevelData) mm.setLevelData({ ...level, meshAABBs: g.level?.getMeshAABBs?.() ?? level.meshAABBs ?? null });
+  console.log(`Minimap suppressor hid ${n} collider(s).`);
+  console.log('🔍 === COLLIDER DEBUG ===')
+  console.log('Suppressed colliders:', colliders);
+}
+
   _bindKeys() {
     window.addEventListener('keydown', (e) => {
       const code = e.code;
-      // Always allow toggling pause via Escape, but not when player is dead
-      if (code === 'Escape' && !this.playerDead) {
+      // Only allow toggling pause via Escape during active gameplay
+      // Don't allow if: player is dead, game hasn't started, or menus are open
+      if (code === 'Escape' && !this.playerDead && this.gameStarted) {
         this.setPaused(!this.paused);
         return;
       }
@@ -449,7 +753,10 @@ debugInteractionPrompt() {
       } else if (code === 'KeyN') {
         // Open the Level Picker instead of jumping to next level
         this._showLevelPicker();
-      } else if (code === 'KeyM') {
+        
+      } else if (code === 'Backquote') { // ` key
+  this.suppressOversizedMinimapColliders();
+} else if (code === 'KeyM') {
         // toggle physics debug visualization
         this.physicsWorld.enableDebugRenderer(!this.physicsWorld.isDebugEnabled());
       } else if (code === 'KeyP') {
@@ -575,9 +882,9 @@ else if (code === 'KeyY') {
           this.player.takeDamage(50);
           console.log('🩸 Debug: Player damaged for testing');
         }
-      } else if (code === 'KeyP') {
+      } else if (code === 'KeyU') {
         // Debug: manually play music
-        console.log('🔊 DEBUG: Manual music trigger (P key pressed)');
+        console.log('🔊 DEBUG: Manual music trigger (U key pressed)');
         console.log('🔊 AudioContext state:', this.soundManager.listener.context.state);
         console.log('🔊 Pending music:', this._pendingMusic);
         console.log('🔊 Current music:', this.soundManager.currentMusic);
@@ -613,16 +920,18 @@ else if (code === 'KeyY') {
   toggleFPSCounter() {
     const fpsComponent = this.ui.get('fps');
     if (fpsComponent) {
-      // Toggle visibility by modifying the display style
+      // Toggle visibility using show/hide methods
       const currentDisplay = fpsComponent.root.style.display;
       const isCurrentlyVisible = currentDisplay !== 'none';
       
-      fpsComponent.root.style.display = isCurrentlyVisible ? 'none' : 'block';
+      if (isCurrentlyVisible) {
+        fpsComponent.hide();
+        console.log(`📊 FPS counter is now hidden (Press F to toggle)`);
+      } else {
+        fpsComponent.show();
+        console.log(`📊 FPS counter is now visible (Press F to toggle)`);
+      }
       
-      const newState = isCurrentlyVisible ? 'hidden' : 'visible';
-      console.log(`📊 FPS counter is now ${newState} (Press F to toggle)`);
-      
-      // Store the state for consistency
       fpsComponent.isVisible = !isCurrentlyVisible;
     } else {
       console.warn('⚠️ FPS component not found. Cannot toggle visibility.');
@@ -761,12 +1070,14 @@ else if (code === 'KeyY') {
     }
   }
 
-  respawnPlayer() {
+  async respawnPlayer() {
     console.log('🔄 Respawning player');
     
     // Clear death state flag
     this.playerDead = false;
-    
+    if (this.player) this.player.alive = true;
+    this.clearDeathVisualsAndState();
+
     // Hide death menu
     const deathMenu = this.ui.get('deathMenu');
     if (deathMenu && deathMenu.hide) {
@@ -776,7 +1087,7 @@ else if (code === 'KeyY') {
     // Reload the current level
     if (this.levelManager && this.levelManager.getCurrentLevelIndex !== undefined) {
       const currentIndex = this.levelManager.getCurrentLevelIndex();
-      this.loadLevel(currentIndex);
+      await this.loadLevel(currentIndex);
     }
     
     // Reset player health
@@ -790,14 +1101,29 @@ else if (code === 'KeyY') {
         maxHealth: this.player.maxHealth 
       });
     }
+
+    // Ensure any red low-health overlay is gone on respawn
+    try { this.ui.get('hud')?.removeLowHealthEffect?.(); } catch {}
+    const staleLow = document.getElementById('low-health-overlay');
+    if (staleLow) staleLow.remove();
+
     
     // Unpause the game
-    this.paused = false;
+    this.setPaused(false);
     
     // Re-enable input handling
     if (this.input && this.input.setEnabled) {
       this.input.setEnabled(true);
     }
+
+    if ((this.activeCamera === this.thirdCameraObject || this.activeCamera === this.firstCameraObject)
+      && !document.pointerLockElement) {
+    try {
+      document.body.requestPointerLock();
+    } catch (err) {
+      console.warn('requestPointerLock on respawn failed:', err);
+    }
+  }
   }
 
   _loop() {
@@ -848,31 +1174,35 @@ else if (code === 'KeyY') {
         playerModel: this.player.mesh,
         enemies: this.level ? this.level.getEnemies() : [],
         collectibles: this.collectiblesManager ? this.collectiblesManager.getAllCollectibles() : [],
+        platforms: this.level ? this.level.getPlatforms() : [],
         game: this  // Pass game reference for coordinates component
       };
       this.ui.update(delta, ctx);
     }
 
     // determine camera orientation for movement mapping
+// determine camera orientation for movement mapping
     let camOrientation, playerActive;
-    if (this.activeCamera === this.thirdCam.getCamera()) {
+    if (this.activeCamera === this.thirdCameraObject) {
       this.thirdCam.update();
       camOrientation = this.thirdCam.getCameraOrientation();
       playerActive = true;
-    } else if (this.activeCamera === this.firstCam.getCamera()) {
+    } else if (this.activeCamera === this.firstCameraObject) {
       this.firstCam.update();
       camOrientation = this.firstCam.getCameraOrientation();
       playerActive = true;
     } else {
       this.freeCam.update(delta);
       camOrientation = this.freeCam.getOrientation();
-      playerActive = false;
+      playerActive = false; // free-cam decouples player
     }
 
-    // Update crosshair visibility based on camera mode
+
+    // Update crosshair visibility based on game state
     const crosshair = this.ui.get('crosshair');
     if (crosshair) {
-      crosshair.setProps({ visible: true }); // Always visible for debugging
+      // Show crosshair only during active gameplay (not paused, not in menus)
+      crosshair.setProps({ visible: this.gameStarted && !this.paused });
     }
 
     // update player (movement read from input manager)
@@ -917,7 +1247,7 @@ else if (code === 'KeyY') {
       // Debug: Log once per second if proximity sound manager doesn't exist
       if (!this._proximityDebugTime) this._proximityDebugTime = 0;
       this._proximityDebugTime += delta;
-      if (this._proximityDebugTime > 1000) {
+      if (this._proximityDebugTime > 1) {
         console.log('⚠️ No proximitySoundManager in update loop');
         this._proximityDebugTime = 0;
       }
@@ -1088,6 +1418,14 @@ else if (code === 'KeyY') {
   // Load level by index and swap UI based on level metadata
   // Load level by index and swap UI based on level metadata
   async loadLevel(index) {
+    // Show loading screen
+    const loadingScreen = this.ui.get('loadingScreen');
+    if (loadingScreen) {
+      loadingScreen.show();
+      loadingScreen.setStatus('INITIALIZING', 0);
+      console.log('📺 Loading screen shown');
+    }
+
     if (this.level) this.level.dispose();
 
     // Preserve debug state before disposing old physics world
@@ -1103,8 +1441,13 @@ else if (code === 'KeyY') {
     // Reset per-level state trackers
     this._nonLevel3EyeLogged = false;
 
-    console.log('🚀 Loading level index:', index);
-  
+  console.log('🚀 Loading level index:', index);
+
+  this.player.health = 100;
+  this.clearDeathVisualsAndState();
+  try { this.ui.get('hud')?.removeLowHealthEffect?.(); } catch {}
+const staleLow = document.getElementById('low-health-overlay');
+if (staleLow) staleLow.remove();
   // === Get level metadata without constructing it yet ===
   // Read from the level registry directly to avoid constructing the level twice
   const levelData = this.levelManager.levels[index];
@@ -1151,9 +1494,16 @@ else if (code === 'KeyY') {
 
   if (this.player.originalModelSize) {
     this.player.createPhysicsBody(this.player.originalModelSize);
+  } else {
+    console.warn('⚠️ Player model size not available yet, using default fallback size');
+    this.player.createPhysicsBody(new THREE.Vector3(1, 2, 1));
   }
 
   this.levelManager.physicsWorld = this.physicsWorld;
+  try { disposeSky(this.scene, this.renderer); } catch {}
+  
+  // Update loading progress
+  if (loadingScreen) loadingScreen.setStatus('LOADING GEOMETRY', 30);
   
   // === Load the level once ===
   this.level = await this.levelManager.loadIndex(index);
@@ -1165,6 +1515,10 @@ else if (code === 'KeyY') {
     // Explicit flag to allow sun eye only in level3
     this.scene.userData.allowSunEye = (this.scene.userData.levelId === 'level3');
   } catch (e) { /* ignore */ }
+
+  // Update loading progress
+  if (loadingScreen) loadingScreen.setStatus('INITIALIZING SYSTEMS', 50);
+
 
   // === COMPUTER SETUP - CALL THIS AFTER LEVEL IS LOADED ===
   if (this.level.data.id === 'level3') {
@@ -1389,6 +1743,16 @@ else if (code === 'KeyY') {
   // Position player at start position from level data
   const start = this.level.data.startPosition;
   this.player.setPosition(new THREE.Vector3(...start));
+  
+  // Ensure position is set correctly by applying it again after a brief delay
+  // This handles the case where the player model is still loading
+  await new Promise(resolve => setTimeout(resolve, 50));
+  this.player.setPosition(new THREE.Vector3(...start));
+  
+  if (this.player?.mesh) this.player.mesh.visible = true;
+this.setPaused(false); // make sure we aren't paused
+if (this.input?.setEnabled) this.input.setEnabled(true);
+this.input.alwaysTrackMouse = true;
   // Ensure player and input state are sane after level switch (in case previous level hid/locked them)
   if (this.player?.mesh) this.player.mesh.visible = true;
   if (this.input?.setEnabled) this.input.setEnabled(true);
@@ -1399,6 +1763,9 @@ else if (code === 'KeyY') {
   this.applyLevelUI(this.level.data);
   this.applyLevelLights(this.level.data);
 
+  // Update loading progress
+  if (loadingScreen) loadingScreen.setStatus('LOADING AUDIO', 65);
+
   // IMPORTANT: If an onLevelStart cinematic exists, we want the cinematic to control VO timing.
   const hasLevelStartCinematic = !!(this.level?.data?.cinematics && (this.level.data.cinematics.onLevelStart || Array.isArray(this.level.data.cinematics)));
 
@@ -1408,6 +1775,9 @@ else if (code === 'KeyY') {
   // Spawn collectibles AFTER sounds/UI are ready
   this.collectiblesManager.cleanup();
   await this.collectiblesManager.spawnCollectiblesForLevel(this.level.data);
+
+  // Update loading progress
+  if (loadingScreen) loadingScreen.setStatus('FINALIZING', 85);
 
   // Doors (Level 2 example)
   if (this.level?.data?.id === 'level2') {
@@ -1443,14 +1813,53 @@ else if (code === 'KeyY') {
     this.doorManager.toggleColliders(this.doorHelpersVisible);
   }
 
+  this.cinematicsManager?.loadCinematics(this.level?.data?.cinematics);
+
   // Finally: trigger the cinematic (sounds are loaded and ready).
   this.level.triggerLevelStartCinematic(this.activeCamera, this.player);
 
   // Refresh stack tool availability after level loads
   this.refreshStackToolAvailability();
 
+  // Hide loading screen
+  if (loadingScreen) {
+    loadingScreen.setStatus('READY', 100);
+    loadingScreen.hide(500); // Fade out over 500ms
+    console.log('📺 Loading screen hidden');
+  }
+
   return this.level;
 }
+
+
+destroy() {
+  try {
+    if (this._handlePlayerDeathBound) {
+      window.removeEventListener('player:death', this._handlePlayerDeathBound);
+      this._handlePlayerDeathBound = null;
+    }
+  } catch {}
+  // dispose level, physics, audio managers, etc…
+  this.level?.dispose?.();
+  this.physicsWorld?.dispose?.();
+  this.proximitySoundManager?.dispose?.();
+  this.soundManager?.dispose?.();
+}
+
+clearDeathVisualsAndState() {
+  // Remove the CSS greyscale/brightness applied on death
+  try {
+    document.body.style.transition = '';
+    document.body.style.filter = '';
+    document.body.classList.remove('is-dead'); // if you ever add a CSS class
+  } catch {}
+
+  // Defensive: ensure systems resumed
+  try { this.combatSystem.suppressAttacks = false; } catch {}
+  try { this.level?.freezeAllEnemies?.(false); } catch {}
+  try { this.proximitySoundManager?.resume?.(); } catch {}
+}
+
 
   /**
    * Stack tool control helpers
@@ -1645,102 +2054,118 @@ else if (code === 'KeyY') {
   }
 
   applyLevelUI(levelData) {
-    // Clear existing UI and re-add defaults according to level metadata
-    if (!this.ui) return;
-    
-    // Store global components that should persist across levels
-    const globalComponents = new Map();
-    if (this.ui.get('fps')) {
-      globalComponents.set('fps', this.ui.get('fps'));
+  // Clear existing UI and re-add defaults according to level metadata
+  if (!this.ui) return;
+  
+  // Store global components that should persist across levels
+  const globalComponents = new Map();
+  if (this.ui.get('fps')) {
+    globalComponents.set('fps', this.ui.get('fps'));
+  }
+  if (this.ui.get('crosshair')) {
+    globalComponents.set('crosshair', this.ui.get('crosshair'));
+  }
+  if (this.ui.get('interactionPrompt')) {
+    globalComponents.set('interactionPrompt', this.ui.get('interactionPrompt'));
+  }
+  if (this.ui.get('voiceoverCard')) {
+    globalComponents.set('voiceoverCard', this.ui.get('voiceoverCard'));
+  }
+  if (this.ui.get('coordinates')) {
+    globalComponents.set('coordinates', this.ui.get('coordinates'));
+  }
+  if (this.ui.get('triggerPrompt')) {
+    globalComponents.set('triggerPrompt', this.ui.get('triggerPrompt'));
+  }
+  if (this.ui.get('loadingScreen')) {
+    globalComponents.set('loadingScreen', this.ui.get('loadingScreen'));
+  }
+  if (this.ui.get('mainMenu')) {
+    globalComponents.set('mainMenu', this.ui.get('mainMenu'));
+  }
+  if (this.ui.get('settingsMenu')) {
+    globalComponents.set('settingsMenu', this.ui.get('settingsMenu'));
+  }
+  
+  this.ui.clear();
+  
+  // Re-add global components first
+  for (const [key, component] of globalComponents) {
+    this.ui.components.set(key, component);
+    // Re-mount the component since it was unmounted during clear
+    if (component.mount) {
+      component.mount();
     }
-    if (this.ui.get('crosshair')) {
-      globalComponents.set('crosshair', this.ui.get('crosshair'));
-    }
-    if (this.ui.get('interactionPrompt')) {
-      globalComponents.set('interactionPrompt', this.ui.get('interactionPrompt'));
-    }
-    if (this.ui.get('voiceoverCard')) {
-      globalComponents.set('voiceoverCard', this.ui.get('voiceoverCard'));
-    }
-    if (this.ui.get('coordinates')) {
-      globalComponents.set('coordinates', this.ui.get('coordinates'));
-    }
-    
-    this.ui.clear();
-    
-    // Re-add global components first
-    for (const [key, component] of globalComponents) {
-      this.ui.components.set(key, component);
-      // Re-mount the component since it was unmounted during clear
-      if (component.mount) {
-        component.mount();
-      }
-    }
-    
-    const uiList = (levelData && levelData.ui) ? levelData.ui : ['hud'];
-    
-    for (const uiItem of uiList) {
-      // Handle both string format ("hud") and object format ({ type: "collectibles", config: {...} })
-      let key, config;
-      if (typeof uiItem === 'string') {
-        key = uiItem;
-        config = {};
-      } else if (typeof uiItem === 'object' && uiItem.type) {
-        key = uiItem.type;
-        config = uiItem.config || {};
-      } else {
-        console.warn('Invalid UI item format in level data:', uiItem);
-        continue;
-      }
-      
-      if (key === 'hud') {
-        this.ui.add('hud', HUD, { health: this.player.health ?? 100 });
-      } else if (key === 'minimap') {
-        const minimap = this.ui.add('minimap', Minimap, config);
-        // Set level data for minimap rendering
-        if (minimap && minimap.setLevelData) {
-          minimap.setLevelData(levelData);
-        }
-      } else if (key === 'objectives') {
-        this.ui.add('objectives', Objectives, { 
-          items: levelData.objectives ?? ['Reach the goal'],
-          ...config 
-        });
-      } else if (key === 'menu') {
-        this.ui.add('menu', SmallMenu, { 
-          onResume: () => this.setPaused(false),
-          onToggleShaders: () => {
-            if (this.shaderSystem) {
-              const newState = this.shaderSystem.toggleShaders();
-              return newState;
-            }
-            return true;
-          },
-          ...config 
-        });
-      } else if (key === 'collectibles') {
-        this.ui.add('collectibles', Collectibles, config);
-      } else if (key === 'fps') {
-        // FPS is already added as a global component, skip
-        continue;
-      } else if (key === 'coordinates') {
-        // Coordinates is already added as a global component, skip
-        continue;
-      } else {
-        console.warn('Unknown UI component type in level data:', key);
-      }
-    }
-    
-    // Set up collectibles manager references after UI is loaded
-    const collectiblesUI = this.ui.get('collectibles');
-    const interactionPrompt = this.ui.get('interactionPrompt');
-    if (collectiblesUI) {
-      this.collectiblesManager.setReferences(this.player, collectiblesUI);
-    }
-    if (interactionPrompt) {
-      this.collectiblesManager.setInteractionPrompt(interactionPrompt);
+    // Hide trigger prompt when transitioning to a new level
+    if (key === 'triggerPrompt' && component.hide) {
+      component.hide();
     }
   }
+  
+  const uiList = (levelData && levelData.ui) ? levelData.ui : ['hud'];
+  
+  for (const uiItem of uiList) {
+    // Handle both string format ("hud") and object format ({ type: "collectibles", config: {...} })
+    let key, config;
+    if (typeof uiItem === 'string') {
+      key = uiItem;
+      config = {};
+    } else if (typeof uiItem === 'object' && uiItem.type) {
+      key = uiItem.type;
+      config = uiItem.config || {};
+    } else {
+      console.warn('Invalid UI item format in level data:', uiItem);
+      continue;
+    }
+    
+    if (key === 'hud') {
+      this.ui.add('hud', HUD, { health: this.player.health ?? 100 });
+    } else if (key === 'minimap') {
+      const minimap = this.ui.add('minimap', Minimap, config);
+      // Set level data for minimap rendering
+      if (minimap && minimap.setLevelData) {
+        minimap.setLevelData(levelData);
+      }
+    } else if (key === 'objectives') {
+      this.ui.add('objectives', Objectives, { 
+        items: levelData.objectives ?? ['Reach the goal'],
+        ...config 
+      });
+    } else if (key === 'menu') {
+      this.ui.add('menu', SmallMenu, { 
+        onResume: () => this.setPaused(false),
+        onToggleShaders: () => {
+          if (this.shaderSystem) {
+            const newState = this.shaderSystem.toggleShaders();
+            return newState;
+          }
+          return true;
+        },
+        ...config 
+      });
+    } else if (key === 'collectibles') {
+      this.ui.add('collectibles', Collectibles, config);
+    } else if (key === 'fps') {
+      // FPS is already added as a global component, skip
+      continue;
+    } else if (key === 'coordinates') {
+      // Coordinates is already added as a global component, skip
+      continue;
+    } else {
+      console.warn('Unknown UI component type in level data:', key);
+    }
+  }
+  
+  // Set up collectibles manager references after UI is loaded
+  const collectiblesUI = this.ui.get('collectibles');
+  const interactionPrompt = this.ui.get('interactionPrompt');
+  if (collectiblesUI) {
+    this.collectiblesManager.setReferences(this.player, collectiblesUI);
+  }
+  if (interactionPrompt) {
+    this.collectiblesManager.setInteractionPrompt(interactionPrompt);
+  }
+}
 
   async applyLevelSounds(levelData, opts = {}) {
     const { deferVoiceoverToCinematic = false } = opts;
@@ -2127,8 +2552,23 @@ setTimeout(() => {
       marginTop: '12px'
     });
 
+
+    if (!document.getElementById('level-picker-keyboard-style')) {
+      const st = document.createElement('style');
+      st.id = 'level-picker-keyboard-style';
+      st.textContent = `
+        .level-picker-btn.is-selected {
+          outline: 3px solid #a0d4ffff;
+          border-color: #a0d4ffff !important;
+          transform: translateY(-1px);
+        }s
+      `;
+      document.head.appendChild(st);
+    }
+
     const levelsArray = this._getAvailableLevels();
-    levelsArray.forEach((lvl) => {
+    const buttons = [];
+    levelsArray.forEach((lvl, i) => {
       const b = document.createElement('button');
       b.textContent = `${lvl.name || lvl.id}`;
       Object.assign(b.style, {
@@ -2140,16 +2580,26 @@ setTimeout(() => {
         color: 'white',
         fontWeight: 700
       });
+
+      b.className = 'level-picker-btn';
+      b.setAttribute('tabindex', '-1');            // we manage focus manually
+      b.setAttribute('role', 'option');
+      b.dataset.index = String(i);
+
+
       b.onclick = () => {
         picker.style.display = 'none';
         const idx = this._findLevelIndexById(lvl.id);
         if (idx >= 0) this.loadLevel(idx);
+        if (this._pickerPrevInputEnabled) this.input?.setEnabled?.(true);
+        this._detachLevelPickerKeys?.();
       };
       grid.appendChild(b);
+      buttons.push(b);
     });
 
     const hint = document.createElement('div');
-    hint.textContent = 'Press ESC to close • Press N to open this any time';
+    hint.textContent = 'Press N to toggle this open at any time';
     Object.assign(hint.style, { marginTop: '10px', opacity: .65, fontSize: '12px' });
 
     card.appendChild(title);
@@ -2158,9 +2608,77 @@ setTimeout(() => {
     picker.appendChild(card);
     document.body.appendChild(picker);
 
-    // Close on ESC
-    const onEsc = (e) => { if (e.code === 'Escape') picker.style.display = 'none'; };
-    window.addEventListener('keydown', onEsc);
+    this._levelPicker = picker;
+    this._levelPickerGrid = grid;
+    this._levelPickerButtons = buttons;
+    this._levelPickerSelectedIndex = 0;
+
+    // Attach a unified key handler (added/removed when shown/hidden)
+    this._attachLevelPickerKeys = () => {
+      if (this._levelPickerKeyHandler) return;
+      this._levelPickerKeyHandler = (e) => {
+        // Only handle keys when the picker is visible
+        if (picker.style.display !== 'flex') return;
+        const code = e.code;
+        let idx = this._levelPickerSelectedIndex ?? 0;
+        const max = buttons.length - 1;
+        const getCols = () => {
+          // Count computed grid columns (robust to responsive anges)
+          const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+         return Math.max(1, cols || 1);
+        };
+        const move = (newIdx) => {
+          newIdx = Math.min(Math.max(newIdx, 0), max);
+          if (newIdx !== this._levelPickerSelectedIndex) {
+            this._levelPickerSelectedIndex = newIdx;
+            this._highlightLevelPickerSelection();
+          }
+        };
+        if (code === 'ArrowRight') {
+          move(idx + 1);
+          e.preventDefault(); e.stopPropagation();
+        } else if (code === 'ArrowLeft') {
+          move(idx - 1);
+          e.preventDefault(); e.stopPropagation();
+        } else if (code === 'ArrowDown') {
+          move(idx + getCols());
+          e.preventDefault(); e.stopPropagation();
+        } else if (code === 'ArrowUp') {
+          move(idx - getCols());
+          e.preventDefault(); e.stopPropagation();
+        } else if (code === 'Enter' || code === 'NumpadEnter') {
+          const btn = buttons[this._levelPickerSelectedIndex];
+          if (btn) btn.click();
+          e.preventDefault(); e.stopPropagation();
+        } else if (code === 'KeyN') {
+          picker.style.display = 'none';
+          if (this._pickerPrevInputEnabled) this.input?.setEnabled?.(true);
+          this._detachLevelPickerKeys();
+          e.preventDefault(); e.stopPropagation();
+        }
+      };
+      window.addEventListener('keydown', this._levelPickerKeyHandler, { capture: true });
+    };
+    this._detachLevelPickerKeys = () => {
+      if (!this._levelPickerKeyHandler) return;
+      window.removeEventListener('keydown', this._levelPickerKeyHandler, { capture: true });
+      this._levelPickerKeyHandler = null;
+    };
+
+    // Helper to apply highlight/focus/scroll
+    this._highlightLevelPickerSelection = () => {
+      const i = this._levelPickerSelectedIndex ?? 0;
+      buttons.forEach((b, j) => {
+        const sel = j === i;
+        b.classList.toggle('is-selected', sel);
+        b.setAttribute('aria-selected', sel ? 'true' : 'false');
+      });
+      const btn = buttons[i];
+      if (btn) {
+        try { btn.focus({ preventScroll: true }); } catch {}
+        try { btn.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch {}
+      }
+    };
 
     this._levelPicker = picker;
   }
@@ -2169,6 +2687,14 @@ setTimeout(() => {
     this._ensureLevelPicker();
     if (this._levelPicker) {
       this._levelPicker.style.display = 'flex';
+      // Disable game input while the picker is open
+      this._pickerPrevInputEnabled = this.input ? (this.input.enabled !== false) : false;
+      this.input?.setEnabled?.(false);
+      // Initialize selection to current level if possible
+      const currentIdx = this._findLevelIndexById(this.currentLevelId);
+      this._levelPickerSelectedIndex = Math.max(0, currentIdx);
+      this._highlightLevelPickerSelection();
+      this._attachLevelPickerKeys();
     }
   }
 
@@ -2351,11 +2877,13 @@ checkGlitchedLevelCompletion() {
     
     // Show completion message
     this.showMessage(message, 3000);
+
+    this.cinematics?.playCinematic?.('l3_p2_glitch');
     
     // Wait, then go to next level
     setTimeout(() => {
       this.loadLevelByName(nextLevel);
-    }, 3000);
+    }, 3000);  //comeback
   }
 }
 
@@ -2415,6 +2943,25 @@ checkGlitchedLevelCompletion() {
   const allCollected = chests.every(chest => {
     return this.collectiblesManager.isChestCollected(chest.id);
   });
+  
+  if (allCollected) {
+    console.log('✅ All chests collected in glitched level!');
+    
+    // Mark this glitched level as completed
+    this.glitchManager.completeGlitchedLevel(this.currentLevelId);
+    
+    // Show completion message
+    this.showMessage(`Glitched level completed! Returning to Level 3.`);
+
+    // Wait 2 seconds, then automatically return to Level 3
+    setTimeout(() => {
+      this.loadLevelByName('level3');
+    }, 2000); //comeback
+  }
+}
+
+setupGlitchedLevelProgression() {
+  console.log('🔧 Setting up glitched level progression...');
   
   if (allCollected) {
     console.log('✅ All chests collected in glitched level!');

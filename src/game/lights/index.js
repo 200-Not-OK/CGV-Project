@@ -1,4 +1,5 @@
 export { BasicLights } from './basicLights.js';
+export { HubLights } from './hubLights.js';
 export { PointPulse } from './pointPulse.js';
 export { PointLight } from './pointLight.js';
 export { HemisphereFill } from './hemisphereFill.js';
