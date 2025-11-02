@@ -386,6 +386,11 @@ E - Interact with chests and doors
       mainMenu.show();
       this.gameStarted = false;
     }
+    // Hide crosshair on main menu
+    const crosshair = this.ui.get('crosshair');
+    if (crosshair) {
+      crosshair.setProps({ visible: false });
+    }
   }
 
   /**
@@ -395,6 +400,7 @@ E - Interact with chests and doors
     console.log('🎮 Starting game from main menu');
     const mainMenu = this.ui.get('mainMenu');
     const loadingScreen = this.ui.get('loadingScreen');
+    const crosshair = this.ui.get('crosshair');
     
     // Hide main menu
     if (mainMenu) {
@@ -414,6 +420,11 @@ E - Interact with chests and doors
     if (loadingScreen) {
       loadingScreen.hide(500);
     }
+    
+    // Show crosshair when gameplay starts
+    if (crosshair) {
+      crosshair.setProps({ visible: true });
+    }
   }
 
   /**
@@ -423,9 +434,14 @@ E - Interact with chests and doors
     console.log('⚙️ Opening settings from main menu');
     const mainMenu = this.ui.get('mainMenu');
     const settingsMenu = this.ui.get('settingsMenu');
+    const crosshair = this.ui.get('crosshair');
     
     if (mainMenu) mainMenu.hide(300);
     if (settingsMenu) settingsMenu.show();
+    // Hide crosshair when entering settings
+    if (crosshair) {
+      crosshair.setProps({ visible: false });
+    }
   }
 
   /**
@@ -435,9 +451,14 @@ E - Interact with chests and doors
     console.log('← Back to main menu from settings');
     const mainMenu = this.ui.get('mainMenu');
     const settingsMenu = this.ui.get('settingsMenu');
+    const crosshair = this.ui.get('crosshair');
     
     if (settingsMenu) settingsMenu.hide(300);
     if (mainMenu) mainMenu.show();
+    // Hide crosshair when returning to main menu
+    if (crosshair) {
+      crosshair.setProps({ visible: false });
+    }
   }
 
 
@@ -504,8 +525,9 @@ suppressOversizedMinimapColliders() {
   _bindKeys() {
     window.addEventListener('keydown', (e) => {
       const code = e.code;
-      // Always allow toggling pause via Escape, but not when player is dead
-      if (code === 'Escape' && !this.playerDead) {
+      // Only allow toggling pause via Escape during active gameplay
+      // Don't allow if: player is dead, game hasn't started, or menus are open
+      if (code === 'Escape' && !this.playerDead && this.gameStarted) {
         this.setPaused(!this.paused);
         return;
       }
@@ -918,10 +940,11 @@ suppressOversizedMinimapColliders() {
     }
 
 
-    // Update crosshair visibility based on camera mode
+    // Update crosshair visibility based on game state
     const crosshair = this.ui.get('crosshair');
     if (crosshair) {
-      crosshair.setProps({ visible: true }); // Always visible for debugging
+      // Show crosshair only during active gameplay (not paused, not in menus)
+      crosshair.setProps({ visible: this.gameStarted && !this.paused });
     }
 
     // update player (movement read from input manager)
