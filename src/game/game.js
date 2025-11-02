@@ -31,6 +31,8 @@ import { ProximitySoundManager } from './proximitySoundManager.js';
 import { PerformanceMonitor } from './performanceMonitor.js';
 import { initGPUDetector } from './utils/gpuDetector.js';
 import { initQualityControls } from './utils/qualityControls.js';
+import { GraphicsSettings } from './utils/GraphicsSettings.js';
+import { GraphicsSettingsUI } from './components/ui/GraphicsSettingsUI.js';
 import { GlitchManager } from './GlitchManager.js';
 import { ComputerTerminal } from './components/ComputerTerminal.js';
 import { LoadingScreen } from './components/LoadingScreen.js';
@@ -60,6 +62,28 @@ export class Game {
     // Apply quality to renderer
     this.renderer.setPixelRatio(this.qualitySettings.pixelRatio);
 
+    // Performance monitoring (early init for graphics settings UI)
+    this.performanceMonitor = new PerformanceMonitor();
+
+    // Initialize Graphics Settings System
+    console.log('🎨 Initializing Graphics Settings...');
+    this.graphicsSettings = new GraphicsSettings(this);
+    this.graphicsSettings.applyAllSettings();
+    
+    // Initialize Graphics Settings UI
+    GraphicsSettingsUI.injectStyles();
+    this.graphicsSettingsUI = new GraphicsSettingsUI(this.graphicsSettings, this.performanceMonitor);
+    this.graphicsSettingsUI.create();
+    
+    // Keyboard shortcut to toggle graphics settings (Shift+G)
+    window.addEventListener('keydown', (e) => {
+      if (e.shiftKey && e.code === 'KeyG') {
+        e.preventDefault();
+        this.graphicsSettingsUI.toggle();
+        console.log('🎨 Graphics Settings UI toggled (Shift+G)');
+      }
+    });
+
     // Initialize physics world with scene for improved collision detection
     this.physicsWorld = new PhysicsWorld(this.scene, {
       useAccurateCollision: false, // Disable Trimesh by default for more reliable collision
@@ -74,11 +98,12 @@ export class Game {
     this.levelManager = new LevelManager(this.scene, this.physicsWorld, this);
     this.level = null;
 
-    // Performance monitoring
-    this.performanceMonitor = new PerformanceMonitor();
     // Debug: center-screen ray probe (to identify unexpected occluders)
     this._centerProbeEnabled = false;
     this._centerProbeCooldown = 0;
+
+    // Performance monitoring
+    this.performanceMonitor = new PerformanceMonitor();
 
     // Player
     this.player = new Player(this.scene, this.physicsWorld, {
