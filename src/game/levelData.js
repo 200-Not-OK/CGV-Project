@@ -4,6 +4,7 @@ export const levels = [
     "id": "level1",
     "name": "Level 1",
     "gltfUrl": "assets/levels/revamped/Level1.gltf",
+    "panoramaSky": "assets/galaxy-night-landscape.jpg",  // Simple format
 
     "startPosition": [
       0,
