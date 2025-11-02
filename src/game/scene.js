@@ -57,11 +57,7 @@ function convertToBasicMaterial(material) {
   return basic;
 }
 
-async function createSunEyeInstance(scene) {
-  // Safety: never create/load outside Level 3
-  if (!scene || scene?.userData?.levelId !== 'level3') {
-    return null;
-  }
+async function createSunEyeInstance() {
   const gltf = await loadSunEyeAsset();
   const eyeScene = gltf.scene.clone(true);
   eyeScene.traverse((child) => {
@@ -105,7 +101,7 @@ export function createSceneAndRenderer() {
 
   // Skybox rotation properties (creates twinkling effect)
   let skyboxRotation = 0;
-  const skyboxRotationSpeed = 0.0004; // Very slow for subtle twinkling
+  const skyboxRotationSpeed = 0.1; // Increased speed for more noticeable rotation
   let skyboxMeshFar = null; // Far layer - blue nebulae
   let skyboxMeshNear = null; // Near layer - asteroid field
   // Expose handles for external sky switching
@@ -114,6 +110,7 @@ export function createSceneAndRenderer() {
   scene.userData.sunFill = null;
   scene.userData.sunTarget = null;
   scene.userData.sunEye = null;
+  scene.userData.sunEyeBlinker = null;
 
   // Renderer
 const renderer = new THREE.WebGLRenderer({ 
@@ -291,8 +288,9 @@ const totalTextures = 2; // Only 2 layers for better FPS
     if (skyboxMeshFar && skyboxMeshNear) {
       skyboxRotation += skyboxRotationSpeed * (deltaTime / 16.67);
       
-      skyboxMeshFar.rotation.y = Math.PI + (skyboxRotation * 0.1);
-      skyboxMeshNear.rotation.y = Math.PI + 2.5 + (skyboxRotation * 0.5);
+      // Level 3 slow constant rotation
+      skyboxMeshFar.rotation.y = Math.PI + skyboxRotation;
+      skyboxMeshNear.rotation.y = Math.PI + 2.5 + (skyboxRotation * 0.75);
     }
   };
 
@@ -544,56 +542,49 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
     if (renderer) {
       renderer.toneMappingExposure = 0.68; // softer cartoon exposure
     }
-    // Add sun directional light and load eyeball model ONLY in Level 3
+    // Add sun directional light and load eyeball model
     try {
-      const allowEye = !!(scene?.userData?.allowSunEye === true);
-      if (allowEye) {
-        const sunGroup = new THREE.Group();
-        const sunDistance = 800;
-        sunGroup.position.copy(sunDir.clone().multiplyScalar(sunDistance));
-        sunGroup.frustumCulled = false;
+      const sunGroup = new THREE.Group();
+      const sunDistance = 800;
+      sunGroup.position.copy(sunDir.clone().multiplyScalar(sunDistance));
+      sunGroup.frustumCulled = false;
 
-        const sunLight = new THREE.DirectionalLight(0xffe6b0, 7.2);
-        sunLight.position.set(0, 0, 0);
-        // Force no shadows from sun
-        sunLight.castShadow = false;
+      const sunLight = new THREE.DirectionalLight(0xffe6b0, 7.2);
+      sunLight.position.set(0, 0, 0);
+       // Force no shadows from sun
+       sunLight.castShadow = false;
 
-        const target = new THREE.Object3D();
-        target.position.set(0, 0, 0);
-        scene.add(target);
-        sunLight.target = target;
-        sunGroup.add(sunLight);
+      const target = new THREE.Object3D();
+      target.position.set(0, 0, 0);
+      scene.add(target);
+      sunLight.target = target;
+       sunGroup.add(sunLight);
 
-        sunGroup.userData = { isSun: true };
-        // Render sun/eye on isolated layer 2 only
-        try { sunGroup.layers.set(2); } catch (_) {}
-        scene.add(sunGroup);
-        scene.userData.sun = sunGroup;
-        scene.userData.sunLight = sunLight;
-        scene.userData.sunTarget = target;
-        scene.userData.sunEye = {
-          group: sunGroup,
-          rig: null,
-          mesh: null,
-          direction: sunDir.clone(),
-          distance: sunDistance,
-          rotationOffset: SUN_EYE_ROTATION_OFFSET.clone(),
-          radius: 0,
-          lookOffset: new THREE.Vector3()
-        };
+      sunGroup.userData = { isSun: true };
+      scene.add(sunGroup);
+       scene.userData.sun = sunGroup;
+       scene.userData.sunLight = sunLight;
+      scene.userData.sunTarget = target;
+      scene.userData.sunEye = {
+        group: sunGroup,
+        rig: null,
+        mesh: null,
+        direction: sunDir.clone(),
+        distance: sunDistance,
+        rotationOffset: SUN_EYE_ROTATION_OFFSET.clone(),
+        radius: 0,
+        lookOffset: new THREE.Vector3()
+      };
 
-      createSunEyeInstance(scene)
-        .then((inst) => {
-          if (!inst) return;
-          const { rig, mesh, diameter } = inst;
+      createSunEyeInstance()
+        .then(({ rig, mesh, diameter }) => {
           if (!scene.userData || scene.userData.sun !== sunGroup || !scene.userData.sunEye) return;
           const sunData = scene.userData.sunEye;
           rig.position.set(0, 0, 0);
           rig.frustumCulled = false;
           sunGroup.add(rig);
-          try { rig.traverse((n)=>{ if (n.layers) n.layers.set(2); }); } catch (_) {}
-          // Make the eye look toward the scene origin by default
-          try { rig.lookAt(new THREE.Vector3(0, 0, 0)); } catch (e) {}
+         // Make the eye look toward the scene origin by default
+         try { rig.lookAt(new THREE.Vector3(0, 0, 0)); } catch (e) {}
           sunData.rig = rig;
           sunData.mesh = mesh;
           sunData.radius = diameter * 0.5;
@@ -601,34 +592,24 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
             sunData.rig.quaternion.multiply(sunData.rotationOffset);
           }
         })
-          .catch((error) => {
-            console.warn('Sun eye model failed to attach:', error);
-          });
+        .catch((error) => {
+          console.warn('Sun eye model failed to attach:', error);
+        });
 
-        // Add a global top-down cartoon fill light (no shadows)
-        const topFill = new THREE.DirectionalLight(0xffffff, 1.1);
-        topFill.position.set(0, 1000, 0);
-        topFill.castShadow = false;
-        const topTarget = new THREE.Object3D();
-        topTarget.position.set(0, 0, 0);
-        scene.add(topTarget);
-        topFill.target = topTarget;
-        // Keep Level 3 fill light isolated to layer 2
-        try { topFill.layers.set(2); } catch (_) {}
-        scene.add(topFill);
-        scene.userData.topFillLight = topFill;
-        // Mild ambient to lift darkest areas
-        const ambient = new THREE.AmbientLight(0xffffff, 0.55);
-        try { ambient.layers.set(2); } catch (_) {}
-        scene.add(ambient);
-        scene.userData.ambientFill = ambient;
-      } else {
-        // Outside level 3, make sure no leftover eye/lights remain
-        try {
-          if (scene.userData?.sunEye?.group?.parent) scene.remove(scene.userData.sunEye.group);
-        } catch (_) {}
-        if (scene.userData) scene.userData.sunEye = null;
-      }
+      // Add a global top-down cartoon fill light (no shadows)
+      const topFill = new THREE.DirectionalLight(0xffffff, 1.1);
+      topFill.position.set(0, 1000, 0);
+      topFill.castShadow = false;
+      const topTarget = new THREE.Object3D();
+      topTarget.position.set(0, 0, 0);
+      scene.add(topTarget);
+      topFill.target = topTarget;
+      scene.add(topFill);
+      scene.userData.topFillLight = topFill;
+      // Mild ambient to lift darkest areas
+      const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+      scene.add(ambient);
+      scene.userData.ambientFill = ambient;
     } catch (e) { /* ignore visual sun errors */ }
     return;
   }

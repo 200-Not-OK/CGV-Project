@@ -48,12 +48,13 @@ import { levels as LEVELS } from './levelData.js';
 
 export class Game {
   constructor() {
-    const { scene, renderer, shaderSystem } = createSceneAndRenderer();
+    const { scene, renderer, shaderSystem, updateSkybox } = createSceneAndRenderer();
     this.scene = scene;
 
     
     this.renderer = renderer;
     this.shaderSystem = shaderSystem;
+    this.updateSkybox = updateSkybox;
 
     // Persistent game state flags
     // - stackToolGranted: becomes true when Steve grants the tool in Level 1
@@ -1288,9 +1289,15 @@ else if (code === 'KeyY') {
     // update lights (allow dynamic lights to animate)
     if (this.lights) this.lights.update(delta);
 
-    // Update shaders with camera & sun info
+    // Update skybox rotation (creates twinkling stars effect)
+    if (this.updateSkybox) {
+      this.updateSkybox(delta * 1000); // Pass deltaTime in milliseconds
+    }
+
+    // Update shaders with camera & sun info (this also handles Level 3 sky rotation)
     if (this.shaderSystem) {
-      this.shaderSystem.update(delta, this.activeCamera, this.scene);
+      // shaderSystem expects deltaTime in milliseconds (it converts to seconds internally)
+      this.shaderSystem.update(delta * 1000, this.activeCamera, this.scene);
     }
 
     // Optional: center-screen ray probe once per ~0.5s to find front-most occluder
@@ -1554,22 +1561,7 @@ if (staleLow) staleLow.remove();
   if (this.level.data.id === 'level3') {
     console.log('🎯 Setting up computer for level3');
     this.setupComputerTerminal();
-    // TEMP: Completely disable the Level 3 eye to test Level 1 artifacts
-    try {
-      if (this.scene?.userData) {
-        this.scene.userData.allowSunEye = false; // do not allow sun/eye rig
-        // Remove any existing sun/eye groups if present
-        if (this.scene.userData.sunEye && this.scene.userData.sunEye.group) {
-          const g = this.scene.userData.sunEye.group; if (g.parent) g.parent.remove(g);
-        }
-        this.scene.userData.sunEye = null;
-        if (this.scene.userData.sun) { try { if (this.scene.userData.sun.parent) this.scene.remove(this.scene.userData.sun); } catch (_) {} this.scene.userData.sun = null; }
-        if (this.scene.userData.topFillLight) { try { if (this.scene.userData.topFillLight.parent) this.scene.remove(this.scene.userData.topFillLight); } catch (_) {} this.scene.userData.topFillLight = null; }
-        if (this.scene.userData.ambientFill) { try { if (this.scene.userData.ambientFill.parent) this.scene.remove(this.scene.userData.ambientFill); } catch (_) {} this.scene.userData.ambientFill = null; }
-        if (this.scene.userData.sunTarget) { try { if (this.scene.userData.sunTarget.parent) this.scene.remove(this.scene.userData.sunTarget); } catch (_) {} this.scene.userData.sunTarget = null; }
-      }
-    } catch (_) {}
-    // Light, complimentary sky for level 3
+    // Light, complimentary sky for level 3 (this will also initialize the eye)
     try { setSkyPreset(this.scene, this.renderer, 'light'); } catch (e) { console.warn('Sky preset failed', e); }
     // Ensure only the eyeball sun contributes light
     try { enforceOnlySunLight(this.scene); } catch (e) { console.warn('Light enforcement failed', e); }

@@ -12,6 +12,9 @@ export class ShaderSystem {
     this.originalMaterials = new Map(); // Store original materials for toggling
     this.shadersEnabled = true; // Track shader state
     this._lastToonSettings = {}; // Live-tunable toon uniforms
+    this._eyelidMats = new Set();
+    this._eyelidMatsInit = false;
+    this._blinkCtrl = null;
     
     this.setupRenderer();
   }
@@ -254,15 +257,24 @@ export class ShaderSystem {
    */
   createCustomShader(options = {}) {
     const vertexShader = options.vertexShader || `
+      uniform vec3 eyeUpObj;
+      uniform vec3 eyeFwdObj;
       varying vec3 vNormal;
       varying vec3 vNormalWorld;
       varying vec3 vPosition;
       varying vec3 vWorldPos;
       varying vec2 vUv;
+      varying vec3 vNormalObj;
+      varying vec3 vEyeFwdWorld;
       
       void main() {
         vNormal = normalize(normalMatrix * normal);
-        vNormalWorld = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+        // Proper world-space normal (handles non-uniform scale)
+        mat3 normalMatWorld = mat3(transpose(inverse(modelMatrix)));
+        vNormalWorld = normalize(normalMatWorld * normal);
+        vNormalObj = normalize(normal);          // object space, rotation-proof
+        // eye forward in WORLD space (w=0 so only rotation/scale applied)
+        vEyeFwdWorld = normalize((modelMatrix * vec4(eyeFwdObj, 0.0)).xyz);
         vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
         vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
         vUv = uv;
@@ -331,12 +343,31 @@ export class ShaderSystem {
       uniform float posterizeLevels; // e.g., 5.0 for 5 steps per channel
       // Exposure (to avoid double tone mapping with renderer)
       uniform float exposure;
+      // Eyelid overlay (disabled by default)
+      uniform float eyelidEnable;   // 0 off, 1 on
+      uniform float blink;          // 0 open → 1 closed
+      uniform float lidFeather;     // soft edge width 0..0.3
+      uniform float lidCurve;       // added center drop 0..0.8
+      uniform float lidCurvePower;  // >=1 shape control for arc
+      uniform vec3  lidTintColor;   // red tint
+      uniform float lidOpacity;     // 0..1 strength
+      uniform float lidThreshold;   // 0..1 gating threshold
+      uniform float lidHardness;    // 0..1 0=soft gate, 1=hard step
+      uniform vec3  eyeUp;          // optional override; 0-vector => use worldUp
+      uniform float eyelidDebug;    // 0/1 to visualize mask
+      // local-space basis for invariant mask
+      uniform vec3 eyeUpObj;   // e.g., (0,1,0) in the eye mesh's local space
+      uniform vec3 eyeFwdObj;  // e.g., (0,0,-1) in the eye mesh's local space
+      uniform float openPurpleEnable;   // 0/1
+      uniform vec3  openPurpleColor;    // e.g., vec3(1.0, 0.0, 1.0) for purple
       
       varying vec3 vNormal;
       varying vec3 vPosition;
       varying vec3 vNormalWorld;
       varying vec3 vWorldPos;
       varying vec2 vUv;
+      varying vec3 vNormalObj;
+      varying vec3 vEyeFwdWorld;
       
       float softQuantize(float x, float steps, float softness) {
         if (steps < 0.5) return x;
@@ -510,6 +541,69 @@ export class ShaderSystem {
         float groundMask = smoothstep(0.65, 0.95, upDot2);
         finalColor += (vec3(1.0) - finalColor) * groundMask * 0.06;
         finalColor = clamp(finalColor, 0.0, 1.0);
+
+        // Eyelid with world-space horizontal alignment (no tilt)
+        if (eyelidEnable > 0.5) {
+          // blink: 0=open, 1=closed
+          float b = clamp(blink, 0.0, 1.0);
+
+          // ---- EARLY EXIT WHEN OPEN (no mixing at all) ----
+          // hard threshold so there is absolutely no tint leakage
+          if (b <= 0.03) {
+            // Optional: if you want a diagnostic color when fully open, toggle here.
+            // finalColor = openPurpleEnable > 0.5 ? openPurpleColor : finalColor;
+          } else {
+            // ------ HORIZONTAL LIDS (world-up aligned) ------
+            // Build stable world-space frame: up = worldUp, side = up × eyeForwardWorld.
+            vec3 upW   = normalize(worldUp);
+            vec3 fwdW  = normalize(vEyeFwdWorld);
+            vec3 sideW = cross(upW, fwdW);
+            if (dot(sideW, sideW) < 1e-6) {
+              // Degenerate (forward ~ up): fall back to normal to pick a side
+              sideW = normalize(cross(upW, normalize(vNormalWorld)));
+              if (dot(sideW, sideW) < 1e-6) sideW = vec3(1.0, 0.0, 0.0);
+            }
+
+            // Use WORLD normal so lid stays horizontal even as the eye rotates
+            vec3 nW = normalize(vNormalWorld);
+            float y = clamp(dot(nW, upW),   -1.0, 1.0);
+            float x = clamp(dot(nW, sideW), -1.0, 1.0);
+
+            // Convert blink to "open" and build a very straight slit
+            float open = 1.0 - b; // 1=open, 0=closed
+            float curveTerm = lidCurve * (1.0 - pow(abs(x), max(lidCurvePower, 1e-4))) * 0.25;
+            float halfGap   = max(0.0, open - curveTerm);
+            float f         = max(lidFeather, 1e-4);
+
+            // Open region is |y| < halfGap; outside is covered by lids
+            float openMask = 1.0 - smoothstep(halfGap - f, halfGap + f, abs(y));
+            float lidMask  = 1.0 - openMask;
+
+            // thresholded gate with adjustable hardness
+            float g    = smoothstep(lidThreshold, lidThreshold + max(f*0.5, 1e-4), lidMask);
+            float hard = step(0.5, g);
+            float mEff = mix(g, hard, clamp(lidHardness, 0.0, 1.0));
+
+            // **** GUARANTEE NO MIX WHEN PRACTICALLY OPEN ****
+            // Multiply by a strict gate so if b<=0.03 there is zero effect.
+            float applyMask = step(0.03, b);
+            mEff *= applyMask;
+            
+            // Force hard replacement - no mixing, complete independence
+            // When mask is active, use hard step for complete color replacement
+            mEff = step(0.5, mEff);
+
+            if (eyelidDebug > 0.5) {
+              finalColor = mix(finalColor, vec3(1.0, 0.0, 1.0), mEff);
+            } else {
+              // Hard replacement in the eye shader - no lerp, no opacity
+              // Inside the covered region: strict gate and set finalColor = lidTintColor
+              if (mEff > 0.5) {
+                finalColor = lidTintColor;  // direct assignment, no mixing
+              }
+            }
+          }
+        }
         
         gl_FragColor = vec4(finalColor, 1.0);
       }
@@ -547,6 +641,22 @@ export class ShaderSystem {
         vibrance: { value: options.uniforms?.vibrance?.value ?? 0.3 },
         shadowLift: { value: options.uniforms?.shadowLift?.value ?? 0.08 },
         exposure: { value: options.uniforms?.exposure?.value ?? 1.0 },
+        // Eyelid defaults (off by default, only enabled for the eye)
+        eyelidEnable: { value: 0.0 },
+        blink:        { value: 0.0 },
+        lidFeather:   { value: 0.06 },
+        lidCurve:     { value: 0.10 }, // Very reduced for straighter lids
+        lidCurvePower:{ value: 2.5 }, // Higher power = flatter center
+        lidTintColor: { value: new THREE.Color(0xcc0000) }, // red
+        lidOpacity:   { value: 1.0 },
+        lidThreshold: { value: 0.55 },
+        lidHardness:  { value: 1.0 },
+        eyeUp:        { value: new THREE.Vector3(0,0,0) }, // 0-vector => fallback to worldUp
+        eyeUpObj:     { value: new THREE.Vector3(0, 1, 0) },
+        eyeFwdObj:    { value: new THREE.Vector3(0, 0, -1) },
+        openPurpleEnable: { value: 0.0 }, // disable by default
+        openPurpleColor:  { value: new THREE.Color(0x800080) },
+        eyelidDebug:  { value: 0.0 },
         posterizeLevels: { value: options.uniforms?.posterizeLevels?.value ?? 0.0 },
         time: { value: 0.0 },
         hatchStrength: { value: options.uniforms?.hatchStrength?.value ?? 0.0 },
@@ -635,6 +745,66 @@ export class ShaderSystem {
     mesh.receiveShadow = true;
     this.enhancedMaterials.set(mesh.uuid, shaderMat);
     return shaderMat;
+  }
+
+  /**
+   * Force the eye rig to use ShaderMaterial and enable eyelid uniforms
+   * @param {THREE.Object3D} rig - The eye rig object
+   * @returns {number} Number of meshes that were updated
+   */
+  _ensureEyeShaderOnRig(rig) {
+    let applied = 0;
+    console.log('👁️ Searching for eye meshes in rig:', rig.name || '(unnamed)');
+    rig.traverse((child) => {
+      if (!child.isMesh) return;
+      const mat = child.material;
+      console.log(`👁️ Found mesh: ${child.name || '(unnamed)'}, material type: ${mat?.constructor?.name || 'unknown'}`);
+
+      // If already our ShaderMaterial with eyelid uniforms, just register it
+      if (mat && mat.isShaderMaterial && mat.uniforms && ('eyelidEnable' in mat.uniforms)) {
+        console.log(`👁️ Found existing ShaderMaterial with eyelid on mesh: ${child.name || '(unnamed)'}`);
+        mat.uniforms.eyelidEnable.value = 0.0; // Disabled - no color mixing during blink
+        mat.uniforms.lidTintColor.value.set(0xcc0000); // red
+        mat.uniforms.lidOpacity.value = 1.0;
+        mat.uniforms.lidCurve.value = 0.10; // Very straight lids
+        mat.uniforms.lidCurvePower.value = 2.5; // Flatter center
+        mat.uniforms.lidThreshold.value  = 0.55;
+        mat.uniforms.lidHardness.value   = 1.0;
+        mat.uniforms.eyeUpObj.value.set(0, 1, 0);   // adjust if your eye model's up differs
+        mat.uniforms.eyeFwdObj.value.set(0, 0, -1); // adjust if forward differs
+        mat.uniforms.openPurpleEnable.value = 0.0; // disable purple tint by default
+        this._eyelidMats.add(mat);
+        applied++;
+        return;
+      }
+
+      // Replace with our custom shader, preserving color/map
+      console.log(`👁️ Replacing material on mesh: ${child.name || '(unnamed)'}, old type: ${mat?.constructor?.name || 'unknown'}`);
+      const shader = this.createCustomShader({
+        uniforms: {
+          baseColor: { value: (mat && mat.color) ? mat.color.clone() : new THREE.Color(0xffffff) },
+          map:       { value: (mat && mat.map) ? mat.map : null }
+        },
+        materialOptions: { lights: false }
+      });
+      shader.uniforms.eyelidEnable.value = 1.0;
+      shader.uniforms.lidTintColor.value.set(0xcc0000); // red
+      shader.uniforms.lidOpacity.value = 1.0;
+      shader.uniforms.lidCurve.value = 0.10; // Very straight lids
+      shader.uniforms.lidCurvePower.value = 2.5; // Flatter center
+      shader.uniforms.lidThreshold.value  = 0.55;
+      shader.uniforms.lidHardness.value   = 1.0;
+      shader.uniforms.eyeUpObj.value.set(0, 1, 0);   // adjust if your eye model's up differs
+      shader.uniforms.eyeFwdObj.value.set(0, 0, -1); // adjust if forward differs
+      shader.uniforms.openPurpleEnable.value = 0.0; // disable purple tint by default
+
+      child.material = shader;
+      this.enhancedMaterials.set(child.uuid, shader);
+      this._eyelidMats.add(shader);
+      console.log(`👁️ Applied shader to mesh: ${child.name || '(unnamed)'}, eyelid enabled`);
+      applied++;
+    });
+    return applied;
   }
 
   /**
@@ -923,6 +1093,8 @@ export class ShaderSystem {
       };
     }
 
+    // Overlay disabled: eyelid rendered entirely by the eye materials
+
     this.enhancedMaterials.forEach((mat) => {
       if (!mat || !mat.uniforms) return;
       if (cam && mat.uniforms.cameraPositionWorld) {
@@ -942,7 +1114,8 @@ export class ShaderSystem {
       if (skyEntry.cloudMaterial && skyEntry.cloudMaterial.uniforms) {
         const uniforms = skyEntry.cloudMaterial.uniforms;
         if (uniforms.uTime) {
-          uniforms.uTime.value += deltaTime * 0.6;
+          // deltaTime is in milliseconds, convert to seconds and scale for cloud animation
+          uniforms.uTime.value += (deltaTime * 0.001) * 0.6;
         }
         if (uniforms.uSunDir) {
           uniforms.uSunDir.value.copy(stableSunDir);
@@ -957,8 +1130,9 @@ export class ShaderSystem {
         } else if (cam) {
           skyEntry.group.position.copy(tmp.cameraPos);
         }
-        const rotSpeed = skyEntry.rotationSpeed ?? 0.02;
-        skyEntry.group.rotation.y += deltaTime * rotSpeed;
+        const rotSpeed = skyEntry.rotationSpeed ?? 0.035;
+        // deltaTime is in milliseconds from game loop, convert to seconds for rotation
+        skyEntry.group.rotation.y += (deltaTime * 0.001) * rotSpeed;
       }
     }
 
@@ -992,47 +1166,6 @@ export class ShaderSystem {
         if (!eyeState.blinkTimerInitialized) {
           eyeState.blinkTimer = 3.0 + Math.random() * 2.0; // Random initial delay 3-5 seconds
           eyeState.blinkTimerInitialized = true;
-          if (sunData.mesh) {
-            sunData.mesh.traverse((child) => {
-              if (child.isMesh) {
-                eyeState.originalScaleY = child.scale.y;
-              }
-            });
-          }
-          // Create eyelid meshes - make them HUGE to cover entire eyeball
-          if (sunData.mesh && sunData.rig) {
-            const radius = sunData.radius || 700; // Half of diameter 1400
-            const eyelidSize = radius * 2.5; // Make much larger than eyeball
-            
-            const topEyelid = new THREE.Mesh(
-              new THREE.PlaneGeometry(eyelidSize, eyelidSize),
-              new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.FrontSide })
-            );
-            topEyelid.position.set(0, radius * 1.5, -radius * 0.3); // Position in front and above
-            topEyelid.rotation.x = Math.PI / 2;
-            topEyelid.renderOrder = 1000;
-            topEyelid.name = 'topEyelid';
-            try { topEyelid.layers.set(2); } catch (_) {}
-            
-            const bottomEyelid = new THREE.Mesh(
-              new THREE.PlaneGeometry(eyelidSize, eyelidSize),
-              new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.FrontSide })
-            );
-            bottomEyelid.position.set(0, -radius * 1.5, -radius * 0.3); // Position in front and below
-            bottomEyelid.rotation.x = -Math.PI / 2;
-            bottomEyelid.renderOrder = 1000;
-            bottomEyelid.name = 'bottomEyelid';
-            try { bottomEyelid.layers.set(2); } catch (_) {}
-            
-            // Add to rig so they move with the eye
-            sunData.rig.add(topEyelid);
-            sunData.rig.add(bottomEyelid);
-            
-            eyeState.topEyelid = topEyelid;
-            eyeState.bottomEyelid = bottomEyelid;
-            eyeState.eyelidSpeed = radius * 2; // Speed scaled to eyeball size
-            eyeState.eyelidRadius = radius;
-          }
         }
 
         if (sunData.lookOffset) {
@@ -1160,123 +1293,79 @@ export class ShaderSystem {
       }
     }
     
-    // Eyeball blinking: Red for 2 seconds every other second (1s normal, 2s red, repeat)
+    // Eyelid blink controller: update uniforms on eye materials only
     if (sunData && sunData.rig) {
-      // Initialize on first run
-      if (!sunData._blinkState) {
-        sunData._blinkState = {
-          timer: 0,
-          originalColor: null,
-          originalMap: null,
-          initialized: false,
-          meshCount: 0
-        };
-        console.log('👁️ Initialized blink state for eyeball');
-      }
-      
-      const state = sunData._blinkState;
-      // deltaTime is in milliseconds from game loop
-      const dtSec = Math.max(0, (deltaTime || 0)) * 0.001;
-      state.timer += dtSec;
-      
-      // Initialize colors once - mesh is actually inside the rig
-      if (!state.initialized) {
-        let foundMeshes = 0;
-        state.originalMaterials = new Map(); // Store original materials per mesh
+      // one-time discovery of eye ShaderMaterials and enabling eyelid flag
+      if (!this._eyelidMatsInit) {
+        this._eyelidMatsInit = true;
+        this._eyelidMats = new Set();
+        const count = this._ensureEyeShaderOnRig(sunData.rig);
+        console.log(`👁️ Eyelid: Applied shader to ${count} eye mesh(es). Materials in set: ${this._eyelidMats.size}`);
+        if (count === 0) {
+          console.warn('👁️ Eyelid: no eye ShaderMaterials found or applied. Check that sunData.rig points at the eye meshes.');
+        }
         
-        sunData.rig.traverse((child) => {
-          if (child.isMesh && child.material) {
-            foundMeshes++;
-            // Store the ORIGINAL material completely so we can restore it
-            state.originalMaterials.set(child.uuid, child.material.clone());
-            
-            // Store original color - use white as fallback if no color
-            if (child.material.color) {
-              if (!state.originalColor) {
-                state.originalColor = child.material.color.clone();
-              }
-            } else {
-              if (!state.originalColor) {
-                state.originalColor = new THREE.Color(1, 1, 1);
-              }
-            }
-            if (child.material.map && !state.originalMap) {
-              state.originalMap = child.material.map;
-            }
+        // one-time after eyes are discovered: ensure solid, unmixed red lid
+        this._eyelidMats.forEach((shaderMat) => {
+          if (shaderMat && shaderMat.uniforms) {
+            shaderMat.uniforms.lidFeather.value = 0.001;  // crisp edge
+            shaderMat.uniforms.lidHardness.value = 1.0;   // hard gate
+            shaderMat.uniforms.openPurpleEnable.value = 0.0; // kill any debug tint
+            // ensure no hue band shifts
+            if (shaderMat.uniforms.hueDesatStrength) shaderMat.uniforms.hueDesatStrength.value = 0.0;
+            if (shaderMat.uniforms.hueDimStrength) shaderMat.uniforms.hueDimStrength.value = 0.0;
+            if (shaderMat.uniforms.hue2DesatStrength) shaderMat.uniforms.hue2DesatStrength.value = 0.0;
+            if (shaderMat.uniforms.hue2DimStrength) shaderMat.uniforms.hue2DimStrength.value = 0.0;
           }
         });
-        state.meshCount = foundMeshes;
-        state.initialized = true;
-        console.log('👁️ Found', foundMeshes, 'eye meshes. Original color:', state.originalColor, 'has map:', !!state.originalMap);
-      }
-      
-      // Cycle: 0-1s = normal, 1-3s = dark red, repeat every 3 seconds
-      const cycleTime = state.timer % 3.0;
-      // Red phase: 1-3 seconds (2 seconds of red)
-      const isRed = cycleTime >= 1.0 && cycleTime < 3.0;
-      
-      // Debug: log state every 3 seconds to verify cycle
-      if (Math.floor(state.timer) > 0 && Math.floor(state.timer) % 3 === 0 && Math.abs(state.timer - Math.floor(state.timer)) < 0.1) {
-        console.log('👁️ Cycle check - Timer:', state.timer.toFixed(2), 'CycleTime:', cycleTime.toFixed(2), 'IsRed:', isRed);
-      }
-      
-      if (state.initialized && state.originalColor) {
-        let updatedCount = 0;
-        sunData.rig.traverse((child) => {
-          if (child.isMesh && child.material) {
-            updatedCount++;
-            if (isRed) {
-              // Turn dark red - FORCE pure dark red by replacing the entire material
-              // Create a new MeshBasicMaterial with pure dark red, no textures
-              const redMaterial = new THREE.MeshBasicMaterial({
-                color: new THREE.Color(0.6, 0.0, 0.0), // Pure dark red
-                toneMapped: false, // No tone mapping
-                side: child.material.side || THREE.FrontSide,
-                transparent: false,
-                opacity: 1.0,
-                depthTest: child.material.depthTest !== false,
-                depthWrite: child.material.depthWrite !== false
-              });
-              // Replace the material completely
-              child.material = redMaterial;
-              child.material.needsUpdate = true;
-            } else {
-              // Normal color (0-1 second) - FULLY restore original material
-              const originalMaterial = state.originalMaterials?.get(child.uuid);
-              if (originalMaterial) {
-                // Restore the original material completely
-                child.material = originalMaterial.clone();
-                child.material.needsUpdate = true;
-              } else {
-                // Fallback: just restore color if we don't have original material stored
-                child.material.color.copy(state.originalColor);
-                if (state.originalMap) {
-                  child.material.map = state.originalMap;
-                } else {
-                  child.material.map = null;
-                }
-                if (child.material.isMeshBasicMaterial) {
-                  child.material.toneMapped = false;
-                }
-                child.material.needsUpdate = true;
-              }
-            }
-          }
-        });
-        // Debug: log if meshes were found but not updated
-        if (updatedCount === 0 && state.meshCount > 0) {
-          console.warn('👁️ Warning: Found', state.meshCount, 'meshes but updated 0. Is rig in scene?');
+        // set up a simple auto-blink if not present
+        if (!this._blinkCtrl) {
+          this._blinkCtrl = { t: 0, v: 0, timer: 0, next: 2.4, auto: true };
+          // Start fully open (no forced blink)
+          this._blinkCtrl.t = 0.0;
         }
       }
-    } else if (sunData && !sunData.rig) {
-      // Debug: sun eye exists but rig is missing
-      if (!this._noSunRigWarned) {
-        console.warn('👁️ Sun eye exists but rig is missing. sunData:', sunData);
-        this._noSunRigWarned = true;
+
+      // animate blink t in [0,1] with short close and reopen
+      const dtSec = Math.max(0, (deltaTime || 0)) * 0.001;
+      const bc = this._blinkCtrl;
+      bc.timer += dtSec;
+      if (bc.auto && bc.timer > bc.next) {
+        bc.timer = 0;
+        bc.next  = 2.2 + Math.random() * 2.2;
+        bc.v     = 5.0; // kick to close quickly
       }
-    } else if (!sunData) {
-      // Sun eye doesn't exist - this is expected in non-Level 3
-      // Don't log this as it's normal
+      // critically damped return to open
+      const target = 0.0;
+      bc.v += (target - bc.t) * 7.0 * dtSec;
+      bc.v *= Math.pow(0.12, dtSec);
+      bc.t  = THREE.MathUtils.clamp(bc.t + bc.v * dtSec, 0, 1);
+      
+      // snap to fully open to avoid epsilon tint mixing
+      if (bc.t < 0.01 && Math.abs(bc.v) < 1e-3) {
+        bc.t = 0.0;
+        bc.v = 0.0;
+      }
+      
+      // ease for nicer motion
+      const ease = (x)=> x*x*(3.0-2.0*x);
+      const blinkT = ease(bc.t);
+
+      // push blink uniform to the eye materials
+      if (this._eyelidMats) {
+        let updated = 0;
+        this._eyelidMats.forEach((m) => {
+          if (m && m.uniforms && m.uniforms.blink) {
+            m.uniforms.blink.value = blinkT;
+            updated++;
+          }
+        });
+        // Debug: log every 2 seconds
+        if (!this._lastBlinkDebug || (this._timeSec - this._lastBlinkDebug) > 2.0) {
+          console.log(`👁️ Blink update: t=${bc.t.toFixed(3)}, blinkT=${blinkT.toFixed(3)}, updated ${updated}/${this._eyelidMats.size} materials`);
+          this._lastBlinkDebug = this._timeSec;
+        }
+      }
     }
   }
 
@@ -1339,6 +1428,130 @@ export class ShaderSystem {
   }
 
   /**
+   * Create the eyelid overlay mesh (a simple plane with a tiny shader)
+   */
+  _createEyelidOverlayMesh(pixelSize = 2.0, color = 0x7a1a12) {
+    const geo = new THREE.PlaneGeometry(2, 2); // unit quad in local space
+    const mat = new THREE.ShaderMaterial({
+      transparent: false,
+      depthTest: false,  // draw on top of everything
+      depthWrite: false,
+      blending: THREE.NoBlending,
+      toneMapped: false, // avoid ACES/tonemapping surprises
+      uniforms: {
+        uOpen:     { value: 1.0 },                              // 1=open, 0=closed
+        uCurve:    { value: 0.75 },                             // arc intensity
+        uFeather:  { value: 0.05 },                             // soft edge (set 0 for razor)
+        uTilt:     { value: 0.0 },                              // no tilt (horizontal)
+        uColor:    { value: new THREE.Color(color) },           // red
+        uDebug:    { value: 0.0 }                               // 1 to show mask
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec2 vUv;
+        uniform float uOpen;    // 0..1
+        uniform float uCurve;   // ~0.5..1.2
+        uniform float uFeather; // 0..0.2
+        uniform float uTilt;    // radians
+        uniform vec3  uColor;
+        uniform float uDebug;
+
+        float easeInOutQuint(float x){
+          x = clamp(x, 0.0, 1.0);
+          return x < 0.5 ? 16.0*x*x*x*x*x : 1.0 - pow(-2.0*x + 2.0, 5.0) * 0.5;
+        }
+
+        // Parabolic lids over a unit disk in NDC-like space
+        float eyelidAlpha(vec2 p, float open01, float curve, float feather, float tiltRad){
+          float c = cos(tiltRad), s = sin(tiltRad);
+          vec2 q = vec2(c*p.x - s*p.y, s*p.x + c*p.y);
+
+          // open01 in [0,1] -> yOpen in [0.0..0.9]
+          float yOpen = mix(0.0, 0.9, open01);
+          float arc = curve * max(0.0, 1.0 - q.x*q.x);
+
+          float yTop    =  +yOpen + arc;
+          float yBottom =  -yOpen - arc;
+
+          float dTop    = q.y - yTop;      // >0 above top lid boundary
+          float dBottom = yBottom - q.y;   // >0 below bottom lid boundary
+
+          float topMask = smoothstep(0.0, feather, dTop);
+          float botMask = smoothstep(0.0, feather, dBottom);
+          float lid = max(topMask, botMask);
+
+          // Keep it inside the circular eye opening (unit circle in this plane)
+          float ellipse = dot(p,p);
+          float eyeMask = 1.0 - smoothstep(1.0, 1.0 + feather*2.0, ellipse);
+
+          return lid * eyeMask;
+        }
+
+        void main(){
+          // Map plane UV [0,1]² to [-1,1]²
+          vec2 p = (vUv - 0.5) * 2.0;
+
+          float openSmoothed = easeInOutQuint(uOpen);
+          float a = eyelidAlpha(p, openSmoothed, uCurve, max(uFeather, 1e-4), uTilt);
+          a = clamp(a, 0.0, 1.0);
+
+          if (a < 0.999) discard;          // solid occlusion, no blending
+          if (uDebug > 0.5) {
+            gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0); // magenta to debug mask
+          } else {
+            gl_FragColor = vec4(uColor, 1.0);
+          }
+        }
+      `
+    });
+
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.name = 'EyelidOverlay';
+    mesh.scale.setScalar(pixelSize); // we will set the real size later
+    mesh.renderOrder = 9999;         // draw very late
+    mesh.frustumCulled = false;
+    return mesh;
+  }
+
+  /**
+   * Ensure an overlay exists, parented to the eye rig and oriented forward
+   */
+  _ensureEyelidOverlay(sunData, radius, eyeForwardLocal = new THREE.Vector3(0,0,-1)) {
+    if (!sunData) return null;
+    if (!sunData.eyelidOverlay) {
+      // Size the plane to cover the eye: diameter ~ 2*radius (slightly extra)
+      const overlay = this._createEyelidOverlayMesh(2.0, 0x7a1a12);
+      // Parent to the rig so it follows the eye
+      const rig = sunData.rig || sunData.group;
+      if (!rig) return null;
+      rig.add(overlay);
+
+      // Position just in front of the cornea along the eye's forward axis
+      const forward = eyeForwardLocal.clone().normalize();
+      overlay.position.copy(forward).multiplyScalar(radius * 0.99);
+
+      // Rotate plane so its +Z faces along the eye forward
+      const zAxis = new THREE.Vector3(0, 0, 1);
+      const q = new THREE.Quaternion().setFromUnitVectors(zAxis, forward);
+      overlay.quaternion.copy(q);
+
+      // Scale plane to eye diameter (a little extra margin)
+      const diameter = radius * 2.2;
+      overlay.scale.set(diameter, diameter, 1);
+
+      // Save and return
+      sunData.eyelidOverlay = overlay;
+    }
+    return sunData.eyelidOverlay;
+  }
+
+  /**
    * Cleanup
    */
   dispose() {
@@ -1380,5 +1593,30 @@ export class ShaderSystem {
       if (u.hue2DesatCenter) setIf(mat, 'hue2DesatCenter', u.hue2DesatCenter);
       if (u.highlightTintColor) setIf(mat, 'highlightTintColor', u.highlightTintColor);
     });
+  }
+
+  /**
+   * Set blink value manually (0 = open, 1 = closed)
+   * @param {number} t - Blink value between 0 and 1
+   */
+  setBlink(t) {
+    const v = THREE.MathUtils.clamp(t, 0, 1);
+    if (this._eyelidMats) {
+      this._eyelidMats.forEach(m => {
+        if (m && m.uniforms && m.uniforms.blink) {
+          m.uniforms.blink.value = v;
+        }
+      });
+    }
+  }
+
+  /**
+   * Enable/disable auto-blink
+   * @param {boolean} on - true to enable auto-blink, false to disable
+   */
+  setAutoBlink(on = true) {
+    if (this._blinkCtrl) {
+      this._blinkCtrl.auto = on;
+    }
   }
 }
