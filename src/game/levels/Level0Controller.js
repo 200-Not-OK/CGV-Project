@@ -38,6 +38,7 @@ export class Level0Controller {
       'crawlers': 'rich_the_crawlers',
       'yes_please': 'rich_yes_please_hurry',
       'there_is_node': 'rich_there_is_a_node',
+      'if_we_do_not_get': 'rich_if_we_dont_get',
       'press_e': 'rich_press_e',
       'theres_node': 'rich_theres_the_node',
       'nevermind': 'rich_nevermin',
@@ -1616,7 +1617,7 @@ export class Level0Controller {
       this._setupEnterKeyListener(director);
       
       // Richard dialogue - wait for Enter to continue
-      await this._showCaption('IF WE DO NOT GET THE NODES, WE ARE SCREWED!', 0); // No auto-hide
+      await this._showCaption('IF WE DO NOT GET THE NODES, WE ARE SCREWED!', 0, 'Richard'); // No auto-hide
       await this._waitForEnter();
       
       // Clear caption and wait a moment
@@ -1630,7 +1631,7 @@ export class Level0Controller {
       this._setupEnterKeyListener(director);
       
       // Steve responds (but gets interrupted)
-      await this._showCaption('Calm down Richard', 0); // No auto-hide
+      await this._showCaption('Calm down Richard', 0, 'Steve'); // No auto-hide
       
       // Wait a bit for the dialogue to show, then player spawns
       await this._wait(800);
@@ -1908,8 +1909,8 @@ export class Level0Controller {
         const targetRotation = Math.atan2(direction.x, direction.z) + Math.PI; // Add PI to fix backwards facing
         this.richard.mesh.rotation.y = targetRotation;
         
-        // Show dialogue again (non-blocking so pacing continues)
-        this._showCaption('Oh no, oh no, oh no! What are we gonna do?', 3000).catch(() => {});
+        // Show dialogue again (non-blocking so pacing continues) - no voiceover during pacing
+        this._showCaption('Oh no, oh no, oh no! What are we gonna do?', 3000, 'Richard', 'skip_voiceover').catch(() => {});
       } else {
         // Move towards target
         const direction = new THREE.Vector3()
@@ -2197,6 +2198,8 @@ export class Level0Controller {
           voiceoverKey = 'when_decide';
         } else if (lowerText.includes('good job')) {
           voiceoverKey = 'good_job';
+        } else if (lowerText.includes('if we do not get') || (lowerText.includes('screwed') && lowerText.includes('nodes'))) {
+          voiceoverKey = 'if_we_do_not_get';
         }
       }
 
@@ -2454,8 +2457,8 @@ export class Level0Controller {
       // Re-setup Enter key listener
       this._setupEnterKeyListener(director);
       
-      // Dialogue 4: Steve - "Calm down Richard"
-      await this._showCaption('Calm down Richard', 0, 'Steve');
+      // Dialogue 4: Steve - "Calm down. This one looks... capable. More capable than us, at least."
+      await this._showCaption('Calm down Richard.', 0, 'Steve');
       await this._waitForEnter();
       
       // Clear caption
