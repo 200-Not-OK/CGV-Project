@@ -525,6 +525,32 @@ export class Level0Controller {
             scale: 2.5,
             game: this.game,
           });
+          
+          // Scale the physics body to match visual scale
+          if (bossEnemy && bossEnemy.body && bossEnemy.body.shapes) {
+            const scaleValue = 2.5;
+            bossEnemy.body.shapes.forEach(shape => {
+              if (shape.type === CANNON.Shape.types.BOX) {
+                // Scale box shape (multiply halfExtents)
+                shape.halfExtents.x *= scaleValue;
+                shape.halfExtents.y *= scaleValue;
+                shape.halfExtents.z *= scaleValue;
+              } else if (shape.type === CANNON.Shape.types.SPHERE) {
+                // Scale sphere shape
+                shape.radius *= scaleValue;
+              } else if (shape.type === CANNON.Shape.types.CYLINDER) {
+                // Scale cylinder shape
+                shape.radiusTop *= scaleValue;
+                shape.radiusBottom *= scaleValue;
+                shape.height *= scaleValue;
+              }
+            });
+            // Update the body's bounding sphere radius
+            bossEnemy.body.updateBoundingRadius();
+            // Recompute AABB (axis-aligned bounding box)
+            bossEnemy.body.aabbNeedsUpdate = true;
+            console.log('⚔️ [Level0Controller] Boss physics body scaled to match visual scale');
+          }
         } else {
           // Reposition existing boss
           bossEnemy.setPosition(bossPos);
