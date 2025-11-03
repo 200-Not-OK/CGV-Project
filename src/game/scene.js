@@ -377,6 +377,13 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
     sky.light = null;
   }
   scene.environment = null;
+  // Clear any lingering HDR background from previous levels to prevent it from being restored by graphics settings
+  if (scene.userData.hdrBackground) {
+    delete scene.userData.hdrBackground;
+  }
+  if (scene.userData.hdrEnvironment) {
+    delete scene.userData.hdrEnvironment;
+  }
   if (preset === 'light') {
     const sunDir = new THREE.Vector3(0.6, 0.8, 0.2).normalize();
 
