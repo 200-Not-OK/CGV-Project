@@ -133,6 +133,10 @@ export class Game {
       colliderWidthScale: 0.5,   // 40% of model width (default: 0.4)
       colliderHeightScale: 1,  // 90% of model height (default: 0.9)
       colliderDepthScale: 0.5,    // 40% of model depth (default: 0.4)
+      groundTolerance: 1.5,          // meters within which we still "count" ground
+      maxGroundAngle: 55,             // degrees; steeper is not ground
+      coyoteTime: 0.12,               // seconds grace after losing contact
+      minAirFramesToFall: 3,
       game: this // Pass game reference for death handling and boss win event
     }, this);
     // Player position will be set by loadLevel() call
@@ -274,7 +278,7 @@ export class Game {
     this.ui.add('fps', FPS, { showFrameTime: true });
     console.log('📊 FPS counter enabled. Press F to toggle visibility.');
     // Add coordinates display
-    this.ui.add('coordinates', Coordinates, {});
+    // this.ui.add('coordinates', Coordinates, {});
     // Add crosshair for combat
     this.ui.add('crosshair', Crosshair, { visible: true });
     // Add interaction prompt for chests
