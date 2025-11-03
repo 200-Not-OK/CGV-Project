@@ -17,6 +17,56 @@ window.addEventListener('load', () => {
   window.togglePerformanceDisplay = () => game.performanceMonitor?.toggleStatsDisplay();
   window.performanceReport = () => game.performanceMonitor?.printOptimizationReport();
 
+  // Debug function to pickup all chests in current level
+  window.debugPickupAllChests = () => {
+    if (!game.collectiblesManager) {
+      console.error('❌ CollectiblesManager not found');
+      return;
+    }
+    const currentLevel = game?.currentLevelId || game?.level?.data?.id || 'unknown';
+    console.log(`🐛 DEBUG: Attempting to pickup all chests in level: ${currentLevel}`);
+    return game.collectiblesManager.debugPickupAllChests();
+  };
+
+  // Convenience functions for specific levels
+  window.debugPickupLevel3Chests = () => {
+    const currentLevel = game?.currentLevelId || game?.level?.data?.id;
+    if (currentLevel !== 'level3') {
+      console.warn(`⚠️ Current level is ${currentLevel}, not level3. Use debugPickupAllChests() for current level.`);
+      return;
+    }
+    return window.debugPickupAllChests();
+  };
+
+  window.debugPickupLevel1GlitchedChests = () => {
+    const currentLevel = game?.currentLevelId || game?.level?.data?.id;
+    if (currentLevel !== 'level1_glitched') {
+      console.warn(`⚠️ Current level is ${currentLevel}, not level1_glitched. Use debugPickupAllChests() for current level.`);
+      return;
+    }
+    return window.debugPickupAllChests();
+  };
+
+  window.debugPickupLevel2GlitchedChests = () => {
+    const currentLevel = game?.currentLevelId || game?.level?.data?.id;
+    if (currentLevel !== 'level2_glitched') {
+      console.warn(`⚠️ Current level is ${currentLevel}, not level2_glitched. Use debugPickupAllChests() for current level.`);
+      return;
+    }
+    return window.debugPickupAllChests();
+  };
+
+  console.log('🐛 Debug functions available:');
+  console.log('  - debugPickupAllChests() - Pickup all chests in current level');
+  console.log('  - debugPickupLevel3Chests() - Pickup all chests in level3 (must be in level3)');
+  console.log('  - debugPickupLevel1GlitchedChests() - Pickup all chests in level1_glitched (must be in that level)');
+  console.log('  - debugPickupLevel2GlitchedChests() - Pickup all chests in level2_glitched (must be in that level)');
+  console.log('');
+  console.log('📦 Chest counts by level:');
+  console.log('  - level3: LLM chests (GPT, Claude, Gemini)');
+  console.log('  - level1_glitched: 7 chests (4 potions + 3 LLMs)');
+  console.log('  - level2_glitched: 2 chests (2 apples)');
+
   // Build overlay with only the two levels requested
   const LVLS = Array.isArray(LEVELS) ? LEVELS : (LEVELS?.levels ?? []);
   const availableLevels = (LVLS || []).filter(l => ['Intro Level', 'Level 3'].includes(l.id));
