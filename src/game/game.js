@@ -2770,23 +2770,79 @@ checkGlitchedLevelCompletion() {
     if (this.currentLevelId === 'level1_glitched' && !this.glitchManager.glitchedLevelsCompleted.level2_glitched) {
       nextLevel = 'level2_glitched';
       message = 'Level 1 Glitched completed! Moving to Level 2 Glitched.';
-    } else {
+      
+      console.log(`🎯 Next level: ${nextLevel}`);
+      
+      // Show completion message
+      this.showMessage(message, 3000);
+
+      // Play quick cinematic, then teleport to level2_glitched
+      if (this.cinematics?.playCinematic) {
+        this.cinematics.playCinematic('l3_p2_glitch');
+      }
+      
+      // Wait, then go to next level
+      setTimeout(() => {
+        console.log(`🚀 Teleporting to ${nextLevel}...`);
+        this.loadLevelByName(nextLevel);
+      }, 3000);
+      
+    } else if (this.currentLevelId === 'level2_glitched') {
+      // Completed level2_glitched - return to level3
       nextLevel = 'level3';
       message = 'All glitched levels completed! Returning to Level 3.';
+      
+      console.log(`🎯 Next level: ${nextLevel} (all glitched levels complete)`);
+      
+      // Show completion message
+      this.showMessage(message, 2000);
+      
+      // Play cinematic first, then load level3 after it completes
+      if (this.cinematics?.playCinematic) {
+        console.log('🎬 Playing l3_p2_glitch cinematic before returning to level3...');
+        this.cinematics.playCinematic('l3_p2_glitch', () => {
+          // Callback after cinematic completes
+          console.log('🚀 Cinematic complete, teleporting to level3...');
+          setTimeout(() => {
+            this.loadLevelByName(nextLevel).then(() => {
+              // After loading level3, trigger the graduation finale
+              console.log('🎓 All glitched levels completed! Triggering level3 completion...');
+              setTimeout(() => {
+                // Dispatch level:complete event to trigger graduation cinematic
+                window.dispatchEvent(new CustomEvent('level:complete', { 
+                  detail: { levelId: 'level3' } 
+                }));
+              }, 1000); // Wait 1 second for player to settle
+            });
+          }, 500);
+        });
+      } else {
+        // Fallback if no cinematics manager
+        setTimeout(() => {
+          console.log(`🚀 Teleporting to ${nextLevel}...`);
+          this.loadLevelByName(nextLevel).then(() => {
+            // Trigger graduation after loading
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('level:complete', { 
+                detail: { levelId: 'level3' } 
+              }));
+            }, 1000);
+          });
+        }, 2500);
+      }
+    } else {
+      // Fallback for any other scenario
+      nextLevel = 'level3';
+      message = 'Returning to Level 3.';
+      
+      console.log(`🎯 Next level: ${nextLevel} (fallback)`);
+      this.showMessage(message, 3000);
+      
+      setTimeout(() => {
+        console.log(`🚀 Teleporting to ${nextLevel}...`);
+        this.loadLevelByName(nextLevel);
+      }, 3000);
     }
-    
-    console.log(`🎯 Next level: ${nextLevel}`);
-    
-    // Show completion message
-    this.showMessage(message, 3000);
-
-    this.cinematics?.playCinematic?.('l3_p2_glitch');
-    
-    // Wait, then go to next level
-    setTimeout(() => {
-      console.log(`🚀 Teleporting to ${nextLevel}...`);
-      this.loadLevelByName(nextLevel);
-    }, 3000);
   } else {
     console.log(`⏳ Need ${requiredCount - collectedCount} more collectible(s)`);
   }
