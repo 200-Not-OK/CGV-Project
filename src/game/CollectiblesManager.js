@@ -604,6 +604,11 @@ openChest(chestCollectible) {
   console.log(`📦 Opening chest containing: ${chestCollectible.contents}`);
 
   this.markChestAsCollected(chestCollectible.id);
+  
+  // ADD THIS: Check for glitched level completion after collecting chest
+  if (this.game && this.game.checkGlitchedLevelCompletion) {
+    this.game.checkGlitchedLevelCompletion();
+  }
   // Immediately hide interaction prompt and clear currentInteractableChest
   if (this.interactionPrompt && this.currentInteractableChest === chestCollectible) {
     const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
@@ -614,7 +619,7 @@ openChest(chestCollectible) {
     }
     this.currentInteractableChest = null;
   }
-
+  
   // Play chest opening sound
   if (this.game && this.game.soundManager) {
     this.game.soundManager.playSFX('chest', 0.8);
@@ -665,6 +670,22 @@ openChest(chestCollectible) {
     
     this.triggerEvent('onLLMCollected', { type: llmType, chest: chestCollectible });
     
+if (this.game && this.game.level?.data?.id === 'level1_glitched') {
+    const collectedCount = this.getCollectedChestCount();
+    console.log(`📊 Glitched level progress: ${collectedCount}/2 chests`);
+    
+    if (collectedCount >= 2) {
+      console.log('✅ Collected 2 chests in level1_glitched! Teleporting to level2_glitched...');
+      // Use setTimeout to ensure chest animation completes before teleporting
+      setTimeout(() => {
+        if (this.game && this.game.loadLevelByName) {
+          this.game.loadLevelByName('level2_glitched');
+        }
+      }, 1500); // Wait for chest animation to finish
+    }
+  }
+
+
     // Notify GlitchManager about the LLM collection (for computer unlock)
     if (this.game && this.game.glitchManager) {
       this.game.glitchManager.collectLLM(llmType);
@@ -1244,6 +1265,7 @@ createLLMMesh(type) {
 isChestCollected(chestId) {
   const collectible = this.collectibles.get(chestId);
   return collectible ? collectible.collected : false;
+  return this.persistentCollectedChests.size;
 }
 
 /**

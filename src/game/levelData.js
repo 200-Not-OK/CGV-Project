@@ -21371,7 +21371,7 @@ export const levels = [
           "contents": "apple"
         },
         {
-          "id": "chest_30",
+          "id": "chest_33",
           "position": [
             299.39439238906533,
             5.723357791763874,

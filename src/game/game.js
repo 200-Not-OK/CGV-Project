@@ -1799,6 +1799,15 @@ this.input.alwaysTrackMouse = true;
     loadingScreen.hide(500); // Fade out over 500ms
     console.log('📺 Loading screen hidden');
   }
+  if (this.collectiblesManager) {
+  // Only clear persistent chests when NOT transitioning between glitched levels
+  const isGlitchedTransition = levelData?.id?.includes('_glitched') && 
+                              this.currentLevelId?.includes('_glitched');
+  
+  if (!isGlitchedTransition) {
+    this.collectiblesManager.clearPersistentChests();
+  }
+}
 
   return this.level;
 }
@@ -2733,47 +2742,45 @@ setupLLMTracking() {
  * Check if enough collectibles are collected in glitched levels
  */
 checkGlitchedLevelCompletion() {
-  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
+  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) {
+    console.log('🔍 Not in glitched level, skipping completion check');
+    return;
+  }
   
-  const levelData = this.levelManager.getLevelData(this.currentLevelId);
-  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
+  console.log('🔍 Checking glitched level completion for:', this.currentLevelId);
   
-  const chests = levelData.collectibles.chests;
+  const requiredCount = this.glitchManager.requiredGlitchedCollectibles[this.currentLevelId] || 2;
+  const collectedCount = this.collectiblesManager.getCollectedChestCount();
   
-  // Count collected chests
-  const collectedCount = chests.filter(chest => {
-    return this.collectiblesManager.isChestCollected(chest.id);
-  }).length;
-  
-  const requiredCount = this.glitchManager.requiredGlitchedCollectibles[this.currentLevelId];
-  
-  console.log(`📊 Glitched level progress: ${collectedCount}/${requiredCount} collectibles`);
+  console.log(`📊 Glitched level progress: ${collectedCount}/${requiredCount} chests`);
   
   if (collectedCount >= requiredCount) {
-    console.log(`✅ Required collectibles collected in ${this.currentLevelId}!`);
+    console.log(`✅ Required ${requiredCount} chests collected in ${this.currentLevelId}!`);
     
     // Mark this glitched level as completed
     this.glitchManager.completeGlitchedLevel(this.currentLevelId);
     
     // Determine next level
     let nextLevel, message;
-    if (this.currentLevelId === 'level1_glitched' && !this.glitchManager.glitchedLevelsCompleted.level2_glitched) {
+    if (this.currentLevelId === 'level1_glitched') {
       nextLevel = 'level2_glitched';
       message = 'Level 1 Glitched completed! Moving to Level 2 Glitched.';
-    } else {
+    } else if (this.currentLevelId === 'level2_glitched') {
       nextLevel = 'level3';
       message = 'All glitched levels completed! Returning to Level 3.';
+    } else {
+      nextLevel = 'level3';
+      message = 'Glitched level completed! Returning to Level 3.';
     }
     
     // Show completion message
     this.showMessage(message, 3000);
-
-    this.cinematics?.playCinematic?.('l3_p2_glitch');
     
     // Wait, then go to next level
     setTimeout(() => {
+      console.log('🚀 Auto-progressing to:', nextLevel);
       this.loadLevelByName(nextLevel);
-    }, 3000);  //comeback
+    }, 3000);
   }
 }
 
