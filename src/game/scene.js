@@ -57,11 +57,7 @@ function convertToBasicMaterial(material) {
   return basic;
 }
 
-async function createSunEyeInstance(scene) {
-  // Safety: never create/load outside Level 3
-  if (!scene || scene?.userData?.levelId !== 'level3') {
-    return null;
-  }
+async function createSunEyeInstance() {
   const gltf = await loadSunEyeAsset();
   const eyeScene = gltf.scene.clone(true);
   eyeScene.traverse((child) => {
@@ -105,7 +101,7 @@ export function createSceneAndRenderer() {
 
   // Skybox rotation properties (creates twinkling effect)
   let skyboxRotation = 0;
-  const skyboxRotationSpeed = 0.0004; // Very slow for subtle twinkling
+  const skyboxRotationSpeed = 0.025; // Slower rotation for Level 3
   let skyboxMeshFar = null; // Far layer - blue nebulae
   let skyboxMeshNear = null; // Near layer - asteroid field
   // Expose handles for external sky switching
@@ -114,6 +110,7 @@ export function createSceneAndRenderer() {
   scene.userData.sunFill = null;
   scene.userData.sunTarget = null;
   scene.userData.sunEye = null;
+  scene.userData.sunEyeBlinker = null;
 
   // Renderer
 const renderer = new THREE.WebGLRenderer({ 
@@ -288,11 +285,36 @@ const totalTextures = 2; // Only 2 layers for better FPS
   // Update function for skybox animation
   // Update function for skybox rotation (creates twinkling stars effect)
   const updateSkybox = (deltaTime) => {
-    if (skyboxMeshFar && skyboxMeshNear) {
-      skyboxRotation += skyboxRotationSpeed * (deltaTime / 16.67);
-      
-      skyboxMeshFar.rotation.y = Math.PI + (skyboxRotation * 0.1);
-      skyboxMeshNear.rotation.y = Math.PI + 2.5 + (skyboxRotation * 0.5);
+    // Only rotate skybox for Level 3, not for other levels
+    const currentLevelId = scene?.userData?.levelId;
+    if (currentLevelId !== 'level3') {
+      // For non-Level3, make sure HDR skyboxes are hidden
+      if (skyboxMeshFar) skyboxMeshFar.visible = false;
+      if (skyboxMeshNear) skyboxMeshNear.visible = false;
+      return; // Stop rotation for all levels except Level 3
+    }
+    
+    // For Level 3, use the light preset skybox (not HDR)
+    // Only rotate if the 'light' preset is active
+    const sky = scene?.userData?.sky;
+    const lightPreset = sky?.light;
+    
+    if (lightPreset && lightPreset.group) {
+      // Light preset is active, don't show HDR meshes
+      if (skyboxMeshFar) skyboxMeshFar.visible = false;
+      if (skyboxMeshNear) skyboxMeshNear.visible = false;
+      // Light preset rotation is handled in shaderSystem.js
+    } else {
+      // No light preset, show HDR with rotation
+      if (skyboxMeshFar && skyboxMeshNear) {
+        skyboxMeshFar.visible = true;
+        skyboxMeshNear.visible = true;
+        skyboxRotation += skyboxRotationSpeed * (deltaTime / 16.67);
+        
+        // Level 3 slow constant rotation
+        skyboxMeshFar.rotation.y = Math.PI + skyboxRotation;
+        skyboxMeshNear.rotation.y = Math.PI + 2.5 + (skyboxRotation * 0.75);
+      }
     }
   };
 
@@ -302,14 +324,27 @@ const totalTextures = 2; // Only 2 layers for better FPS
 // Lightweight preset switcher for per-level sky
 export function setSkyPreset(scene, renderer, preset = 'dark') {
   if (!scene) return;
+  
+  console.log(`🌌 setSkyPreset called with preset: "${preset}"`);
+  
   // Safety: never apply Level 3 'light' preset outside Level 3
   try {
     if (preset === 'light' && (!scene.userData || scene.userData.levelId !== 'level3')) {
+      console.warn('⚠️ Attempted to set light preset outside Level 3, forcing dark preset');
       preset = 'dark';
     }
   } catch (_) {}
-  const sky = scene.userData && scene.userData.sky ? scene.userData.sky : null;
-  // Remove previous sun if any
+  
+  // ALWAYS get fresh sky object or create new one - don't trust existing data
+  if (!scene.userData) {
+    scene.userData = {};
+  }
+  if (!scene.userData.sky) {
+    scene.userData.sky = {};
+  }
+  const sky = scene.userData.sky;
+  
+  // Remove previous sun/light objects if any
   if (scene.userData && scene.userData.sun) {
     try { scene.remove(scene.userData.sun); } catch (e) { /* ignore */ }
     scene.userData.sun = null;
@@ -336,19 +371,38 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
   }
   // Remove custom HDR sky meshes if switching to simple color
   if (sky) {
-    if (sky.far && sky.far.parent) scene.remove(sky.far);
-    if (sky.near && sky.near.parent) scene.remove(sky.near);
+    if (sky.far && sky.far.parent) {
+      sky.far.visible = false;
+      scene.remove(sky.far);
+    }
+    if (sky.near && sky.near.parent) {
+      sky.near.visible = false;
+      scene.remove(sky.near);
+    }
     if (sky.light) {
       const lightEntry = sky.light;
       if (lightEntry.group && lightEntry.group.parent) {
         scene.remove(lightEntry.group);
       }
     }
+    if (sky.panorama && sky.panorama.parent) {
+      scene.remove(sky.panorama);
+    }
     sky.far = null;
     sky.near = null;
     sky.light = null;
+    sky.panorama = null;
   }
   scene.environment = null;
+  // Clear any lingering HDR background from previous levels to prevent it from being restored by graphics settings
+  if (scene.userData.hdrBackground) {
+    delete scene.userData.hdrBackground;
+  }
+  if (scene.userData.hdrEnvironment) {
+    delete scene.userData.hdrEnvironment;
+  }
+  // Force clear any existing background texture/mesh before setting new one
+  scene.background = null;
   if (preset === 'light') {
     const sunDir = new THREE.Vector3(0.6, 0.8, 0.2).normalize();
 
@@ -532,11 +586,11 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
         group: skyGroup,
         gradientMaterial,
         cloudMaterial: cloudsMaterial,
-        rotationSpeed: 0.035
+        rotationSpeed: 0.01 // Slower rotation for Level 3 sky
       };
       sky.preset = 'light';
     }
-    scene.background = new THREE.Color(0x8fd4ff);
+    scene.background = new THREE.Color(0x8fd4ff); // Light blue background with white clouds for Level 3
     // Disable all shadows for this light preset per request
     if (renderer && renderer.shadowMap) {
       renderer.shadowMap.enabled = false;
@@ -544,56 +598,49 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
     if (renderer) {
       renderer.toneMappingExposure = 0.68; // softer cartoon exposure
     }
-    // Add sun directional light and load eyeball model ONLY in Level 3
+    // Add sun directional light and load eyeball model
     try {
-      const allowEye = !!(scene?.userData?.allowSunEye === true);
-      if (allowEye) {
-        const sunGroup = new THREE.Group();
-        const sunDistance = 800;
-        sunGroup.position.copy(sunDir.clone().multiplyScalar(sunDistance));
-        sunGroup.frustumCulled = false;
+      const sunGroup = new THREE.Group();
+      const sunDistance = 800;
+      sunGroup.position.copy(sunDir.clone().multiplyScalar(sunDistance));
+      sunGroup.frustumCulled = false;
 
-        const sunLight = new THREE.DirectionalLight(0xffe6b0, 7.2);
-        sunLight.position.set(0, 0, 0);
-        // Force no shadows from sun
-        sunLight.castShadow = false;
+      const sunLight = new THREE.DirectionalLight(0xffe6b0, 7.2);
+      sunLight.position.set(0, 0, 0);
+       // Force no shadows from sun
+       sunLight.castShadow = false;
 
-        const target = new THREE.Object3D();
-        target.position.set(0, 0, 0);
-        scene.add(target);
-        sunLight.target = target;
-        sunGroup.add(sunLight);
+      const target = new THREE.Object3D();
+      target.position.set(0, 0, 0);
+      scene.add(target);
+      sunLight.target = target;
+       sunGroup.add(sunLight);
 
-        sunGroup.userData = { isSun: true };
-        // Render sun/eye on isolated layer 2 only
-        try { sunGroup.layers.set(2); } catch (_) {}
-        scene.add(sunGroup);
-        scene.userData.sun = sunGroup;
-        scene.userData.sunLight = sunLight;
-        scene.userData.sunTarget = target;
-        scene.userData.sunEye = {
-          group: sunGroup,
-          rig: null,
-          mesh: null,
-          direction: sunDir.clone(),
-          distance: sunDistance,
-          rotationOffset: SUN_EYE_ROTATION_OFFSET.clone(),
-          radius: 0,
-          lookOffset: new THREE.Vector3()
-        };
+      sunGroup.userData = { isSun: true };
+      scene.add(sunGroup);
+       scene.userData.sun = sunGroup;
+       scene.userData.sunLight = sunLight;
+      scene.userData.sunTarget = target;
+      scene.userData.sunEye = {
+        group: sunGroup,
+        rig: null,
+        mesh: null,
+        direction: sunDir.clone(),
+        distance: sunDistance,
+        rotationOffset: SUN_EYE_ROTATION_OFFSET.clone(),
+        radius: 0,
+        lookOffset: new THREE.Vector3()
+      };
 
-      createSunEyeInstance(scene)
-        .then((inst) => {
-          if (!inst) return;
-          const { rig, mesh, diameter } = inst;
+      createSunEyeInstance()
+        .then(({ rig, mesh, diameter }) => {
           if (!scene.userData || scene.userData.sun !== sunGroup || !scene.userData.sunEye) return;
           const sunData = scene.userData.sunEye;
           rig.position.set(0, 0, 0);
           rig.frustumCulled = false;
           sunGroup.add(rig);
-          try { rig.traverse((n)=>{ if (n.layers) n.layers.set(2); }); } catch (_) {}
-          // Make the eye look toward the scene origin by default
-          try { rig.lookAt(new THREE.Vector3(0, 0, 0)); } catch (e) {}
+         // Make the eye look toward the scene origin by default
+         try { rig.lookAt(new THREE.Vector3(0, 0, 0)); } catch (e) {}
           sunData.rig = rig;
           sunData.mesh = mesh;
           sunData.radius = diameter * 0.5;
@@ -601,38 +648,28 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
             sunData.rig.quaternion.multiply(sunData.rotationOffset);
           }
         })
-          .catch((error) => {
-            console.warn('Sun eye model failed to attach:', error);
-          });
+        .catch((error) => {
+          console.warn('Sun eye model failed to attach:', error);
+        });
 
-        // Add a global top-down cartoon fill light (no shadows)
-        const topFill = new THREE.DirectionalLight(0xffffff, 1.1);
-        topFill.position.set(0, 1000, 0);
-        topFill.castShadow = false;
-        const topTarget = new THREE.Object3D();
-        topTarget.position.set(0, 0, 0);
-        scene.add(topTarget);
-        topFill.target = topTarget;
-        // Keep Level 3 fill light isolated to layer 2
-        try { topFill.layers.set(2); } catch (_) {}
-        scene.add(topFill);
-        scene.userData.topFillLight = topFill;
-        // Mild ambient to lift darkest areas
-        const ambient = new THREE.AmbientLight(0xffffff, 0.55);
-        try { ambient.layers.set(2); } catch (_) {}
-        scene.add(ambient);
-        scene.userData.ambientFill = ambient;
-      } else {
-        // Outside level 3, make sure no leftover eye/lights remain
-        try {
-          if (scene.userData?.sunEye?.group?.parent) scene.remove(scene.userData.sunEye.group);
-        } catch (_) {}
-        if (scene.userData) scene.userData.sunEye = null;
-      }
+      // Add a global top-down cartoon fill light (no shadows)
+      const topFill = new THREE.DirectionalLight(0xffffff, 1.1);
+      topFill.position.set(0, 1000, 0);
+      topFill.castShadow = false;
+      const topTarget = new THREE.Object3D();
+      topTarget.position.set(0, 0, 0);
+      scene.add(topTarget);
+      topFill.target = topTarget;
+      scene.add(topFill);
+      scene.userData.topFillLight = topFill;
+      // Mild ambient to lift darkest areas
+      const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+      scene.add(ambient);
+      scene.userData.ambientFill = ambient;
     } catch (e) { /* ignore visual sun errors */ }
     return;
   }
-  // default dark
+  // default dark - set black background
   scene.background = new THREE.Color(0x000000);
   if (sky) sky.preset = 'dark';
    // Restore shadows for non-light preset
@@ -646,27 +683,125 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
 
 export function disposeSky(scene, renderer) {
   try {
+    console.log('🧹 Disposing ALL skybox resources...');
+    
     const sky = scene.userData?.sky;
+    
+    // Remove and dispose sky meshes (far, near, light groups, panorama)
     if (sky?.mesh) {
       scene.remove(sky.mesh);
       if (sky.mesh.geometry) sky.mesh.geometry.dispose();
-      if (sky.mesh.material) sky.mesh.material.dispose();
+      if (sky.mesh.material) {
+        if (Array.isArray(sky.mesh.material)) {
+          sky.mesh.material.forEach(m => m.dispose());
+        } else {
+          sky.mesh.material.dispose();
+        }
+      }
     }
+    
+    if (sky?.far) {
+      if (sky.far.parent) scene.remove(sky.far);
+      if (sky.far.geometry) sky.far.geometry.dispose();
+      if (sky.far.material) {
+        if (Array.isArray(sky.far.material)) {
+          sky.far.material.forEach(m => m.dispose());
+        } else {
+          sky.far.material.dispose();
+        }
+      }
+    }
+    
+    if (sky?.near) {
+      if (sky.near.parent) scene.remove(sky.near);
+      if (sky.near.geometry) sky.near.geometry.dispose();
+      if (sky.near.material) {
+        if (Array.isArray(sky.near.material)) {
+          sky.near.material.forEach(m => m.dispose());
+        } else {
+          sky.near.material.dispose();
+        }
+      }
+    }
+    
+    if (sky?.light && sky.light.group) {
+      if (sky.light.group.parent) scene.remove(sky.light.group);
+      sky.light.group.traverse((obj) => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(m => m.dispose());
+          } else {
+            obj.material.dispose();
+          }
+        }
+      });
+    }
+    
+    if (sky?.panorama) {
+      if (sky.panorama.parent) scene.remove(sky.panorama);
+      if (sky.panorama.geometry) sky.panorama.geometry.dispose();
+      if (sky.panorama.material) {
+        if (Array.isArray(sky.panorama.material)) {
+          sky.panorama.material.forEach(m => m.dispose());
+        } else {
+          sky.panorama.material.dispose();
+        }
+      }
+    }
+    
     if (sky?.envTexture && sky.envTexture.dispose) {
       sky.envTexture.dispose();
     }
-    scene.userData.sky = null;
+    
+    // CRITICAL: Clear scene background texture
+    if (scene.background) {
+      if (scene.background.isTexture && scene.background.dispose) {
+        console.log('🧹 Disposing scene.background texture');
+        scene.background.dispose();
+      }
+      scene.background = null;
+    }
+
+    // Clear stored HDR textures
+    if (scene.userData?.hdrBackground) {
+      if (scene.userData.hdrBackground.dispose) {
+        console.log('🧹 Disposing hdrBackground texture');
+        scene.userData.hdrBackground.dispose();
+      }
+      scene.userData.hdrBackground = null;
+    }
+
+    if (scene.userData?.hdrEnvironment) {
+      if (scene.userData.hdrEnvironment.dispose) {
+        console.log('🧹 Disposing hdrEnvironment texture');
+        scene.userData.hdrEnvironment.dispose();
+      }
+      scene.userData.hdrEnvironment = null;
+    }
 
     // Clear environment/reflection map
-    if (scene.environment && scene.environment.dispose) {
-      scene.environment.dispose();
+    if (scene.environment) {
+      if (scene.environment.dispose) {
+        console.log('🧹 Disposing scene.environment');
+        scene.environment.dispose();
+      }
+      scene.environment = null;
     }
-    scene.environment = null;
 
-    // Optional sanity: tighten renderer to flush cached envs
-    renderer?.initTexture && renderer.initTexture(null);
+    // Reset sky userData completely
+    if (scene.userData) {
+      scene.userData.sky = null;
+    }
+
+    // Flush renderer texture cache
+    if (renderer?.initTexture) {
+      renderer.initTexture(null);
+    }
+    
+    console.log('✅ Skybox disposal complete');
   } catch (e) {
-    console.warn('disposeSky failed:', e);
+    console.warn('⚠️ disposeSky failed:', e);
   }
 }
 
@@ -687,24 +822,76 @@ export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
   }
 
   return new Promise((resolve, reject) => {
-    // Initialize sky userData if needed
-    if (!scene.userData.sky) {
-      scene.userData.sky = { far: null, near: null, preset: null, light: null, panorama: null };
+    console.log(`🌌 loadPanoramaSky: Loading "${textureUrl}"`);
+    
+    // FORCE fresh sky object - don't trust existing data
+    if (!scene.userData) {
+      scene.userData = {};
     }
+    
+    // Completely reset sky object
+    scene.userData.sky = {
+      far: null,
+      near: null,
+      preset: null,
+      light: null,
+      panorama: null
+    };
 
     const sky = scene.userData.sky;
     
-    // Clean up existing sky meshes
-    if (sky.far && sky.far.parent) scene.remove(sky.far);
-    if (sky.near && sky.near.parent) scene.remove(sky.near);
-    if (sky.light) {
-      const lightEntry = sky.light;
-      if (lightEntry.group && lightEntry.group.parent) {
-        scene.remove(lightEntry.group);
+    // Clean up any existing sky meshes from scene (they shouldn't exist, but be safe)
+    const objectsToRemove = [];
+    scene.traverse((obj) => {
+      if (obj.userData && (obj.userData.isSkyMesh || obj.userData.isSky || obj.userData.isPanoramaSky)) {
+        objectsToRemove.push(obj);
       }
+    });
+    objectsToRemove.forEach(obj => {
+      if (obj.parent) obj.parent.remove(obj);
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) {
+          obj.material.forEach(m => m.dispose && m.dispose());
+        } else if (obj.material.dispose) {
+          obj.material.dispose();
+        }
+      }
+    });
+
+    // Dispose of old background texture if it exists
+    if (scene.background) {
+      if (scene.background.isTexture && scene.background.dispose) {
+        console.log('🧹 Disposing old scene.background texture');
+        scene.background.dispose();
+      }
+      scene.background = null;
     }
-    if (sky.panorama && sky.panorama.parent) {
-      scene.remove(sky.panorama);
+
+    // Dispose of old stored textures
+    if (scene.userData.hdrBackground) {
+      if (scene.userData.hdrBackground.dispose) {
+        console.log('🧹 Disposing old hdrBackground');
+        scene.userData.hdrBackground.dispose();
+      }
+      scene.userData.hdrBackground = null;
+    }
+
+    if (scene.userData.hdrEnvironment) {
+      if (scene.userData.hdrEnvironment.dispose) {
+        console.log('🧹 Disposing old hdrEnvironment');
+        scene.userData.hdrEnvironment.dispose();
+      }
+      scene.userData.hdrEnvironment = null;
+    }
+
+    // Clear environment map
+    if (scene.environment) {
+      if (scene.environment.dispose) {
+        console.log('🧹 Disposing old scene.environment');
+        scene.environment.dispose();
+      }
+      scene.environment = null;
     }
 
     // Clear sky references
@@ -712,7 +899,6 @@ export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
     sky.near = null;
     sky.light = null;
     sky.panorama = null;
-    scene.environment = null;
 
     // Determine if it's an HDR file or regular image
     const isHDR = textureUrl.toLowerCase().endsWith('.hdr');

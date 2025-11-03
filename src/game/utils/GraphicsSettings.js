@@ -362,9 +362,14 @@ export class GraphicsSettings {
     
     if (!scene) return;
     
+    // Check if we're in Level 3 with the light preset - don't override its skybox
+    const levelId = scene?.userData?.levelId;
+    const skyPreset = scene?.userData?.sky?.preset;
+    const isLevel3LightPreset = levelId === 'level3' && skyPreset === 'light';
+    
     // Skybox is ALWAYS enabled - users cannot disable it
-    // Show mesh skyboxes if they exist
-    if (scene.userData && scene.userData.sky) {
+    // Show mesh skyboxes if they exist (but NOT for Level 3 light preset)
+    if (!isLevel3LightPreset && scene.userData && scene.userData.sky) {
       if (scene.userData.sky.far) {
         scene.userData.sky.far.visible = true;
       }
@@ -372,11 +377,11 @@ export class GraphicsSettings {
         scene.userData.sky.near.visible = true;
       }
     }
-    // Show HDR environment/background
-    if (scene.userData && scene.userData.hdrBackground) {
+    // Show HDR environment/background (but NOT for Level 3 light preset)
+    if (!isLevel3LightPreset && scene.userData && scene.userData.hdrBackground) {
       scene.background = scene.userData.hdrBackground;
     }
-    if (scene.userData && scene.userData.hdrEnvironment) {
+    if (!isLevel3LightPreset && scene.userData && scene.userData.hdrEnvironment) {
       scene.environment = scene.userData.hdrEnvironment;
     }
     
