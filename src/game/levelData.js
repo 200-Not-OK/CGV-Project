@@ -10724,7 +10724,7 @@ export const levels = [
     "sounds": {
       "sfx": {
         "level3start_vo": {
-          "url": "/assets/audio/ambient/branden_level3start_vo.mp3",
+          "url": "assets/audio/ambient/branden_level3start_vo.mp3",
           "loop": false
         },
       },
