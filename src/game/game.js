@@ -1561,55 +1561,17 @@ if (staleLow) staleLow.remove();
   if (this.level.data.id === 'level3') {
     console.log('🎯 Setting up computer for level3');
     this.setupComputerTerminal();
-    // Light, complimentary sky for level 3 (this will also initialize the eye)
-    try { setSkyPreset(this.scene, this.renderer, 'light'); } catch (e) { console.warn('Sky preset failed', e); }
-    // Ensure only the eyeball sun contributes light
+    // NOTE: Sky will be set later in the unified skybox loading section
+    // Ensure only the eyeball sun contributes light (will be set up with sky)
     try { enforceOnlySunLight(this.scene); } catch (e) { console.warn('Light enforcement failed', e); }
     // Hard-disable all object/light shadows to prevent any halo circle
     try { disableAllShadows(this.scene); } catch (e) { console.warn('Disable all shadows failed', e); }
-    // Turn off eyeball sun directional, use softer bottom-up lighting
-    try {
-      const sunLight = this.scene.userData?.sunLight;
-      if (sunLight) { sunLight.visible = false; sunLight.intensity = 0; sunLight.castShadow = false; }
-      const topFill = this.scene.userData?.topFillLight;
-      if (topFill) { 
-        topFill.intensity = 1.0; // reduce to prevent washout
-        topFill.position.set(0, -800, 0);
-        // Update light target to point upward from ground
-        if (topFill.target) {
-          topFill.target.position.set(0, 0, 0);
-        }
-      }
-      const ambient = this.scene.userData?.ambientFill;
-      if (ambient) { ambient.intensity = 0.7; } // lower ambient for more contrast
-      // Slightly lower overall exposure to avoid white crush
-      if (this.renderer) { this.renderer.toneMappingExposure = 0.65; }
-      // Add a touch more cloud coverage for midtones if sky present
-      try {
-        const cloudMat = this.scene.userData?.sky?.light?.cloudMaterial;
-        if (cloudMat && cloudMat.uniforms?.uCoverage) {
-          cloudMat.uniforms.uCoverage.value = 0.56;
-        }
-      } catch (_) { /* non-fatal */ }
-      // Fix shader sun direction to bottom-up for illumination from ground
-      if (this.scene?.userData) {
-        this.scene.userData.sunOverrideDir = new THREE.Vector3(0, 1, 0);
-      }
-    } catch (e) { console.warn('Bottom-up light config failed', e); }
-
+    
+    // NOTE: Level 3 lighting and sky adjustments are now handled in the unified skybox loading section below
+    
     // Ensure sky spheres (radius ~2000-2200) render for all cameras
-    try {
-      const FAR_FOR_SKY = 3000;
-      const cams = [this.thirdCameraObject, this.firstCameraObject, this.freeCameraObject];
-      cams.forEach((c) => {
-        if (c && (typeof c.far === 'number') && c.far < FAR_FOR_SKY) {
-          c.far = FAR_FOR_SKY;
-          c.updateProjectionMatrix && c.updateProjectionMatrix();
-        }
-        // Do NOT enable layer 2 while the eye is disabled
-        try { c.layers.disable(2); } catch (_) {}
-      });
-    } catch (e) { console.warn('Failed to extend camera far plane for sky', e); }
+    // Camera far plane extension is now in the skybox section
+    
     // Apply player outline for toon style if GPU tier allows
     try {
       const quality = this.gpuDetector?.getQualitySettings?.() || {};
@@ -1724,14 +1686,24 @@ if (staleLow) staleLow.remove();
         }
       }
     } catch (_) {}
-    // Restore sky when leaving level3. If the incoming level provides its own
-    // panoramaSky, don't force 'dark' here so the starry sky shows immediately.
-    if (!levelData?.panoramaSky) {
-      try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
-    }
+    // NOTE: Sky restoration is now handled in the unified skybox loading section below
+    // Don't call setSkyPreset here as it can interfere with proper disposal
   }
 
-  // Load panorama sky if specified in level data
+  // ALWAYS reset skybox for each level to ensure independence
+  // Step 1: Forcefully dispose ALL previous skybox data
+  console.log('🧹 Step 1: Disposing previous skybox for level:', this.currentLevelId);
+  try { 
+    disposeSky(this.scene, this.renderer); 
+    // Extra safety: force clear background
+    this.scene.background = null;
+    this.scene.environment = null;
+  } catch (e) { 
+    console.warn('⚠️ Initial disposeSky failed:', e); 
+  }
+  
+  // Step 2: Load panorama sky if specified, otherwise use level-specific default
+  console.log('🌌 Step 2: Loading skybox for level:', this.currentLevelId);
   if (levelData.panoramaSky) {
     try {
       let textureUrl;
@@ -1750,18 +1722,92 @@ if (staleLow) staleLow.remove();
         };
       } else {
         console.warn('⚠️ Invalid panoramaSky format in level data, expected string or object with url property');
+        // Set default fallback
+        if (this.currentLevelId === 'level3') {
+          try { setSkyPreset(this.scene, this.renderer, 'light'); } catch {}
+        } else {
+          try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
+        }
         return;
       }
       
+      // Force reload panorama sky
+      console.log('📦 Loading panorama texture:', textureUrl);
       await loadPanoramaSky(this.scene, this.renderer, textureUrl, options);
-      console.log('✅ Panorama sky loaded for level:', this.currentLevelId);
+      console.log('✅ Panorama sky loaded successfully for level:', this.currentLevelId);
     } catch (error) {
       console.warn('⚠️ Failed to load panorama sky:', error);
-      // Fallback to default sky preset on error
+      // Fallback to appropriate sky based on level
+      if (this.currentLevelId === 'level3') {
+        try { setSkyPreset(this.scene, this.renderer, 'light'); } catch {}
+      } else {
+        try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
+      }
+    }
+  } else {
+    // No panorama sky for this level, use level-specific default
+    if (this.currentLevelId === 'level3') {
+      console.log('📋 Level 3: Using light sky preset (white/blue background)');
+      try { setSkyPreset(this.scene, this.renderer, 'light'); } catch {}
+    } else if (this.currentLevelId === 'level2') {
+      console.log('📋 Level 2: Using dark sky preset (black background)');
+      try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
+    } else {
+      console.log('📋 Level', this.currentLevelId, ': Using default dark sky');
       try { setSkyPreset(this.scene, this.renderer, 'dark'); } catch {}
     }
   }
+  
+  // Step 3: Apply Level 3-specific lighting adjustments AFTER skybox is set
+  if (this.currentLevelId === 'level3') {
+    console.log('🎨 Step 3: Applying Level 3 lighting adjustments');
+    try {
+      const sunLight = this.scene.userData?.sunLight;
+      if (sunLight) { sunLight.visible = false; sunLight.intensity = 0; sunLight.castShadow = false; }
+      const topFill = this.scene.userData?.topFillLight;
+      if (topFill) { 
+        topFill.intensity = 1.0;
+        topFill.position.set(0, -800, 0);
+        if (topFill.target) {
+          topFill.target.position.set(0, 0, 0);
+        }
+      }
+      const ambient = this.scene.userData?.ambientFill;
+      if (ambient) { ambient.intensity = 0.7; }
+      if (this.renderer) { this.renderer.toneMappingExposure = 0.65; }
+      
+      // Cloud coverage adjustment
+      try {
+        const cloudMat = this.scene.userData?.sky?.light?.cloudMaterial;
+        if (cloudMat && cloudMat.uniforms?.uCoverage) {
+          cloudMat.uniforms.uCoverage.value = 0.56;
+        }
+      } catch (_) { /* non-fatal */ }
+      
+      // Bottom-up sun direction
+      if (this.scene?.userData) {
+        this.scene.userData.sunOverrideDir = new THREE.Vector3(0, 1, 0);
+      }
+      
+      // Extend camera far plane for sky spheres
+      const FAR_FOR_SKY = 3000;
+      const cams = [this.thirdCameraObject, this.firstCameraObject, this.freeCameraObject];
+      cams.forEach((c) => {
+        if (c && (typeof c.far === 'number') && c.far < FAR_FOR_SKY) {
+          c.far = FAR_FOR_SKY;
+          c.updateProjectionMatrix && c.updateProjectionMatrix();
+        }
+        try { c.layers.disable(2); } catch (_) {}
+      });
+      
+      console.log('✅ Level 3 lighting adjustments complete');
+    } catch (e) {
+      console.warn('⚠️ Level 3 lighting config failed:', e);
+    }
+  }
 
+  console.log('✅ Skybox setup complete for level:', this.currentLevelId);
+  
   // Position player at start position from level data
   const start = this.level.data.startPosition;
   this.player.setPosition(new THREE.Vector3(...start));

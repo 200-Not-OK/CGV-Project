@@ -324,14 +324,27 @@ const totalTextures = 2; // Only 2 layers for better FPS
 // Lightweight preset switcher for per-level sky
 export function setSkyPreset(scene, renderer, preset = 'dark') {
   if (!scene) return;
+  
+  console.log(`🌌 setSkyPreset called with preset: "${preset}"`);
+  
   // Safety: never apply Level 3 'light' preset outside Level 3
   try {
     if (preset === 'light' && (!scene.userData || scene.userData.levelId !== 'level3')) {
+      console.warn('⚠️ Attempted to set light preset outside Level 3, forcing dark preset');
       preset = 'dark';
     }
   } catch (_) {}
-  const sky = scene.userData && scene.userData.sky ? scene.userData.sky : null;
-  // Remove previous sun if any
+  
+  // ALWAYS get fresh sky object or create new one - don't trust existing data
+  if (!scene.userData) {
+    scene.userData = {};
+  }
+  if (!scene.userData.sky) {
+    scene.userData.sky = {};
+  }
+  const sky = scene.userData.sky;
+  
+  // Remove previous sun/light objects if any
   if (scene.userData && scene.userData.sun) {
     try { scene.remove(scene.userData.sun); } catch (e) { /* ignore */ }
     scene.userData.sun = null;
@@ -372,9 +385,13 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
         scene.remove(lightEntry.group);
       }
     }
+    if (sky.panorama && sky.panorama.parent) {
+      scene.remove(sky.panorama);
+    }
     sky.far = null;
     sky.near = null;
     sky.light = null;
+    sky.panorama = null;
   }
   scene.environment = null;
   // Clear any lingering HDR background from previous levels to prevent it from being restored by graphics settings
@@ -384,6 +401,8 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
   if (scene.userData.hdrEnvironment) {
     delete scene.userData.hdrEnvironment;
   }
+  // Force clear any existing background texture/mesh before setting new one
+  scene.background = null;
   if (preset === 'light') {
     const sunDir = new THREE.Vector3(0.6, 0.8, 0.2).normalize();
 
@@ -650,7 +669,7 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
     } catch (e) { /* ignore visual sun errors */ }
     return;
   }
-  // default dark
+  // default dark - set black background
   scene.background = new THREE.Color(0x000000);
   if (sky) sky.preset = 'dark';
    // Restore shadows for non-light preset
@@ -664,27 +683,125 @@ export function setSkyPreset(scene, renderer, preset = 'dark') {
 
 export function disposeSky(scene, renderer) {
   try {
+    console.log('🧹 Disposing ALL skybox resources...');
+    
     const sky = scene.userData?.sky;
+    
+    // Remove and dispose sky meshes (far, near, light groups, panorama)
     if (sky?.mesh) {
       scene.remove(sky.mesh);
       if (sky.mesh.geometry) sky.mesh.geometry.dispose();
-      if (sky.mesh.material) sky.mesh.material.dispose();
+      if (sky.mesh.material) {
+        if (Array.isArray(sky.mesh.material)) {
+          sky.mesh.material.forEach(m => m.dispose());
+        } else {
+          sky.mesh.material.dispose();
+        }
+      }
     }
+    
+    if (sky?.far) {
+      if (sky.far.parent) scene.remove(sky.far);
+      if (sky.far.geometry) sky.far.geometry.dispose();
+      if (sky.far.material) {
+        if (Array.isArray(sky.far.material)) {
+          sky.far.material.forEach(m => m.dispose());
+        } else {
+          sky.far.material.dispose();
+        }
+      }
+    }
+    
+    if (sky?.near) {
+      if (sky.near.parent) scene.remove(sky.near);
+      if (sky.near.geometry) sky.near.geometry.dispose();
+      if (sky.near.material) {
+        if (Array.isArray(sky.near.material)) {
+          sky.near.material.forEach(m => m.dispose());
+        } else {
+          sky.near.material.dispose();
+        }
+      }
+    }
+    
+    if (sky?.light && sky.light.group) {
+      if (sky.light.group.parent) scene.remove(sky.light.group);
+      sky.light.group.traverse((obj) => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(m => m.dispose());
+          } else {
+            obj.material.dispose();
+          }
+        }
+      });
+    }
+    
+    if (sky?.panorama) {
+      if (sky.panorama.parent) scene.remove(sky.panorama);
+      if (sky.panorama.geometry) sky.panorama.geometry.dispose();
+      if (sky.panorama.material) {
+        if (Array.isArray(sky.panorama.material)) {
+          sky.panorama.material.forEach(m => m.dispose());
+        } else {
+          sky.panorama.material.dispose();
+        }
+      }
+    }
+    
     if (sky?.envTexture && sky.envTexture.dispose) {
       sky.envTexture.dispose();
     }
-    scene.userData.sky = null;
+    
+    // CRITICAL: Clear scene background texture
+    if (scene.background) {
+      if (scene.background.isTexture && scene.background.dispose) {
+        console.log('🧹 Disposing scene.background texture');
+        scene.background.dispose();
+      }
+      scene.background = null;
+    }
+
+    // Clear stored HDR textures
+    if (scene.userData?.hdrBackground) {
+      if (scene.userData.hdrBackground.dispose) {
+        console.log('🧹 Disposing hdrBackground texture');
+        scene.userData.hdrBackground.dispose();
+      }
+      scene.userData.hdrBackground = null;
+    }
+
+    if (scene.userData?.hdrEnvironment) {
+      if (scene.userData.hdrEnvironment.dispose) {
+        console.log('🧹 Disposing hdrEnvironment texture');
+        scene.userData.hdrEnvironment.dispose();
+      }
+      scene.userData.hdrEnvironment = null;
+    }
 
     // Clear environment/reflection map
-    if (scene.environment && scene.environment.dispose) {
-      scene.environment.dispose();
+    if (scene.environment) {
+      if (scene.environment.dispose) {
+        console.log('🧹 Disposing scene.environment');
+        scene.environment.dispose();
+      }
+      scene.environment = null;
     }
-    scene.environment = null;
 
-    // Optional sanity: tighten renderer to flush cached envs
-    renderer?.initTexture && renderer.initTexture(null);
+    // Reset sky userData completely
+    if (scene.userData) {
+      scene.userData.sky = null;
+    }
+
+    // Flush renderer texture cache
+    if (renderer?.initTexture) {
+      renderer.initTexture(null);
+    }
+    
+    console.log('✅ Skybox disposal complete');
   } catch (e) {
-    console.warn('disposeSky failed:', e);
+    console.warn('⚠️ disposeSky failed:', e);
   }
 }
 
@@ -705,24 +822,76 @@ export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
   }
 
   return new Promise((resolve, reject) => {
-    // Initialize sky userData if needed
-    if (!scene.userData.sky) {
-      scene.userData.sky = { far: null, near: null, preset: null, light: null, panorama: null };
+    console.log(`🌌 loadPanoramaSky: Loading "${textureUrl}"`);
+    
+    // FORCE fresh sky object - don't trust existing data
+    if (!scene.userData) {
+      scene.userData = {};
     }
+    
+    // Completely reset sky object
+    scene.userData.sky = {
+      far: null,
+      near: null,
+      preset: null,
+      light: null,
+      panorama: null
+    };
 
     const sky = scene.userData.sky;
     
-    // Clean up existing sky meshes
-    if (sky.far && sky.far.parent) scene.remove(sky.far);
-    if (sky.near && sky.near.parent) scene.remove(sky.near);
-    if (sky.light) {
-      const lightEntry = sky.light;
-      if (lightEntry.group && lightEntry.group.parent) {
-        scene.remove(lightEntry.group);
+    // Clean up any existing sky meshes from scene (they shouldn't exist, but be safe)
+    const objectsToRemove = [];
+    scene.traverse((obj) => {
+      if (obj.userData && (obj.userData.isSkyMesh || obj.userData.isSky || obj.userData.isPanoramaSky)) {
+        objectsToRemove.push(obj);
       }
+    });
+    objectsToRemove.forEach(obj => {
+      if (obj.parent) obj.parent.remove(obj);
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) {
+          obj.material.forEach(m => m.dispose && m.dispose());
+        } else if (obj.material.dispose) {
+          obj.material.dispose();
+        }
+      }
+    });
+
+    // Dispose of old background texture if it exists
+    if (scene.background) {
+      if (scene.background.isTexture && scene.background.dispose) {
+        console.log('🧹 Disposing old scene.background texture');
+        scene.background.dispose();
+      }
+      scene.background = null;
     }
-    if (sky.panorama && sky.panorama.parent) {
-      scene.remove(sky.panorama);
+
+    // Dispose of old stored textures
+    if (scene.userData.hdrBackground) {
+      if (scene.userData.hdrBackground.dispose) {
+        console.log('🧹 Disposing old hdrBackground');
+        scene.userData.hdrBackground.dispose();
+      }
+      scene.userData.hdrBackground = null;
+    }
+
+    if (scene.userData.hdrEnvironment) {
+      if (scene.userData.hdrEnvironment.dispose) {
+        console.log('🧹 Disposing old hdrEnvironment');
+        scene.userData.hdrEnvironment.dispose();
+      }
+      scene.userData.hdrEnvironment = null;
+    }
+
+    // Clear environment map
+    if (scene.environment) {
+      if (scene.environment.dispose) {
+        console.log('🧹 Disposing old scene.environment');
+        scene.environment.dispose();
+      }
+      scene.environment = null;
     }
 
     // Clear sky references
@@ -730,7 +899,6 @@ export function loadPanoramaSky(scene, renderer, textureUrl, options = {}) {
     sky.near = null;
     sky.light = null;
     sky.panorama = null;
-    scene.environment = null;
 
     // Determine if it's an HDR file or regular image
     const isHDR = textureUrl.toLowerCase().endsWith('.hdr');
