@@ -2695,54 +2695,64 @@ setupLLMTracking() {
     return;
   }
   
-  // Override the chest collection handler to track LLMs
-  if (this.collectiblesManager.onChestCollected) {
-    const originalOnChestCollected = this.collectiblesManager.onChestCollected.bind(this.collectiblesManager);
+  console.log('✅ CollectiblesManager found, setting up onChestCollected callback');
+  
+  // Set up the chest collection handler
+  this.collectiblesManager.onChestCollected = (chestId, contents) => {
+    console.log('📦 onChestCollected triggered:', chestId, contents);
     
-    this.collectiblesManager.onChestCollected = (chestId, contents) => {
-      console.log('📦 Chest collected:', chestId, contents);
+    // Track LLMs in level 3
+    if (this.currentLevelId === 'level3' && contents && contents.startsWith('llm_')) {
+      this.glitchManager.collectedLLMs.add(contents);
+      console.log(`🧠 LLM Collected: ${contents}. Total: ${this.glitchManager.collectedLLMs.size}`);
       
-      // Call original handler first
-      originalOnChestCollected(chestId, contents);
-      
-      // Track LLMs in level 3
-      if (this.currentLevelId === 'level3' && contents && contents.startsWith('llm_')) {
-        // FIXED TYPO: was this.glatchManager, now this.glitchManager
-        this.glitchManager.collectedLLMs.add(contents);
-        console.log(`🧠 LLM Collected: ${contents}. Total: ${this.glitchManager.collectedLLMs.size}`);
-        
-        // Show collection message
-        if (this.showMessage) {
-          this.showMessage(`LLM Acquired: ${contents.toUpperCase()}! (${this.glitchManager.collectedLLMs.size}/3)`);
-        }
+      // Show collection message
+      if (this.showMessage) {
+        this.showMessage(`LLM Acquired: ${contents.toUpperCase()}! (${this.glitchManager.collectedLLMs.size}/3)`);
       }
-      
-      // Check glitched level completion
-      if (this.currentLevelId && this.currentLevelId.includes('_glitched')) {
-        this.checkGlitchedLevelCompletion();
-      }
-    };
+    }
     
-    console.log('✅ LLM tracking setup complete');
-  } else {
-    console.error('❌ onChestCollected method not found in collectiblesManager');
-  }
+    // Check glitched level completion
+    if (this.currentLevelId && this.currentLevelId.includes('_glitched')) {
+      console.log('🔍 Glitched level detected, checking completion...');
+      this.checkGlitchedLevelCompletion();
+    }
+  };
+  
+  console.log('✅ LLM tracking setup complete');
 }
 
 /**
  * Check if enough collectibles are collected in glitched levels
  */
 checkGlitchedLevelCompletion() {
-  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) return;
+  console.log('🔍 Checking glitched level completion...');
   
-  const levelData = this.levelManager.getLevelData(this.currentLevelId);
-  if (!levelData || !levelData.collectibles || !levelData.collectibles.chests) return;
+  if (!this.currentLevelId || !this.currentLevelId.includes('_glitched')) {
+    console.log('❌ Not in a glitched level');
+    return;
+  }
+  
+  if (!this.level || !this.level.data) {
+    console.log('❌ No level data available');
+    return;
+  }
+  
+  const levelData = this.level.data;
+  
+  if (!levelData.collectibles || !levelData.collectibles.chests) {
+    console.log('❌ No chests data in level');
+    return;
+  }
   
   const chests = levelData.collectibles.chests;
+  console.log('📦 Total chests in level:', chests.length);
   
   // Count collected chests
   const collectedCount = chests.filter(chest => {
-    return this.collectiblesManager.isChestCollected(chest.id);
+    const isCollected = this.collectiblesManager.isChestCollected(chest.id);
+    console.log(`  Chest ${chest.id}: ${isCollected ? '✅ collected' : '❌ not collected'}`);
+    return isCollected;
   }).length;
   
   const requiredCount = this.glitchManager.requiredGlitchedCollectibles[this.currentLevelId];
@@ -2765,6 +2775,8 @@ checkGlitchedLevelCompletion() {
       message = 'All glitched levels completed! Returning to Level 3.';
     }
     
+    console.log(`🎯 Next level: ${nextLevel}`);
+    
     // Show completion message
     this.showMessage(message, 3000);
 
@@ -2772,8 +2784,11 @@ checkGlitchedLevelCompletion() {
     
     // Wait, then go to next level
     setTimeout(() => {
+      console.log(`🚀 Teleporting to ${nextLevel}...`);
       this.loadLevelByName(nextLevel);
-    }, 3000);  //comeback
+    }, 3000);
+  } else {
+    console.log(`⏳ Need ${requiredCount - collectedCount} more collectible(s)`);
   }
 }
 
