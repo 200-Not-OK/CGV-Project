@@ -1291,5 +1291,38 @@ markChestAsCollected(chestId) {
     this.persistentCollectedChests.clear();
   }
 
+  /**
+   * DEBUG FUNCTION: Pickup all chests in the current level
+   * This will automatically open and collect all chests
+   */
+  debugPickupAllChests() {
+    console.log('🐛 DEBUG: Picking up all chests in current level...');
+    
+    let chestsCollected = 0;
+    const chestCollectibles = Array.from(this.collectibles.values()).filter(c => c.type === 'chest' && !c.collected);
+    
+    if (chestCollectibles.length === 0) {
+      console.log('❌ No uncollected chests found in current level');
+      return;
+    }
+    
+    console.log(`🎯 Found ${chestCollectibles.length} uncollected chest(s)`);
+    
+    // Collect each chest with a small delay between them
+    chestCollectibles.forEach((chest, index) => {
+      setTimeout(() => {
+        console.log(`📦 [${index + 1}/${chestCollectibles.length}] Collecting chest ${chest.id} (contains: ${chest.contents})`);
+        this.collectItem(chest.id);
+        chestsCollected++;
+        
+        if (chestsCollected === chestCollectibles.length) {
+          console.log(`✅ DEBUG: Successfully collected all ${chestsCollected} chest(s)!`);
+        }
+      }, index * 500); // 500ms delay between each chest
+    });
+    
+    return chestCollectibles.length;
+  }
+
 
 }
