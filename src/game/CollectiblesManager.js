@@ -23,6 +23,9 @@ export class CollectiblesManager {
       onCollectiblePickup: []
     };
     
+    // Callback for when a chest is collected (used for glitched level progression)
+    this.onChestCollected = null;
+    
     // Materials for physics
     this.collectibleMaterial = new CANNON.Material('collectible');
     this.collectibleMaterial.friction = 0.1;
@@ -604,6 +607,26 @@ openChest(chestCollectible) {
   console.log(`📦 Opening chest containing: ${chestCollectible.contents}`);
 
   this.markChestAsCollected(chestCollectible.id);
+  
+  // Trigger chest collected callback if set (for glitched level progression)
+  console.log('🔍 Checking onChestCollected callback...', {
+    callbackExists: !!this.onChestCollected,
+    chestId: chestCollectible.id,
+    contents: chestCollectible.contents
+  });
+  
+  if (this.onChestCollected) {
+    console.log('🔔 Triggering onChestCollected callback');
+    try {
+      this.onChestCollected(chestCollectible.id, chestCollectible.contents);
+      console.log('✅ onChestCollected callback completed');
+    } catch (error) {
+      console.error('❌ Error in onChestCollected callback:', error);
+    }
+  } else {
+    console.warn('⚠️ onChestCollected callback not set!');
+  }
+  
   // Immediately hide interaction prompt and clear currentInteractableChest
   if (this.interactionPrompt && this.currentInteractableChest === chestCollectible) {
     const currentText = this.interactionPrompt.getText ? this.interactionPrompt.getText() : '';
@@ -1239,41 +1262,23 @@ createLLMMesh(type) {
 }
 
 /**
- * Check if a chest is collected
+ * Check if a chest is collected (uses persistent storage)
  */
 isChestCollected(chestId) {
-  const collectible = this.collectibles.get(chestId);
-  return collectible ? collectible.collected : false;
+  return this.persistentCollectedChests.has(chestId);
 }
 
 /**
- * Get collected chest count for current level
+ * Get collected chest count for current level (persistent)
  */
 getCollectedChestCount() {
-  let count = 0;
-  for (const [id, collectible] of this.collectibles) {
-    if (collectible.type === 'chest' && collectible.collected) {
-      count++;
-    }
-  }
-  return count;
+  return this.persistentCollectedChests.size;
 }
 
-isChestCollected(chestId) {
-    return this.persistentCollectedChests.has(chestId);
-  }
-
-  /**
-   * Get collected chest count for current level (persistent)
-   */
-  getCollectedChestCount() {
-    return this.persistentCollectedChests.size;
-  }
-
-  /**
-   * Mark a chest as permanently collected
-   */
-  markChestAsCollected(chestId) {
+/**
+ * Mark a chest as permanently collected
+ */
+markChestAsCollected(chestId) {
     this.persistentCollectedChests.add(chestId);
     console.log(`📦 Marked chest ${chestId} as permanently collected. Total: ${this.persistentCollectedChests.size}`);
   }
