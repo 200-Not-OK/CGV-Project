@@ -10,6 +10,7 @@ export class CreditsScreen extends UIComponent {
     
     this.onClose = props.onClose || (() => {});
     this.creditsList = props.creditsList || this._getDefaultCredits();
+    this.isInLevel = props.isInLevel || false; // Whether we're in a level or on main menu
     
     this._buildUI();
   }
@@ -357,8 +358,8 @@ export class CreditsScreen extends UIComponent {
       }, 100);
     }
     
-    // Re-lock pointer when closing credits
-    if (document.body && document.body.requestPointerLock) {
+    // Re-lock pointer when closing credits, but only if we're in a level (not on main menu)
+    if (this.isInLevel && document.body && document.body.requestPointerLock) {
       document.body.requestPointerLock?.();
     }
     

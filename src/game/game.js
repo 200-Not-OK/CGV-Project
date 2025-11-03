@@ -782,16 +782,8 @@ suppressOversizedMinimapColliders() {
       if (this.paused) return;
 
       if (code === 'KeyC') {
-        // cycle cameras: free -> third -> first -> free
-        if (this.activeCamera === this.freeCameraObject) {
-          // free -> third
-          this.activeCamera = this.thirdCameraObject;
-          this.input.alwaysTrackMouse = true;
-          document.body.requestPointerLock();
-          this.player.mesh.visible = true;
-          // Safety: outside level3, disable L1/L2 on newly active camera
-          try { if (this.level?.data?.id !== 'level3') { this.activeCamera.layers.disable(1); this.activeCamera.layers.disable(2); } } catch (_) {}
-        } else if (this.activeCamera === this.thirdCameraObject) {
+        // cycle cameras: third -> first -> third
+        if (this.activeCamera === this.thirdCameraObject) {
           // third -> first
           this.activeCamera = this.firstCameraObject;
           this.input.alwaysTrackMouse = true;
@@ -800,12 +792,13 @@ suppressOversizedMinimapColliders() {
           // Safety: outside level3, disable L1/L2 on newly active camera
           try { if (this.level?.data?.id !== 'level3') { this.activeCamera.layers.disable(1); this.activeCamera.layers.disable(2); } } catch (_) {}
         } else {
-          // first (or other) -> free
-          this.freeCam.moveNearPlayer(this.player);
-          this.activeCamera = this.freeCameraObject;
-          this.input.alwaysTrackMouse = false;
-          if (document.pointerLockElement) { this._suppressPointerLockPause = true; document.exitPointerLock(); }
-          this.player.mesh.visible = true; // restore visibility
+          // first (or other) -> third
+          this.activeCamera = this.thirdCameraObject;
+          this.input.alwaysTrackMouse = true;
+          document.body.requestPointerLock();
+          this.player.mesh.visible = true;
+          // Safety: outside level3, disable L1/L2 on newly active camera
+          try { if (this.level?.data?.id !== 'level3') { this.activeCamera.layers.disable(1); this.activeCamera.layers.disable(2); } } catch (_) {}
         }
         // ensure player is active when in third- or first-person
         // (handled each frame in _loop by checking activeCamera)
@@ -1898,6 +1891,7 @@ clearDeathVisualsAndState() {
         {
           // Note: creditsList is NOT passed here, so CreditsScreen uses its own _getDefaultCredits()
           // This way, updates to CreditsScreen.js are automatically reflected
+          isInLevel: !!this.level,
           onClose: () => {
             console.log('🎬 Credits screen closed');
             
