@@ -15,7 +15,7 @@ export class LobberBossEnemy extends EnemyBase {
   // Collider dimensions: base size (14.130, 6.520, 13.355) / scale 3.5 = (4.037, 1.863, 3.816)
   colliderSize: options.colliderSize ?? [4.037, 1.863, 3.816],
       modelUrl: options.modelUrl || 'assets/enemies/lobber_boss/lobber.gltf',
-      scale: options.scale ?? 1.0,
+      scale: 2.5, // Hardcoded 2.5x scale for boss
       ...options
     };
 
@@ -70,8 +70,8 @@ _createPhysicsBody() {
   shape.offset = new CANNON.Vec3(0, size[1] / 2, 0);
 
   const body = new CANNON.Body({
-    mass: 0,
-    type: CANNON.Body.KINEMATIC,
+    mass: 0, // Static body - won't move or fall
+    type: CANNON.Body.STATIC,
     material: this.physicsWorld.materials.enemy
   });
   body.addShape(shape);

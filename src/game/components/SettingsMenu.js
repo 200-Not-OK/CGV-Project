@@ -10,6 +10,7 @@ export class SettingsMenu extends UIComponent {
     this.root.className = 'settings-menu';
     this.onBack = props.onBack || (() => {});
     this.onOpenAdvancedGraphics = props.onOpenAdvancedGraphics || (() => {});
+    this.game = props.game || null; // Get reference to game for brightness control
 
     this.root.style.cssText = `
       position: fixed;
@@ -129,6 +130,26 @@ export class SettingsMenu extends UIComponent {
           box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
         }
 
+        input[type="range"]:disabled {
+          cursor: not-allowed;
+          opacity: 0.5;
+          background: linear-gradient(to right, #666 0%, #666 50%, #333 50%, #333 100%);
+        }
+
+        input[type="range"]:disabled::-webkit-slider-thumb {
+          background: linear-gradient(135deg, #888, #999);
+          border-color: #666;
+          box-shadow: 0 0 5px rgba(100, 100, 100, 0.3);
+          cursor: not-allowed;
+        }
+
+        input[type="range"]:disabled::-moz-range-thumb {
+          background: linear-gradient(135deg, #888, #999);
+          border-color: #666;
+          box-shadow: 0 0 5px rgba(100, 100, 100, 0.3);
+          cursor: not-allowed;
+        }
+
         .toggle-button {
           padding: 8px 16px;
           background: #333;
@@ -245,8 +266,14 @@ export class SettingsMenu extends UIComponent {
     const brightnessSlider = brightnessItem.querySelector('.brightness-slider');
     const brightnessValue = brightnessItem.querySelector('.brightness-value');
     brightnessSlider.addEventListener('input', (e) => {
-      brightnessValue.textContent = e.target.value + '%';
-      console.log('☀️ Brightness changed to:', e.target.value);
+      const value = parseInt(e.target.value);
+      brightnessValue.textContent = value + '%';
+      // Update game brightness if game reference is available
+      if (this.game && this.game.setBrightness) {
+        const normalizedValue = value / 100; // Convert 50-150 to 0.5-1.5
+        this.game.setBrightness(normalizedValue);
+      }
+      console.log('☀️ Brightness changed to:', value);
     });
     graphicsGroup.appendChild(brightnessItem);
 
@@ -305,7 +332,7 @@ export class SettingsMenu extends UIComponent {
       <span class="setting-label">Master Volume</span>
       <div class="setting-value">
         <div class="slider-container">
-          <input type="range" min="0" max="100" value="70" class="volume-slider">
+          <input type="range" min="0" max="100" value="70" class="volume-slider" disabled>
           <span class="volume-value">70%</span>
         </div>
       </div>
@@ -325,7 +352,7 @@ export class SettingsMenu extends UIComponent {
       <span class="setting-label">Music Volume</span>
       <div class="setting-value">
         <div class="slider-container">
-          <input type="range" min="0" max="100" value="80" class="music-slider">
+          <input type="range" min="0" max="100" value="80" class="music-slider" disabled>
           <span class="music-value">80%</span>
         </div>
       </div>
@@ -345,7 +372,7 @@ export class SettingsMenu extends UIComponent {
       <span class="setting-label">SFX Volume</span>
       <div class="setting-value">
         <div class="slider-container">
-          <input type="range" min="0" max="100" value="80" class="sfx-slider">
+          <input type="range" min="0" max="100" value="80" class="sfx-slider" disabled>
           <span class="sfx-value">80%</span>
         </div>
       </div>
@@ -382,6 +409,10 @@ export class SettingsMenu extends UIComponent {
       volumeValue.textContent = '70%';
       brightnessSlider.value = 100;
       brightnessValue.textContent = '100%';
+      // Reset brightness in game
+      if (this.game && this.game.setBrightness) {
+        this.game.setBrightness(1.0);
+      }
       musicSlider.value = 80;
       musicValue.textContent = '80%';
       sfxSlider.value = 80;

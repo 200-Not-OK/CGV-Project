@@ -62,41 +62,7 @@ export class QualityControls {
 
     setupKeyboardControls() {
         window.addEventListener('keydown', (e) => {
-            // Shift+Q: Cycle quality tiers
-            if (e.shiftKey && e.code === 'KeyQ') {
-                e.preventDefault();
-                this.cycleTier();
-            }
-            
-            // Shift+1: Force LOW
-            if (e.shiftKey && e.code === 'Digit1') {
-                e.preventDefault();
-                this.setTier('LOW');
-            }
-            
-            // Shift+2: Force MEDIUM
-            if (e.shiftKey && e.code === 'Digit2') {
-                e.preventDefault();
-                this.setTier('MEDIUM');
-            }
-            
-            // Shift+3: Force HIGH
-            if (e.shiftKey && e.code === 'Digit3') {
-                e.preventDefault();
-                this.setTier('HIGH');
-            }
-            
-            // Shift+B: Run benchmark
-            if (e.shiftKey && e.code === 'KeyB') {
-                e.preventDefault();
-                this.runBenchmark();
-            }
-
-            // Shift+T: Toggle Toon Tuner panel
-            if (e.shiftKey && e.code === 'KeyT') {
-                e.preventDefault();
-                this.toggleToonTuner();
-            }
+            // All quality control keybinds have been removed
         });
     }
 
@@ -333,14 +299,6 @@ export class QualityControls {
             
             ${this.isReloading ? '<div style="margin-top: 10px; color: #ffd93d;">⏳ Reloading lights...</div>' : ''}
         `;
-
-        // Add toggle UI visibility
-        window.addEventListener('keydown', (e) => {
-            if (e.shiftKey && e.code === 'KeyH') {
-                e.preventDefault();
-                this.ui.style.display = this.ui.style.display === 'none' ? 'block' : 'none';
-            }
-        });
     }
 
     cycleTier() {

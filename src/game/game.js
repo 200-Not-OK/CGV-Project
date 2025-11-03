@@ -41,6 +41,8 @@ import { MainMenu } from './components/MainMenu.js';
 import { SettingsMenu } from './components/SettingsMenu.js';
 import { GraphicsSettingsMenu } from './components/GraphicsSettingsMenu.js';
 import { ProgressionManager } from './ProgressionManager.js';
+import { Level3Voiceovers } from './levels/Level3Voiceovers.js';
+import { CreditsScreen } from './components/CreditsScreen.js';
 
 // OPTIONAL: if you have a levelData export, this improves level picker labelling.
 // If your project doesn't export this, you can safely remove the import and the uses of LEVELS.
@@ -63,6 +65,9 @@ export class Game {
       stackToolGranted: false,
       stackToolBroken: false,
     };
+
+    // Brightness setting (0.5 to 1.5, default 1.0)
+    this.brightnessLevel = 1.0;
 
     // GPU Detection & Quality Settings
     console.log('🔍 Detecting GPU capabilities...');
@@ -129,6 +134,10 @@ export class Game {
       colliderWidthScale: 0.5,   // 40% of model width (default: 0.4)
       colliderHeightScale: 1,  // 90% of model height (default: 0.9)
       colliderDepthScale: 0.5,    // 40% of model depth (default: 0.4)
+      groundTolerance: 1.5,          // meters within which we still "count" ground
+      maxGroundAngle: 55,             // degrees; steeper is not ground
+      coyoteTime: 0.12,               // seconds grace after losing contact
+      minAirFramesToFall: 3,
       game: this // Pass game reference for death handling and boss win event
     }, this);
     // Player position will be set by loadLevel() call
@@ -249,6 +258,10 @@ export class Game {
       if (this.playerDead) {
         return;
       }
+      // Don't show pause menu if credits screen is active
+      if (this._creditsScreenActive) {
+        return;
+      }
       // If we were in first/third person, interpret the pointerlock exit as Esc -> pause
       if (this.activeCamera === this.thirdCameraObject || this.activeCamera === this.firstCameraObject) {
         this.setPaused(true);
@@ -266,7 +279,7 @@ export class Game {
     this.ui.add('fps', FPS, { showFrameTime: true });
     console.log('📊 FPS counter enabled. Press F to toggle visibility.');
     // Add coordinates display
-    this.ui.add('coordinates', Coordinates, {});
+    // this.ui.add('coordinates', Coordinates, {});
     // Add crosshair for combat
     this.ui.add('crosshair', Crosshair, { visible: true });
     // Add interaction prompt for chests
@@ -284,11 +297,13 @@ export class Game {
     // Add main menu
     this.ui.add('mainMenu', MainMenu, {
       onStart: () => this._onMainMenuStart(),
-      onSettings: () => this._onMainMenuSettings()
+      onSettings: () => this._onMainMenuSettings(),
+      onCredits: () => this._onMainMenuCredits()
     });
     console.log('🎮 MainMenu added to UIManager');
     // Add settings menu
     this.ui.add('settingsMenu', SettingsMenu, {
+      game: this, // Pass game reference for brightness control
       onBack: () => this._onSettingsBack(),
       onOpenAdvancedGraphics: () => this._onOpenAdvancedGraphicsFromSettings()
     });
@@ -340,7 +355,6 @@ export class Game {
 
     // Overlays (built on demand)
     this._victoryOverlay = null;
-    this._levelPicker = null;
 
     // Listen for level completion (boss dispatches 'level:complete')
     window.addEventListener('level:complete', () => this._onLevelComplete());
@@ -590,6 +604,8 @@ debugInteractionPrompt() {
     }
     
     // Load the hub level (index 0)
+    
+      // let loading_this_level = 3;
     await this.loadLevel(0);
     this.gameStarted = true;
     
@@ -619,6 +635,19 @@ debugInteractionPrompt() {
       crosshair.setProps({ visible: false });
     }
     // Keep main menu music playing in background
+  }
+
+  /**
+   * Handle main menu Credits button click
+   */
+  _onMainMenuCredits() {
+    console.log('🎬 Opening credits from main menu');
+    const mainMenu = this.ui.get('mainMenu');
+    
+    if (mainMenu) mainMenu.hide(300);
+    
+    // Show the credits screen
+    this._showCreditsScreen();
   }
 
   /**
@@ -754,16 +783,8 @@ suppressOversizedMinimapColliders() {
       if (this.paused) return;
 
       if (code === 'KeyC') {
-        // cycle cameras: free -> third -> first -> free
-        if (this.activeCamera === this.freeCameraObject) {
-          // free -> third
-          this.activeCamera = this.thirdCameraObject;
-          this.input.alwaysTrackMouse = true;
-          document.body.requestPointerLock();
-          this.player.mesh.visible = true;
-          // Safety: outside level3, disable L1/L2 on newly active camera
-          try { if (this.level?.data?.id !== 'level3') { this.activeCamera.layers.disable(1); this.activeCamera.layers.disable(2); } } catch (_) {}
-        } else if (this.activeCamera === this.thirdCameraObject) {
+        // cycle cameras: third -> first -> third
+        if (this.activeCamera === this.thirdCameraObject) {
           // third -> first
           this.activeCamera = this.firstCameraObject;
           this.input.alwaysTrackMouse = true;
@@ -772,39 +793,17 @@ suppressOversizedMinimapColliders() {
           // Safety: outside level3, disable L1/L2 on newly active camera
           try { if (this.level?.data?.id !== 'level3') { this.activeCamera.layers.disable(1); this.activeCamera.layers.disable(2); } } catch (_) {}
         } else {
-          // first (or other) -> free
-          this.freeCam.moveNearPlayer(this.player);
-          this.activeCamera = this.freeCameraObject;
-          this.input.alwaysTrackMouse = false;
-          if (document.pointerLockElement) { this._suppressPointerLockPause = true; document.exitPointerLock(); }
-          this.player.mesh.visible = true; // restore visibility
+          // first (or other) -> third
+          this.activeCamera = this.thirdCameraObject;
+          this.input.alwaysTrackMouse = true;
+          document.body.requestPointerLock();
+          this.player.mesh.visible = true;
+          // Safety: outside level3, disable L1/L2 on newly active camera
+          try { if (this.level?.data?.id !== 'level3') { this.activeCamera.layers.disable(1); this.activeCamera.layers.disable(2); } } catch (_) {}
         }
         // ensure player is active when in third- or first-person
         // (handled each frame in _loop by checking activeCamera)
-      } else if (code === 'KeyN') {
-        // Open the Level Picker instead of jumping to next level
-        this._showLevelPicker();
-        
-      } else if (code === 'Backquote') { // ` key
-  this.suppressOversizedMinimapColliders();
-} else if (code === 'KeyM') {
-        // toggle physics debug visualization
-        this.physicsWorld.enableDebugRenderer(!this.physicsWorld.isDebugEnabled());
-      } else if (code === 'KeyP') {
-        // toggle performance stats display
-        this.performanceMonitor.toggleStatsDisplay();
-      } else if (code === 'KeyH') {
-        // toggle door collision helpers (green boxes around doors)
-        if (this.doorManager) {
-          this.doorHelpersVisible = !this.doorHelpersVisible;
-          this.doorManager.toggleColliders(this.doorHelpersVisible);
-        }
-      } else if (code === 'KeyB') {
-        // toggle combat debug visuals
-        if (this.combatSystem) {
-          this.combatSystem.toggleDebug();
-        }
-      }else if (code === 'KeyE') {
+      } else if (code === 'KeyE') {
   // interact with computer, doors, or chests
   let interacted = false;
   
@@ -829,82 +828,7 @@ suppressOversizedMinimapColliders() {
   if (!interacted) {
     console.log('❌ No interactable object found');
   }
-}else if (code === 'Key8') {
-  // DEBUG: Check interaction prompt
-  this.debugInteractionPrompt();
-}else if (code === 'Key0') { // Zero key
-  this.emergencyComputerDebug();
-}else if (code === 'KeyU') {
-  // DEBUG: Add all LLMs instantly
-  console.log('🔧 DEBUG: Adding all LLMs');
-  this.glitchManager.collectedLLMs.add('llm_gpt');
-  this.glitchManager.collectedLLMs.add('llm_claude');
-  this.glitchManager.collectedLLMs.add('llm_gemini');
-  
-  if (this.showMessage) {
-    this.showMessage('DEBUG: All LLMs added! Computer should be active.');
-  }
-  console.log('✅ LLMs added:', this.glitchManager.collectedLLMs);
-}else if (code === 'KeyO') {
-  // DEBUG: Teleport to computer location from level data
-  console.log('🔧 DEBUG: Teleporting to computer location');
-  
-  if (this.level && this.level.data && this.level.data.computerLocation) {
-    const computerPos = this.level.data.computerLocation.position;
-    this.player.setPosition(new THREE.Vector3(computerPos[0], computerPos[1], computerPos[2]));
-    console.log('🚀 Teleported to computer at:', computerPos);
-    
-    if (this.showMessage) {
-      this.showMessage('DEBUG: Teleported to computer location');
-    }
-  } else {
-    console.error('❌ No computer location found in level data');
-  }
-}else if (code === 'KeyT') {
-  // DEBUG: Computer diagnostics
-  console.log('🔧 DEBUG: Running computer diagnostics');
-  this.debugComputerTerminal();
-  
-  if (this.computerTerminal) {
-    console.log('✅ Computer terminal exists');
-    console.log('🎯 Attempting to interact...');
-    this.computerTerminal.interact();
-  } else {
-    console.error('❌ No computer terminal found!');
-    
-    // Try to create it from level data
-    if (this.level?.data?.computerLocation) {
-      console.log('🔄 Attempting to create computer from level data...');
-      this.setupComputerTerminal();
-    }
-  }
-}
-else if (code === 'KeyY') {
-  // DEBUG: Create computer from level data
-  console.log('🔧 DEBUG: Creating computer from level data');
-  
-  if (this.level?.data?.computerLocation) {
-    console.log('🎯 Creating computer from level data at:', this.level.data.computerLocation.position);
-    this.setupComputerTerminal();
-    
-    // Verify creation
-    setTimeout(() => {
-      if (this.computerTerminal) {
-        console.log('✅ Computer created successfully');
-        this.debugComputerTerminal();
-      } else {
-        console.error('❌ Computer creation failed!');
-      }
-    }, 500);
-  } else {
-    console.error('❌ No computer location found in level data!');
-    console.log('Current level data:', this.level?.data);
-  }
-
-} else if (code === 'KeyF') {
-        // toggle FPS counter visibility
-        this.toggleFPSCounter();
-      } else if (code === 'KeyQ') {
+} else if (code === 'KeyQ') {
         // use health potion
         this.useHealthPotion();
       } else if (code === 'KeyJ') {
@@ -913,60 +837,8 @@ else if (code === 'KeyY') {
           this.player.takeDamage(50);
           console.log('🩸 Debug: Player damaged for testing');
         }
-      } else if (code === 'KeyU') {
-        // Debug: manually play music
-        console.log('🔊 DEBUG: Manual music trigger (U key pressed)');
-        console.log('🔊 AudioContext state:', this.soundManager.listener.context.state);
-        console.log('🔊 Pending music:', this._pendingMusic);
-        console.log('🔊 Current music:', this.soundManager.currentMusic);
-        console.log('🔊 Available music tracks:', Object.keys(this.soundManager.music));
-
-        // Try to resume AudioContext
-        if (this.soundManager.listener.context.state === 'suspended') {
-          this.soundManager.listener.context.resume().then(() => {
-            console.log('🔊 AudioContext resumed via P key');
-          });
-        }
-
-        // Try to play pending or intro music
-        if (this._pendingMusic) {
-          console.log('🔊 Playing pending music:', this._pendingMusic);
-          this.soundManager.playMusic(this._pendingMusic, 0); // No fade for debugging
-        } else if (this.soundManager.music['intro-theme']) {
-          console.log('🔊 Playing intro-theme directly');
-          this.soundManager.playMusic('intro-theme', 0); // No fade for debugging
-        } else if (this.soundManager.music['level2-theme']) {
-          console.log('🔊 Playing level2-theme directly');
-          this.soundManager.playMusic('level2-theme', 0); // No fade for debugging
-        }
-      }
-      // Toggle center probe
-      if (code === 'KeyB') {
-        this._centerProbeEnabled = !this._centerProbeEnabled;
-        console.log(`🔎 Center probe ${this._centerProbeEnabled ? 'ENABLED' : 'DISABLED'}`);
       }
     });
-  }
-
-  toggleFPSCounter() {
-    const fpsComponent = this.ui.get('fps');
-    if (fpsComponent) {
-      // Toggle visibility using show/hide methods
-      const currentDisplay = fpsComponent.root.style.display;
-      const isCurrentlyVisible = currentDisplay !== 'none';
-      
-      if (isCurrentlyVisible) {
-        fpsComponent.hide();
-        console.log(`📊 FPS counter is now hidden (Press F to toggle)`);
-      } else {
-        fpsComponent.show();
-        console.log(`📊 FPS counter is now visible (Press F to toggle)`);
-      }
-      
-      fpsComponent.isVisible = !isCurrentlyVisible;
-    } else {
-      console.warn('⚠️ FPS component not found. Cannot toggle visibility.');
-    }
   }
 
   useHealthPotion() {
@@ -976,8 +848,6 @@ else if (code === 'KeyY') {
     
     let potionUsed = false;
     let potionAvailable = false;
-    
-    // Try collectibles UI first (for levels that use collectibles component)
     if (collectiblesUI && collectiblesUI.useHealthPotion) {
       potionAvailable = collectiblesUI.collectibles.potions.count > 0;
       if (potionAvailable) {
@@ -1561,8 +1431,39 @@ if (staleLow) staleLow.remove();
   if (this.level.data.id === 'level3') {
     console.log('🎯 Setting up computer for level3');
     this.setupComputerTerminal();
-    // NOTE: Sky will be set later in the unified skybox loading section
-    // Ensure only the eyeball sun contributes light (will be set up with sky)
+
+    // Load Level 3 voiceovers (non-blocking)
+    try {
+      if (!this.level3Voiceovers) {
+        this.level3Voiceovers = new Level3Voiceovers(this);
+      }
+      // Load voiceovers in the background without blocking game initialization
+      if (this.level3Voiceovers && this.level3Voiceovers.loadAll) {
+        this.level3Voiceovers.loadAll().catch(err => {
+          console.error('❌ Failed to load Level 3 voiceovers:', err);
+        });
+      }
+    } catch (err) {
+      console.error('❌ Failed to initialize Level 3 voiceovers:', err);
+    }
+    // TEMP: Completely disable the Level 3 eye to test Level 1 artifacts
+    try {
+      if (this.scene?.userData) {
+        this.scene.userData.allowSunEye = false; // do not allow sun/eye rig
+        // Remove any existing sun/eye groups if present
+        if (this.scene.userData.sunEye && this.scene.userData.sunEye.group) {
+          const g = this.scene.userData.sunEye.group; if (g.parent) g.parent.remove(g);
+        }
+        this.scene.userData.sunEye = null;
+        if (this.scene.userData.sun) { try { if (this.scene.userData.sun.parent) this.scene.remove(this.scene.userData.sun); } catch (_) {} this.scene.userData.sun = null; }
+        if (this.scene.userData.topFillLight) { try { if (this.scene.userData.topFillLight.parent) this.scene.remove(this.scene.userData.topFillLight); } catch (_) {} this.scene.userData.topFillLight = null; }
+        if (this.scene.userData.ambientFill) { try { if (this.scene.userData.ambientFill.parent) this.scene.remove(this.scene.userData.ambientFill); } catch (_) {} this.scene.userData.ambientFill = null; }
+        if (this.scene.userData.sunTarget) { try { if (this.scene.userData.sunTarget.parent) this.scene.remove(this.scene.userData.sunTarget); } catch (_) {} this.scene.userData.sunTarget = null; }
+      }
+    } catch (_) {}
+    // Light, complimentary sky for level 3
+    try { setSkyPreset(this.scene, this.renderer, 'light'); } catch (e) { console.warn('Sky preset failed', e); }
+    // Ensure only the eyeball sun contributes light
     try { enforceOnlySunLight(this.scene); } catch (e) { console.warn('Light enforcement failed', e); }
     // Hard-disable all object/light shadows to prevent any halo circle
     try { disableAllShadows(this.scene); } catch (e) { console.warn('Disable all shadows failed', e); }
@@ -1889,6 +1790,9 @@ this.input.alwaysTrackMouse = true;
   // Refresh stack tool availability after level loads
   this.refreshStackToolAvailability();
 
+  // Check if we've returned to hub after completing all levels
+  this._checkAndShowCreditsIfAllLevelsComplete();
+
   // Hide loading screen
   if (loadingScreen) {
     loadingScreen.setStatus('READY', 100);
@@ -1926,6 +1830,15 @@ clearDeathVisualsAndState() {
   try { this.combatSystem.suppressAttacks = false; } catch {}
   try { this.level?.freezeAllEnemies?.(false); } catch {}
   try { this.proximitySoundManager?.resume?.(); } catch {}
+  
+  // Lock cursor when level loads
+  try {
+    if (typeof document !== 'undefined' && document.body?.requestPointerLock) {
+      document.body.requestPointerLock();
+    }
+  } catch (e) {
+    console.warn('⚠️ Unable to request pointer lock on level load:', e);
+  }
 }
 
 
@@ -1949,7 +1862,22 @@ clearDeathVisualsAndState() {
 
   refreshStackToolAvailability() {
     const levelId = this.currentLevelId || this.level?.data?.id || this.scene?.userData?.levelId || null;
-    const canUse = !this.state.stackToolBroken && this.state.stackToolGranted && levelId === 'level1';
+    // Allow stack tool in both 'level1' and 'level1_glitched'
+    const isLevel1OrGlitched = levelId === 'level1' || levelId === 'level1_glitched';
+    
+    // IMPORTANT: Auto-grant and unbreak the stack tool for level1_glitched
+    if (levelId === 'level1_glitched') {
+      if (!this.state.stackToolGranted) {
+        console.log('[StackTool] 🎁 Auto-granting stack tool for glitched level1');
+        this.state.stackToolGranted = true;
+      }
+      if (this.state.stackToolBroken) {
+        console.log('[StackTool] 🔧 Unbreaking stack tool for glitched level1');
+        this.state.stackToolBroken = false;
+      }
+    }
+    
+    const canUse = !this.state.stackToolBroken && this.state.stackToolGranted && isLevel1OrGlitched;
     
     console.log('[StackTool] Refresh - Level:', levelId, 'Granted:', this.state.stackToolGranted, 'Broken:', this.state.stackToolBroken, '=> Can use:', canUse);
     
@@ -1960,6 +1888,91 @@ clearDeathVisualsAndState() {
     } else {
       this.player.weapon.unmount();
     }
+  }
+
+  /**
+   * Check if all levels are completed and show credits screen when returning to hub
+   * @private
+   */
+  _checkAndShowCreditsIfAllLevelsComplete() {
+    // Only check if loading the hub level
+    const currentLevelId = this.currentLevelId || this.level?.data?.id;
+    if (currentLevelId !== 'hub') {
+      return;
+    }
+
+    // Check if credits have already been watched in this save
+    if (CreditsScreen.hasWatchedCredits()) {
+      console.log('🎬 Credits already watched, skipping');
+      return;
+    }
+
+    // Get progression status
+    const progression = this.progressionManager?.getStatus?.();
+    if (!progression) {
+      console.log('🎬 No progression data available');
+      return;
+    }
+
+    // Define all playable levels (excluding hub)
+    const allLevels = ['level1', 'level2', 'level3'];
+    
+    // Check if all levels are completed
+    const allCompleted = allLevels.every(lvl => progression.completedLevels.includes(lvl));
+
+    if (allCompleted && progression.completedLevels.length > 0) {
+      console.log('🎬 All levels completed! Showing credits screen.');
+      this._showCreditsScreen();
+    } else {
+      console.log('🎬 Not all levels completed yet:', {
+        completed: progression.completedLevels,
+        remaining: allLevels.filter(lvl => !progression.completedLevels.includes(lvl))
+      });
+    }
+  }
+
+  /**
+   * Display the credits screen
+   * @private
+   */
+  _showCreditsScreen() {
+    // Create or get existing credits screen
+    let creditsScreen = this.ui?.get('creditsScreen');
+    
+    if (!creditsScreen) {
+      creditsScreen = new CreditsScreen(
+        document.getElementById('app'),
+        {
+          // Note: creditsList is NOT passed here, so CreditsScreen uses its own _getDefaultCredits()
+          // This way, updates to CreditsScreen.js are automatically reflected
+          isInLevel: !!this.level,
+          onClose: () => {
+            console.log('🎬 Credits screen closed');
+            
+            // If we're in the main menu (not in a level), show the main menu again
+            if (!this.level) {
+              const mainMenu = this.ui?.get('mainMenu');
+              if (mainMenu) {
+                mainMenu.show();
+              }
+            }
+            
+            // Re-enable player input after credits
+            if (this.input?.setEnabled) {
+              this.input.setEnabled(true);
+            }
+          }
+        }
+      );
+      this.ui?.add('creditsScreen', creditsScreen);
+    }
+
+    // Disable player input while credits are showing
+    if (this.input?.setEnabled) {
+      this.input.setEnabled(false);
+    }
+
+    creditsScreen.show();
   }
 
   /**
@@ -2479,13 +2492,7 @@ this._runCaptionSequence([
 
     }
 
-    // Show the victory overlay a beat after the camera move starts
-setTimeout(() => {
-  this._showVictoryOverlay();  // already shows Replay + Go To Level
-  this._showLevelPicker();     // or pop the picker directly
-  this.input?.setEnabled?.(true);
-}, 3000); // after orbit; tweak to your taste
-
+    // Victory overlay is now handled in main.js after cinematic completes
   }
 
   _runCaptionSequence(segments = []) {
@@ -2568,27 +2575,20 @@ setTimeout(() => {
       this.input?.setEnabled?.(true);
     };
 
-    const toLevelButtonsWrap = document.createElement('div');
-    Object.assign(toLevelButtonsWrap.style, { display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' });
-
-    const levelsArray = this._getAvailableLevels();
-    for (const lvl of levelsArray) {
-      const b = btn(`Go to: ${lvl.name || lvl.id}`);
-      b.onclick = () => {
-        overlay.style.display = 'none';
-        const idx = this._findLevelIndexById(lvl.id);
-        if (idx >= 0) this.loadLevel(idx);
-        this.input?.setEnabled?.(true);
-      };
-      toLevelButtonsWrap.appendChild(b);
-    }
+    const backToHub = btn('Back to Hub');
+    backToHub.onclick = () => {
+      overlay.style.display = 'none';
+      // Load hub level (index 0)
+      this.loadLevel(0);
+      this.input?.setEnabled?.(true);
+    };
 
     const hint = document.createElement('div');
-    hint.textContent = 'Press N to open the Level Picker any time';
+    hint.textContent = 'Complete other levels to unlock them!';
     Object.assign(hint.style, { marginTop: '10px', opacity: .65, fontSize: '12px' });
 
     actions.appendChild(replay);
-    actions.appendChild(toLevelButtonsWrap);
+    actions.appendChild(backToHub);
     card.appendChild(title);
     card.appendChild(subtitle);
     card.appendChild(actions);
@@ -2606,214 +2606,7 @@ setTimeout(() => {
     }
   }
 
-  /* ===========================
-     Level Picker overlay
-     =========================== */
-
-  _ensureLevelPicker() {
-    if (this._levelPicker) return;
-
-    const picker = document.createElement('div');
-    Object.assign(picker.style, {
-      position: 'fixed',
-      inset: 0,
-      display: 'none',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75))',
-      zIndex: 9998
-    });
-
-    const card = document.createElement('div');
-    Object.assign(card.style, {
-      width: 'min(92vw, 640px)',
-      borderRadius: '18px',
-      border: '3px solid #4dabf7',
-      background: '#0b1222',
-      color: 'white',
-      padding: '22px',
-      boxShadow: '0 20px 60px rgba(0,0,0,.55)',
-      fontFamily: 'system-ui, sans-serif',
-      textAlign: 'center'
-    });
-
-    const title = document.createElement('div');
-    title.textContent = 'Choose a Level';
-    Object.assign(title.style, { fontSize: '26px', fontWeight: 800, marginBottom: '8px' });
-
-    const grid = document.createElement('div');
-    Object.assign(grid.style, {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-      gap: '10px',
-      marginTop: '12px'
-    });
-
-
-    if (!document.getElementById('level-picker-keyboard-style')) {
-      const st = document.createElement('style');
-      st.id = 'level-picker-keyboard-style';
-      st.textContent = `
-        .level-picker-btn.is-selected {
-          outline: 3px solid #a0d4ffff;
-          border-color: #a0d4ffff !important;
-          transform: translateY(-1px);
-        }s
-      `;
-      document.head.appendChild(st);
-    }
-
-    const levelsArray = this._getAvailableLevels();
-    const buttons = [];
-    levelsArray.forEach((lvl, i) => {
-      const b = document.createElement('button');
-      b.textContent = `${lvl.name || lvl.id}`;
-      Object.assign(b.style, {
-        cursor: 'pointer',
-        padding: '18px 12px',
-        borderRadius: '14px',
-        border: '2px solid #4dabf7',
-        background: '#142647',
-        color: 'white',
-        fontWeight: 700
-      });
-
-      b.className = 'level-picker-btn';
-      b.setAttribute('tabindex', '-1');            // we manage focus manually
-      b.setAttribute('role', 'option');
-      b.dataset.index = String(i);
-
-
-      b.onclick = () => {
-        picker.style.display = 'none';
-        const idx = this._findLevelIndexById(lvl.id);
-        if (idx >= 0) this.loadLevel(idx);
-        if (this._pickerPrevInputEnabled) this.input?.setEnabled?.(true);
-        this._detachLevelPickerKeys?.();
-      };
-      grid.appendChild(b);
-      buttons.push(b);
-    });
-
-    const hint = document.createElement('div');
-    hint.textContent = 'Press N to toggle this open at any time';
-    Object.assign(hint.style, { marginTop: '10px', opacity: .65, fontSize: '12px' });
-
-    card.appendChild(title);
-    card.appendChild(grid);
-    card.appendChild(hint);
-    picker.appendChild(card);
-    document.body.appendChild(picker);
-
-    this._levelPicker = picker;
-    this._levelPickerGrid = grid;
-    this._levelPickerButtons = buttons;
-    this._levelPickerSelectedIndex = 0;
-
-    // Attach a unified key handler (added/removed when shown/hidden)
-    this._attachLevelPickerKeys = () => {
-      if (this._levelPickerKeyHandler) return;
-      this._levelPickerKeyHandler = (e) => {
-        // Only handle keys when the picker is visible
-        if (picker.style.display !== 'flex') return;
-        const code = e.code;
-        let idx = this._levelPickerSelectedIndex ?? 0;
-        const max = buttons.length - 1;
-        const getCols = () => {
-          // Count computed grid columns (robust to responsive anges)
-          const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length;
-         return Math.max(1, cols || 1);
-        };
-        const move = (newIdx) => {
-          newIdx = Math.min(Math.max(newIdx, 0), max);
-          if (newIdx !== this._levelPickerSelectedIndex) {
-            this._levelPickerSelectedIndex = newIdx;
-            this._highlightLevelPickerSelection();
-          }
-        };
-        if (code === 'ArrowRight') {
-          move(idx + 1);
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'ArrowLeft') {
-          move(idx - 1);
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'ArrowDown') {
-          move(idx + getCols());
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'ArrowUp') {
-          move(idx - getCols());
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'Enter' || code === 'NumpadEnter') {
-          const btn = buttons[this._levelPickerSelectedIndex];
-          if (btn) btn.click();
-          e.preventDefault(); e.stopPropagation();
-        } else if (code === 'KeyN') {
-          picker.style.display = 'none';
-          if (this._pickerPrevInputEnabled) this.input?.setEnabled?.(true);
-          this._detachLevelPickerKeys();
-          e.preventDefault(); e.stopPropagation();
-        }
-      };
-      window.addEventListener('keydown', this._levelPickerKeyHandler, { capture: true });
-    };
-    this._detachLevelPickerKeys = () => {
-      if (!this._levelPickerKeyHandler) return;
-      window.removeEventListener('keydown', this._levelPickerKeyHandler, { capture: true });
-      this._levelPickerKeyHandler = null;
-    };
-
-    // Helper to apply highlight/focus/scroll
-    this._highlightLevelPickerSelection = () => {
-      const i = this._levelPickerSelectedIndex ?? 0;
-      buttons.forEach((b, j) => {
-        const sel = j === i;
-        b.classList.toggle('is-selected', sel);
-        b.setAttribute('aria-selected', sel ? 'true' : 'false');
-      });
-      const btn = buttons[i];
-      if (btn) {
-        try { btn.focus({ preventScroll: true }); } catch {}
-        try { btn.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch {}
-      }
-    };
-
-    this._levelPicker = picker;
-  }
-
-  _showLevelPicker() {
-    this._ensureLevelPicker();
-    if (this._levelPicker) {
-      this._levelPicker.style.display = 'flex';
-      // Disable game input while the picker is open
-      this._pickerPrevInputEnabled = this.input ? (this.input.enabled !== false) : false;
-      this.input?.setEnabled?.(false);
-      // Initialize selection to current level if possible
-      const currentIdx = this._findLevelIndexById(this.currentLevelId);
-      this._levelPickerSelectedIndex = Math.max(0, currentIdx);
-      this._highlightLevelPickerSelection();
-      this._attachLevelPickerKeys();
-    }
-  }
-
-  _getAvailableLevels() {
-    // Prefer explicit level data export if present
-    const listFromExport = Array.isArray(LEVELS) ? LEVELS : (LEVELS?.levels ?? null);
-    const listFromManager = this.levelManager?.levels ?? null;
-
-    const list = listFromExport || listFromManager || [];
-    // If you only want a couple of levels visible, filter here:
-    // return list.filter(l => ['intro','level2'].includes(l.id));
-    return list;
-  }
-
-  _findLevelIndexById(id) {
-    const listFromExport = Array.isArray(LEVELS) ? LEVELS : (LEVELS?.levels ?? null);
-    const listFromManager = this.levelManager?.levels ?? null;
-    const list = listFromExport || listFromManager || [];
-    const idx = list.findIndex(l => l.id === id);
-    return idx >= 0 ? idx : 0;
-  }
-setupComputerTerminal() {
+  setupComputerTerminal() {
   console.log('🛠️ === SETUP COMPUTER TERMINAL START ===');
   
   try {
@@ -3045,6 +2838,23 @@ setupGlitchedLevelProgression() {
       this.loadLevelByName('level3');
     }, 2000);
   }
+}
+
+/**
+ * Set the brightness level for the entire game
+ * @param {number} value - Brightness value between 0.5 and 1.5 (1.0 is normal)
+ */
+setBrightness(value) {
+  // Clamp value between 0.5 and 1.5
+  this.brightnessLevel = Math.max(0.5, Math.min(1.5, value));
+  
+  // Apply brightness filter to the canvas/renderer container
+  const renderer = this.renderer.domElement;
+  if (renderer && renderer.parentNode) {
+    renderer.parentNode.style.filter = `brightness(${this.brightnessLevel})`;
+  }
+  
+  console.log('☀️ Brightness set to:', (this.brightnessLevel * 100).toFixed(0) + '%');
 }
 
 

@@ -133,9 +133,6 @@ export class CombatSystem {
         console.log(`📐 Angle: ${(angle * 180 / Math.PI).toFixed(1)}° (max: ${(swingArc / 2 * 180 / Math.PI).toFixed(1)}°)`);
         console.log(`📏 Vertical offset: ${verticalOffset.toFixed(2)} units (range: -${swingLowReach} to +${swingHeight})`);
         
-        // Debug visual for hit enemy
-        this.createEnemyHitDebug(enemyPos, true);
-        
         hitEnemies.push({
           enemy: enemy,
           distance: horizontalDistance,
@@ -144,8 +141,6 @@ export class CombatSystem {
         });
       } else {
         console.log(`❌ Enemy outside swing arc`);
-        // Debug visual for missed enemy (within range but outside arc)
-        this.createEnemyHitDebug(enemyPos, false);
       }
     }
 

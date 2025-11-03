@@ -1555,23 +1555,17 @@ export const levels = [
       {
         "type": "minimap",
         "config": {
-          "zoom": 5
+          "zoom": 0.5,
         }
       },
       {
         "type": "collectibles",
         "config": {
-          "applesTotal": 7,
+         
           "potionsStart": 5,
-          "pointsPerApple": 200,
+          
           "collectibleTypes": {
-            "apples": {
-              "icon": "🍏",
-              "name": "Green Apples",
-              "color": "#51cf66",
-              "completeColor": "#ffd43b",
-              "completeIcon": "👑"
-            },
+            
             "potions": {
               "icon": "🧪",
               "name": "Health Potions",
@@ -1912,6 +1906,17 @@ export const levels = [
         "materialType": "wall"
       },
       {
+        "id": "collider_5",
+        "type": "mesh",
+        "meshName": "Walls",
+        "materialType": "wall",
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "id": "collider_4",
         "type": "box",
         "position": [
@@ -1931,6 +1936,21 @@ export const levels = [
         ],
         "materialType": "wall"
       },
+        {
+          "id": "collider_5",
+          "type": "mesh",
+          "meshName": "Walls",
+          "materialType": "wall",
+          "minimap" : false,
+          "minimapFill": "transparent",
+          "minimapStroke": "transparent",
+          "minimapLineWidth": 0,
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
       {
         "id": "collider_6",
         "type": "mesh",
@@ -2347,7 +2367,7 @@ export const levels = [
             38.74439334869385,
             334.06633057575175
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_33",
@@ -2356,7 +2376,7 @@ export const levels = [
             9.651255130767824,
             278.7988147172013
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_34",
@@ -2365,7 +2385,7 @@ export const levels = [
             23.226380348205566,
             -17.687950706826655
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_35",
@@ -2392,7 +2412,7 @@ export const levels = [
             9.651255130767822,
             -82.64101963921365
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_39",
@@ -2401,7 +2421,7 @@ export const levels = [
             9.439203262329102,
             -44.85368840875811
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_40",
@@ -2410,7 +2430,7 @@ export const levels = [
             9.439203262329102,
             -45.742070533768135
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_41",
@@ -2464,7 +2484,7 @@ export const levels = [
             9.691577911376955,
             417.44962917460015
           ],
-          "contents": "apple"
+          "contents": "potion"
         },
         {
           "id": "chest_47",
@@ -3588,7 +3608,7 @@ export const levels = [
         }
       }
     ],
-    "sounds": {
+        "sounds": {
       "music": {
         "level2-theme": {
           "url": "assets/audio/music/whispers_beneath_the_canopy.mp3",
@@ -3692,46 +3712,55 @@ export const levels = [
             "block": true,
             "segments": [
               {
+                "speaker": "Pravesh",
                 "at": 0,
                 "ms": 2000,
                 "text": "Hey everybody, welcome to the Serpent’s Labyrinth."
               },
               {
+                "speaker": "Pravesh",
                 "at": 2400,
                 "ms": 2700,
                 "text": "You’re a knight now, in a world of stone walls and lurking dangers."
               },
               {
+                "speaker": "Pravesh",
                 "at": 5500,
                 "ms": 2500,
                 "text": "Inside, you’ll find apples hidden in chests."
               },
               {
+                "speaker": "Pravesh",
                 "at": 8500,
                 "ms": 1500,
                 "text": "They’re your key to escape."
               },
               {
+                "speaker": "Pravesh",
                 "at": 10000,
                 "ms": 3500,
                 "text": "But beware—the snakes that guard them are not ordinary creatures."
               },
               {
+                "speaker": "Pravesh",
                 "at": 14000,
                 "ms": 6000,
                 "text": "Each one slithers with its own cunning, and if they catch you—well, let's just say you won't be making it out alive."
               },
               {
+                "speaker": "Pravesh",
                 "at": 21000,
                 "ms": 6000,
                 "text": "And there’s talk of something far worse: a great beast, a serpent older than the labyrinth itself."
               },
               {
+                "speaker": "Pravesh",
                 "at": 27500,
                 "ms": 3500,
                 "text": "If you hear the ground tremble, don’t stick around to find out why."
               },
               {
+                "speaker": "Pravesh",
                 "at": 31500,
                 "ms": 3500,
                 "text": "Gather the apples, find the exit, and escape before it finds you."
@@ -10692,192 +10721,82 @@ export const levels = [
         "color": 7048739
       }
     ],
+    "sounds": {
+      "sfx": {
+        "level3start_vo": {
+          "url": "/assets/audio/ambient/branden_level3start_vo.mp3",
+          "loop": false
+        },
+      },
+    },
     "cinematics": {
       "onLevelStart": {
         "sequence": [
-          {
-            "type": "takeCamera"
-          },
-          {
-            "type": "fadeOut",
-            "ms": 300
-          },
-          {
-            "type": "cut",
-            "position": [
-              -1,
-              7,
-              -3
-            ],
-            "lookAt": "player",
-            "fov": 55
-          },
-          {
-            "type": "fadeIn",
-            "ms": 600
-          },
+          { "type": "takeCamera" },
+          { "type": "fadeOut", "ms": 300 },
+          { "type": "cut", "position": [-1, 7, -3], "lookAt": "player", "fov": 55 },
+          { "type": "fadeIn", "ms": 600 },
           {
             "type": "playVO",
-            "vo": "vo-l3-intro",
-            "fallbackMs": 23000,
+            "vo": "level3start_vo",
             "block": true,
             "segments": [
-              {
-                "at": 0,
-                "ms": 2100,
-                "text": "BRANDEN: Sir Knight. Eyes up. Yes, it is me—your favorite lecturer, now a giant floating eyeball. I am keeping an eye on you."
-              },
-              {
-                "at": 2400,
-                "ms": 1800,
-                "text": "PLAYER: Only you would turn into a sky-orb for office hours."
-              },
-              {
-                "at": 4400,
-                "ms": 3900,
-                "text": "BRANDEN: Your project theme is “Consequence.” You have three weeks. It counts for the majority of your grade. No use of AI."
-              },
-              {
-                "at": 8600,
-                "ms": 2400,
-                "text": "BRANDEN: Good luck. I will be watching."
-              },
-              {
-                "at": 11200,
-                "ms": 4600,
-                "text": "PLAYER (INTERNAL MONOLOGUE): Three weeks. Consequence. Everyone else is already panicking. But not me."
-              },
-              {
-                "at": 16200,
-                "ms": 4300,
-                "text": "PLAYER (INTERNAL MONOLOGUE): I have the ultimate advantage—ChatGPT, Claude, Gemini. I will be careful."
-              },
-              {
-                "at": 20700,
-                "ms": 3000,
-                "text": "BRANDEN: Time to collect those AIs and head to MSL."
-              }
+              { "speaker": "Branden", "at": 0, "ms": 3000, 
+                "text": "Sir Knight. Eyes up. Yes, it is me—your favorite lecturer, " },
+                { "speaker": "Branden", "at": 3300, "ms": 3500, 
+                "text": "now a giant floating eyeball. I am keeping an eye on you." },
+              { "speaker": "Player", "at": 6700, "ms": 4000,    
+                "text": "Only you would turn into a sky-orb for office hours." },
+              { "speaker": "Branden", "at": 11000, "ms": 3700, 
+                "text": "Your project theme is “Consequence.” You have three weeks." },
+                 { "speaker": "Branden", "at": 15000, "ms": 2900, 
+                "text": "It counts for the majority of your grade. No use of AI." },
+              { "speaker": "Branden", "at": 18200, "ms": 2000, "text": "Good luck. I will be watching." },
+              { "speaker": "Player (Internally)", "at": 21000, "ms": 3600, 
+                "text": "Three weeks. Consequence. Everyone else is already panicking." },
+              {  "speaker": "Player (Internally)", "at": 24900, "ms": 6000, 
+                "text": "But not me. I have the ultimate advantage—ChatGPT, Claude, Gemini." },
+                              {  "speaker": "Player (Internally)", "at": 32000, "ms": 2200, 
+                                "text": "Let them waste their time. I will delegate. How will Branden Know?" },
+                                                              {  "speaker": "Player (Internally)", "at": 34500, "ms": 4000, 
+                                "text": "How will Branden Know? I will be careful and use them where he cannot see me." },
+              {  "speaker": "Player (Internally)", "at": 38500, "ms": 3600,   "text": "Time to collect those AIs and head to MSL to do this project." }
             ],
             "concurrent": [
-              {
-                "type": "orbit",
-                "center": "player",
-                "radius": 7.5,
-                "startDeg": 20,
-                "endDeg": 55,
-                "height": 4.8,
-                "duration": 12000
-              },
-              {
-                "type": "wait",
-                "ms": 6200
-              },
-              {
-                "type": "orbit",
-                "center": [
-                  72,
-                  9,
-                  -100
-                ],
-                "radius": 2,
-                "startDeg": 0,
-                "endDeg": 60,
-                "height": 4,
-                "duration": 6000
-              }
+              { "type": "orbit", "center": "player", "radius": 7.5, "startDeg": 20, "endDeg": 55, "height": 4.8, "duration": 12000 },
+              { "type": "wait", "ms": 6200 },
+              { "type": "orbit", "center": [72, 9, -100], "radius": 2, "startDeg": 0, "endDeg": 60, "height": 4, "duration": 6000 }
             ]
           },
-          {
-            "type": "fadeOut",
-            "ms": 250
-          },
-          {
-            "type": "releaseCamera"
-          },
-          {
-            "type": "fadeIn",
-            "ms": 250
-          }
+          { "type": "fadeOut", "ms": 250 },
+          { "type": "releaseCamera" },
+          { "type": "fadeIn", "ms": 250 }
         ]
       },
+
+      // Small rumble beat before teleport to level1_glitched
       "l3_p2_glitch": {
         "sequence": [
-          {
-            "type": "takeCamera"
-          },
-          {
-            "type": "rumble",
-            "sfx": "rumbling",
-            "seconds": 1.2,
-            "magnitude": 0.18,
-            "volume": 0.8
-          },
-          {
-            "type": "caption",
-            "text": "System link engaged… hold steady.",
-            "ms": 900
-          },
-          {
-            "type": "fadeOut",
-            "ms": 220
-          },
-          {
-            "type": "releaseCamera"
-          }
+          { "type": "takeCamera" },
+          { "type": "rumble", "sfx": "rumbling", "seconds": 1.2, "magnitude": 0.18, "volume": 0.8 },
+          { "type": "caption", "text": "System link engaged… hold steady.", "ms": 900 },
+          { "type": "fadeOut", "ms": 220 },
+          { "type": "releaseCamera" }
         ]
       },
+
+      // Finale already triggered by game.js when level3 completes
       "l3_p4_graduation": {
         "sequence": [
-          {
-            "type": "takeCamera"
-          },
-          {
-            "type": "fadeOut",
-            "ms": 200
-          },
-          {
-            "type": "cut",
-            "position": [
-              32,
-              6,
-              -24
-            ],
-            "lookAt": [
-              30,
-              2,
-              -25
-            ],
-            "fov": 60
-          },
-          {
-            "type": "fadeIn",
-            "ms": 300
-          },
-          {
-            "type": "caption",
-            "text": "YOUR WORK IS YOUR SIGNATURE. MAKE IT LEGENDARY.",
-            "ms": 2600
-          },
-          {
-            "type": "orbit",
-            "center": "player",
-            "radius": 6,
-            "startDeg": 10,
-            "endDeg": 70,
-            "height": 3.2,
-            "duration": 2500
-          },
-          {
-            "type": "fadeOut",
-            "ms": 250
-          },
-          {
-            "type": "releaseCamera"
-          },
-          {
-            "type": "fadeIn",
-            "ms": 250
-          }
+          { "type": "takeCamera" },
+          { "type": "fadeOut", "ms": 200 },
+          { "type": "cut", "position": [32, 6, -24], "lookAt": [30, 2, -25], "fov": 60 },
+          { "type": "fadeIn", "ms": 300 },
+          { "type": "caption", "text": "YOUR WORK IS YOUR SIGNATURE. MAKE IT LEGENDARY.", "ms": 2600 },
+          { "type": "orbit", "center": "player", "radius": 6, "startDeg": 10, "endDeg": 70, "height": 3.2, "duration": 2500 },
+          { "type": "fadeOut", "ms": 250 },
+          { "type": "releaseCamera" },
+          { "type": "fadeIn", "ms": 250 }
         ]
       }
     },
@@ -21061,17 +20980,6 @@ export const levels = [
           0
         ],
         "materialType": "wall"
-      },
-      {
-        "id": "collider_5",
-        "type": "mesh",
-        "meshName": "Walls",
-        "materialType": "wall",
-        "rotation": [
-          0,
-          0,
-          0
-        ]
       },
       {
         "id": "collider_6",
