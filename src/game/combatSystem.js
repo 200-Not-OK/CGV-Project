@@ -74,9 +74,6 @@ export class CombatSystem {
     console.log(`🗡️ Player facing direction:`, playerDirection);
     console.log(`🗡️ Checking ${this.enemies.length} enemies...`);
 
-    // Create debug visualization for the swing arc
-    this.createSwingArcDebug(playerPos, playerDirection, swingRange, swingArc);
-
     let hitEnemies = [];
 
     // Check each enemy against the sword swing area
